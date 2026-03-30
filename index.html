@@ -9,38 +9,13 @@
 
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const BUCKET = "Artist-uploads";
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      let allFiles = [];
+      let allUploads = [];
       let currentFilter = "All";
 
-      function inferCategory(filename) {
-        const lower = filename.toLowerCase();
-        if (lower.includes("tattoo")) return "Tattoo";
-        if (lower.includes("3d")) return "3D Print";
-        if (lower.includes("print")) return "3D Print";
-        if (lower.includes("art")) return "Art";
-        return "Art";
-      }
-
-      function inferArtist(filename) {
-        const clean = filename
-          .replace(/^\d+-/, "")
-          .replace(/\.[^/.]+$/, "")
-          .replace(/[-_]+/g, " ")
-          .trim();
-
-        return clean || "Artist Upload";
-      }
-
-      function makeCard(file) {
-        const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(file.name);
-        const imageUrl = publicData.publicUrl;
-        const artist = inferArtist(file.name);
-        const category = inferCategory(file.name);
-
+      function makeCard(item) {
         const card = document.createElement("div");
         card.style.background = "#111";
         card.style.border = "1px solid #222";
@@ -55,8 +30,8 @@
         imageWrap.style.background = "#000";
 
         const img = document.createElement("img");
-        img.src = imageUrl;
-        img.alt = artist;
+        img.src = item.image_url;
+        img.alt = item.artist;
         img.style.width = "100%";
         img.style.height = "320px";
         img.style.objectFit = "cover";
@@ -71,20 +46,24 @@
         const body = document.createElement("div");
         body.style.padding = "16px";
 
-        const title = document.createElement("div");
+        const title = document.createElement("a");
+        title.href = `/artist.html?name=${encodeURIComponent(item.artist)}`;
+        title.textContent = item.artist;
         title.style.fontSize = "22px";
         title.style.fontWeight = "800";
         title.style.marginBottom = "8px";
-        title.textContent = artist;
+        title.style.display = "inline-block";
+        title.style.color = "white";
+        title.style.textDecoration = "none";
 
         const badgeRow = document.createElement("div");
         badgeRow.style.display = "flex";
         badgeRow.style.gap = "10px";
         badgeRow.style.flexWrap = "wrap";
-        badgeRow.style.marginBottom = "12px";
+        badgeRow.style.margin = "12px 0";
 
         const categoryBadge = document.createElement("span");
-        categoryBadge.textContent = category;
+        categoryBadge.textContent = item.category;
         categoryBadge.style.background = "#1d4ed8";
         categoryBadge.style.color = "white";
         categoryBadge.style.padding = "6px 10px";
@@ -102,45 +81,62 @@
         badgeRow.appendChild(categoryBadge);
         badgeRow.appendChild(profileBadge);
 
-        const filename = document.createElement("div");
-        filename.textContent = file.name;
-        filename.style.fontSize = "12px";
-        filename.style.color = "#aaa";
-        filename.style.wordBreak = "break-word";
-        filename.style.marginBottom = "14px";
-
         const actions = document.createElement("div");
         actions.style.display = "flex";
-        actions.style.gap = "12px";
+        actions.style.gap = "16px";
         actions.style.flexWrap = "wrap";
+        actions.style.alignItems = "center";
 
         const viewLink = document.createElement("a");
-        viewLink.href = imageUrl;
+        viewLink.href = item.image_url;
         viewLink.target = "_blank";
         viewLink.textContent = "View Full Image";
         viewLink.style.color = "#4da3ff";
         viewLink.style.textDecoration = "none";
         viewLink.style.fontWeight = "700";
 
-        const uploadLink = document.createElement("a");
-        uploadLink.href = "/upload.html";
-        uploadLink.textContent = "Upload More";
-        uploadLink.style.color = "#22c55e";
-        uploadLink.style.textDecoration = "none";
-        uploadLink.style.fontWeight = "700";
+        const profileLink = document.createElement("a");
+        profileLink.href = `/artist.html?name=${encodeURIComponent(item.artist)}`;
+        profileLink.textContent = "View Profile";
+        profileLink.style.color = "#22c55e";
+        profileLink.style.textDecoration = "none";
+        profileLink.style.fontWeight = "700";
+
+        const likeBtn = document.createElement("button");
+        likeBtn.textContent = `❤️ ${item.likes ?? 0}`;
+        likeBtn.style.padding = "10px 14px";
+        likeBtn.style.borderRadius = "999px";
+        likeBtn.style.border = "1px solid #333";
+        likeBtn.style.background = "#181818";
+        likeBtn.style.color = "white";
+        likeBtn.style.cursor = "pointer";
+
+        likeBtn.onclick = async () => {
+          const newLikes = (item.likes ?? 0) + 1;
+
+          const { error } = await supabase
+            .from("uploads")
+            .update({ likes: newLikes })
+            .eq("id", item.id);
+
+          if (!error) {
+            item.likes = newLikes;
+            likeBtn.textContent = `❤️ ${item.likes}`;
+          }
+        };
 
         actions.appendChild(viewLink);
-        actions.appendChild(uploadLink);
+        actions.appendChild(profileLink);
+        actions.appendChild(likeBtn);
 
         body.appendChild(title);
         body.appendChild(badgeRow);
-        body.appendChild(filename);
         body.appendChild(actions);
 
         card.appendChild(imageWrap);
         card.appendChild(body);
 
-        return { card, category };
+        return card;
       }
 
       function renderGallery() {
@@ -150,10 +146,9 @@
 
         let shown = 0;
 
-        allFiles.forEach((file) => {
-          const { card, category } = makeCard(file);
-          if (currentFilter === "All" || currentFilter === category) {
-            gallery.appendChild(card);
+        allUploads.forEach((item) => {
+          if (currentFilter === "All" || item.category === currentFilter) {
+            gallery.appendChild(makeCard(item));
             shown += 1;
           }
         });
@@ -185,25 +180,24 @@
 
         status.textContent = "Loading gallery...";
 
-        const { data, error } = await supabase.storage.from(BUCKET).list("", {
-          limit: 100,
-          sortBy: { column: "created_at", order: "desc" }
-        });
+        const { data, error } = await supabase
+          .from("uploads")
+          .select("*")
+          .order("created_at", { ascending: false });
 
         if (error) {
           status.textContent = `Could not load gallery: ${error.message}`;
           return;
         }
 
-        allFiles = (data || []).filter((file) => file.name);
+        allUploads = data || [];
+        status.textContent = "";
 
-        if (allFiles.length === 0) {
-          status.textContent = "";
+        if (!allUploads.length) {
           document.getElementById("empty").style.display = "block";
           return;
         }
 
-        status.textContent = "";
         setFilter("All");
       }
 
@@ -239,10 +233,7 @@
       </div>
 
       <p id="status" style="text-align:center; margin-bottom:24px;"></p>
-
-      <div id="empty" style="display:none; text-align:center; color:#bbb; font-size:22px; margin-top:40px;">
-        No uploads yet.
-      </div>
+      <div id="empty" style="display:none; text-align:center; color:#bbb; font-size:22px; margin-top:40px;">No uploads yet.</div>
 
       <div
         id="gallery"
