@@ -9,103 +9,247 @@
 
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const BUCKET = "Artist-uploads";
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+      let allFiles = [];
+      let currentFilter = "All";
+
+      function inferCategory(filename) {
+        const lower = filename.toLowerCase();
+        if (lower.includes("tattoo")) return "Tattoo";
+        if (lower.includes("3d")) return "3D Print";
+        if (lower.includes("print")) return "3D Print";
+        if (lower.includes("art")) return "Art";
+        return "Art";
+      }
+
+      function inferArtist(filename) {
+        const clean = filename
+          .replace(/^\d+-/, "")
+          .replace(/\.[^/.]+$/, "")
+          .replace(/[-_]+/g, " ")
+          .trim();
+
+        return clean || "Artist Upload";
+      }
+
+      function makeCard(file) {
+        const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(file.name);
+        const imageUrl = publicData.publicUrl;
+        const artist = inferArtist(file.name);
+        const category = inferCategory(file.name);
+
+        const card = document.createElement("div");
+        card.style.background = "#111";
+        card.style.border = "1px solid #222";
+        card.style.borderRadius = "22px";
+        card.style.overflow = "hidden";
+        card.style.boxShadow = "0 0 18px rgba(0,255,150,0.12)";
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+
+        const imageWrap = document.createElement("div");
+        imageWrap.style.overflow = "hidden";
+        imageWrap.style.background = "#000";
+
+        const img = document.createElement("img");
+        img.src = imageUrl;
+        img.alt = artist;
+        img.style.width = "100%";
+        img.style.height = "320px";
+        img.style.objectFit = "cover";
+        img.style.display = "block";
+        img.style.transition = "transform 0.3s ease";
+
+        img.onmouseover = () => (img.style.transform = "scale(1.05)");
+        img.onmouseout = () => (img.style.transform = "scale(1)");
+
+        imageWrap.appendChild(img);
+
+        const body = document.createElement("div");
+        body.style.padding = "16px";
+
+        const title = document.createElement("div");
+        title.style.fontSize = "22px";
+        title.style.fontWeight = "800";
+        title.style.marginBottom = "8px";
+        title.textContent = artist;
+
+        const badgeRow = document.createElement("div");
+        badgeRow.style.display = "flex";
+        badgeRow.style.gap = "10px";
+        badgeRow.style.flexWrap = "wrap";
+        badgeRow.style.marginBottom = "12px";
+
+        const categoryBadge = document.createElement("span");
+        categoryBadge.textContent = category;
+        categoryBadge.style.background = "#1d4ed8";
+        categoryBadge.style.color = "white";
+        categoryBadge.style.padding = "6px 10px";
+        categoryBadge.style.borderRadius = "999px";
+        categoryBadge.style.fontSize = "13px";
+
+        const profileBadge = document.createElement("span");
+        profileBadge.textContent = "Artist Profile";
+        profileBadge.style.background = "#14532d";
+        profileBadge.style.color = "white";
+        profileBadge.style.padding = "6px 10px";
+        profileBadge.style.borderRadius = "999px";
+        profileBadge.style.fontSize = "13px";
+
+        badgeRow.appendChild(categoryBadge);
+        badgeRow.appendChild(profileBadge);
+
+        const filename = document.createElement("div");
+        filename.textContent = file.name;
+        filename.style.fontSize = "12px";
+        filename.style.color = "#aaa";
+        filename.style.wordBreak = "break-word";
+        filename.style.marginBottom = "14px";
+
+        const actions = document.createElement("div");
+        actions.style.display = "flex";
+        actions.style.gap = "12px";
+        actions.style.flexWrap = "wrap";
+
+        const viewLink = document.createElement("a");
+        viewLink.href = imageUrl;
+        viewLink.target = "_blank";
+        viewLink.textContent = "View Full Image";
+        viewLink.style.color = "#4da3ff";
+        viewLink.style.textDecoration = "none";
+        viewLink.style.fontWeight = "700";
+
+        const uploadLink = document.createElement("a");
+        uploadLink.href = "/upload.html";
+        uploadLink.textContent = "Upload More";
+        uploadLink.style.color = "#22c55e";
+        uploadLink.style.textDecoration = "none";
+        uploadLink.style.fontWeight = "700";
+
+        actions.appendChild(viewLink);
+        actions.appendChild(uploadLink);
+
+        body.appendChild(title);
+        body.appendChild(badgeRow);
+        body.appendChild(filename);
+        body.appendChild(actions);
+
+        card.appendChild(imageWrap);
+        card.appendChild(body);
+
+        return { card, category };
+      }
+
+      function renderGallery() {
+        const gallery = document.getElementById("gallery");
+        const empty = document.getElementById("empty");
+        gallery.innerHTML = "";
+
+        let shown = 0;
+
+        allFiles.forEach((file) => {
+          const { card, category } = makeCard(file);
+          if (currentFilter === "All" || currentFilter === category) {
+            gallery.appendChild(card);
+            shown += 1;
+          }
+        });
+
+        empty.style.display = shown === 0 ? "block" : "none";
+      }
+
+      function setFilter(filter) {
+        currentFilter = filter;
+
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.style.background = "#111";
+          btn.style.color = "#fff";
+          btn.style.border = "1px solid #333";
+        });
+
+        const active = document.getElementById(`filter-${filter}`);
+        if (active) {
+          active.style.background = "#2563eb";
+          active.style.color = "#fff";
+          active.style.border = "1px solid #2563eb";
+        }
+
+        renderGallery();
+      }
+
       async function loadGallery() {
         const status = document.getElementById("status");
-        const gallery = document.getElementById("gallery");
 
         status.textContent = "Loading gallery...";
 
-        const { data, error } = await supabase.storage
-          .from("Artist-uploads")
-          .list("", {
-            limit: 100,
-            sortBy: { column: "created_at", order: "desc" }
-          });
+        const { data, error } = await supabase.storage.from(BUCKET).list("", {
+          limit: 100,
+          sortBy: { column: "created_at", order: "desc" }
+        });
 
         if (error) {
           status.textContent = `Could not load gallery: ${error.message}`;
           return;
         }
 
-        if (!data || data.length === 0) {
-          status.textContent = "No uploads yet.";
+        allFiles = (data || []).filter((file) => file.name);
+
+        if (allFiles.length === 0) {
+          status.textContent = "";
+          document.getElementById("empty").style.display = "block";
           return;
         }
 
         status.textContent = "";
-
-        data.forEach((file) => {
-          if (!file.name) return;
-
-          const { data: publicData } = supabase.storage
-            .from("Artist-uploads")
-            .getPublicUrl(file.name);
-
-          const card = document.createElement("div");
-          card.style.background = "#111";
-          card.style.border = "1px solid #333";
-          card.style.borderRadius = "18px";
-          card.style.padding = "12px";
-          card.style.boxSizing = "border-box";
-
-          const img = document.createElement("img");
-          img.src = publicData.publicUrl;
-          img.alt = file.name;
-          img.style.width = "100%";
-          img.style.height = "260px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "12px";
-          img.style.display = "block";
-
-          const name = document.createElement("p");
-          name.textContent = file.name;
-          name.style.color = "white";
-          name.style.fontSize = "14px";
-          name.style.marginTop = "10px";
-          name.style.wordBreak = "break-word";
-
-          const link = document.createElement("a");
-          link.href = publicData.publicUrl;
-          link.target = "_blank";
-          link.textContent = "View Full Image";
-          link.style.color = "#4da3ff";
-          link.style.display = "inline-block";
-          link.style.marginTop = "6px";
-
-          card.appendChild(img);
-          card.appendChild(name);
-          card.appendChild(link);
-          gallery.appendChild(card);
-        });
+        setFilter("All");
       }
 
-      window.addEventListener("DOMContentLoaded", loadGallery);
+      window.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("filter-All").onclick = () => setFilter("All");
+        document.getElementById("filter-Tattoo").onclick = () => setFilter("Tattoo");
+        document.getElementById("filter-Art").onclick = () => setFilter("Art");
+        document.getElementById("filter-3D Print").onclick = () => setFilter("3D Print");
+
+        loadGallery();
+      });
     </script>
   </head>
 
   <body style="margin:0; background:black; color:white; font-family:sans-serif; padding:24px;">
-    <div style="max-width:1200px; margin:0 auto;">
-      <h1 style="text-align:center; font-size:48px; margin-bottom:10px;">🔥 Artist Gallery 🔥</h1>
-      <p style="text-align:center; font-size:22px; color:#ddd; margin-bottom:30px;">
+    <div style="max-width:1280px; margin:0 auto;">
+      <h1 style="text-align:center; font-size:56px; margin:0 0 10px;">🔥 Artist Gallery 🔥</h1>
+
+      <p style="text-align:center; font-size:24px; color:#ddd; margin:0 0 24px;">
         Tattoos, art, and 3D prints from the Rich Bizness community
       </p>
 
       <div style="text-align:center; margin-bottom:24px;">
-        <a href="/" style="color:#4da3ff; margin-right:18px;">Home</a>
-        <a href="/upload.html" style="color:#4da3ff;">Upload Your Work</a>
+        <a href="/" style="color:#4da3ff; margin-right:18px; font-size:20px;">Home</a>
+        <a href="/upload.html" style="color:#4da3ff; font-size:20px;">Upload Your Work</a>
+      </div>
+
+      <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin-bottom:28px;">
+        <button id="filter-All" class="filter-btn" style="padding:12px 18px; border-radius:999px; cursor:pointer;">All</button>
+        <button id="filter-Tattoo" class="filter-btn" style="padding:12px 18px; border-radius:999px; cursor:pointer;">Tattoo</button>
+        <button id="filter-Art" class="filter-btn" style="padding:12px 18px; border-radius:999px; cursor:pointer;">Art</button>
+        <button id="filter-3D Print" class="filter-btn" style="padding:12px 18px; border-radius:999px; cursor:pointer;">3D Print</button>
       </div>
 
       <p id="status" style="text-align:center; margin-bottom:24px;"></p>
+
+      <div id="empty" style="display:none; text-align:center; color:#bbb; font-size:22px; margin-top:40px;">
+        No uploads yet.
+      </div>
 
       <div
         id="gallery"
         style="
           display:grid;
-          grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-          gap:20px;
+          grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+          gap:24px;
         "
       ></div>
     </div>
