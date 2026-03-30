@@ -1,8 +1,114 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Artist Profile</title>
+  <title>Artist Profile - Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .back {
+      color: #4da3ff;
+      text-decoration: none;
+      font-size: 18px;
+    }
+
+    .hero {
+      text-align: center;
+      margin: 24px 0 34px;
+    }
+
+    .avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 999px;
+      background: #111;
+      border: 2px solid #222;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 50px;
+      margin: 0 0 10px;
+      text-shadow: 0 0 16px rgba(0,255,170,0.2);
+    }
+
+    .stats {
+      color: #aaa;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0,255,170,0.08);
+    }
+
+    .card img {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .body {
+      padding: 14px;
+    }
+
+    .cat {
+      color: #4da3ff;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .likes {
+      margin-bottom: 10px;
+    }
+
+    .view {
+      color: #00ffaa;
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <a href="/gallery/index.html" class="back">← Back to Gallery</a>
+
+    <div class="hero">
+      <div class="avatar">👤</div>
+      <h1 id="artistTitle">Artist</h1>
+      <div id="artistStats" class="stats"></div>
+      <p id="status"></p>
+    </div>
+
+    <div id="artistGrid" class="grid"></div>
+  </div>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
@@ -12,70 +118,79 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    function getArtist() {
+    function getArtistName() {
       const params = new URLSearchParams(window.location.search);
-      return params.get("name");
+      return params.get("name") || "";
     }
 
     async function loadArtist() {
-      const name = getArtist();
-      const title = document.getElementById("title");
-      const grid = document.getElementById("grid");
+      const artistName = getArtistName();
+      const title = document.getElementById("artistTitle");
+      const grid = document.getElementById("artistGrid");
+      const status = document.getElementById("status");
+      const stats = document.getElementById("artistStats");
 
-      title.textContent = name;
+      if (!artistName) {
+        status.textContent = "No artist selected.";
+        return;
+      }
+
+      title.textContent = artistName;
+      status.textContent = "Loading profile...";
 
       const { data, error } = await supabase
         .from("uploads")
         .select("*")
-        .eq("artist", name)
+        .eq("artist", artistName)
         .order("created_at", { ascending: false });
 
       if (error) {
-        grid.innerHTML = "Error loading artist";
+        status.textContent = `Could not load artist: ${error.message}`;
         return;
       }
 
-      data.forEach(item => {
+      status.textContent = "";
+
+      const uploads = data || [];
+      const totalLikes = uploads.reduce((sum, item) => sum + (item.likes || 0), 0);
+      stats.textContent = `${uploads.length} uploads • ❤️ ${totalLikes} total likes`;
+
+      uploads.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
         const img = document.createElement("img");
         img.src = item.image_url;
-        img.style.width = "100%";
-        img.style.borderRadius = "12px";
-        grid.appendChild(img);
+        img.alt = item.artist;
+
+        const body = document.createElement("div");
+        body.className = "body";
+
+        const cat = document.createElement("div");
+        cat.className = "cat";
+        cat.textContent = item.category;
+
+        const likes = document.createElement("div");
+        likes.className = "likes";
+        likes.textContent = `❤️ ${item.likes || 0} likes`;
+
+        const view = document.createElement("a");
+        view.className = "view";
+        view.href = item.image_url;
+        view.target = "_blank";
+        view.textContent = "View Full Image";
+
+        body.appendChild(cat);
+        body.appendChild(likes);
+        body.appendChild(view);
+
+        card.appendChild(img);
+        card.appendChild(body);
+        grid.appendChild(card);
       });
     }
 
     window.addEventListener("DOMContentLoaded", loadArtist);
   </script>
-
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      color: white;
-      font-family: Arial;
-      text-align: center;
-    }
-
-    h1 {
-      margin-top: 20px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-      padding: 12px;
-    }
-  </style>
-</head>
-
-<body>
-
-  <a href="/gallery/index.html" style="color:#4da3ff;">← Back to Gallery</a>
-
-  <h1 id="title"></h1>
-
-  <div id="grid" class="grid"></div>
-
 </body>
 </html>
