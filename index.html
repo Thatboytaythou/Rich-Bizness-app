@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Upload Your Work - Rich Bizness LLC</title>
+    <title>Artist Gallery - Rich Bizness LLC</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <script type="module">
@@ -12,92 +12,102 @@
 
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      async function handleUpload(event) {
-        event.preventDefault();
-
-        const artistName = document.getElementById("artistName").value.trim();
-        const category = document.getElementById("category").value;
-        const file = document.getElementById("fileInput").files[0];
+      async function loadGallery() {
         const status = document.getElementById("status");
+        const gallery = document.getElementById("gallery");
 
-        if (!artistName || !file) {
-          status.textContent = "Please enter your name and choose a file.";
-          return;
-        }
+        status.textContent = "Loading gallery...";
 
-        status.textContent = "Uploading...";
-
-        const safeName = file.name.replace(/\s+/g, "-").toLowerCase();
-        const filePath = `${Date.now()}-${safeName}`;
-
-        const { error } = await supabase.storage
+        const { data, error } = await supabase.storage
           .from("Artist-uploads")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: false
+          .list("", {
+            limit: 100,
+            sortBy: { column: "created_at", order: "desc" }
           });
 
         if (error) {
-          status.textContent = `Upload failed: ${error.message}`;
+          status.textContent = `Could not load gallery: ${error.message}`;
           return;
         }
 
-        const { data } = supabase.storage
-          .from("Artist-uploads")
-          .getPublicUrl(filePath);
+        if (!data || data.length === 0) {
+          status.textContent = "No uploads yet.";
+          return;
+        }
 
-        status.innerHTML = `
-          Upload complete ✅<br><br>
-          Artist: ${artistName}<br>
-          Category: ${category}<br><br>
-          <a href="${data.publicUrl}" target="_blank" style="color:#4da3ff;">View Upload</a>
-        `;
+        status.textContent = "";
+
+        data.forEach((file) => {
+          if (!file.name) return;
+
+          const { data: publicData } = supabase.storage
+            .from("Artist-uploads")
+            .getPublicUrl(file.name);
+
+          const card = document.createElement("div");
+          card.style.background = "#111";
+          card.style.border = "1px solid #333";
+          card.style.borderRadius = "18px";
+          card.style.padding = "12px";
+          card.style.boxSizing = "border-box";
+
+          const img = document.createElement("img");
+          img.src = publicData.publicUrl;
+          img.alt = file.name;
+          img.style.width = "100%";
+          img.style.height = "260px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "12px";
+          img.style.display = "block";
+
+          const name = document.createElement("p");
+          name.textContent = file.name;
+          name.style.color = "white";
+          name.style.fontSize = "14px";
+          name.style.marginTop = "10px";
+          name.style.wordBreak = "break-word";
+
+          const link = document.createElement("a");
+          link.href = publicData.publicUrl;
+          link.target = "_blank";
+          link.textContent = "View Full Image";
+          link.style.color = "#4da3ff";
+          link.style.display = "inline-block";
+          link.style.marginTop = "6px";
+
+          card.appendChild(img);
+          card.appendChild(name);
+          card.appendChild(link);
+          gallery.appendChild(card);
+        });
       }
 
-      window.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("uploadForm").addEventListener("submit", handleUpload);
-      });
+      window.addEventListener("DOMContentLoaded", loadGallery);
     </script>
   </head>
 
-  <body style="background:black; color:white; text-align:center; font-family:sans-serif; padding:40px;">
-    <h1>🔥 Upload Your Work 🔥</h1>
-    <p>Show your tattoos, art, and 3D prints</p>
+  <body style="margin:0; background:black; color:white; font-family:sans-serif; padding:24px;">
+    <div style="max-width:1200px; margin:0 auto;">
+      <h1 style="text-align:center; font-size:48px; margin-bottom:10px;">🔥 Artist Gallery 🔥</h1>
+      <p style="text-align:center; font-size:22px; color:#ddd; margin-bottom:30px;">
+        Tattoos, art, and 3D prints from the Rich Bizness community
+      </p>
 
-    <form id="uploadForm" style="max-width:500px; margin:0 auto;">
-      <input
-        id="artistName"
-        type="text"
-        placeholder="Artist Name"
-        required
-        style="width:100%; padding:14px; margin-bottom:16px; font-size:16px;"
-      />
+      <div style="text-align:center; margin-bottom:24px;">
+        <a href="/" style="color:#4da3ff; margin-right:18px;">Home</a>
+        <a href="/upload.html" style="color:#4da3ff;">Upload Your Work</a>
+      </div>
 
-      <input
-        id="fileInput"
-        type="file"
-        accept="image/*"
-        required
-        style="width:100%; padding:14px; margin-bottom:16px; font-size:16px;"
-      />
+      <p id="status" style="text-align:center; margin-bottom:24px;"></p>
 
-      <select
-        id="category"
-        style="width:100%; padding:14px; margin-bottom:16px; font-size:16px;"
-      >
-        <option>Tattoo</option>
-        <option>3D Print</option>
-        <option>Art</option>
-      </select>
-
-      <button
-        type="submit"
-        style="padding:15px 25px; font-size:18px; cursor:pointer;"
-      >
-        Upload
-      </button>
-    </form>
-
-    <p id="status" style="margin-top:30px;"></p>
+      <div
+        id="gallery"
+        style="
+          display:grid;
+          grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+          gap:20px;
+        "
+      ></div>
+    </div>
   </body>
 </html>
