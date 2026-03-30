@@ -1,97 +1,76 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Upload Your Work – Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+  <title>Upload - Rich Bizness LLC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<body style="background:black; color:white; text-align:center; font-family:sans-serif;">
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
 
-  <h1>🔥 Upload Your Work 🔥</h1>
-  <p>Show your tattoos, art, and 3D prints</p>
+    h1 {
+      margin-top: 20px;
+    }
 
-  <form id="uploadForm" style="max-width:500px; margin:auto;">
+    input, select, button {
+      width: 90%;
+      max-width: 400px;
+      padding: 14px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 10px;
+      border: none;
+    }
 
-    <!-- Artist Name -->
-    <input
-      id="artistName"
-      type="text"
-      placeholder="Artist Name"
-      required
-      style="width:100%; padding:14px; margin-bottom:16px; font-size:16px;"
-    />
+    button {
+      background: #00ffaa;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
 
-    <!-- File -->
-    <input
-      id="fileInput"
-      type="file"
-      accept="image/*"
-      required
-      style="width:100%; padding:14px; margin-bottom:16px;"
-    />
+    a {
+      color: #4da3ff;
+      display: inline-block;
+      margin-top: 20px;
+    }
+  </style>
 
-    <!-- Category -->
-    <select
-      id="category"
-      style="width:100%; padding:14px; margin-bottom:16px; font-size:16px;"
-    >
-      <option value="Tattoo">Tattoo</option>
-      <option value="3D Print">3D Print</option>
-      <option value="Art">Art</option>
-    </select>
-
-    <!-- Upload Button -->
-    <button
-      type="submit"
-      style="padding:15px 25px; font-size:18px; cursor:pointer;"
-    >
-      Upload
-    </button>
-
-  </form>
-
-  <p id="status" style="margin-top:30px;"></p>
-
-  <!-- RESULT -->
-  <div id="result" style="margin-top:20px;"></div>
-
-  <!-- NAV -->
-  <div style="margin-top:30px;">
-    <a href="/gallery/" style="color:#00ff99; font-size:18px;">
-      Go to Gallery
-    </a>
-  </div>
-
-  <!-- SUPABASE SCRIPT -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "YOUR_KEY_HERE"; // keep yours
+
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+
+    const BUCKET = "Artist-uploads";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const BUCKET = "Artist-uploads";
 
     async function handleUpload(e) {
       e.preventDefault();
 
-      const artistName = document.getElementById("artistName").value;
+      const artist = document.getElementById("artistName").value.trim();
       const category = document.getElementById("category").value;
       const file = document.getElementById("fileInput").files[0];
       const status = document.getElementById("status");
-      const result = document.getElementById("result");
 
-      if (!artistName || !file) {
+      if (!artist || !file) {
         status.textContent = "Please fill everything out";
         return;
       }
 
       status.textContent = "Uploading...";
 
-      const safeName = file.name.replace(/\s+/g, "-").toLowerCase();
-      const filePath = `${Date.now()}-${safeName}`;
+      const filePath = `${Date.now()}-${file.name}`;
 
-      // Upload file
+      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
         .upload(filePath, file);
@@ -108,36 +87,72 @@
 
       const imageUrl = data.publicUrl;
 
-      // Save to DB
-      const { error: insertError } = await supabase
+      // Save to database
+      const { error: dbError } = await supabase
         .from("uploads")
         .insert([
           {
-            artist: artistName,
+            artist: artist,
             category: category,
             image_url: imageUrl,
             likes: 0
           }
         ]);
 
-      if (insertError) {
-        status.textContent = "DB error: " + insertError.message;
+      if (dbError) {
+        status.textContent = "Database error: " + dbError.message;
         return;
       }
 
-      status.textContent = "Upload complete ✅";
-
-      result.innerHTML = `
-        <p>Artist: ${artistName}</p>
-        <p>Category: ${category}</p>
-        <a href="${imageUrl}" target="_blank">View Upload</a>
+      status.innerHTML = `
+        ✅ Upload complete!<br><br>
+        <a href="${imageUrl}" target="_blank">View Image</a><br><br>
+        <a href="/gallery/index.html">Go to Gallery</a>
       `;
     }
 
-    document
-      .getElementById("uploadForm")
-      .addEventListener("submit", handleUpload);
+    window.addEventListener("DOMContentLoaded", () => {
+      document
+        .getElementById("uploadForm")
+        .addEventListener("submit", handleUpload);
+    });
   </script>
+</head>
+
+<body>
+
+  <h1>🔥 Upload Your Work 🔥</h1>
+  <p>Show your tattoos, art, and 3D prints</p>
+
+  <form id="uploadForm">
+
+    <input
+      id="artistName"
+      type="text"
+      placeholder="Artist Name"
+      required
+    />
+
+    <input
+      id="fileInput"
+      type="file"
+      accept="image/*"
+      required
+    />
+
+    <select id="category">
+      <option value="Tattoo">Tattoo</option>
+      <option value="Art">Art</option>
+      <option value="3D Print">3D Print</option>
+    </select>
+
+    <button type="submit">Upload</button>
+
+  </form>
+
+  <p id="status"></p>
+
+  <a href="/gallery/index.html">View Gallery</a>
 
 </body>
 </html>
