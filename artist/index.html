@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Artist Profile – Rich Bizness LLC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
 
+<body style="margin:0; background:#000; color:#fff; font-family:sans-serif;">
+
+  <div style="max-width:1200px; margin:0 auto; padding:24px;">
+    <div style="margin-bottom:20px;">
+      <a href="/gallery/" style="color:#4da3ff; font-size:18px;">← Back to Gallery</a>
+    </div>
+
+    <div style="text-align:center; margin-bottom:30px;">
+      <div style="width:110px; height:110px; border-radius:999px; background:#111; border:2px solid #222; display:inline-flex; align-items:center; justify-content:center; font-size:42px; margin-bottom:14px;">
+        👤
+      </div>
+      <h1 id="artistTitle" style="font-size:52px; margin:0 0 12px 0;">Artist</h1>
+      <p id="artistStats" style="color:#aaa; font-size:18px;"></p>
+      <p id="status" style="margin-top:12px;"></p>
+    </div>
+
+    <div
+      id="artistGrid"
+      style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;"
+    ></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_KEY_HERE";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function getArtistName() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("name") || "";
+    }
+
+    async function loadArtist() {
+      const artistName = getArtistName();
+      const title = document.getElementById("artistTitle");
+      const grid = document.getElementById("artistGrid");
+      const status = document.getElementById("status");
+      const stats = document.getElementById("artistStats");
+
+      if (!artistName) {
+        status.textContent = "No artist selected.";
+        return;
+      }
+
+      title.textContent = artistName;
+      status.textContent = "Loading profile...";
+
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .eq("artist", artistName)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        status.textContent = `Could not load artist: ${error.message}`;
+        return;
+      }
+
+      status.textContent = "";
+
+      const uploads = data || [];
+      const totalLikes = uploads.reduce((sum, item) => sum + (item.likes || 0), 0);
+      stats.textContent = `${uploads.length} uploads • ❤️ ${totalLikes} total likes`;
+
+      uploads.forEach((item) => {
+        const card = document.createElement("div");
+        card.style.background = "#111";
+        card.style.border = "1px solid #222";
+        card.style.borderRadius = "20px";
+        card.style.overflow = "hidden";
+        card.style.boxShadow = "0 0 20px rgba(0,255,170,0.08)";
+
+        const img = document.createElement("img");
+        img.src = item.image_url;
+        img.alt = item.artist;
+        img.style.width = "100%";
+        img.style.height = "320px";
+        img.style.objectFit = "cover";
+        img.style.display = "block";
+
+        const body = document.createElement("div");
+        body.style.padding = "14px";
+
+        const cat = document.createElement("div");
+        cat.textContent = item.category;
+        cat.style.color = "#4da3ff";
+        cat.style.marginBottom = "8px";
+        cat.style.fontWeight = "bold";
+
+        const likes = document.createElement("div");
+        likes.textContent = `❤️ ${item.likes || 0} likes`;
+
+        const view = document.createElement("a");
+        view.href = item.image_url;
+        view.target = "_blank";
+        view.textContent = "View Full Image";
+        view.style.display = "inline-block";
+        view.style.marginTop = "10px";
+        view.style.color = "#00ffaa";
+        view.style.textDecoration = "none";
+
+        body.appendChild(cat);
+        body.appendChild(likes);
+        body.appendChild(view);
+
+        card.appendChild(img);
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", loadArtist);
+  </script>
+</body>
+</html>
