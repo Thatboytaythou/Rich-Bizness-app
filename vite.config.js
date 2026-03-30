@@ -1,6 +1,15 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from "vite";
+import { resolve } from "path";
 
 export default defineConfig({
-  plugins: [react()],
-})
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, "index.html"),
+        upload: resolve(__dirname, "upload.html"),
+        gallery: resolve(__dirname, "gallery/index.html"),
+        artist: resolve(__dirname, "artist/index.html"),
+      },
+    },
+  },
+});
