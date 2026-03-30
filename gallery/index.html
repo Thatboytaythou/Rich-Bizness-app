@@ -1,256 +1,99 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Artist Gallery – Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-
-<body style="margin:0; background:#000; color:#fff; font-family:sans-serif;">
-
-  <div style="max-width:1200px; margin:0 auto; padding:24px;">
-    <h1 style="text-align:center; font-size:56px; margin-bottom:10px;">🔥 Artist Gallery 🔥</h1>
-    <p style="text-align:center; font-size:22px; color:#ccc; margin-bottom:24px;">
-      Tattoos, art, and 3D prints from the Rich Bizness community
-    </p>
-
-    <div style="text-align:center; margin-bottom:24px;">
-      <a href="/" style="margin-right:18px; color:#00ffaa; font-size:18px;">Home</a>
-      <a href="/upload.html" style="color:#00ffaa; font-size:18px;">Upload Your Work</a>
-    </div>
-
-    <div style="margin-bottom:20px;">
-      <input
-        id="searchInput"
-        type="text"
-        placeholder="Search artist name..."
-        style="width:100%; max-width:500px; display:block; margin:0 auto 20px auto; padding:14px; font-size:16px; border-radius:12px; border:none;"
-      />
-    </div>
-
-    <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:28px;">
-      <button onclick="setFilter('All')" id="filter-All" style="padding:12px 18px; border-radius:999px; border:none; cursor:pointer;">All</button>
-      <button onclick="setFilter('Tattoo')" id="filter-Tattoo" style="padding:12px 18px; border-radius:999px; border:none; cursor:pointer;">Tattoo</button>
-      <button onclick="setFilter('Art')" id="filter-Art" style="padding:12px 18px; border-radius:999px; border:none; cursor:pointer;">Art</button>
-      <button onclick="setFilter('3D Print')" id="filter-3D Print" style="padding:12px 18px; border-radius:999px; border:none; cursor:pointer;">3D Print</button>
-    </div>
-
-    <div id="trending" style="margin-bottom:30px;"></div>
-
-    <div
-      id="gallery"
-      style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:24px;"
-    ></div>
-  </div>
+  <title>Artist Gallery - Rich Bizness LLC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "PASTE_YOUR_REAL_KEY_HERE";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let allUploads = [];
-    let currentFilter = "All";
-    let currentSearch = "";
-
-    window.setFilter = function(filter) {
-      currentFilter = filter;
-      updateFilterStyles();
-      renderGallery();
-    };
-
-    function updateFilterStyles() {
-      const ids = ["All", "Tattoo", "Art", "3D Print"];
-      ids.forEach((id) => {
-        const btn = document.getElementById(`filter-${id}`);
-        if (!btn) return;
-        if (id === currentFilter) {
-          btn.style.background = "#2563eb";
-          btn.style.color = "#fff";
-        } else {
-          btn.style.background = "#ddd";
-          btn.style.color = "#000";
-        }
-      });
-    }
-
-    function makeTrendingSection() {
-      const trending = document.getElementById("trending");
-      trending.innerHTML = "";
-
-      const topThree = [...allUploads]
-        .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-        .slice(0, 3);
-
-      if (!topThree.length) return;
-
-      const wrap = document.createElement("div");
-      wrap.style.background = "#111";
-      wrap.style.border = "1px solid #222";
-      wrap.style.borderRadius = "20px";
-      wrap.style.padding = "18px";
-
-      const title = document.createElement("h2");
-      title.textContent = "🔥 Trending";
-      title.style.marginTop = "0";
-
-      wrap.appendChild(title);
-
-      topThree.forEach((item, index) => {
-        const row = document.createElement("div");
-        row.style.padding = "10px 0";
-        row.style.borderTop = index === 0 ? "none" : "1px solid #222";
-
-        row.innerHTML = `
-          <div style="font-weight:bold; font-size:18px;">${item.artist}</div>
-          <div style="color:#aaa;">${item.category} • ❤️ ${item.likes || 0}</div>
-        `;
-
-        wrap.appendChild(row);
-      });
-
-      trending.appendChild(wrap);
-    }
-
-    function makeCard(item) {
-      const card = document.createElement("div");
-      card.style.background = "#111";
-      card.style.border = "1px solid #222";
-      card.style.borderRadius = "20px";
-      card.style.overflow = "hidden";
-      card.style.boxShadow = "0 0 20px rgba(0,255,170,0.08)";
-
-      const imgWrap = document.createElement("div");
-      imgWrap.style.overflow = "hidden";
-
-      const img = document.createElement("img");
-      img.src = item.image_url;
-      img.alt = item.artist;
-      img.style.width = "100%";
-      img.style.height = "320px";
-      img.style.objectFit = "cover";
-      img.style.display = "block";
-      img.style.transition = "transform 0.3s ease";
-
-      img.onmouseover = () => img.style.transform = "scale(1.05)";
-      img.onmouseout = () => img.style.transform = "scale(1)";
-
-      imgWrap.appendChild(img);
-
-      const body = document.createElement("div");
-      body.style.padding = "16px";
-
-      const artist = document.createElement("a");
-      artist.href = `/artist/?name=${encodeURIComponent(item.artist)}`;
-      artist.textContent = item.artist;
-      artist.style.color = "#00ffaa";
-      artist.style.fontWeight = "bold";
-      artist.style.fontSize = "22px";
-      artist.style.textDecoration = "none";
-      artist.style.display = "block";
-      artist.style.marginBottom = "8px";
-
-      const category = document.createElement("div");
-      category.textContent = item.category;
-      category.style.color = "#aaa";
-      category.style.marginBottom = "14px";
-
-      const actions = document.createElement("div");
-      actions.style.display = "flex";
-      actions.style.justifyContent = "space-between";
-      actions.style.alignItems = "center";
-      actions.style.gap = "10px";
-      actions.style.flexWrap = "wrap";
-
-      const view = document.createElement("a");
-      view.href = item.image_url;
-      view.target = "_blank";
-      view.textContent = "View Full Image";
-      view.style.color = "#4da3ff";
-      view.style.textDecoration = "none";
-
-      const likeBtn = document.createElement("button");
-      likeBtn.textContent = `❤️ ${item.likes || 0}`;
-      likeBtn.style.padding = "10px 14px";
-      likeBtn.style.borderRadius = "999px";
-      likeBtn.style.border = "none";
-      likeBtn.style.cursor = "pointer";
-      likeBtn.style.background = "#222";
-      likeBtn.style.color = "#fff";
-
-      likeBtn.onclick = async () => {
-        const newLikes = (item.likes || 0) + 1;
-
-        const { error } = await supabase
-          .from("uploads")
-          .update({ likes: newLikes })
-          .eq("id", item.id);
-
-        if (!error) {
-          item.likes = newLikes;
-          likeBtn.textContent = `❤️ ${newLikes}`;
-          makeTrendingSection();
-        }
-      };
-
-      actions.appendChild(view);
-      actions.appendChild(likeBtn);
-
-      body.appendChild(artist);
-      body.appendChild(category);
-      body.appendChild(actions);
-
-      card.appendChild(imgWrap);
-      card.appendChild(body);
-
-      return card;
-    }
-
-    function renderGallery() {
-      const gallery = document.getElementById("gallery");
-      gallery.innerHTML = "";
-
-      let filtered = allUploads;
-
-      if (currentFilter !== "All") {
-        filtered = filtered.filter(item => item.category === currentFilter);
-      }
-
-      if (currentSearch.trim()) {
-        filtered = filtered.filter(item =>
-          item.artist.toLowerCase().includes(currentSearch.toLowerCase())
-        );
-      }
-
-      filtered.forEach(item => {
-        gallery.appendChild(makeCard(item));
-      });
-    }
-
     async function loadGallery() {
+      const grid = document.getElementById("gallery");
+
       const { data, error } = await supabase
         .from("uploads")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error(error);
+        grid.innerHTML = "Error loading gallery";
         return;
       }
 
-      allUploads = data || [];
-      updateFilterStyles();
-      makeTrendingSection();
-      renderGallery();
+      grid.innerHTML = "";
+
+      data.forEach(item => {
+        const card = document.createElement("div");
+        card.style.background = "#111";
+        card.style.borderRadius = "16px";
+        card.style.overflow = "hidden";
+
+        const img = document.createElement("img");
+        img.src = item.image_url;
+        img.style.width = "100%";
+        img.style.height = "240px";
+        img.style.objectFit = "cover";
+
+        const info = document.createElement("div");
+        info.style.padding = "10px";
+
+        const artist = document.createElement("a");
+        artist.textContent = item.artist;
+        artist.href = `/artist/index.html?name=${encodeURIComponent(item.artist)}`;
+        artist.style.color = "#00ffaa";
+
+        const cat = document.createElement("div");
+        cat.textContent = item.category;
+        cat.style.color = "#aaa";
+
+        info.appendChild(artist);
+        info.appendChild(cat);
+
+        card.appendChild(img);
+        card.appendChild(info);
+
+        grid.appendChild(card);
+      });
     }
 
-    document.getElementById("searchInput").addEventListener("input", (e) => {
-      currentSearch = e.target.value;
-      renderGallery();
-    });
-
-    loadGallery();
+    window.addEventListener("DOMContentLoaded", loadGallery);
   </script>
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial;
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+      padding: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🔥 Artist Gallery 🔥</h1>
+
+  <div style="text-align:center;">
+    <a href="/index.html" style="color:#4da3ff;">Home</a> |
+    <a href="/upload.html" style="color:#00ffaa;">Upload</a>
+  </div>
+
+  <div id="gallery" class="grid"></div>
 </body>
 </html>
