@@ -1,245 +1,70 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Upload - Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 24px;
-    }
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js"
 
-    .wrap {
-      max-width: 760px;
-      margin: 0 auto;
-    }
+const supabase = createClient(
+  "https://ksvdcguykmceevocgpdj.supabase.co",
+  "YOUR_ANON_KEY"
+)
 
-    h1 {
-      font-size: 32px;
-      margin: 20px 0 30px;
-    }
+const fileInput = document.getElementById("fileInput")
+const artistInput = document.getElementById("artistName")
+const categoryInput = document.getElementById("category")
+const status = document.getElementById("status")
 
-    input, select, button {
-      width: 100%;
-      box-sizing: border-box;
-      max-width: 680px;
-      padding: 18px 20px;
-      margin: 14px auto;
-      font-size: 18px;
-      border-radius: 18px;
-      border: none;
-      display: block;
-    }
+// 🚨 CHECK SESSION FIRST
+async function getUser() {
+  const { data: { session } } = await supabase.auth.getSession()
 
-    input, select {
-      background: #e9e9e9;
-      color: #111;
-    }
+  if (!session) {
+    status.textContent = "You must be logged in"
+    window.location.href = "/auth.html"
+    return null
+  }
 
-    input[type="file"] {
-      background: transparent;
-      color: #fff;
-      padding: 0;
-      border-radius: 0;
-    }
+  return session.user
+}
 
-    button {
-      background: #11f0a5;
-      color: #000;
-      font-weight: 700;
-      cursor: pointer;
-    }
+// 🔥 UPLOAD FUNCTION
+async function uploadFile() {
+  const user = await getUser()
+  if (!user) return
 
-    .status {
-      margin-top: 18px;
-      min-height: 28px;
-      font-size: 18px;
-      white-space: pre-wrap;
-    }
+  const file = fileInput.files[0]
+  if (!file) {
+    status.textContent = "Select a file"
+    return
+  }
 
-    a {
-      color: #5da8ff;
-      text-decoration: underline;
-      font-size: 18px;
-      display: inline-block;
-      margin-top: 14px;
-    }
+  const filePath = `${user.id}/${Date.now()}-${file.name}`
 
-    .toplink {
-      color: #11f0a5;
-      text-decoration: none;
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <a class="toplink" href="/index.html">← Home</a>
+  status.textContent = "Uploading..."
 
-    <h1>🔥 Upload Your Work 🔥</h1>
+  const { error } = await supabase.storage
+    .from("Artist-uploads")
+    .upload(filePath, file)
 
-    <input id="artistName" type="text" placeholder="Artist Name" />
-    <input id="fileInput" type="file" accept="image/*" />
+  if (error) {
+    status.textContent = error.message
+    return
+  }
 
-    <select id="category">
-      <option value="Tattoo">Tattoo</option>
-      <option value="Art">Art</option>
-      <option value="3D Print">3D Print</option>
-    </select>
+  // 🔥 GET PUBLIC URL
+  const { data } = supabase.storage
+    .from("Artist-uploads")
+    .getPublicUrl(filePath)
 
-    <button id="uploadBtn">Upload</button>
+  const publicUrl = data.publicUrl
 
-    <div id="status" class="status"></div>
+  // 🔥 SAVE TO DATABASE
+  await supabase.from("uploads").insert({
+    user_id: user.id,
+    artist_name: artistInput.value,
+    category: categoryInput.value,
+    file_url: publicUrl
+  })
 
-    <a href="/gallery/index.html">View Gallery</a>
-  </div>
+  status.textContent = "Upload successful 🔥"
+}
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const BUCKET = "Artist-uploads";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const artistNameInput = document.getElementById("artistName");
-    const fileInput = document.getElementById("fileInput");
-    const categoryInput = document.getElementById("category");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const statusEl = document.getElementById("status");
-
-    function setStatus(text, isError = false) {
-      statusEl.textContent = text;
-      statusEl.style.color = isError ? "#ff6b6b" : "#ffffff";
-    }
-
-    async function getCurrentUser() {
-      const {
-        data: { session },
-        error
-      } = await supabase.auth.getSession();
-
-      if (error) {
-        console.error(error);
-        return null;
-      }
-
-      return session?.user || null;
-    }
-
-    async function loadArtistName() {
-      setStatus("Checking login...");
-
-      const user = await getCurrentUser();
-
-      if (!user) {
-        setStatus("Please log in first.", true);
-        setTimeout(() => {
-          window.location.href = "/auth.html";
-        }, 1000);
-        return;
-      }
-
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .select("username, display_name")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (error) {
-        console.error(error);
-      }
-
-      artistNameInput.value =
-        profile?.display_name ||
-        profile?.username ||
-        user.email?.split("@")[0] ||
-        "";
-
-      setStatus("");
-    }
-
-    async function uploadWork() {
-      const user = await getCurrentUser();
-
-      if (!user) {
-        setStatus("Auth error: Auth session missing!", true);
-        setTimeout(() => {
-          window.location.href = "/auth.html";
-        }, 1000);
-        return;
-      }
-
-      const artistName = artistNameInput.value.trim();
-      const category = categoryInput.value;
-      const file = fileInput.files[0];
-
-      if (!artistName) {
-        setStatus("Enter your artist name.", true);
-        return;
-      }
-
-      if (!file) {
-        setStatus("Choose an image first.", true);
-        return;
-      }
-
-      setStatus("Uploading...");
-
-      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `${user.id}/${Date.now()}-${safeName}`;
-
-      const { error: storageError } = await supabase.storage
-        .from(BUCKET)
-        .upload(filePath, file, {
-          upsert: false
-        });
-
-      if (storageError) {
-        setStatus("Storage upload failed: " + storageError.message, true);
-        return;
-      }
-
-      const { data: publicData } = supabase.storage
-        .from(BUCKET)
-        .getPublicUrl(filePath);
-
-      const imageUrl = publicData.publicUrl;
-
-      const { error: insertError } = await supabase
-        .from("uploads")
-        .insert([
-          {
-            artist: artistName,
-            image_url: imageUrl,
-            category: category,
-            likes: 0,
-            user_id: user.id
-          }
-        ]);
-
-      if (insertError) {
-        setStatus("Database save failed: " + insertError.message, true);
-        return;
-      }
-
-      setStatus("Upload complete ✅");
-      fileInput.value = "";
-
-      setTimeout(() => {
-        window.location.href = "/gallery/index.html";
-      }, 1000);
-    }
-
-    uploadBtn.addEventListener("click", uploadWork);
-
-    await loadArtistName();
-  </script>
-</body>
-</html>
+document.getElementById("uploadBtn").addEventListener("click", uploadFile)
+</script>
