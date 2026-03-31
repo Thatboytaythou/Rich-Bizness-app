@@ -12,6 +12,7 @@
       padding: 24px;
       text-align: center;
     }
+
     .box {
       max-width: 700px;
       margin: 0 auto;
@@ -20,6 +21,7 @@
       border-radius: 20px;
       padding: 20px;
     }
+
     input, textarea, button {
       width: 100%;
       padding: 14px;
@@ -29,90 +31,209 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-    button { cursor: pointer; font-weight: bold; }
-    .primary { background: #00ffaa; color: black; }
-    .secondary { background: #222; color: white; }
-    a { color: #4da3ff; }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .primary {
+      background: #00ffaa;
+      color: black;
+      font-weight: bold;
+    }
+
+    .secondary {
+      background: #222;
+      color: white;
+    }
+
+    a {
+      color: #00ffaa;
+      text-decoration: none;
+    }
+
+    .avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 14px;
+      font-size: 38px;
+    }
+
+    .muted {
+      color: #aaa;
+      margin-bottom: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card .info {
+      padding: 10px;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
-  <h1>👤 My Profile</h1>
+
+  <p><a href="/">← Home</a></p>
 
   <div class="box">
-    <p id="welcome"></p>
+    <div class="avatar">👤</div>
+    <h1>My Profile</h1>
+    <p class="muted" id="emailText">Loading...</p>
 
     <input id="username" type="text" placeholder="Username" />
     <input id="displayName" type="text" placeholder="Display Name" />
-    <textarea id="bio" placeholder="Bio" rows="4"></textarea>
+    <textarea id="bio" placeholder="Bio"></textarea>
 
-    <button id="saveBtn" class="primary">Save Profile</button>
-    <button id="logoutBtn" class="secondary">Log Out</button>
+    <button class="primary" id="saveBtn">Save Profile</button>
+    <button class="secondary" id="logoutBtn">Logout</button>
 
     <p id="status"></p>
-    <p><a href="/gallery/index.html">Go to Gallery</a></p>
   </div>
+
+  <h2 style="margin-top:28px;">My Uploads</h2>
+  <div id="uploadsGrid" class="grid"></div>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_REAL_ANON_KEY";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const status = document.getElementById("status");
+
     let currentUser = null;
 
-    async function loadProfile() {
-      const { data: authData } = await supabase.auth.getUser();
-      currentUser = authData.user;
+    const emailText = document.getElementById("emailText");
+    const usernameEl = document.getElementById("username");
+    const displayNameEl = document.getElementById("displayName");
+    const bioEl = document.getElementById("bio");
+    const statusEl = document.getElementById("status");
+    const uploadsGrid = document.getElementById("uploadsGrid");
 
-      if (!currentUser) {
-        window.location.href = "/auth.html";
+    async function loadUser() {
+      const { data, error } = await supabase.auth.getUser();
+
+      if (error || !data.user) {
+        window.location.href = "auth";
         return;
       }
 
-      document.getElementById("welcome").textContent = `Logged in as ${currentUser.email}`;
+      currentUser = data.user;
+      emailText.textContent = currentUser.email || "Logged in";
 
+      await loadProfile();
+      await loadUploads();
+    }
+
+    async function loadProfile() {
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", currentUser.id)
         .single();
 
-      if (!error && data) {
-        document.getElementById("username").value = data.username || "";
-        document.getElementById("displayName").value = data.display_name || "";
-        document.getElementById("bio").value = data.bio || "";
+      if (error) {
+        statusEl.textContent = "Profile not found yet. Save to create it.";
+        return;
       }
+
+      usernameEl.value = data.username || "";
+      displayNameEl.value = data.display_name || "";
+      bioEl.value = data.bio || "";
     }
 
-    document.getElementById("saveBtn").onclick = async () => {
-      if (!currentUser) return;
+    async function saveProfile() {
+      statusEl.textContent = "Saving...";
 
-      const username = document.getElementById("username").value.trim();
-      const displayName = document.getElementById("displayName").value.trim();
-      const bio = document.getElementById("bio").value.trim();
-
-      status.textContent = "Saving...";
+      const payload = {
+        id: currentUser.id,
+        username: usernameEl.value.trim(),
+        display_name: displayNameEl.value.trim(),
+        bio: bioEl.value.trim(),
+        avatar_url: ""
+      };
 
       const { error } = await supabase
         .from("profiles")
-        .update({
-          username,
-          display_name: displayName,
-          bio
-        })
-        .eq("id", currentUser.id);
+        .upsert(payload);
 
-      status.textContent = error ? error.message : "Profile saved ✅";
-    };
+      if (error) {
+        statusEl.textContent = "Save failed: " + error.message;
+        return;
+      }
 
-    document.getElementById("logoutBtn").onclick = async () => {
+      statusEl.textContent = "✅ Profile saved";
+    }
+
+    async function loadUploads() {
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        uploadsGrid.innerHTML = "Could not load uploads.";
+        return;
+      }
+
+      if (!data.length) {
+        uploadsGrid.innerHTML = "No uploads yet.";
+        return;
+      }
+
+      uploadsGrid.innerHTML = "";
+
+      data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.innerHTML = `
+          <img src="${item.image_url}" alt="${item.artist}">
+          <div class="info">
+            <div><strong>${item.artist}</strong></div>
+            <div>${item.category}</div>
+            <div>❤️ ${item.likes || 0}</div>
+          </div>
+        `;
+        uploadsGrid.appendChild(card);
+      });
+    }
+
+    async function logout() {
       await supabase.auth.signOut();
-      window.location.href = "/auth.html";
-    };
+      window.location.href = "/";
+    }
 
-    loadProfile();
+    document.getElementById("saveBtn").addEventListener("click", saveProfile);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    loadUser();
   </script>
 </body>
 </html>
