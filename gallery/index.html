@@ -1,145 +1,413 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>🔥 Viral Gallery – Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery - Rich Bizness LLC</title>
   <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(15, 15, 15, 0.9);
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #a8a8a8;
+      --primary: #19e68c;
+      --primary-dark: #11c775;
+      --danger: #ff5a67;
+      --input: #ececec;
+      --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: #000;
-      color: #fff;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(25,230,140,0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.07), transparent 22%),
+        linear-gradient(180deg, #080808 0%, #020202 100%);
+      padding: 24px;
     }
 
-    .wrap {
-      max-width: 1200px;
+    .page {
+      max-width: 1240px;
       margin: 0 auto;
-      padding: 20px;
     }
 
-    h1 {
-      text-align: center;
-      font-size: 52px;
-      margin: 20px 0 10px;
-      text-shadow: 0 0 18px rgba(0,255,170,0.3);
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
     }
 
-    .topnav {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .topnav a {
-      color: #00ffaa;
+    .toplink {
+      display: inline-block;
+      color: var(--primary);
       text-decoration: none;
-      margin: 0 10px;
-      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-link {
+      text-decoration: none;
+      color: #8ecbff;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .hero {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(25,230,140,0.16), transparent 55%);
+      filter: blur(30px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+      padding: 28px 22px 24px;
+    }
+
+    .headline {
+      margin: 0 0 8px;
+      font-size: 48px;
+      line-height: 1.04;
+      font-weight: 800;
+      text-align: center;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .stats {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .filters {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.3fr 0.8fr;
+      gap: 14px;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 16px;
+      background: var(--input);
+      color: #111;
+      outline: none;
+    }
+
+    .input:focus,
+    .select:focus {
+      box-shadow: 0 0 0 3px rgba(25,230,140,0.28);
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 18px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .ok {
+      color: var(--primary);
+    }
+
+    .err {
+      color: var(--danger);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      padding: 15px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
     }
 
-    .card {
-      background: #111;
-      border-radius: 12px;
+    .upload-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
       cursor: pointer;
-      transition: 0.2s;
+      transition: transform 0.16s ease, border-color 0.16s ease;
     }
 
-    .card:hover {
-      transform: scale(1.03);
+    .upload-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(25,230,140,0.32);
     }
 
-    .card img {
+    .upload-card img {
       width: 100%;
-      height: auto;
+      height: 320px;
+      object-fit: cover;
+      display: block;
+      background: #111;
     }
 
-    .info {
-      padding: 10px;
+    .upload-body {
+      padding: 14px;
     }
 
-    .artist {
-      font-weight: bold;
-      color: #00ffaa;
+    .upload-name {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
     }
 
-    .likes {
-      margin-top: 5px;
+    .upload-meta {
+      color: var(--muted);
       font-size: 14px;
-      color: #aaa;
+      margin-bottom: 6px;
+    }
+
+    .empty {
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 22px 16px 18px;
+      }
+
+      .headline {
+        font-size: 36px;
+      }
+
+      .filters {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
-
 <body>
+  <div class="page">
+    <div class="topbar">
+      <a class="toplink" href="/index.html">← Home</a>
 
-<div class="wrap">
-  <h1>🔥 Viral Gallery 🔥</h1>
+      <div class="top-actions">
+        <a class="ghost-link" href="/upload.html">Upload Work</a>
+        <a class="ghost-link" href="/profile.html">My Profile</a>
+      </div>
+    </div>
 
-  <div class="topnav">
-    <a href="/">Home</a>
-    <a href="/upload.html">Upload</a>
+    <div class="hero">
+      <div class="glow"></div>
+
+      <div class="card">
+        <h1 class="headline">🔥 Viral Gallery 🔥</h1>
+        <p class="sub">Explore fresh work from artists, tattoo creators, and 3D makers on Rich Bizness LLC.</p>
+
+        <div class="stats">
+          <div class="pill">📸 <span id="totalUploads">0 uploads</span></div>
+          <div class="pill">👤 <span id="totalArtists">0 artists</span></div>
+          <div class="pill">❤️ <span id="totalLikes">0 likes</span></div>
+        </div>
+
+        <div class="filters">
+          <input id="searchInput" class="input" type="text" placeholder="Search artist name..." />
+          <select id="categoryFilter" class="select">
+            <option value="all">All Categories</option>
+            <option value="Tattoo">Tattoo</option>
+            <option value="Art">Art</option>
+            <option value="3D Print">3D Print</option>
+          </select>
+        </div>
+
+        <div id="status" class="status">Loading...</div>
+      </div>
+    </div>
+
+    <div id="grid" class="grid"></div>
   </div>
 
-  <div id="grid" class="grid"></div>
-</div>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-<script type="module">
-  import { createClient } from "https://esm.sh/@supabase/supabase-js";
+    const supabase = createClient(
+      "https://ksvdequymkceevocgpdj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+    );
 
-  // 🔥 YOUR SUPABASE (DO NOT CHANGE)
-  const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const grid = document.getElementById("grid");
+    const statusEl = document.getElementById("status");
+    const totalUploadsEl = document.getElementById("totalUploads");
+    const totalArtistsEl = document.getElementById("totalArtists");
+    const totalLikesEl = document.getElementById("totalLikes");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let allUploads = [];
 
-  const grid = document.getElementById("grid");
-
-  async function loadGallery() {
-    const { data, error } = await supabase
-      .from("uploads")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      grid.innerHTML = "❌ Error loading gallery";
-      console.error(error);
-      return;
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + (isError ? "err" : "ok");
     }
 
-    grid.innerHTML = "";
+    function updateStats(items) {
+      const totalUploads = items.length;
+      const artistSet = new Set(items.map(item => (item.artist || "").trim()).filter(Boolean));
+      const totalArtists = artistSet.size;
+      const totalLikes = items.reduce((sum, item) => sum + (item.likes || 0), 0);
 
-    data.forEach(item => {
-      const card = document.createElement("div");
-      card.className = "card";
+      totalUploadsEl.textContent = `${totalUploads} upload${totalUploads === 1 ? "" : "s"}`;
+      totalArtistsEl.textContent = `${totalArtists} artist${totalArtists === 1 ? "" : "s"}`;
+      totalLikesEl.textContent = `${totalLikes} like${totalLikes === 1 ? "" : "s"}`;
+    }
 
-      card.innerHTML = `
-        <img src="${item.image_url}" />
-        <div class="info">
-          <div class="artist">${item.artist}</div>
-          <div>${item.category}</div>
-          <div class="likes">❤️ ${item.likes || 0}</div>
-        </div>
-      `;
+    function getFilteredUploads() {
+      const search = searchInput.value.trim().toLowerCase();
+      const category = categoryFilter.value;
 
-      // 🔥 THIS FIXES YOUR 404 ISSUE
-      card.addEventListener("click", () => {
-        window.location.href = "/artist/index.html?name=" + encodeURIComponent(item.artist);
+      return allUploads.filter(item => {
+        const matchesSearch = !search || (item.artist || "").toLowerCase().includes(search);
+        const matchesCategory = category === "all" || item.category === category;
+        return matchesSearch && matchesCategory;
       });
+    }
 
-      grid.appendChild(card);
-    });
-  }
+    function renderUploads(items) {
+      if (!items.length) {
+        grid.innerHTML = `<div class="empty">No uploads match your search yet.</div>`;
+        return;
+      }
 
-  loadGallery();
-</script>
+      grid.innerHTML = "";
 
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "upload-card";
+        card.innerHTML = `
+          <img src="${item.image_url}" alt="${item.artist || "Upload"}">
+          <div class="upload-body">
+            <div class="upload-name">${item.artist || ""}</div>
+            <div class="upload-meta">${item.category || ""}</div>
+            <div class="upload-meta">❤️ ${item.likes || 0}</div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          const artistName = encodeURIComponent(item.artist || "");
+          window.location.href = "/artist/index.html?name=" + artistName;
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function refreshGalleryView() {
+      const filtered = getFilteredUploads();
+      renderUploads(filtered);
+      updateStats(filtered);
+      setStatus("");
+    }
+
+    async function loadGallery() {
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        grid.innerHTML = `<div class="empty">${error.message}</div>`;
+        totalUploadsEl.textContent = "0 uploads";
+        totalArtistsEl.textContent = "0 artists";
+        totalLikesEl.textContent = "0 likes";
+        setStatus("Failed to load gallery.", true);
+        return;
+      }
+
+      allUploads = data || [];
+
+      if (!allUploads.length) {
+        grid.innerHTML = `<div class="empty">No uploads yet.</div>`;
+        totalUploadsEl.textContent = "0 uploads";
+        totalArtistsEl.textContent = "0 artists";
+        totalLikesEl.textContent = "0 likes";
+        setStatus("");
+        return;
+      }
+
+      refreshGalleryView();
+    }
+
+    searchInput.addEventListener("input", refreshGalleryView);
+    categoryFilter.addEventListener("change", refreshGalleryView);
+
+    await loadGallery();
+  </script>
 </body>
 </html>
