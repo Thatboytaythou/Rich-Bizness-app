@@ -1,82 +1,501 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile - Rich Bizness LLC</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(15, 15, 15, 0.9);
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #a8a8a8;
+      --primary: #19e68c;
+      --primary-dark: #11c775;
+      --danger: #ff5a67;
+      --input: #ececec;
+      --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(25,230,140,0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.07), transparent 22%),
+        linear-gradient(180deg, #080808 0%, #020202 100%);
+      padding: 24px;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .toplink {
+      display: inline-block;
+      color: var(--primary);
+      text-decoration: none;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .hero {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(25,230,140,0.16), transparent 55%);
+      filter: blur(30px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+      padding: 28px 22px 24px;
+    }
+
+    .profile-top {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 72px;
+      margin: 0 auto;
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.03);
+    }
+
+    .headline {
+      margin: 0 0 8px;
+      font-size: 46px;
+      line-height: 1.05;
+      font-weight: 800;
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 14px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .ok {
+      color: var(--primary);
+    }
+
+    .err {
+      color: var(--danger);
+    }
+
+    .fields {
+      margin-top: 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      text-align: left;
+    }
+
+    .label {
+      display: block;
+      margin: 0 0 8px 4px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .input,
+    .textarea {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 16px;
+      background: var(--input);
+      color: #111;
+      outline: none;
+    }
+
+    .input:focus,
+    .textarea:focus {
+      box-shadow: 0 0 0 3px rgba(25,230,140,0.28);
+    }
+
+    .textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .btn.primary {
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      color: #000;
+      box-shadow: 0 16px 34px rgba(25,230,140,0.22);
+    }
+
+    .btn.secondary {
+      background: #1a1a1a;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .uploads-wrap {
+      margin-top: 28px;
+    }
+
+    .uploads-title {
+      margin: 0 0 14px;
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .uploads-sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+
+    .upload-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+    }
+
+    .upload-card img {
+      width: 100%;
+      height: 270px;
+      object-fit: cover;
+      display: block;
+      background: #111;
+    }
+
+    .upload-body {
+      padding: 14px;
+    }
+
+    .upload-name {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .upload-meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .empty {
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 22px 16px 18px;
+      }
+
+      .profile-top {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .headline {
+        font-size: 36px;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+
+      .avatar {
+        width: 140px;
+        height: 140px;
+        font-size: 60px;
+      }
+    }
+  </style>
+</head>
 <body>
+  <div class="page">
+    <a class="toplink" href="/index.html">← Home</a>
 
-<h1>My Profile</h1>
+    <div class="hero">
+      <div class="glow"></div>
 
-<input id="username" placeholder="Username">
-<input id="displayName" placeholder="Display Name">
-<textarea id="bio" placeholder="Bio"></textarea>
+      <div class="card">
+        <div class="profile-top">
+          <div class="avatar">👤</div>
 
-<button id="saveBtn">Save</button>
-<button id="logoutBtn">Logout</button>
+          <div>
+            <h1 class="headline">My Profile</h1>
+            <p class="sub">Manage your artist identity, profile bio, and your uploaded work.</p>
+            <div id="status" class="status">Loading...</div>
+          </div>
+        </div>
 
-<p id="status"></p>
+        <div class="fields">
+          <div class="field">
+            <label class="label" for="username">Username</label>
+            <input id="username" class="input" placeholder="Username" />
+          </div>
 
-<script type="module">
-import { supabase } from "./config.js"
+          <div class="field">
+            <label class="label" for="displayName">Display Name</label>
+            <input id="displayName" class="input" placeholder="Display Name" />
+          </div>
 
-const username = document.getElementById("username")
-const displayName = document.getElementById("displayName")
-const bio = document.getElementById("bio")
-const status = document.getElementById("status")
+          <div class="field">
+            <label class="label" for="bio">Bio</label>
+            <textarea id="bio" class="textarea" placeholder="Tell people who you are..."></textarea>
+          </div>
+        </div>
 
-async function loadProfile(){
-  const { data: { session } } = await supabase.auth.getSession()
+        <div class="actions">
+          <button id="saveBtn" class="btn primary" type="button">Save Profile</button>
+          <button id="logoutBtn" class="btn secondary" type="button">Logout</button>
+        </div>
+      </div>
+    </div>
 
-  if (!session){
-    window.location.href = "/auth.html"
-    return
-  }
+    <div class="uploads-wrap">
+      <h2 class="uploads-title">My Uploads</h2>
+      <p class="uploads-sub">Everything you’ve posted to the platform shows here.</p>
+      <div id="uploadsGrid" class="grid"></div>
+    </div>
+  </div>
 
-  const user = session.user
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single()
+    const supabase = createClient(
+      "https://ksvdequymkceevocgpdj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+    );
 
-  if (!data){
-    await supabase.from("profiles").insert({
-      id: user.id,
-      username: user.email.split("@")[0],
-      display_name: "New User"
-    })
-    return loadProfile()
-  }
+    const usernameInput = document.getElementById("username");
+    const displayNameInput = document.getElementById("displayName");
+    const bioInput = document.getElementById("bio");
+    const statusText = document.getElementById("status");
+    const uploadsGrid = document.getElementById("uploadsGrid");
+    const saveBtn = document.getElementById("saveBtn");
 
-  username.value = data.username || ""
-  displayName.value = data.display_name || ""
-  bio.value = data.bio || ""
-}
+    let currentUser = null;
 
-async function saveProfile(){
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session.user
+    function setStatus(text, isError = false) {
+      statusText.textContent = text;
+      statusText.className = "status " + (isError ? "err" : "ok");
+    }
 
-  const { error } = await supabase
-    .from("profiles")
-    .update({
-      username: username.value,
-      display_name: displayName.value,
-      bio: bio.value
-    })
-    .eq("id", user.id)
+    function setSaveLoading(on) {
+      saveBtn.disabled = on;
+      saveBtn.textContent = on ? "Saving..." : "Save Profile";
+    }
 
-  status.textContent = error ? error.message : "Saved ✅"
-}
+    async function loadProfile() {
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabase.auth.getSession();
 
-async function logout(){
-  await supabase.auth.signOut()
-  window.location.href = "/auth.html"
-}
+      if (sessionError) {
+        setStatus(sessionError.message, true);
+        return;
+      }
 
-document.getElementById("saveBtn").onclick = saveProfile
-document.getElementById("logoutBtn").onclick = logout
+      if (!session?.user) {
+        window.location.href = "/auth.html";
+        return;
+      }
 
-loadProfile()
-</script>
+      currentUser = session.user;
 
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (error) {
+        setStatus(error.message, true);
+        return;
+      }
+
+      if (!data) {
+        const usernameFromEmail = currentUser.email?.split("@")[0] || "artist";
+
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: currentUser.id,
+              username: usernameFromEmail,
+              display_name: usernameFromEmail,
+              bio: ""
+            }
+          ]);
+
+        if (insertError) {
+          setStatus(insertError.message, true);
+          return;
+        }
+
+        return loadProfile();
+      }
+
+      usernameInput.value = data.username || "";
+      displayNameInput.value = data.display_name || "";
+      bioInput.value = data.bio || "";
+
+      setStatus("");
+    }
+
+    async function saveProfile() {
+      if (!currentUser) return;
+
+      setSaveLoading(true);
+      setStatus("Saving...");
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          username: usernameInput.value.trim(),
+          display_name: displayNameInput.value.trim(),
+          bio: bioInput.value.trim()
+        })
+        .eq("id", currentUser.id);
+
+      setSaveLoading(false);
+
+      if (error) {
+        setStatus(error.message, true);
+        return;
+      }
+
+      setStatus("Profile saved ✅");
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "/auth.html";
+    }
+
+    async function loadMyUploads() {
+      if (!currentUser) return;
+
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .eq("user_id", currentUser.id)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        uploadsGrid.innerHTML = `<div class="empty">${error.message}</div>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        uploadsGrid.innerHTML = `<div class="empty">No uploads yet.</div>`;
+        return;
+      }
+
+      uploadsGrid.innerHTML = "";
+
+      data.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "upload-card";
+        card.innerHTML = `
+          <img src="${item.image_url}" alt="${item.artist || "Upload"}">
+          <div class="upload-body">
+            <div class="upload-name">${item.artist || ""}</div>
+            <div class="upload-meta">${item.category || ""}</div>
+            <div class="upload-meta">❤️ ${item.likes || 0}</div>
+          </div>
+        `;
+        uploadsGrid.appendChild(card);
+      });
+    }
+
+    document.getElementById("saveBtn").addEventListener("click", saveProfile);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
+
+    await loadProfile();
+    await loadMyUploads();
+  </script>
 </body>
 </html>
