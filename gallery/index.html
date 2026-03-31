@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>🔥 Viral Gallery - Rich Bizness LLC</title>
+  <title>🔥 Viral Gallery – Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
@@ -34,38 +34,46 @@
       color: #00ffaa;
       text-decoration: none;
       margin: 0 10px;
+      font-size: 18px;
     }
 
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
+      padding: 15px;
     }
 
     .card {
       background: #111;
       border-radius: 12px;
       overflow: hidden;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
     }
 
     .card img {
       width: 100%;
-      display: block;
+      height: auto;
     }
 
     .info {
       padding: 10px;
-      font-size: 14px;
     }
 
     .artist {
-      color: #00ffaa;
-      cursor: pointer;
       font-weight: bold;
+      color: #00ffaa;
     }
 
     .likes {
       margin-top: 5px;
+      font-size: 14px;
+      color: #aaa;
     }
   </style>
 </head>
@@ -77,7 +85,7 @@
 
   <div class="topnav">
     <a href="/">Home</a>
-    <a href="/upload">Upload</a>
+    <a href="/upload.html">Upload</a>
   </div>
 
   <div id="grid" class="grid"></div>
@@ -86,6 +94,7 @@
 <script type="module">
   import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
+  // 🔥 YOUR SUPABASE (DO NOT CHANGE)
   const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
@@ -113,7 +122,6 @@
 
       card.innerHTML = `
         <img src="${item.image_url}" />
-
         <div class="info">
           <div class="artist">${item.artist}</div>
           <div>${item.category}</div>
@@ -121,11 +129,10 @@
         </div>
       `;
 
-      // 🔥 CLICK ARTIST → GO TO PROFILE
-      card.querySelector(".artist").onclick = () => {
-        window.location.href =
-          "/artist/index.html?name=" + encodeURIComponent(item.artist);
-      };
+      // 🔥 THIS FIXES YOUR 404 ISSUE
+      card.addEventListener("click", () => {
+        window.location.href = "/artist/index.html?name=" + encodeURIComponent(item.artist);
+      });
 
       grid.appendChild(card);
     });
