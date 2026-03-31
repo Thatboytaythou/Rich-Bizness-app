@@ -1,125 +1,332 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Artist Profile - Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(15, 15, 15, 0.9);
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #a8a8a8;
+      --primary: #19e68c;
+      --primary-dark: #11c775;
+      --danger: #ff5a67;
+      --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: black;
-      color: white;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(25,230,140,0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.07), transparent 22%),
+        linear-gradient(180deg, #080808 0%, #020202 100%);
+      padding: 24px;
     }
 
-    a {
-      color: #00ffaa;
+    .page {
+      max-width: 1180px;
+      margin: 0 auto;
+    }
+
+    .toplink {
+      display: inline-block;
+      color: var(--primary);
       text-decoration: none;
+      margin-bottom: 16px;
+      font-weight: 700;
     }
 
-    .header {
-      margin-bottom: 20px;
+    .hero {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(25,230,140,0.16), transparent 55%);
+      filter: blur(30px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+      padding: 28px 22px 24px;
+    }
+
+    .profile-top {
+      display: grid;
+      grid-template-columns: 170px 1fr;
+      gap: 24px;
+      align-items: center;
     }
 
     .avatar {
-      width: 90px;
-      height: 90px;
+      width: 170px;
+      height: 170px;
       border-radius: 50%;
-      background: #111;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 40px;
-      margin: 0 auto 10px;
+      font-size: 72px;
+      margin: 0 auto;
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.03);
     }
 
-    #artistName {
-      font-size: 26px;
-      margin: 10px 0;
+    .headline {
+      margin: 0 0 8px;
+      font-size: 46px;
+      line-height: 1.05;
+      font-weight: 800;
     }
 
-    #stats {
-      color: #aaa;
-      margin-bottom: 20px;
+    .sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    .stats {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .status {
+      min-height: 24px;
+      margin-top: 16px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .ok {
+      color: var(--primary);
+    }
+
+    .err {
+      color: var(--danger);
+    }
+
+    .uploads-wrap {
+      margin-top: 28px;
+    }
+
+    .uploads-title {
+      margin: 0 0 14px;
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .uploads-sub {
+      margin: 0 0 22px;
+      color: var(--muted);
+      font-size: 15px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      padding: 10px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
     }
 
-    .card {
-      background: #111;
-      border-radius: 12px;
+    .upload-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
     }
 
-    .card img {
+    .upload-card img {
       width: 100%;
-      display: block;
-      height: 220px;
+      height: 300px;
       object-fit: cover;
+      display: block;
+      background: #111;
     }
 
-    .info {
-      padding: 10px;
+    .upload-body {
+      padding: 14px;
+    }
+
+    .upload-name {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .upload-meta {
+      color: var(--muted);
       font-size: 14px;
+      margin-bottom: 6px;
     }
 
-    .category {
-      color: #00ffaa;
-      margin-bottom: 5px;
-    }
-
-    .empty,
-    .error {
+    .empty {
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
       text-align: center;
-      padding: 30px 15px;
-      color: #aaa;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 14px;
+      }
+
+      .card {
+        padding: 22px 16px 18px;
+      }
+
+      .profile-top {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .headline {
+        font-size: 36px;
+      }
+
+      .stats {
+        justify-content: center;
+      }
+
+      .avatar {
+        width: 140px;
+        height: 140px;
+        font-size: 60px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="page">
+    <a class="toplink" href="/gallery/index.html">← Back to Gallery</a>
 
-  <p style="margin-top:20px;">
-    <a href="/gallery/index.html">← Back to Gallery</a>
-  </p>
+    <div class="hero">
+      <div class="glow"></div>
 
-  <div class="header">
-    <div class="avatar">🎨</div>
-    <h1 id="artistName">Artist</h1>
-    <div id="stats">Loading...</div>
+      <div class="card">
+        <div class="profile-top">
+          <div class="avatar">🎨</div>
+
+          <div>
+            <h1 id="artistName" class="headline">Artist</h1>
+            <p class="sub">Artist profile and uploaded work from Rich Bizness LLC.</p>
+
+            <div class="stats">
+              <div class="pill">📸 <span id="totalUploads">0 uploads</span></div>
+              <div class="pill">❤️ <span id="totalLikes">0 likes</span></div>
+              <div class="pill">🏷️ <span id="topCategory">No category</span></div>
+            </div>
+
+            <div id="status" class="status">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="uploads-wrap">
+      <h2 class="uploads-title">Artist Uploads</h2>
+      <p class="uploads-sub">All uploads from this artist profile.</p>
+      <div id="grid" class="grid"></div>
+    </div>
   </div>
-
-  <div id="grid" class="grid"></div>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const supabase = createClient(
+      "https://ksvdequymkceevocgpdj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+    );
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const grid = document.getElementById("grid");
-    const statsEl = document.getElementById("stats");
     const nameEl = document.getElementById("artistName");
+    const totalUploadsEl = document.getElementById("totalUploads");
+    const totalLikesEl = document.getElementById("totalLikes");
+    const topCategoryEl = document.getElementById("topCategory");
+    const statusEl = document.getElementById("status");
+    const grid = document.getElementById("grid");
 
-    function getArtist() {
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.className = "status " + (isError ? "err" : "ok");
+    }
+
+    function getArtistNameFromUrl() {
       const params = new URLSearchParams(window.location.search);
       return params.get("name");
     }
 
-    async function loadArtist() {
-      const artist = getArtist();
+    function getTopCategory(items) {
+      if (!items.length) return "No category";
+
+      const counts = {};
+      items.forEach(item => {
+        const key = item.category || "Other";
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      let top = "No category";
+      let max = 0;
+
+      Object.keys(counts).forEach(category => {
+        if (counts[category] > max) {
+          max = counts[category];
+          top = category;
+        }
+      });
+
+      return top;
+    }
+
+    async function loadArtistPage() {
+      const artist = getArtistNameFromUrl();
 
       if (!artist) {
-        grid.innerHTML = '<div class="empty">No artist selected.</div>';
-        statsEl.textContent = "";
+        nameEl.textContent = "Artist Not Found";
+        totalUploadsEl.textContent = "0 uploads";
+        totalLikesEl.textContent = "0 likes";
+        topCategoryEl.textContent = "No category";
+        grid.innerHTML = `<div class="empty">No artist selected.</div>`;
+        setStatus("Missing artist name.", true);
         return;
       }
 
@@ -132,43 +339,51 @@
         .order("created_at", { ascending: false });
 
       if (error) {
-        grid.innerHTML = '<div class="error">❌ Error loading artist</div>';
-        statsEl.textContent = "";
-        console.error(error);
+        grid.innerHTML = `<div class="empty">${error.message}</div>`;
+        totalUploadsEl.textContent = "0 uploads";
+        totalLikesEl.textContent = "0 likes";
+        topCategoryEl.textContent = "No category";
+        setStatus("Failed to load artist.", true);
         return;
       }
 
       if (!data || data.length === 0) {
-        grid.innerHTML = '<div class="empty">No uploads yet.</div>';
-        statsEl.textContent = "0 uploads";
+        grid.innerHTML = `<div class="empty">No uploads yet for this artist.</div>`;
+        totalUploadsEl.textContent = "0 uploads";
+        totalLikesEl.textContent = "0 likes";
+        topCategoryEl.textContent = "No category";
+        setStatus("");
         return;
       }
 
       const totalUploads = data.length;
       const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
+      const topCategory = getTopCategory(data);
 
-      statsEl.textContent = `${totalUploads} uploads • ❤️ ${totalLikes} likes`;
+      totalUploadsEl.textContent = `${totalUploads} upload${totalUploads === 1 ? "" : "s"}`;
+      totalLikesEl.textContent = `${totalLikes} like${totalLikes === 1 ? "" : "s"}`;
+      topCategoryEl.textContent = topCategory;
 
       grid.innerHTML = "";
 
-      data.forEach((item) => {
+      data.forEach(item => {
         const card = document.createElement("div");
-        card.className = "card";
-
+        card.className = "upload-card";
         card.innerHTML = `
-          <img src="${item.image_url}" alt="${item.artist}">
-          <div class="info">
-            <div class="category">${item.category}</div>
-            <div>❤️ ${item.likes || 0}</div>
+          <img src="${item.image_url}" alt="${item.artist || "Upload"}">
+          <div class="upload-body">
+            <div class="upload-name">${item.artist || ""}</div>
+            <div class="upload-meta">${item.category || ""}</div>
+            <div class="upload-meta">❤️ ${item.likes || 0}</div>
           </div>
         `;
-
         grid.appendChild(card);
       });
+
+      setStatus("");
     }
 
-    loadArtist();
+    await loadArtistPage();
   </script>
-
 </body>
 </html>
