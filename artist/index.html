@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Artist Profile - Rich Bizness</title>
+  <title>Artist Profile – Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
@@ -11,6 +11,7 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
+      padding: 20px;
     }
 
     a {
@@ -19,12 +20,12 @@
     }
 
     .header {
-      margin: 20px;
+      margin-bottom: 20px;
     }
 
     .avatar {
-      width: 100px;
-      height: 100px;
+      width: 90px;
+      height: 90px;
       border-radius: 50%;
       background: #111;
       display: flex;
@@ -34,11 +35,12 @@
       margin: 0 auto 10px;
     }
 
-    h1 {
+    #artistName {
+      font-size: 26px;
       margin: 10px 0;
     }
 
-    .stats {
+    #stats {
       color: #aaa;
       margin-bottom: 20px;
     }
@@ -47,7 +49,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
-      padding: 15px;
+      padding: 10px;
     }
 
     .card {
@@ -58,104 +60,106 @@
 
     .card img {
       width: 100%;
-      height: 220px;
-      object-fit: cover;
+      display: block;
     }
 
     .info {
       padding: 10px;
+      font-size: 14px;
     }
 
     .category {
-      color: #aaa;
+      color: #00ffaa;
+      margin-bottom: 5px;
     }
   </style>
 </head>
 
 <body>
 
-<a href="../gallery">← Back to Gallery</a>
+  <a href="/">← Back</a>
 
-<div class="header">
-  <div class="avatar">👤</div>
-  <h1 id="artistName">Artist</h1>
-  <div class="stats" id="stats"></div>
-</div>
+  <div class="header">
+    <div class="avatar">🎨</div>
+    <h1 id="artistName">Artist</h1>
+    <div id="stats">Loading...</div>
+  </div>
 
-<div id="grid" class="grid"></div>
+  <div id="grid" class="grid"></div>
 
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js";
+  <!-- SUPABASE -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-// 🔥 YOUR SUPABASE (LOCKED IN)
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const grid = document.getElementById("grid");
-const nameEl = document.getElementById("artistName");
-const statsEl = document.getElementById("stats");
+    const grid = document.getElementById("grid");
+    const statsEl = document.getElementById("stats");
+    const nameEl = document.getElementById("artistName");
 
-// 📌 Get artist name from URL
-function getArtist() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("name");
-}
+    function getArtist() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("name");
+    }
 
-async function loadArtist() {
-  const artist = getArtist();
+    async function loadArtist() {
+      const artist = getArtist();
 
-  if (!artist) {
-    nameEl.textContent = "No artist found";
-    return;
-  }
+      if (!artist) {
+        grid.innerHTML = "No artist selected.";
+        return;
+      }
 
-  nameEl.textContent = artist;
+      nameEl.textContent = artist;
 
-  const { data, error } = await supabase
-    .from("uploads")
-    .select("*")
-    .eq("artist", artist)
-    .order("created_at", { ascending: false });
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .eq("artist", artist)
+        .order("created_at", { ascending: false });
 
-  if (error) {
-    grid.innerHTML = "❌ Error loading artist";
-    console.error(error);
-    return;
-  }
+      if (error) {
+        grid.innerHTML = "❌ Error loading artist";
+        console.error(error);
+        return;
+      }
 
-  if (!data.length) {
-    grid.innerHTML = "No uploads yet.";
-    statsEl.textContent = "0 uploads";
-    return;
-  }
+      if (!data || data.length === 0) {
+        grid.innerHTML = "No uploads yet.";
+        statsEl.textContent = "0 uploads";
+        return;
+      }
 
-  // 📊 Stats
-  const totalUploads = data.length;
-  const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
+      // 📊 Stats
+      const totalUploads = data.length;
+      const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
 
-  statsEl.textContent = `${totalUploads} uploads • ❤️ ${totalLikes} likes`;
+      statsEl.textContent = `${totalUploads} uploads • ❤️ ${totalLikes} likes`;
 
-  // 🖼 Render images
-  data.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
+      // 🎨 Render
+      grid.innerHTML = "";
 
-    card.innerHTML = `
-      <img src="${item.image_url}" />
-      <div class="info">
-        <div class="category">${item.category}</div>
-        <div>❤️ ${item.likes || 0}</div>
-      </div>
-    `;
+      data.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "card";
 
-    grid.appendChild(card);
-  });
-}
+        card.innerHTML = `
+          <img src="${item.image_url}" />
+          <div class="info">
+            <div class="category">${item.category}</div>
+            <div>❤️ ${item.likes || 0}</div>
+          </div>
+        `;
 
-loadArtist();
-</script>
+        grid.appendChild(card);
+      });
+    }
+
+    loadArtist();
+  </script>
 
 </body>
 </html>
