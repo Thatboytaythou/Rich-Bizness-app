@@ -3,7 +3,6 @@
 <head>
   <title>Upload - Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
     body {
       margin: 0;
@@ -13,6 +12,11 @@
       text-align: center;
       padding: 20px;
     }
+
+    h1 {
+      margin-top: 20px;
+    }
+
     input, select, button {
       width: 90%;
       max-width: 400px;
@@ -21,17 +25,34 @@
       font-size: 16px;
       border-radius: 10px;
       border: none;
+      box-sizing: border-box;
     }
+
     button {
       background: #00ffaa;
       color: black;
       font-weight: bold;
       cursor: pointer;
     }
-    a { color: #4da3ff; }
+
+    a {
+      color: #4da3ff;
+      text-decoration: none;
+    }
+
+    #welcome {
+      color: #00ffaa;
+      margin-bottom: 20px;
+    }
+
+    #status {
+      margin-top: 20px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
+
   <h1>🔥 Upload Your Work 🔥</h1>
   <p id="welcome"></p>
 
@@ -49,26 +70,38 @@
   </form>
 
   <p id="status"></p>
-  <a href="/gallery/index.html">View Gallery</a>
+
+  <p>
+    <a href="gallery">View Gallery</a>
+  </p>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_REAL_ANON_KEY";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
     const BUCKET = "Artist-uploads";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     let currentUser = null;
 
     async function loadUser() {
-      const { data: authData } = await supabase.auth.getUser();
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+
+      if (authError) {
+        document.getElementById("status").textContent = "Auth error: " + authError.message;
+        return;
+      }
+
       currentUser = authData.user;
 
       if (!currentUser) {
-        window.location.href = "/auth.html";
+        window.location.href = "auth";
         return;
       }
+
+      document.getElementById("welcome").textContent = "Logged in as " + currentUser.email;
 
       const { data: profile } = await supabase
         .from("profiles")
@@ -76,27 +109,34 @@
         .eq("id", currentUser.id)
         .single();
 
-      document.getElementById("artistName").value =
-        profile?.display_name || profile?.username || "";
-      document.getElementById("welcome").textContent = `Logged in as ${currentUser.email}`;
+      if (profile) {
+        document.getElementById("artistName").value =
+          profile.display_name || profile.username || "";
+      }
     }
 
     async function handleUpload(e) {
       e.preventDefault();
 
+      const status = document.getElementById("status");
       const artist = document.getElementById("artistName").value.trim();
       const category = document.getElementById("category").value;
       const file = document.getElementById("fileInput").files[0];
-      const status = document.getElementById("status");
 
-      if (!artist || !file || !currentUser) {
-        status.textContent = "Missing info";
+      if (!currentUser) {
+        status.textContent = "You must be signed in.";
+        return;
+      }
+
+      if (!artist || !file) {
+        status.textContent = "Please fill out all fields.";
         return;
       }
 
       status.textContent = "Uploading...";
 
-      const filePath = `${Date.now()}-${file.name}`;
+      const safeName = file.name.replace(/\s+/g, "-").toLowerCase();
+      const filePath = `${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
@@ -107,16 +147,19 @@
         return;
       }
 
-      const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
-      const imageUrl = data.publicUrl;
+      const { data: publicData } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(filePath);
+
+      const imageUrl = publicData.publicUrl;
 
       const { error: dbError } = await supabase
         .from("uploads")
         .insert([
           {
             user_id: currentUser.id,
-            artist,
-            category,
+            artist: artist,
+            category: category,
             image_url: imageUrl,
             likes: 0
           }
@@ -130,11 +173,14 @@
       status.innerHTML = `
         ✅ Upload complete!<br><br>
         <a href="${imageUrl}" target="_blank">View Image</a><br><br>
-        <a href="/gallery/index.html">Go to Gallery</a>
+        <a href="gallery">Go to Gallery</a>
       `;
+
+      document.getElementById("fileInput").value = "";
     }
 
     document.getElementById("uploadForm").addEventListener("submit", handleUpload);
+
     loadUser();
   </script>
 </body>
