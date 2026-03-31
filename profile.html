@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Profile - Rich Bizness LLC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 24px;
+      text-align: center;
+    }
+    .box {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 20px;
+      padding: 20px;
+    }
+    input, textarea, button {
+      width: 100%;
+      padding: 14px;
+      margin: 10px 0;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button { cursor: pointer; font-weight: bold; }
+    .primary { background: #00ffaa; color: black; }
+    .secondary { background: #222; color: white; }
+    a { color: #4da3ff; }
+  </style>
+</head>
+<body>
+  <h1>👤 My Profile</h1>
+
+  <div class="box">
+    <p id="welcome"></p>
+
+    <input id="username" type="text" placeholder="Username" />
+    <input id="displayName" type="text" placeholder="Display Name" />
+    <textarea id="bio" placeholder="Bio" rows="4"></textarea>
+
+    <button id="saveBtn" class="primary">Save Profile</button>
+    <button id="logoutBtn" class="secondary">Log Out</button>
+
+    <p id="status"></p>
+    <p><a href="/gallery/index.html">Go to Gallery</a></p>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_REAL_ANON_KEY";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const status = document.getElementById("status");
+    let currentUser = null;
+
+    async function loadProfile() {
+      const { data: authData } = await supabase.auth.getUser();
+      currentUser = authData.user;
+
+      if (!currentUser) {
+        window.location.href = "/auth.html";
+        return;
+      }
+
+      document.getElementById("welcome").textContent = `Logged in as ${currentUser.email}`;
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      if (!error && data) {
+        document.getElementById("username").value = data.username || "";
+        document.getElementById("displayName").value = data.display_name || "";
+        document.getElementById("bio").value = data.bio || "";
+      }
+    }
+
+    document.getElementById("saveBtn").onclick = async () => {
+      if (!currentUser) return;
+
+      const username = document.getElementById("username").value.trim();
+      const displayName = document.getElementById("displayName").value.trim();
+      const bio = document.getElementById("bio").value.trim();
+
+      status.textContent = "Saving...";
+
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          username,
+          display_name: displayName,
+          bio
+        })
+        .eq("id", currentUser.id);
+
+      status.textContent = error ? error.message : "Profile saved ✅";
+    };
+
+    document.getElementById("logoutBtn").onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/auth.html";
+    };
+
+    loadProfile();
+  </script>
+</body>
+</html>
