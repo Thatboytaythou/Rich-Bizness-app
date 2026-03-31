@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Artist Profile – Rich Bizness LLC</title>
+  <title>Artist Profile - Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
@@ -61,6 +61,8 @@
     .card img {
       width: 100%;
       display: block;
+      height: 220px;
+      object-fit: cover;
     }
 
     .info {
@@ -72,12 +74,20 @@
       color: #00ffaa;
       margin-bottom: 5px;
     }
+
+    .empty,
+    .error {
+      text-align: center;
+      padding: 30px 15px;
+      color: #aaa;
+    }
   </style>
 </head>
-
 <body>
 
-  <a href="/">← Back</a>
+  <p style="margin-top:20px;">
+    <a href="/gallery/index.html">← Back to Gallery</a>
+  </p>
 
   <div class="header">
     <div class="avatar">🎨</div>
@@ -87,7 +97,6 @@
 
   <div id="grid" class="grid"></div>
 
-  <!-- SUPABASE -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
@@ -109,7 +118,8 @@
       const artist = getArtist();
 
       if (!artist) {
-        grid.innerHTML = "No artist selected.";
+        grid.innerHTML = '<div class="empty">No artist selected.</div>';
+        statsEl.textContent = "";
         return;
       }
 
@@ -122,24 +132,23 @@
         .order("created_at", { ascending: false });
 
       if (error) {
-        grid.innerHTML = "❌ Error loading artist";
+        grid.innerHTML = '<div class="error">❌ Error loading artist</div>';
+        statsEl.textContent = "";
         console.error(error);
         return;
       }
 
       if (!data || data.length === 0) {
-        grid.innerHTML = "No uploads yet.";
+        grid.innerHTML = '<div class="empty">No uploads yet.</div>';
         statsEl.textContent = "0 uploads";
         return;
       }
 
-      // 📊 Stats
       const totalUploads = data.length;
       const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
 
       statsEl.textContent = `${totalUploads} uploads • ❤️ ${totalLikes} likes`;
 
-      // 🎨 Render
       grid.innerHTML = "";
 
       data.forEach((item) => {
@@ -147,7 +156,7 @@
         card.className = "card";
 
         card.innerHTML = `
-          <img src="${item.image_url}" />
+          <img src="${item.image_url}" alt="${item.artist}">
           <div class="info">
             <div class="category">${item.category}</div>
             <div>❤️ ${item.likes || 0}</div>
