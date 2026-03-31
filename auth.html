@@ -73,6 +73,7 @@
       min-height: 24px;
       color: #fff;
       font-size: 16px;
+      white-space: pre-wrap;
     }
 
     a {
@@ -126,12 +127,78 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     const msg = document.getElementById("msg");
 
     function setMsg(text, isError = false) {
       msg.textContent = text;
       msg.style.color = isError ? "#ff6b6b" : "#ffffff";
+    }
+
+    function savePendingProfile(username, displayName) {
+      localStorage.setItem(
+        "rb_pending_profile",
+        JSON.stringify({ username, displayName })
+      );
+    }
+
+    function getPendingProfile() {
+      try {
+        return JSON.parse(localStorage.getItem("rb_pending_profile") || "null");
+      } catch {
+        return null;
+      }
+    }
+
+    function clearPendingProfile() {
+      localStorage.removeItem("rb_pending_profile");
+    }
+
+    async function upsertProfileForCurrentUser(fallbackEmail = "") {
+      const {
+        data: { user },
+        error: userError
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        return { ok: false, message: "No logged-in user found." };
+      }
+
+      const pending = getPendingProfile();
+      const emailName = fallbackEmail && fallbackEmail.includes("@")
+        ? fallbackEmail.split("@")[0]
+        : "artist";
+
+      const username = pending?.username || emailName;
+      const displayName = pending?.displayName || emailName;
+
+      const { data: existing, error: selectError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (selectError) {
+        return { ok: false, message: selectError.message };
+      }
+
+      if (!existing) {
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              username: username,
+              display_name: displayName
+            }
+          ]);
+
+        if (insertError) {
+          return { ok: false, message: insertError.message };
+        }
+      }
+
+      clearPendingProfile();
+      return { ok: true };
     }
 
     async function signUp() {
@@ -145,38 +212,32 @@
         return;
       }
 
+      savePendingProfile(username, displayName);
       setMsg("Creating account...");
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email,
         password
       });
 
-      if (error) {
-        setMsg(error.message, true);
+      if (signUpError) {
+        setMsg(signUpError.message, true);
         return;
       }
 
-      const user = data.user;
+      if (signUpData.session) {
+        const result = await upsertProfileForCurrentUser(email);
 
-      if (user) {
-        const { error: profileError } = await supabase
-          .from("profiles")
-          .upsert({
-            id: user.id,
-            username: username,
-            display_name: displayName,
-            bio: "",
-            avatar_url: ""
-          });
-
-        if (profileError) {
-          setMsg("Account created, but profile save failed: " + profileError.message, true);
+        if (!result.ok) {
+          setMsg("Account created, but profile save failed: " + result.message, true);
           return;
         }
+
+        setMsg("Account created and profile saved.");
+        return;
       }
 
-      setMsg("Account created. Check your email if confirmation is required.");
+      setMsg("Account created. Check your email to confirm, then log in to finish your profile.");
     }
 
     async function logIn() {
@@ -197,6 +258,12 @@
 
       if (error) {
         setMsg(error.message, true);
+        return;
+      }
+
+      const result = await upsertProfileForCurrentUser(email);
+      if (!result.ok) {
+        setMsg("Login worked, but profile setup failed: " + result.message, true);
         return;
       }
 
