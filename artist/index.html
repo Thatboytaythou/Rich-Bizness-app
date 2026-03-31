@@ -1,196 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Artist Profile - Rich Bizness LLC</title>
+  <title>Artist Profile - Rich Bizness</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     body {
       margin: 0;
-      background: #000;
+      background: black;
       color: white;
       font-family: Arial, sans-serif;
-    }
-
-    .wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .back {
-      color: #4da3ff;
-      text-decoration: none;
-      font-size: 18px;
-    }
-
-    .hero {
       text-align: center;
-      margin: 24px 0 34px;
+    }
+
+    a {
+      color: #00ffaa;
+      text-decoration: none;
+    }
+
+    .header {
+      margin: 20px;
     }
 
     .avatar {
-      width: 110px;
-      height: 110px;
-      border-radius: 999px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
       background: #111;
-      border: 2px solid #222;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       justify-content: center;
       font-size: 40px;
-      margin-bottom: 14px;
+      margin: 0 auto 10px;
     }
 
     h1 {
-      font-size: 50px;
-      margin: 0 0 10px;
-      text-shadow: 0 0 16px rgba(0,255,170,0.2);
+      margin: 10px 0;
     }
 
     .stats {
       color: #aaa;
-      font-size: 18px;
+      margin-bottom: 20px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      padding: 15px;
     }
 
     .card {
       background: #111;
-      border: 1px solid #222;
-      border-radius: 20px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,255,170,0.08);
     }
 
     .card img {
       width: 100%;
-      height: 320px;
+      height: 220px;
       object-fit: cover;
-      display: block;
     }
 
-    .body {
-      padding: 14px;
+    .info {
+      padding: 10px;
     }
 
-    .cat {
-      color: #4da3ff;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .likes {
-      margin-bottom: 10px;
-    }
-
-    .view {
-      color: #00ffaa;
-      text-decoration: none;
-      font-weight: bold;
+    .category {
+      color: #aaa;
     }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
-    <a href="/gallery/index.html" class="back">← Back to Gallery</a>
 
-    <div class="hero">
-      <div class="avatar">👤</div>
-      <h1 id="artistTitle">Artist</h1>
-      <div id="artistStats" class="stats"></div>
-      <p id="status"></p>
-    </div>
+<a href="../gallery">← Back to Gallery</a>
 
-    <div id="artistGrid" class="grid"></div>
-  </div>
+<div class="header">
+  <div class="avatar">👤</div>
+  <h1 id="artistName">Artist</h1>
+  <div class="stats" id="stats"></div>
+</div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+<div id="grid" class="grid"></div>
 
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 🔥 YOUR SUPABASE (LOCKED IN)
+const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
-    function getArtistName() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("name") || "";
-    }
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    async function loadArtist() {
-      const artistName = getArtistName();
-      const title = document.getElementById("artistTitle");
-      const grid = document.getElementById("artistGrid");
-      const status = document.getElementById("status");
-      const stats = document.getElementById("artistStats");
+const grid = document.getElementById("grid");
+const nameEl = document.getElementById("artistName");
+const statsEl = document.getElementById("stats");
 
-      if (!artistName) {
-        status.textContent = "No artist selected.";
-        return;
-      }
+// 📌 Get artist name from URL
+function getArtist() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("name");
+}
 
-      title.textContent = artistName;
-      status.textContent = "Loading profile...";
+async function loadArtist() {
+  const artist = getArtist();
 
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("*")
-        .eq("artist", artistName)
-        .order("created_at", { ascending: false });
+  if (!artist) {
+    nameEl.textContent = "No artist found";
+    return;
+  }
 
-      if (error) {
-        status.textContent = `Could not load artist: ${error.message}`;
-        return;
-      }
+  nameEl.textContent = artist;
 
-      status.textContent = "";
+  const { data, error } = await supabase
+    .from("uploads")
+    .select("*")
+    .eq("artist", artist)
+    .order("created_at", { ascending: false });
 
-      const uploads = data || [];
-      const totalLikes = uploads.reduce((sum, item) => sum + (item.likes || 0), 0);
-      stats.textContent = `${uploads.length} uploads • ❤️ ${totalLikes} total likes`;
+  if (error) {
+    grid.innerHTML = "❌ Error loading artist";
+    console.error(error);
+    return;
+  }
 
-      uploads.forEach((item) => {
-        const card = document.createElement("div");
-        card.className = "card";
+  if (!data.length) {
+    grid.innerHTML = "No uploads yet.";
+    statsEl.textContent = "0 uploads";
+    return;
+  }
 
-        const img = document.createElement("img");
-        img.src = item.image_url;
-        img.alt = item.artist;
+  // 📊 Stats
+  const totalUploads = data.length;
+  const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
 
-        const body = document.createElement("div");
-        body.className = "body";
+  statsEl.textContent = `${totalUploads} uploads • ❤️ ${totalLikes} likes`;
 
-        const cat = document.createElement("div");
-        cat.className = "cat";
-        cat.textContent = item.category;
+  // 🖼 Render images
+  data.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-        const likes = document.createElement("div");
-        likes.className = "likes";
-        likes.textContent = `❤️ ${item.likes || 0} likes`;
+    card.innerHTML = `
+      <img src="${item.image_url}" />
+      <div class="info">
+        <div class="category">${item.category}</div>
+        <div>❤️ ${item.likes || 0}</div>
+      </div>
+    `;
 
-        const view = document.createElement("a");
-        view.className = "view";
-        view.href = item.image_url;
-        view.target = "_blank";
-        view.textContent = "View Full Image";
+    grid.appendChild(card);
+  });
+}
 
-        body.appendChild(cat);
-        body.appendChild(likes);
-        body.appendChild(view);
+loadArtist();
+</script>
 
-        card.appendChild(img);
-        card.appendChild(body);
-        grid.appendChild(card);
-      });
-    }
-
-    window.addEventListener("DOMContentLoaded", loadArtist);
-  </script>
 </body>
 </html>
