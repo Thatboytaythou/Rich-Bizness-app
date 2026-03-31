@@ -63,6 +63,15 @@
       font-size: 14px;
       color: #00ffaa;
     }
+
+    .logout {
+      position: absolute;
+      top: 40px;
+      right: 15px;
+      font-size: 12px;
+      cursor: pointer;
+      color: red;
+    }
   </style>
 </head>
 
@@ -70,20 +79,21 @@
 
   <!-- USER STATUS -->
   <div id="userStatus" class="user"></div>
+  <div id="logoutBtn" class="logout"></div>
 
   <h1>🔥 Rich Bizness LLC 🔥</h1>
 
   <p>Welcome to the future of art, tattoos & 3D printing</p>
 
   <!-- AUTH -->
-  <a href="auth.html">
+  <a href="auth">
     <button class="btn primary">Sign In / Sign Up</button>
   </a>
 
   <br>
 
-  <!-- MAIN ACTION -->
-  <a href="upload.html">
+  <!-- UPLOAD -->
+  <a href="upload">
     <button class="btn secondary">Upload Your Work</button>
   </a>
 
@@ -91,33 +101,43 @@
 
   <!-- NAV -->
   <div class="row">
-    <a href="gallery/">
+    <a href="gallery">
       <button class="btn secondary">View Gallery</button>
     </a>
 
-    <a href="profile.html">
+    <a href="profile">
       <button class="btn secondary">My Profile</button>
     </a>
   </div>
 
-  <!-- SUPABASE CHECK -->
+  <!-- SUPABASE -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "PASTE_YOUR_KEY_HERE";
+
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function checkUser() {
       const { data: { session } } = await supabase.auth.getSession();
 
-      const el = document.getElementById("userStatus");
+      const status = document.getElementById("userStatus");
+      const logout = document.getElementById("logoutBtn");
 
       if (session) {
-        el.innerText = "🔥 Logged in";
+        status.innerText = "🔥 Logged in";
+        logout.innerText = "Logout";
+
+        logout.onclick = async () => {
+          await supabase.auth.signOut();
+          location.reload();
+        };
+
       } else {
-        el.innerText = "Not signed in";
+        status.innerText = "Not signed in";
+        logout.innerText = "";
       }
     }
 
