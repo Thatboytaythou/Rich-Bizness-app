@@ -1,15 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>My Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: #0b0b0b;
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid #222;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 16px;
+      margin: 10px 0;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      margin-top: 12px;
+      border-radius: 14px;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .green {
+      background: #1ce783;
+      color: #000;
+      font-weight: bold;
+    }
+
+    .dark {
+      background: #222;
+      color: #fff;
+    }
+
+    #status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #ccc;
+    }
+
+    a {
+      color: #1ce783;
+      text-decoration: none;
+      display: block;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+<a href="/">← Home</a>
+
+<div class="box">
+  <h1>My Profile</h1>
+
+  <p id="status">Loading...</p>
+
+  <input id="username" placeholder="Username" />
+  <input id="displayName" placeholder="Display Name" />
+  <textarea id="bio" placeholder="Bio"></textarea>
+
+  <button id="saveBtn" class="green">Save Profile</button>
+  <button id="logoutBtn" class="dark">Logout</button>
+</div>
+
 <script type="module">
 import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
 const supabase = createClient(
   "https://ksvdequymkceevocgpdj.supabase.co",
-  "YOUR_ANON_KEY"
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
 );
 
 const usernameInput = document.getElementById("username");
 const displayNameInput = document.getElementById("displayName");
 const bioInput = document.getElementById("bio");
 const statusText = document.getElementById("status");
+
+let currentUser = null;
 
 async function loadProfile() {
   const { data: { session } } = await supabase.auth.getSession();
@@ -19,39 +112,29 @@ async function loadProfile() {
     return;
   }
 
-  const user = session.user;
+  currentUser = session.user;
 
-  // 🔥 GET PROFILE
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", currentUser.id)
     .single();
 
   if (error || !data) {
-    console.log("No profile found, creating one...");
+    console.log("Creating profile...");
 
-    // 🔥 AUTO CREATE PROFILE IF MISSING
-    const { error: insertError } = await supabase
-      .from("profiles")
-      .insert([
-        {
-          id: user.id,
-          username: user.email.split("@")[0],
-          display_name: "New User",
-          bio: ""
-        }
-      ]);
+    await supabase.from("profiles").insert([
+      {
+        id: currentUser.id,
+        username: currentUser.email.split("@")[0],
+        display_name: "New User",
+        bio: ""
+      }
+    ]);
 
-    if (insertError) {
-      statusText.textContent = "Error creating profile: " + insertError.message;
-      return;
-    }
-
-    return loadProfile(); // retry
+    return loadProfile();
   }
 
-  // ✅ LOAD INTO UI
   usernameInput.value = data.username || "";
   displayNameInput.value = data.display_name || "";
   bioInput.value = data.bio || "";
@@ -60,8 +143,7 @@ async function loadProfile() {
 }
 
 async function saveProfile() {
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session.user;
+  statusText.textContent = "Saving...";
 
   const { error } = await supabase
     .from("profiles")
@@ -70,7 +152,7 @@ async function saveProfile() {
       display_name: displayNameInput.value,
       bio: bioInput.value
     })
-    .eq("id", user.id);
+    .eq("id", currentUser.id);
 
   if (error) {
     statusText.textContent = error.message;
@@ -85,10 +167,11 @@ async function logout() {
   window.location.href = "/auth.html";
 }
 
-// BUTTONS
 document.getElementById("saveBtn").addEventListener("click", saveProfile);
 document.getElementById("logoutBtn").addEventListener("click", logout);
 
-// INIT
 loadProfile();
 </script>
+
+</body>
+</html>
