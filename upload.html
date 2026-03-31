@@ -6,59 +6,86 @@
   <style>
     body {
       margin: 0;
-      background: black;
-      color: white;
+      background: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 20px;
+      padding: 24px;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
     }
 
     h1 {
-      margin-top: 20px;
+      font-size: 32px;
+      margin: 20px 0 30px;
     }
 
     input, select, button {
-      width: 90%;
-      max-width: 400px;
-      padding: 14px;
-      margin: 10px 0;
-      font-size: 16px;
-      border-radius: 10px;
-      border: none;
+      width: 100%;
       box-sizing: border-box;
+      max-width: 680px;
+      padding: 18px 20px;
+      margin: 14px auto;
+      font-size: 18px;
+      border-radius: 18px;
+      border: none;
+      display: block;
+    }
+
+    input, select {
+      background: #e9e9e9;
+      color: #111;
+    }
+
+    input[type="file"] {
+      background: transparent;
+      color: #fff;
+      padding: 0;
+      border-radius: 0;
     }
 
     button {
-      background: #00ffaa;
-      color: black;
-      font-weight: bold;
+      background: #11f0a5;
+      color: #000;
+      font-weight: 700;
       cursor: pointer;
     }
 
+    .status {
+      margin-top: 18px;
+      min-height: 28px;
+      font-size: 18px;
+      white-space: pre-wrap;
+    }
+
     a {
-      color: #4da3ff;
+      color: #5da8ff;
+      text-decoration: underline;
+      font-size: 18px;
+      display: inline-block;
+      margin-top: 14px;
+    }
+
+    .toplink {
+      color: #11f0a5;
       text-decoration: none;
-    }
-
-    #welcome {
-      color: #00ffaa;
-      margin-bottom: 20px;
-    }
-
-    #status {
-      margin-top: 20px;
-      line-height: 1.6;
+      font-size: 18px;
+      margin-bottom: 12px;
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <a class="toplink" href="/index.html">← Home</a>
 
-  <h1>🔥 Upload Your Work 🔥</h1>
-  <p id="welcome"></p>
+    <h1>🔥 Upload Your Work 🔥</h1>
 
-  <form id="uploadForm">
-    <input id="artistName" type="text" placeholder="Artist Name" required />
-    <input id="fileInput" type="file" accept="image/*" required />
+    <input id="artistName" type="text" placeholder="Artist Name" />
+
+    <input id="fileInput" type="file" accept="image/*" />
 
     <select id="category">
       <option value="Tattoo">Tattoo</option>
@@ -66,84 +93,116 @@
       <option value="3D Print">3D Print</option>
     </select>
 
-    <button type="submit">Upload</button>
-  </form>
+    <button id="uploadBtn">Upload</button>
 
-  <p id="status"></p>
+    <div id="status" class="status"></div>
 
-  <p>
-    <a href="gallery">View Gallery</a>
-  </p>
+    <a href="/gallery/index.html">View Gallery</a>
+  </div>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const BUCKET = "Artist-uploads";
+    const BUCKET = "artist-uploads";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let currentUser = null;
+    const artistNameInput = document.getElementById("artistName");
+    const fileInput = document.getElementById("fileInput");
+    const categoryInput = document.getElementById("category");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const statusEl = document.getElementById("status");
 
-    async function loadUser() {
-      const { data: authData, error: authError } = await supabase.auth.getUser();
-
-      if (authError) {
-        document.getElementById("status").textContent = "Auth error: " + authError.message;
-        return;
-      }
-
-      currentUser = authData.user;
-
-      if (!currentUser) {
-        window.location.href = "auth";
-        return;
-      }
-
-      document.getElementById("welcome").textContent = "Logged in as " + currentUser.email;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (profile) {
-        document.getElementById("artistName").value =
-          profile.display_name || profile.username || "";
-      }
+    function setStatus(text, isError = false) {
+      statusEl.textContent = text;
+      statusEl.style.color = isError ? "#ff6b6b" : "#ffffff";
     }
 
-    async function handleUpload(e) {
-      e.preventDefault();
+    async function getCurrentUser() {
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession();
 
-      const status = document.getElementById("status");
-      const artist = document.getElementById("artistName").value.trim();
-      const category = document.getElementById("category").value;
-      const file = document.getElementById("fileInput").files[0];
+      if (error) {
+        console.error(error);
+        return null;
+      }
 
-      if (!currentUser) {
-        status.textContent = "You must be signed in.";
+      return session?.user || null;
+    }
+
+    async function loadArtistName() {
+      setStatus("Checking login...");
+
+      const user = await getCurrentUser();
+
+      if (!user) {
+        setStatus("Please log in first.");
+        setTimeout(() => {
+          window.location.href = "/auth.html";
+        }, 1000);
         return;
       }
 
-      if (!artist || !file) {
-        status.textContent = "Please fill out all fields.";
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("username, display_name")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error(error);
+      }
+
+      artistNameInput.value =
+        profile?.display_name ||
+        profile?.username ||
+        user.email?.split("@")[0] ||
+        "";
+
+      setStatus("");
+    }
+
+    async function uploadWork() {
+      const user = await getCurrentUser();
+
+      if (!user) {
+        setStatus("Auth error: Auth session missing!", true);
+        setTimeout(() => {
+          window.location.href = "/auth.html";
+        }, 1000);
         return;
       }
 
-      status.textContent = "Uploading...";
+      const artistName = artistNameInput.value.trim();
+      const category = categoryInput.value;
+      const file = fileInput.files[0];
 
-      const safeName = file.name.replace(/\s+/g, "-").toLowerCase();
-      const filePath = `${Date.now()}-${safeName}`;
+      if (!artistName) {
+        setStatus("Enter your artist name.", true);
+        return;
+      }
 
-      const { error: uploadError } = await supabase.storage
+      if (!file) {
+        setStatus("Choose an image first.", true);
+        return;
+      }
+
+      setStatus("Uploading...");
+
+      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const filePath = `${user.id}/${Date.now()}-${safeName}.${ext}`.replace(/\.(\w+)\.(\w+)$/, '.$2');
+
+      const { error: storageError } = await supabase.storage
         .from(BUCKET)
-        .upload(filePath, file);
+        .upload(filePath, file, { upsert: false });
 
-      if (uploadError) {
-        status.textContent = "Upload failed: " + uploadError.message;
+      if (storageError) {
+        setStatus("Storage upload failed: " + storageError.message, true);
         return;
       }
 
@@ -153,35 +212,34 @@
 
       const imageUrl = publicData.publicUrl;
 
-      const { error: dbError } = await supabase
+      const { error: insertError } = await supabase
         .from("uploads")
         .insert([
           {
-            user_id: currentUser.id,
-            artist: artist,
-            category: category,
+            artist: artistName,
             image_url: imageUrl,
-            likes: 0
+            category: category,
+            likes: 0,
+            user_id: user.id
           }
         ]);
 
-      if (dbError) {
-        status.textContent = "Database error: " + dbError.message;
+      if (insertError) {
+        setStatus("Database save failed: " + insertError.message, true);
         return;
       }
 
-      status.innerHTML = `
-        ✅ Upload complete!<br><br>
-        <a href="${imageUrl}" target="_blank">View Image</a><br><br>
-        <a href="gallery">Go to Gallery</a>
-      `;
+      setStatus("Upload complete ✅");
+      fileInput.value = "";
 
-      document.getElementById("fileInput").value = "";
+      setTimeout(() => {
+        window.location.href = "/gallery/index.html";
+      }, 1000);
     }
 
-    document.getElementById("uploadForm").addEventListener("submit", handleUpload);
+    uploadBtn.addEventListener("click", uploadWork);
 
-    loadUser();
+    await loadArtistName();
   </script>
 </body>
 </html>
