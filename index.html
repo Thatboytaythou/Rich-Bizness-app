@@ -2,35 +2,127 @@
 <html>
 <head>
   <title>Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <style>
     body {
       margin: 0;
       background: black;
       color: white;
-      text-align: center;
       font-family: Arial, sans-serif;
-      padding: 40px;
+      text-align: center;
     }
+
+    h1 {
+      font-size: 48px;
+      margin-top: 60px;
+    }
+
+    p {
+      font-size: 20px;
+      margin-bottom: 40px;
+      color: #ccc;
+    }
+
     .btn {
-      padding: 16px 24px;
+      padding: 16px 28px;
       font-size: 18px;
       border-radius: 12px;
       border: none;
-      margin: 10px;
       cursor: pointer;
+      margin: 10px;
+      transition: 0.2s;
     }
-    .primary { background: #00ffaa; color: black; }
-    .secondary { background: #ddd; color: black; }
+
+    .btn:hover {
+      transform: scale(1.05);
+    }
+
+    .primary {
+      background: #00ff99;
+      color: black;
+      font-weight: bold;
+    }
+
+    .secondary {
+      background: #ddd;
+      color: black;
+    }
+
+    .row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .user {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 14px;
+      color: #00ffaa;
+    }
   </style>
 </head>
+
 <body>
+
+  <!-- USER STATUS -->
+  <div id="userStatus" class="user"></div>
+
   <h1>🔥 Rich Bizness LLC 🔥</h1>
+
   <p>Welcome to the future of art, tattoos & 3D printing</p>
 
-  <a href="/auth.html"><button class="btn primary">Sign In / Sign Up</button></a>
-  <a href="/upload.html"><button class="btn secondary">Upload Your Work</button></a>
-  <a href="/gallery/index.html"><button class="btn secondary">View Gallery</button></a>
-  <a href="/profile.html"><button class="btn secondary">My Profile</button></a>
+  <!-- AUTH -->
+  <a href="auth.html">
+    <button class="btn primary">Sign In / Sign Up</button>
+  </a>
+
+  <br>
+
+  <!-- MAIN ACTION -->
+  <a href="upload.html">
+    <button class="btn secondary">Upload Your Work</button>
+  </a>
+
+  <br><br>
+
+  <!-- NAV -->
+  <div class="row">
+    <a href="gallery/">
+      <button class="btn secondary">View Gallery</button>
+    </a>
+
+    <a href="profile.html">
+      <button class="btn secondary">My Profile</button>
+    </a>
+  </div>
+
+  <!-- SUPABASE CHECK -->
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_KEY_HERE";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    async function checkUser() {
+      const { data: { session } } = await supabase.auth.getSession();
+
+      const el = document.getElementById("userStatus");
+
+      if (session) {
+        el.innerText = "🔥 Logged in";
+      } else {
+        el.innerText = "Not signed in";
+      }
+    }
+
+    checkUser();
+  </script>
+
 </body>
 </html>
