@@ -1,386 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Rich Bizness Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      padding: 24px;
-      text-align: center;
-    }
-
-    .box {
-      max-width: 720px;
-      margin: 0 auto;
-      background: #0b0b0b;
-      border: 1px solid #222;
-      border-radius: 28px;
-      padding: 28px 22px 32px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 8px 0 28px;
-    }
-
-    h2 {
-      font-size: 28px;
-      margin: 20px 0 18px;
-    }
-
-    input, button {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 18px 20px;
-      margin: 12px 0;
-      border-radius: 18px;
-      border: none;
-      font-size: 18px;
-    }
-
-    input {
-      background: #e9e9e9;
-      color: #111;
-    }
-
-    button {
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .primary {
-      background: #11f0a5;
-      color: #000;
-    }
-
-    .secondary {
-      background: #1b1b1b;
-      color: #fff;
-    }
-
-    .divider {
-      height: 1px;
-      background: #555;
-      margin: 28px 0;
-    }
-
-    .msg {
-      margin-top: 16px;
-      min-height: 24px;
-      color: #fff;
-      font-size: 16px;
-      white-space: pre-wrap;
-    }
-
-    a {
-      color: #5da8ff;
-      text-decoration: underline;
-      font-size: 16px;
-    }
-
-    .sub {
-      color: #bbb;
-      margin-top: -10px;
-      margin-bottom: 18px;
-      font-size: 15px;
-    }
-
-    .hidden {
-      display: none;
-    }
-  </style>
+  <title>Auth</title>
 </head>
 <body>
-  <div class="box">
-    <h1>🔥 Rich Bizness Login 🔥</h1>
 
-    <div id="confirmBox" class="msg"></div>
+<h2>Sign Up</h2>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
+<input id="username" placeholder="Username">
+<input id="displayName" placeholder="Display Name">
+<button id="signupBtn">Sign Up</button>
 
-    <div id="signupSection">
-      <h2>Create Account</h2>
-      <div class="sub">Make your artist account and profile</div>
+<h2>Login</h2>
+<input id="loginEmail" placeholder="Email">
+<input id="loginPassword" type="password" placeholder="Password">
+<button id="loginBtn">Login</button>
 
-      <input id="signupEmail" type="email" placeholder="Email" />
-      <input id="signupPassword" type="password" placeholder="Password" />
-      <input id="signupUsername" type="text" placeholder="Username" />
-      <input id="signupDisplayName" type="text" placeholder="Display Name" />
+<p id="msg"></p>
 
-      <button id="signupBtn" class="primary">Sign Up</button>
+<script type="module">
+import { supabase } from "./config.js"
 
-      <div class="divider"></div>
-    </div>
+const msg = document.getElementById("msg")
 
-    <div id="loginSection">
-      <h2>Log In</h2>
+function setMsg(text, error=false){
+  msg.textContent = text
+  msg.style.color = error ? "red" : "green"
+}
 
-      <input id="loginEmail" type="email" placeholder="Email" />
-      <input id="loginPassword" type="password" placeholder="Password" />
+// 🔥 SIGN UP
+async function signUp(){
+  const email = document.getElementById("email").value
+  const password = document.getElementById("password").value
+  const username = document.getElementById("username").value
+  const displayName = document.getElementById("displayName").value
 
-      <button id="loginBtn" class="secondary">Log In</button>
-    </div>
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password
+  })
 
-    <div id="msg" class="msg"></div>
+  if (error){
+    setMsg(error.message, true)
+    return
+  }
 
-    <p style="margin-top: 18px;">
-      <a href="/index.html">Back Home</a>
-    </p>
-  </div>
+  setMsg("Check your email to confirm 🔥")
+}
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+// 🔥 LOGIN
+async function logIn(){
+  const email = document.getElementById("loginEmail").value
+  const password = document.getElementById("loginPassword").value
 
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+  const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (error){
+    setMsg(error.message, true)
+    return
+  }
 
-    const msg = document.getElementById("msg");
-    const confirmBox = document.getElementById("confirmBox");
-    const signupSection = document.getElementById("signupSection");
-    const loginSection = document.getElementById("loginSection");
+  window.location.href = "/profile.html"
+}
 
-    function setMsg(text, isError = false) {
-      msg.textContent = text;
-      msg.style.color = isError ? "#ff6b6b" : "#ffffff";
-    }
+document.getElementById("signupBtn").onclick = signUp
+document.getElementById("loginBtn").onclick = logIn
+</script>
 
-    function setConfirmMsg(text, isError = false) {
-      confirmBox.textContent = text;
-      confirmBox.style.color = isError ? "#ff6b6b" : "#11f0a5";
-    }
-
-    function savePendingProfile(username, displayName) {
-      localStorage.setItem(
-        "rb_pending_profile",
-        JSON.stringify({ username, displayName })
-      );
-    }
-
-    function getPendingProfile() {
-      try {
-        return JSON.parse(localStorage.getItem("rb_pending_profile") || "null");
-      } catch {
-        return null;
-      }
-    }
-
-    function clearPendingProfile() {
-      localStorage.removeItem("rb_pending_profile");
-    }
-
-    async function ensureProfile(user, fallbackEmail = "") {
-      const pending = getPendingProfile();
-      const emailName = fallbackEmail && fallbackEmail.includes("@")
-        ? fallbackEmail.split("@")[0]
-        : "artist";
-
-      const username = pending?.username || user?.user_metadata?.username || emailName;
-      const displayName = pending?.displayName || user?.user_metadata?.display_name || emailName;
-
-      const { data: existing, error: existingError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (existingError) {
-        return { ok: false, message: existingError.message };
-      }
-
-      if (!existing) {
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert([
-            {
-              id: user.id,
-              username: username,
-              display_name: displayName
-            }
-          ]);
-
-        if (insertError) {
-          return { ok: false, message: insertError.message };
-        }
-      }
-
-      clearPendingProfile();
-      return { ok: true };
-    }
-
-    async function handleSessionRedirect() {
-      const hash = window.location.hash || "";
-      const search = window.location.search || "";
-      const hasAuthTokens =
-        hash.includes("access_token") ||
-        hash.includes("refresh_token") ||
-        search.includes("code=");
-
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        const result = await ensureProfile(session.user, session.user.email || "");
-        if (!result.ok) {
-          setConfirmMsg("Logged in, but profile setup failed: " + result.message, true);
-          return;
-        }
-
-        setConfirmMsg("Email confirmed and login successful.");
-        setTimeout(() => {
-          window.location.href = "/profile.html";
-        }, 1200);
-        return;
-      }
-
-      if (hasAuthTokens) {
-        setConfirmMsg("Finishing email confirmation...");
-        setTimeout(async () => {
-          const {
-            data: { session: retrySession }
-          } = await supabase.auth.getSession();
-
-          if (retrySession?.user) {
-            const result = await ensureProfile(retrySession.user, retrySession.user.email || "");
-            if (!result.ok) {
-              setConfirmMsg("Logged in, but profile setup failed: " + result.message, true);
-              return;
-            }
-
-            setConfirmMsg("Email confirmed and login successful.");
-            setTimeout(() => {
-              window.location.href = "/profile.html";
-            }, 1200);
-          } else {
-            setConfirmMsg("Email confirmed. Please log in below.");
-          }
-        }, 1200);
-      }
-    }
-
-    supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === "SIGNED_IN" && session?.user) {
-        const result = await ensureProfile(session.user, session.user.email || "");
-        if (!result.ok) {
-          setConfirmMsg("Signed in, but profile setup failed: " + result.message, true);
-          return;
-        }
-
-        setConfirmMsg("Signed in successfully.");
-        setTimeout(() => {
-          window.location.href = "/profile.html";
-        }, 800);
-      }
-    });
-
-    async function signUp() {
-      const email = document.getElementById("signupEmail").value.trim();
-      const password = document.getElementById("signupPassword").value;
-      const username = document.getElementById("signupUsername").value.trim();
-      const displayName = document.getElementById("signupDisplayName").value.trim();
-
-      if (!email || !password || !username || !displayName) {
-        setMsg("Fill out all sign up fields.", true);
-        return;
-      }
-
-      savePendingProfile(username, displayName);
-      setMsg("Creating account...");
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: "https://rich-bizness-app.vercel.app/auth.html",
-          data: {
-            username: username,
-            display_name: displayName
-          }
-        }
-      });
-
-      if (error) {
-        setMsg(error.message, true);
-        return;
-      }
-
-      if (data.session?.user) {
-        const result = await ensureProfile(data.session.user, email);
-        if (!result.ok) {
-          setMsg("Account created, but profile save failed: " + result.message, true);
-          return;
-        }
-
-        setMsg("Account created and profile saved.");
-        setTimeout(() => {
-          window.location.href = "/profile.html";
-        }, 1000);
-        return;
-      }
-
-      setMsg("Account created. Check your email and tap the newest confirmation link.");
-    }
-
-    async function logIn() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-
-      if (!email || !password) {
-        setMsg("Enter email and password.", true);
-        return;
-      }
-
-      setMsg("Logging in...");
-
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        setMsg(error.message, true);
-        return;
-      }
-
-      if (!data.user) {
-        setMsg("Login failed.", true);
-        return;
-      }
-
-      const result = await ensureProfile(data.user, email);
-      if (!result.ok) {
-        setMsg("Login worked, but profile setup failed: " + result.message, true);
-        return;
-      }
-
-      setMsg("Login successful.");
-      window.location.href = "/profile.html";
-    }
-
-    async function checkExistingUser() {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-
-      if (session?.user) {
-        const result = await ensureProfile(session.user, session.user.email || "");
-        if (!result.ok) {
-          setConfirmMsg("Signed in, but profile setup failed: " + result.message, true);
-          return;
-        }
-        window.location.href = "/profile.html";
-      }
-    }
-
-    document.getElementById("signupBtn").addEventListener("click", signUp);
-    document.getElementById("loginBtn").addEventListener("click", logIn);
-
-    await handleSessionRedirect();
-    await checkExistingUser();
-  </script>
 </body>
 </html>
