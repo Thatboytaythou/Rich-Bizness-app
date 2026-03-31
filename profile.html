@@ -1,239 +1,94 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>My Profile - Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      color: white;
-      font-family: Arial, sans-serif;
-      padding: 24px;
-      text-align: center;
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "YOUR_ANON_KEY"
+);
+
+const usernameInput = document.getElementById("username");
+const displayNameInput = document.getElementById("displayName");
+const bioInput = document.getElementById("bio");
+const statusText = document.getElementById("status");
+
+async function loadProfile() {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    window.location.href = "/auth.html";
+    return;
+  }
+
+  const user = session.user;
+
+  // 🔥 GET PROFILE
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !data) {
+    console.log("No profile found, creating one...");
+
+    // 🔥 AUTO CREATE PROFILE IF MISSING
+    const { error: insertError } = await supabase
+      .from("profiles")
+      .insert([
+        {
+          id: user.id,
+          username: user.email.split("@")[0],
+          display_name: "New User",
+          bio: ""
+        }
+      ]);
+
+    if (insertError) {
+      statusText.textContent = "Error creating profile: " + insertError.message;
+      return;
     }
 
-    .box {
-      max-width: 700px;
-      margin: 0 auto;
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 20px;
-      padding: 20px;
-    }
+    return loadProfile(); // retry
+  }
 
-    input, textarea, button {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
-      box-sizing: border-box;
-    }
+  // ✅ LOAD INTO UI
+  usernameInput.value = data.username || "";
+  displayNameInput.value = data.display_name || "";
+  bioInput.value = data.bio || "";
 
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
+  statusText.textContent = "";
+}
 
-    .primary {
-      background: #00ffaa;
-      color: black;
-      font-weight: bold;
-    }
+async function saveProfile() {
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session.user;
 
-    .secondary {
-      background: #222;
-      color: white;
-    }
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      username: usernameInput.value,
+      display_name: displayNameInput.value,
+      bio: bioInput.value
+    })
+    .eq("id", user.id);
 
-    a {
-      color: #00ffaa;
-      text-decoration: none;
-    }
+  if (error) {
+    statusText.textContent = error.message;
+    return;
+  }
 
-    .avatar {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      background: #222;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 14px;
-      font-size: 38px;
-    }
+  statusText.textContent = "Profile saved ✅";
+}
 
-    .muted {
-      color: #aaa;
-      margin-bottom: 14px;
-    }
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "/auth.html";
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 14px;
-      margin-top: 24px;
-    }
+// BUTTONS
+document.getElementById("saveBtn").addEventListener("click", saveProfile);
+document.getElementById("logoutBtn").addEventListener("click", logout);
 
-    .card {
-      background: #111;
-      border: 1px solid #222;
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .card .info {
-      padding: 10px;
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-
-  <p><a href="/">← Home</a></p>
-
-  <div class="box">
-    <div class="avatar">👤</div>
-    <h1>My Profile</h1>
-    <p class="muted" id="emailText">Loading...</p>
-
-    <input id="username" type="text" placeholder="Username" />
-    <input id="displayName" type="text" placeholder="Display Name" />
-    <textarea id="bio" placeholder="Bio"></textarea>
-
-    <button class="primary" id="saveBtn">Save Profile</button>
-    <button class="secondary" id="logoutBtn">Logout</button>
-
-    <p id="status"></p>
-  </div>
-
-  <h2 style="margin-top:28px;">My Uploads</h2>
-  <div id="uploadsGrid" class="grid"></div>
-
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    let currentUser = null;
-
-    const emailText = document.getElementById("emailText");
-    const usernameEl = document.getElementById("username");
-    const displayNameEl = document.getElementById("displayName");
-    const bioEl = document.getElementById("bio");
-    const statusEl = document.getElementById("status");
-    const uploadsGrid = document.getElementById("uploadsGrid");
-
-    async function loadUser() {
-      const { data, error } = await supabase.auth.getUser();
-
-      if (error || !data.user) {
-        window.location.href = "auth";
-        return;
-      }
-
-      currentUser = data.user;
-      emailText.textContent = currentUser.email || "Logged in";
-
-      await loadProfile();
-      await loadUploads();
-    }
-
-    async function loadProfile() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .single();
-
-      if (error) {
-        statusEl.textContent = "Profile not found yet. Save to create it.";
-        return;
-      }
-
-      usernameEl.value = data.username || "";
-      displayNameEl.value = data.display_name || "";
-      bioEl.value = data.bio || "";
-    }
-
-    async function saveProfile() {
-      statusEl.textContent = "Saving...";
-
-      const payload = {
-        id: currentUser.id,
-        username: usernameEl.value.trim(),
-        display_name: displayNameEl.value.trim(),
-        bio: bioEl.value.trim(),
-        avatar_url: ""
-      };
-
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(payload);
-
-      if (error) {
-        statusEl.textContent = "Save failed: " + error.message;
-        return;
-      }
-
-      statusEl.textContent = "✅ Profile saved";
-    }
-
-    async function loadUploads() {
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("*")
-        .eq("user_id", currentUser.id)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        uploadsGrid.innerHTML = "Could not load uploads.";
-        return;
-      }
-
-      if (!data.length) {
-        uploadsGrid.innerHTML = "No uploads yet.";
-        return;
-      }
-
-      uploadsGrid.innerHTML = "";
-
-      data.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "card";
-        card.innerHTML = `
-          <img src="${item.image_url}" alt="${item.artist}">
-          <div class="info">
-            <div><strong>${item.artist}</strong></div>
-            <div>${item.category}</div>
-            <div>❤️ ${item.likes || 0}</div>
-          </div>
-        `;
-        uploadsGrid.appendChild(card);
-      });
-    }
-
-    async function logout() {
-      await supabase.auth.signOut();
-      window.location.href = "/";
-    }
-
-    document.getElementById("saveBtn").addEventListener("click", saveProfile);
-    document.getElementById("logoutBtn").addEventListener("click", logout);
-
-    loadUser();
-  </script>
-</body>
-</html>
+// INIT
+loadProfile();
+</script>
