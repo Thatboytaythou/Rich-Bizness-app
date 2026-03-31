@@ -1,42 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Auth</title>
+  <title>Rich Bizness Auth</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .box {
+      max-width: 500px;
+      margin: auto;
+      background: #0b0b0b;
+      border: 1px solid #222;
+      border-radius: 20px;
+      padding: 30px;
+    }
+
+    h2 {
+      margin-top: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 15px;
+      margin-top: 10px;
+      border-radius: 12px;
+      border: none;
+      background: #19e68c;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .loginBtn {
+      background: #222;
+      color: #fff;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
 
+<div class="box">
+
 <h2>Sign Up</h2>
+
 <input id="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <input id="username" placeholder="Username">
 <input id="displayName" placeholder="Display Name">
+
 <button id="signupBtn">Sign Up</button>
 
+<hr style="margin: 30px 0; border-color:#222;">
+
 <h2>Login</h2>
+
 <input id="loginEmail" placeholder="Email">
 <input id="loginPassword" type="password" placeholder="Password">
-<button id="loginBtn">Login</button>
+
+<button class="loginBtn" id="loginBtn">Log In</button>
 
 <p id="msg"></p>
 
+</div>
+
 <script type="module">
-import { supabase } from "./config.js"
+import { createClient } from "https://esm.sh/@supabase/supabase-js"
+
+const supabase = createClient(
+  "https://ksvdcguykmceevocgpdj.supabase.co",
+  "YOUR_ANON_KEY"
+)
 
 const msg = document.getElementById("msg")
 
 function setMsg(text, error=false){
   msg.textContent = text
-  msg.style.color = error ? "red" : "green"
+  msg.style.color = error ? "red" : "#19e68c"
 }
 
 // 🔥 SIGN UP
 async function signUp(){
   const email = document.getElementById("email").value
   const password = document.getElementById("password").value
-  const username = document.getElementById("username").value
-  const displayName = document.getElementById("displayName").value
 
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password
   })
