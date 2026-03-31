@@ -88,30 +88,40 @@
       margin-bottom: 18px;
       font-size: 15px;
     }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
   <div class="box">
     <h1>🔥 Rich Bizness Login 🔥</h1>
 
-    <h2>Create Account</h2>
-    <div class="sub">Make your artist account and profile</div>
+    <div id="confirmBox" class="msg"></div>
 
-    <input id="signupEmail" type="email" placeholder="Email" />
-    <input id="signupPassword" type="password" placeholder="Password" />
-    <input id="signupUsername" type="text" placeholder="Username" />
-    <input id="signupDisplayName" type="text" placeholder="Display Name" />
+    <div id="signupSection">
+      <h2>Create Account</h2>
+      <div class="sub">Make your artist account and profile</div>
 
-    <button id="signupBtn" class="primary">Sign Up</button>
+      <input id="signupEmail" type="email" placeholder="Email" />
+      <input id="signupPassword" type="password" placeholder="Password" />
+      <input id="signupUsername" type="text" placeholder="Username" />
+      <input id="signupDisplayName" type="text" placeholder="Display Name" />
 
-    <div class="divider"></div>
+      <button id="signupBtn" class="primary">Sign Up</button>
 
-    <h2>Log In</h2>
+      <div class="divider"></div>
+    </div>
 
-    <input id="loginEmail" type="email" placeholder="Email" />
-    <input id="loginPassword" type="password" placeholder="Password" />
+    <div id="loginSection">
+      <h2>Log In</h2>
 
-    <button id="loginBtn" class="secondary">Log In</button>
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+
+      <button id="loginBtn" class="secondary">Log In</button>
+    </div>
 
     <div id="msg" class="msg"></div>
 
@@ -127,11 +137,20 @@
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
     const msg = document.getElementById("msg");
+    const confirmBox = document.getElementById("confirmBox");
+    const signupSection = document.getElementById("signupSection");
+    const loginSection = document.getElementById("loginSection");
 
     function setMsg(text, isError = false) {
       msg.textContent = text;
       msg.style.color = isError ? "#ff6b6b" : "#ffffff";
+    }
+
+    function setConfirmMsg(text, isError = false) {
+      confirmBox.textContent = text;
+      confirmBox.style.color = isError ? "#ff6b6b" : "#11f0a5";
     }
 
     function savePendingProfile(username, displayName) {
@@ -153,32 +172,23 @@
       localStorage.removeItem("rb_pending_profile");
     }
 
-    async function upsertProfileForCurrentUser(fallbackEmail = "") {
-      const {
-        data: { user },
-        error: userError
-      } = await supabase.auth.getUser();
-
-      if (userError || !user) {
-        return { ok: false, message: "No logged-in user found." };
-      }
-
+    async function ensureProfile(user, fallbackEmail = "") {
       const pending = getPendingProfile();
       const emailName = fallbackEmail && fallbackEmail.includes("@")
         ? fallbackEmail.split("@")[0]
         : "artist";
 
-      const username = pending?.username || emailName;
-      const displayName = pending?.displayName || emailName;
+      const username = pending?.username || user?.user_metadata?.username || emailName;
+      const displayName = pending?.displayName || user?.user_metadata?.display_name || emailName;
 
-      const { data: existing, error: selectError } = await supabase
+      const { data: existing, error: existingError } = await supabase
         .from("profiles")
         .select("id")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (selectError) {
-        return { ok: false, message: selectError.message };
+      if (existingError) {
+        return { ok: false, message: existingError.message };
       }
 
       if (!existing) {
@@ -201,6 +211,72 @@
       return { ok: true };
     }
 
+    async function handleSessionRedirect() {
+      const hash = window.location.hash || "";
+      const search = window.location.search || "";
+      const hasAuthTokens =
+        hash.includes("access_token") ||
+        hash.includes("refresh_token") ||
+        search.includes("code=");
+
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const result = await ensureProfile(session.user, session.user.email || "");
+        if (!result.ok) {
+          setConfirmMsg("Logged in, but profile setup failed: " + result.message, true);
+          return;
+        }
+
+        setConfirmMsg("Email confirmed and login successful.");
+        setTimeout(() => {
+          window.location.href = "/profile.html";
+        }, 1200);
+        return;
+      }
+
+      if (hasAuthTokens) {
+        setConfirmMsg("Finishing email confirmation...");
+        setTimeout(async () => {
+          const {
+            data: { session: retrySession }
+          } = await supabase.auth.getSession();
+
+          if (retrySession?.user) {
+            const result = await ensureProfile(retrySession.user, retrySession.user.email || "");
+            if (!result.ok) {
+              setConfirmMsg("Logged in, but profile setup failed: " + result.message, true);
+              return;
+            }
+
+            setConfirmMsg("Email confirmed and login successful.");
+            setTimeout(() => {
+              window.location.href = "/profile.html";
+            }, 1200);
+          } else {
+            setConfirmMsg("Email confirmed. Please log in below.");
+          }
+        }, 1200);
+      }
+    }
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const result = await ensureProfile(session.user, session.user.email || "");
+        if (!result.ok) {
+          setConfirmMsg("Signed in, but profile setup failed: " + result.message, true);
+          return;
+        }
+
+        setConfirmMsg("Signed in successfully.");
+        setTimeout(() => {
+          window.location.href = "/profile.html";
+        }, 800);
+      }
+    });
+
     async function signUp() {
       const email = document.getElementById("signupEmail").value.trim();
       const password = document.getElementById("signupPassword").value;
@@ -215,29 +291,38 @@
       savePendingProfile(username, displayName);
       setMsg("Creating account...");
 
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: "https://rich-bizness-app.vercel.app/auth.html",
+          data: {
+            username: username,
+            display_name: displayName
+          }
+        }
       });
 
-      if (signUpError) {
-        setMsg(signUpError.message, true);
+      if (error) {
+        setMsg(error.message, true);
         return;
       }
 
-      if (signUpData.session) {
-        const result = await upsertProfileForCurrentUser(email);
-
+      if (data.session?.user) {
+        const result = await ensureProfile(data.session.user, email);
         if (!result.ok) {
           setMsg("Account created, but profile save failed: " + result.message, true);
           return;
         }
 
         setMsg("Account created and profile saved.");
+        setTimeout(() => {
+          window.location.href = "/profile.html";
+        }, 1000);
         return;
       }
 
-      setMsg("Account created. Check your email to confirm, then log in to finish your profile.");
+      setMsg("Account created. Check your email and tap the newest confirmation link.");
     }
 
     async function logIn() {
@@ -251,7 +336,7 @@
 
       setMsg("Logging in...");
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
@@ -261,7 +346,12 @@
         return;
       }
 
-      const result = await upsertProfileForCurrentUser(email);
+      if (!data.user) {
+        setMsg("Login failed.", true);
+        return;
+      }
+
+      const result = await ensureProfile(data.user, email);
       if (!result.ok) {
         setMsg("Login worked, but profile setup failed: " + result.message, true);
         return;
@@ -271,8 +361,26 @@
       window.location.href = "/profile.html";
     }
 
+    async function checkExistingUser() {
+      const {
+        data: { session }
+      } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        const result = await ensureProfile(session.user, session.user.email || "");
+        if (!result.ok) {
+          setConfirmMsg("Signed in, but profile setup failed: " + result.message, true);
+          return;
+        }
+        window.location.href = "/profile.html";
+      }
+    }
+
     document.getElementById("signupBtn").addEventListener("click", signUp);
     document.getElementById("loginBtn").addEventListener("click", logIn);
+
+    await handleSessionRedirect();
+    await checkExistingUser();
   </script>
 </body>
 </html>
