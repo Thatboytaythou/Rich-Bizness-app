@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Rich Bizness LLC</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
     body {
@@ -11,133 +11,130 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
+      padding: 40px 20px;
     }
 
     h1 {
-      font-size: 48px;
-      margin-top: 60px;
+      font-size: 42px;
+      margin-bottom: 10px;
     }
 
     p {
-      font-size: 20px;
-      margin-bottom: 40px;
       color: #ccc;
+      font-size: 18px;
+      margin-bottom: 40px;
     }
 
     .btn {
-      padding: 16px 28px;
+      display: block;
+      width: 90%;
+      max-width: 320px;
+      margin: 15px auto;
+      padding: 16px;
       font-size: 18px;
       border-radius: 12px;
       border: none;
       cursor: pointer;
-      margin: 10px;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      transform: scale(1.05);
     }
 
     .primary {
-      background: #00ff99;
+      background: #00ffaa;
       color: black;
       font-weight: bold;
     }
 
     .secondary {
-      background: #ddd;
+      background: #ccc;
       color: black;
     }
 
     .row {
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
       gap: 15px;
+      flex-wrap: wrap;
     }
 
-    .user {
+    .row a {
+      flex: 1;
+      max-width: 160px;
+    }
+
+    .status {
       position: absolute;
       top: 15px;
       right: 15px;
-      font-size: 14px;
       color: #00ffaa;
+      font-size: 14px;
     }
 
     .logout {
       position: absolute;
       top: 40px;
       right: 15px;
+      color: red;
       font-size: 12px;
       cursor: pointer;
-      color: red;
+    }
+
+    a {
+      text-decoration: none;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- USER STATUS -->
-  <div id="userStatus" class="user"></div>
-  <div id="logoutBtn" class="logout"></div>
+  <div class="status" id="userStatus">Checking...</div>
+  <div class="logout" id="logoutBtn"></div>
 
   <h1>🔥 Rich Bizness LLC 🔥</h1>
-
   <p>Welcome to the future of art, tattoos & 3D printing</p>
 
-  <!-- AUTH -->
-  <a href="auth">
+  <a href="/auth.html">
     <button class="btn primary">Sign In / Sign Up</button>
   </a>
 
-  <br>
-
-  <!-- UPLOAD -->
-  <a href="upload">
+  <a href="/upload.html">
     <button class="btn secondary">Upload Your Work</button>
   </a>
 
-  <br><br>
-
-  <!-- NAV -->
   <div class="row">
-    <a href="gallery">
+    <a href="/gallery/index.html">
       <button class="btn secondary">View Gallery</button>
     </a>
 
-    <a href="profile">
+    <a href="/profile.html">
       <button class="btn secondary">My Profile</button>
     </a>
   </div>
 
-  <!-- SUPABASE -->
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     async function checkUser() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
 
       const status = document.getElementById("userStatus");
-      const logout = document.getElementById("logoutBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
 
-      if (session) {
-        status.innerText = "🔥 Logged in";
-        logout.innerText = "Logout";
+      if (user) {
+        status.textContent = "Logged in";
+        logoutBtn.textContent = "Logout";
 
-        logout.onclick = async () => {
+        logoutBtn.onclick = async () => {
           await supabase.auth.signOut();
-          location.reload();
+          window.location.reload();
         };
-
       } else {
-        status.innerText = "Not signed in";
-        logout.innerText = "";
+        status.textContent = "Not signed in";
+        logoutBtn.textContent = "";
       }
     }
 
