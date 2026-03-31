@@ -13,11 +13,6 @@
       text-align: center;
       padding: 20px;
     }
-
-    h1 {
-      margin-top: 20px;
-    }
-
     input, select, button {
       width: 90%;
       max-width: 400px;
@@ -27,31 +22,64 @@
       border-radius: 10px;
       border: none;
     }
-
     button {
       background: #00ffaa;
       color: black;
       font-weight: bold;
       cursor: pointer;
     }
-
-    a {
-      color: #4da3ff;
-      display: inline-block;
-      margin-top: 20px;
-    }
+    a { color: #4da3ff; }
   </style>
+</head>
+<body>
+  <h1>🔥 Upload Your Work 🔥</h1>
+  <p id="welcome"></p>
+
+  <form id="uploadForm">
+    <input id="artistName" type="text" placeholder="Artist Name" required />
+    <input id="fileInput" type="file" accept="image/*" required />
+
+    <select id="category">
+      <option value="Tattoo">Tattoo</option>
+      <option value="Art">Art</option>
+      <option value="3D Print">3D Print</option>
+    </select>
+
+    <button type="submit">Upload</button>
+  </form>
+
+  <p id="status"></p>
+  <a href="/gallery/index.html">View Gallery</a>
 
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-
+    const SUPABASE_ANON_KEY = "REPLACE_WITH_YOUR_REAL_ANON_KEY";
     const BUCKET = "Artist-uploads";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let currentUser = null;
+
+    async function loadUser() {
+      const { data: authData } = await supabase.auth.getUser();
+      currentUser = authData.user;
+
+      if (!currentUser) {
+        window.location.href = "/auth.html";
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .single();
+
+      document.getElementById("artistName").value =
+        profile?.display_name || profile?.username || "";
+      document.getElementById("welcome").textContent = `Logged in as ${currentUser.email}`;
+    }
 
     async function handleUpload(e) {
       e.preventDefault();
@@ -61,8 +89,8 @@
       const file = document.getElementById("fileInput").files[0];
       const status = document.getElementById("status");
 
-      if (!artist || !file) {
-        status.textContent = "Please fill everything out";
+      if (!artist || !file || !currentUser) {
+        status.textContent = "Missing info";
         return;
       }
 
@@ -70,7 +98,6 @@
 
       const filePath = `${Date.now()}-${file.name}`;
 
-      // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from(BUCKET)
         .upload(filePath, file);
@@ -80,20 +107,16 @@
         return;
       }
 
-      // Get public URL
-      const { data } = supabase.storage
-        .from(BUCKET)
-        .getPublicUrl(filePath);
-
+      const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
       const imageUrl = data.publicUrl;
 
-      // Save to database
       const { error: dbError } = await supabase
         .from("uploads")
         .insert([
           {
-            artist: artist,
-            category: category,
+            user_id: currentUser.id,
+            artist,
+            category,
             image_url: imageUrl,
             likes: 0
           }
@@ -111,48 +134,8 @@
       `;
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
-      document
-        .getElementById("uploadForm")
-        .addEventListener("submit", handleUpload);
-    });
+    document.getElementById("uploadForm").addEventListener("submit", handleUpload);
+    loadUser();
   </script>
-</head>
-
-<body>
-
-  <h1>🔥 Upload Your Work 🔥</h1>
-  <p>Show your tattoos, art, and 3D prints</p>
-
-  <form id="uploadForm">
-
-    <input
-      id="artistName"
-      type="text"
-      placeholder="Artist Name"
-      required
-    />
-
-    <input
-      id="fileInput"
-      type="file"
-      accept="image/*"
-      required
-    />
-
-    <select id="category">
-      <option value="Tattoo">Tattoo</option>
-      <option value="Art">Art</option>
-      <option value="3D Print">3D Print</option>
-    </select>
-
-    <button type="submit">Upload</button>
-
-  </form>
-
-  <p id="status"></p>
-
-  <a href="/gallery/index.html">View Gallery</a>
-
 </body>
 </html>
