@@ -84,7 +84,6 @@
     <h1>🔥 Upload Your Work 🔥</h1>
 
     <input id="artistName" type="text" placeholder="Artist Name" />
-
     <input id="fileInput" type="file" accept="image/*" />
 
     <select id="category">
@@ -105,7 +104,7 @@
 
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const BUCKET = "artist-uploads";
+    const BUCKET = "Artist-uploads";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -140,7 +139,7 @@
       const user = await getCurrentUser();
 
       if (!user) {
-        setStatus("Please log in first.");
+        setStatus("Please log in first.", true);
         setTimeout(() => {
           window.location.href = "/auth.html";
         }, 1000);
@@ -193,13 +192,14 @@
 
       setStatus("Uploading...");
 
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `${user.id}/${Date.now()}-${safeName}.${ext}`.replace(/\.(\w+)\.(\w+)$/, '.$2');
+      const filePath = `${user.id}/${Date.now()}-${safeName}`;
 
       const { error: storageError } = await supabase.storage
         .from(BUCKET)
-        .upload(filePath, file, { upsert: false });
+        .upload(filePath, file, {
+          upsert: false
+        });
 
       if (storageError) {
         setStatus("Storage upload failed: " + storageError.message, true);
