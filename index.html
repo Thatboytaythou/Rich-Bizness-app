@@ -3,7 +3,6 @@
 <head>
   <title>Rich Bizness LLC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
   <style>
     body {
       margin: 0;
@@ -11,61 +10,62 @@
       color: white;
       font-family: Arial, sans-serif;
       text-align: center;
-      padding: 40px 20px;
+      padding: 30px 20px;
     }
 
     h1 {
-      font-size: 42px;
-      margin-bottom: 10px;
+      font-size: 56px;
+      margin-top: 40px;
+      margin-bottom: 20px;
     }
 
     p {
-      color: #ccc;
-      font-size: 18px;
-      margin-bottom: 40px;
+      font-size: 22px;
+      color: #ddd;
+      margin-bottom: 50px;
     }
 
     .btn {
       display: block;
-      width: 90%;
-      max-width: 320px;
-      margin: 15px auto;
-      padding: 16px;
-      font-size: 18px;
-      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      margin: 18px auto;
+      padding: 20px;
       border: none;
+      border-radius: 18px;
+      font-size: 22px;
+      font-weight: bold;
       cursor: pointer;
     }
 
     .primary {
-      background: #00ffaa;
+      background: #11f0a5;
       color: black;
-      font-weight: bold;
     }
 
     .secondary {
-      background: #ccc;
+      background: #ddd;
       color: black;
     }
 
     .row {
       display: flex;
+      gap: 20px;
       justify-content: center;
-      gap: 15px;
       flex-wrap: wrap;
+      margin-top: 20px;
     }
 
-    .row a {
-      flex: 1;
-      max-width: 160px;
+    .row .btn {
+      max-width: 260px;
     }
 
-    .status {
+    .user {
       position: absolute;
       top: 15px;
       right: 15px;
-      color: #00ffaa;
       font-size: 14px;
+      color: #00ffaa;
     }
 
     .logout {
@@ -82,11 +82,9 @@
     }
   </style>
 </head>
-
 <body>
-
-  <div class="status" id="userStatus">Checking...</div>
-  <div class="logout" id="logoutBtn"></div>
+  <div id="userStatus" class="user"></div>
+  <div id="logoutBtn" class="logout"></div>
 
   <h1>🔥 Rich Bizness LLC 🔥</h1>
   <p>Welcome to the future of art, tattoos & 3D printing</p>
@@ -112,20 +110,19 @@
   <script type="module">
     import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = createClient(
+      "https://ksvdequymkceevocgpdj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+    );
 
     async function checkUser() {
-      const { data } = await supabase.auth.getUser();
-      const user = data.user;
+      const { data: { session } } = await supabase.auth.getSession();
 
-      const status = document.getElementById("userStatus");
+      const userStatus = document.getElementById("userStatus");
       const logoutBtn = document.getElementById("logoutBtn");
 
-      if (user) {
-        status.textContent = "Logged in";
+      if (session?.user) {
+        userStatus.textContent = session.user.email;
         logoutBtn.textContent = "Logout";
 
         logoutBtn.onclick = async () => {
@@ -133,13 +130,11 @@
           window.location.reload();
         };
       } else {
-        status.textContent = "Not signed in";
-        logoutBtn.textContent = "";
+        userStatus.textContent = "Not signed in";
       }
     }
 
     checkUser();
   </script>
-
 </body>
 </html>
