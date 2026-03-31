@@ -1,176 +1,81 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>My Profile</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 24px;
-    }
-
-    .box {
-      max-width: 500px;
-      margin: auto;
-      background: #0b0b0b;
-      border-radius: 20px;
-      padding: 24px;
-      border: 1px solid #222;
-    }
-
-    h1 {
-      margin-bottom: 10px;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 16px;
-      margin: 10px 0;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-    }
-
-    button {
-      width: 100%;
-      padding: 16px;
-      margin-top: 12px;
-      border-radius: 14px;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .green {
-      background: #1ce783;
-      color: #000;
-      font-weight: bold;
-    }
-
-    .dark {
-      background: #222;
-      color: #fff;
-    }
-
-    #status {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #ccc;
-    }
-
-    a {
-      color: #1ce783;
-      text-decoration: none;
-      display: block;
-      margin-bottom: 10px;
-    }
-  </style>
-</head>
-
 <body>
 
-<a href="/">← Home</a>
+<h1>My Profile</h1>
 
-<div class="box">
-  <h1>My Profile</h1>
+<input id="username" placeholder="Username">
+<input id="displayName" placeholder="Display Name">
+<textarea id="bio" placeholder="Bio"></textarea>
 
-  <p id="status">Loading...</p>
+<button id="saveBtn">Save</button>
+<button id="logoutBtn">Logout</button>
 
-  <input id="username" placeholder="Username" />
-  <input id="displayName" placeholder="Display Name" />
-  <textarea id="bio" placeholder="Bio"></textarea>
-
-  <button id="saveBtn" class="green">Save Profile</button>
-  <button id="logoutBtn" class="dark">Logout</button>
-</div>
+<p id="status"></p>
 
 <script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js";
+import { supabase } from "./config.js"
 
-const supabase = createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
-);
+const username = document.getElementById("username")
+const displayName = document.getElementById("displayName")
+const bio = document.getElementById("bio")
+const status = document.getElementById("status")
 
-const usernameInput = document.getElementById("username");
-const displayNameInput = document.getElementById("displayName");
-const bioInput = document.getElementById("bio");
-const statusText = document.getElementById("status");
+async function loadProfile(){
+  const { data: { session } } = await supabase.auth.getSession()
 
-let currentUser = null;
-
-async function loadProfile() {
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    window.location.href = "/auth.html";
-    return;
+  if (!session){
+    window.location.href = "/auth.html"
+    return
   }
 
-  currentUser = session.user;
+  const user = session.user
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", currentUser.id)
-    .single();
+    .eq("id", user.id)
+    .single()
 
-  if (error || !data) {
-    console.log("Creating profile...");
-
-    await supabase.from("profiles").insert([
-      {
-        id: currentUser.id,
-        username: currentUser.email.split("@")[0],
-        display_name: "New User",
-        bio: ""
-      }
-    ]);
-
-    return loadProfile();
+  if (!data){
+    await supabase.from("profiles").insert({
+      id: user.id,
+      username: user.email.split("@")[0],
+      display_name: "New User"
+    })
+    return loadProfile()
   }
 
-  usernameInput.value = data.username || "";
-  displayNameInput.value = data.display_name || "";
-  bioInput.value = data.bio || "";
-
-  statusText.textContent = "";
+  username.value = data.username || ""
+  displayName.value = data.display_name || ""
+  bio.value = data.bio || ""
 }
 
-async function saveProfile() {
-  statusText.textContent = "Saving...";
+async function saveProfile(){
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session.user
 
   const { error } = await supabase
     .from("profiles")
     .update({
-      username: usernameInput.value,
-      display_name: displayNameInput.value,
-      bio: bioInput.value
+      username: username.value,
+      display_name: displayName.value,
+      bio: bio.value
     })
-    .eq("id", currentUser.id);
+    .eq("id", user.id)
 
-  if (error) {
-    statusText.textContent = error.message;
-    return;
-  }
-
-  statusText.textContent = "Profile saved ✅";
+  status.textContent = error ? error.message : "Saved ✅"
 }
 
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "/auth.html";
+async function logout(){
+  await supabase.auth.signOut()
+  window.location.href = "/auth.html"
 }
 
-document.getElementById("saveBtn").addEventListener("click", saveProfile);
-document.getElementById("logoutBtn").addEventListener("click", logout);
+document.getElementById("saveBtn").onclick = saveProfile
+document.getElementById("logoutBtn").onclick = logout
 
-loadProfile();
+loadProfile()
 </script>
 
 </body>
