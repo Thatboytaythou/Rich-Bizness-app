@@ -3,427 +3,398 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gallery - Rich Bizness LLC</title>
+  <title>Rich Bizness Gallery</title>
   <style>
-    :root {
-      --bg:#050505;
-      --panel:rgba(15,15,15,.92);
-      --border:rgba(255,255,255,.08);
-      --text:#f5f5f5;
-      --muted:#a8a8a8;
-      --primary:#19e68c;
-      --primary-dark:#11c775;
-      --danger:#ff5a67;
-      --input:#ececec;
+    * {
+      box-sizing: border-box;
     }
-
-    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
+      background: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(25,230,140,.14), transparent 30%),
-        radial-gradient(circle at top right, rgba(255,255,255,.07), transparent 22%),
-        linear-gradient(180deg, #080808 0%, #020202 100%);
-      padding: 24px;
     }
 
-    .page {
-      max-width: 1240px;
-      margin: 0 auto;
+    header {
+      padding: 28px 20px 18px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: #050505;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .subtext {
+      margin: 10px 0 0;
+      color: #a1a1aa;
+      font-size: 15px;
     }
 
     .topbar {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .controls {
+      max-width: 1200px;
+      margin: 22px auto 0;
       display: flex;
-      justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .toplink,
-    .ghost-link {
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .toplink {
-      color: var(--primary);
-    }
-
-    .ghost-link {
-      color: #8ecbff;
-      background: rgba(255,255,255,.05);
-      padding: 12px 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.07);
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 28px 22px 24px;
-      margin-bottom: 28px;
-    }
-
-    .headline {
-      margin: 0 0 8px;
-      font-size: 48px;
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.5;
-      text-align: center;
-    }
-
-    .stats {
-      margin-top: 18px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
       justify-content: center;
     }
 
-    .pill {
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .filters {
-      margin-top: 22px;
-      display: grid;
-      grid-template-columns: 1.3fr .8fr;
-      gap: 14px;
-    }
-
-    .input,
-    .select {
-      width: 100%;
-      border: 0;
-      border-radius: 18px;
-      padding: 18px;
-      font-size: 16px;
-      background: var(--input);
-      color: #111;
+    .controls input,
+    .controls select {
+      background: #111;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      min-width: 220px;
       outline: none;
     }
 
-    .status {
-      min-height: 24px;
-      margin-top: 18px;
+    .controls input::placeholder {
+      color: #777;
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 20px 50px;
+    }
+
+    .gallery-stats {
+      margin-bottom: 22px;
+      color: #a1a1aa;
       font-size: 15px;
-      font-weight: 700;
-      text-align: center;
     }
 
-    .grid {
+    .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 18px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
     }
 
-    .upload-card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 20px;
+    .card {
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
-    .media-wrap {
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255,255,255,0.16);
+    }
+
+    .image-wrap {
       width: 100%;
-      height: 320px;
-      background: #080808;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      aspect-ratio: 1 / 1;
+      background: #111;
       overflow: hidden;
     }
 
-    .media-wrap img,
-    .media-wrap video {
+    .image-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      background: #000;
     }
 
-    .upload-body {
-      padding: 14px;
+    .card-body {
+      padding: 16px;
     }
 
-    .upload-name {
-      font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
-    }
-
-    .upload-meta {
-      color: var(--muted);
-      font-size: 14px;
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
       margin-bottom: 8px;
     }
 
-    .caption {
-      color: #ddd;
+    .art-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .tag {
+      background: #18181b;
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .artist {
+      color: #d4d4d8;
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .desc {
+      color: #a1a1aa;
       font-size: 14px;
       line-height: 1.5;
-      margin-bottom: 10px;
+      margin: 0 0 14px;
+      min-height: 42px;
     }
 
-    .upload-actions {
+    .meta {
       display: flex;
+      justify-content: space-between;
       gap: 10px;
+      font-size: 13px;
+      color: #71717a;
       flex-wrap: wrap;
-      margin-top: 10px;
     }
 
-    .like-btn,
-    .artist-btn,
-    .watch-btn {
-      border: 0;
-      border-radius: 14px;
-      padding: 12px 14px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .like-btn {
-      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
-      color: #000;
-    }
-
-    .artist-btn,
-    .watch-btn {
-      background: rgba(255,255,255,.06);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .empty {
-      padding: 22px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
+    .empty-state {
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 40px 24px;
       text-align: center;
-      border: 1px solid rgba(255,255,255,.07);
+      color: #a1a1aa;
     }
 
-    @media (max-width: 760px) {
-      body { padding: 14px; }
-      .headline { font-size: 36px; }
-      .filters { grid-template-columns: 1fr; }
-      .media-wrap { height: 270px; }
+    .featured-banner {
+      margin-bottom: 24px;
+      padding: 20px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.18), rgba(59,130,246,0.12));
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .featured-banner h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+    }
+
+    .featured-banner p {
+      margin: 0;
+      color: #d4d4d8;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+      h1 {
+        font-size: 30px;
+      }
+
+      .controls input,
+      .controls select {
+        width: 100%;
+        min-width: 100%;
+      }
+
+      .gallery-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <header>
     <div class="topbar">
-      <a class="toplink" href="/index.html">← Home</a>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="ghost-link" href="/upload.html">Upload Work</a>
-        <a class="ghost-link" href="/profile.html">My Profile</a>
-        <a class="ghost-link" href="/watch.html">📺 Watch Live</a>
-      </div>
-    </div>
+      <h1>🎨 Rich Bizness Gallery</h1>
+      <p class="subtext">Explore featured artwork, artist uploads, and creative drops.</p>
 
-    <div class="card">
-      <h1 class="headline">🔥 Artist Gallery 🔥</h1>
-      <p class="sub">Explore images and videos from artists, tattoo creators, and 3D makers.</p>
-
-      <div class="stats">
-        <div class="pill">📸 <span id="totalUploads">0 posts</span></div>
-        <div class="pill">👤 <span id="totalArtists">0 artists</span></div>
-        <div class="pill">❤️ <span id="totalLikes">0 likes</span></div>
-      </div>
-
-      <div class="filters">
-        <input id="searchInput" class="input" type="text" placeholder="Search artist name..." />
-        <select id="categoryFilter" class="select">
-          <option value="all">All Categories</option>
-          <option value="Tattoo">Tattoo</option>
-          <option value="Art">Art</option>
-          <option value="3D Print">3D Print</option>
-          <option value="Video">Video</option>
+      <div class="controls">
+        <input id="searchInput" type="text" placeholder="Search by title, artist, or style..." />
+        <select id="filterSelect">
+          <option value="all">All Artwork</option>
+          <option value="painting">Painting</option>
+          <option value="digital">Digital</option>
+          <option value="photography">Photography</option>
+          <option value="3d">3D</option>
+          <option value="streetwear">Streetwear</option>
         </select>
       </div>
-
-      <div id="status" class="status">Loading...</div>
     </div>
+  </header>
 
-    <div id="grid" class="grid"></div>
-  </div>
+  <main class="page">
+    <section class="featured-banner">
+      <h2>Featured Collection</h2>
+      <p>Fresh creative work from Rich Bizness artists and collaborators. New uploads appear here automatically when added to local storage from your upload page.</p>
+    </section>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
+    <div id="galleryStats" class="gallery-stats">Loading gallery...</div>
+    <div id="galleryGrid" class="gallery-grid"></div>
+  </main>
 
-    const supabase = createClient(
-      "https://ksvdequymkceevocgpdj.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
-    );
+  <script>
+    const sampleArtworks = [
+      {
+        title: "Neon Vision",
+        artist: "Rich Bizness",
+        category: "digital",
+        description: "A bold digital art piece with neon energy and futuristic motion.",
+        image: "https://images.unsplash.com/photo-1515405295579-ba7b45403062?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-25",
+        price: "$250"
+      },
+      {
+        title: "Street Dreams",
+        artist: "Tay Holmes",
+        category: "streetwear",
+        description: "Urban-inspired fashion concept art blending luxury and raw street energy.",
+        image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-21",
+        price: "$180"
+      },
+      {
+        title: "Golden Hour Portrait",
+        artist: "RB Studios",
+        category: "photography",
+        description: "Warm natural-light portrait photography designed for brand storytelling.",
+        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-18",
+        price: "$300"
+      },
+      {
+        title: "Canvas Flow",
+        artist: "Rich Bizness Artist",
+        category: "painting",
+        description: "Abstract brush movement and layered color textures on a deep dark base.",
+        image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-14",
+        price: "$420"
+      },
+      {
+        title: "Sculpt Mode",
+        artist: "Creative Lab",
+        category: "3d",
+        description: "3D visual concept showing a premium product-style render with depth.",
+        image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-11",
+        price: "$500"
+      },
+      {
+        title: "Future Motion",
+        artist: "Rich Bizness",
+        category: "digital",
+        description: "A high-contrast motion-inspired digital composition for promo branding.",
+        image: "https://images.unsplash.com/photo-1545239351-1141bd82e8a6?auto=format&fit=crop&w=1200&q=80",
+        date: "2026-03-09",
+        price: "$275"
+      }
+    ];
 
-    const grid = document.getElementById("grid");
-    const statusEl = document.getElementById("status");
-    const totalUploadsEl = document.getElementById("totalUploads");
-    const totalArtistsEl = document.getElementById("totalArtists");
-    const totalLikesEl = document.getElementById("totalLikes");
-    const searchInput = document.getElementById("searchInput");
-    const categoryFilter = document.getElementById("categoryFilter");
-
-    let allUploads = [];
-
-    function setStatus(text) {
-      statusEl.textContent = text;
+    function normalizeUploads(uploadedItems) {
+      return uploadedItems.map((item) => ({
+        title: item.title || "Untitled Artwork",
+        artist: item.artist || item.name || "Unknown Artist",
+        category: (item.category || item.type || "digital").toLowerCase(),
+        description: item.description || "Artist upload from Rich Bizness gallery.",
+        image: item.image || item.imageUrl || item.photo || item.url || "",
+        date: item.date || item.createdAt || new Date().toISOString().slice(0, 10),
+        price: item.price || "Contact for price"
+      }));
     }
 
-    function updateStats(items) {
-      totalUploadsEl.textContent = `${items.length} posts`;
-      totalArtistsEl.textContent = `${new Set(items.map(i => (i.artist_name || "").trim()).filter(Boolean)).size} artists`;
-      totalLikesEl.textContent = `${items.reduce((sum, item) => sum + (item.likes || 0), 0)} likes`;
+    function loadGalleryData() {
+      let uploaded = [];
+
+      try {
+        const raw = localStorage.getItem("artistUploads");
+        if (raw) {
+          uploaded = JSON.parse(raw);
+        }
+      } catch (err) {
+        console.error("Could not read artistUploads:", err);
+      }
+
+      const normalizedUploads = Array.isArray(uploaded) ? normalizeUploads(uploaded) : [];
+      return [...normalizedUploads, ...sampleArtworks].filter(item => item.image);
     }
 
-    function detectMediaType(item) {
-      if (item.media_type) return item.media_type;
-      return /\.(mp4|webm|ogg|mov|m4v)$/i.test(item.file_url || "") ? "video" : "image";
+    function formatCategory(category) {
+      if (!category) return "Artwork";
+      if (category === "3d") return "3D";
+      return category.charAt(0).toUpperCase() + category.slice(1);
     }
 
-    function renderMedia(item) {
-      if (detectMediaType(item) === "video") {
-        return `
-          <div class="media-wrap">
-            <video controls playsinline preload="metadata">
-              <source src="${item.file_url}">
-            </video>
+    function renderGallery(items) {
+      const galleryGrid = document.getElementById("galleryGrid");
+      const galleryStats = document.getElementById("galleryStats");
+
+      galleryStats.textContent = `${items.length} piece${items.length === 1 ? "" : "s"} in gallery`;
+
+      if (!items.length) {
+        galleryGrid.innerHTML = `
+          <div class="empty-state">
+            <h3>No artwork found</h3>
+            <p>Try a different search or category filter.</p>
           </div>
         `;
-      }
-
-      return `
-        <div class="media-wrap">
-          <img src="${item.file_url}" alt="${item.artist_name || "Upload"}">
-        </div>
-      `;
-    }
-
-    function getFilteredUploads() {
-      const search = searchInput.value.trim().toLowerCase();
-      const category = categoryFilter.value;
-
-      return allUploads.filter(item => {
-        const matchesSearch = !search || (item.artist_name || "").toLowerCase().includes(search);
-        const itemCategory = item.category || (detectMediaType(item) === "video" ? "Video" : "");
-        const matchesCategory = category === "all" || itemCategory === category;
-        return matchesSearch && matchesCategory;
-      });
-    }
-
-    async function likePost(id, currentLikes) {
-      const { error } = await supabase
-        .from("uploads")
-        .update({ likes: (currentLikes || 0) + 1 })
-        .eq("id", id);
-
-      if (error) {
-        setStatus("Like failed: " + error.message);
         return;
       }
 
-      const item = allUploads.find(x => x.id === id);
-      if (item) item.likes = (item.likes || 0) + 1;
-
-      refreshGalleryView();
-    }
-
-    function refreshGalleryView() {
-      const filtered = getFilteredUploads();
-
-      if (!filtered.length) {
-        grid.innerHTML = `<div class="empty">No posts match your search yet.</div>`;
-        updateStats(filtered);
-        return;
-      }
-
-      grid.innerHTML = "";
-
-      filtered.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "upload-card";
-
-        card.innerHTML = `
-          ${renderMedia(item)}
-          <div class="upload-body">
-            <div class="upload-name">${item.artist_name || ""}</div>
-            <div class="upload-meta">${item.category || ""}</div>
-            ${item.caption ? `<div class="caption">${item.caption}</div>` : ""}
-            <div class="upload-meta">❤️ ${item.likes || 0}</div>
-            <div class="upload-meta">${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</div>
-            <div class="upload-actions">
-              <button class="like-btn">❤️ Like</button>
-              <button class="artist-btn">View Artist</button>
-              <button class="watch-btn">Watch Live</button>
+      galleryGrid.innerHTML = items.map(item => `
+        <article class="card">
+          <div class="image-wrap">
+            <img src="${item.image}" alt="${item.title}" loading="lazy" />
+          </div>
+          <div class="card-body">
+            <div class="title-row">
+              <h3 class="art-title">${item.title}</h3>
+              <span class="tag">${formatCategory(item.category)}</span>
+            </div>
+            <p class="artist">By ${item.artist}</p>
+            <p class="desc">${item.description}</p>
+            <div class="meta">
+              <span>${item.date}</span>
+              <span>${item.price}</span>
             </div>
           </div>
-        `;
+        </article>
+      `).join("");
+    }
 
-        card.querySelector(".like-btn").addEventListener("click", () => {
-          likePost(item.id, item.likes || 0);
-        });
+    function filterGallery() {
+      const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
+      const filterValue = document.getElementById("filterSelect").value;
+      const allItems = loadGalleryData();
 
-        card.querySelector(".artist-btn").addEventListener("click", () => {
-          window.location.href = "/artist/index.html?name=" + encodeURIComponent(item.artist_name || "");
-        });
+      const filtered = allItems.filter(item => {
+        const matchesSearch =
+          item.title.toLowerCase().includes(searchValue) ||
+          item.artist.toLowerCase().includes(searchValue) ||
+          item.category.toLowerCase().includes(searchValue) ||
+          item.description.toLowerCase().includes(searchValue);
 
-        card.querySelector(".watch-btn").addEventListener("click", () => {
-          const artist = encodeURIComponent(item.artist_name || "guest");
-          window.location.href = "/watch.html?artist=" + artist;
-        });
+        const matchesFilter =
+          filterValue === "all" || item.category.toLowerCase() === filterValue;
 
-        grid.appendChild(card);
+        return matchesSearch && matchesFilter;
       });
 
-      updateStats(filtered);
-      setStatus("");
+      renderGallery(filtered);
     }
 
-    async function loadGallery() {
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("*")
-        .order("created_at", { ascending: false });
+    document.getElementById("searchInput").addEventListener("input", filterGallery);
+    document.getElementById("filterSelect").addEventListener("change", filterGallery);
 
-      if (error) {
-        grid.innerHTML = `<div class="empty">${error.message}</div>`;
-        return setStatus("Failed to load gallery.");
-      }
-
-      allUploads = data || [];
-      refreshGalleryView();
-    }
-
-    searchInput.addEventListener("input", refreshGalleryView);
-    categoryFilter.addEventListener("change", refreshGalleryView);
-
-    await loadGallery();
-
-    supabase
-      .channel("uploads-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "uploads" }, () => loadGallery())
-      .subscribe();
+    filterGallery();
   </script>
 </body>
 </html>
