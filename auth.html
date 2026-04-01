@@ -1,144 +1,580 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness Auth</title>
-
   <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(15, 15, 15, 0.92);
+      --panel-border: rgba(255,255,255,0.08);
+      --text: #f5f5f5;
+      --muted: #a8a8a8;
+      --primary: #19e68c;
+      --primary-dark: #11c775;
+      --danger: #ff5a67;
+      --input: #ececec;
+      --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: Arial;
-      padding: 20px;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(25,230,140,0.16), transparent 30%),
+        radial-gradient(circle at top right, rgba(255,255,255,0.08), transparent 22%),
+        linear-gradient(180deg, #080808 0%, #020202 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 520px;
+      position: relative;
+    }
+
+    .glow {
+      position: absolute;
+      inset: -20px;
+      background: radial-gradient(circle, rgba(25,230,140,0.18), transparent 55%);
+      filter: blur(28px);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      overflow: hidden;
+    }
+
+    .top {
+      padding: 28px 26px 10px;
       text-align: center;
     }
 
-    .box {
-      max-width: 500px;
-      margin: auto;
-      background: #0b0b0b;
-      border: 1px solid #222;
-      border-radius: 20px;
-      padding: 30px;
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-bottom: 12px;
     }
 
-    h2 {
-      margin-top: 20px;
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), #6affc0);
+      color: #000;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 10px 30px rgba(25,230,140,0.25);
     }
 
-    input {
-      width: 100%;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 12px;
-      border: none;
-      font-size: 16px;
+    .headline {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.05;
+      font-weight: 800;
     }
 
-    button {
-      width: 100%;
-      padding: 15px;
-      margin-top: 10px;
-      border-radius: 12px;
-      border: none;
-      background: #19e68c;
-      font-size: 18px;
-      font-weight: bold;
+    .sub {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .tabs {
+      margin: 24px 20px 0;
+      padding: 6px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.05);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .tab {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
       cursor: pointer;
+      color: var(--text);
+      background: transparent;
+      transition: 0.2s ease;
     }
 
-    .loginBtn {
-      background: #222;
+    .tab.active {
+      background: #fff;
+      color: #000;
+      box-shadow: 0 8px 24px rgba(255,255,255,0.1);
+    }
+
+    .content {
+      padding: 22px 20px 22px;
+    }
+
+    .panel {
+      display: none;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .panel-title {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 800;
+    }
+
+    .panel-copy {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .field {
+      text-align: left;
+      margin-bottom: 12px;
+    }
+
+    .label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 8px 4px;
+      font-weight: 600;
+    }
+
+    .input {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 18px;
+      font-size: 16px;
+      background: var(--input);
+      color: #111;
+      outline: none;
+    }
+
+    .input:focus {
+      box-shadow: 0 0 0 3px rgba(25,230,140,0.28);
+    }
+
+    .cta {
+      width: 100%;
+      border: 0;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+      margin-top: 8px;
+    }
+
+    .cta.primary {
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      color: #000;
+      box-shadow: 0 16px 34px rgba(25,230,140,0.22);
+    }
+
+    .cta.secondary {
+      background: #1a1a1a;
       color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    #msg {
-      margin-top: 15px;
-      font-weight: bold;
+    .cta:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.08);
+      margin: 18px 0 2px;
+    }
+
+    .message {
+      min-height: 26px;
+      margin-top: 16px;
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .message.ok {
+      color: var(--primary);
+    }
+
+    .message.err {
+      color: var(--danger);
+    }
+
+    .footer {
+      padding: 0 20px 24px;
+      text-align: center;
+    }
+
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      padding: 13px 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      color: #8ecbff;
+      font-size: 15px;
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 14px;
+      }
+
+      .headline {
+        font-size: 30px;
+      }
+
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .top {
+        padding: 24px 20px 8px;
+      }
+
+      .content {
+        padding: 20px 16px;
+      }
+
+      .footer {
+        padding: 0 16px 20px;
+      }
     }
   </style>
 </head>
-
 <body>
+  <div class="shell">
+    <div class="glow"></div>
 
-<div class="box">
+    <div class="card">
+      <div class="top">
+        <div class="brand">
+          <div class="brand-badge">🔥</div>
+          <div>Rich Bizness LLC</div>
+        </div>
+        <h1 class="headline">Create. Upload. Build your name.</h1>
+        <p class="sub">Premium artist access for tattoos, 3D printing, design, and digital work.</p>
+      </div>
 
-<h2>Sign Up</h2>
+      <div class="tabs">
+        <button id="tabSignup" class="tab active" type="button">Create account</button>
+        <button id="tabLogin" class="tab" type="button">Log in</button>
+      </div>
 
-<input id="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
-<input id="username" placeholder="Username">
-<input id="displayName" placeholder="Display Name">
+      <div class="content">
+        <div id="signupPanel" class="panel active">
+          <h2 class="panel-title">Join the platform</h2>
+          <p class="panel-copy">Set up your artist profile and get your page live.</p>
 
-<button id="signupBtn">Sign Up</button>
+          <div class="field">
+            <label class="label" for="signupEmail">Email</label>
+            <input id="signupEmail" class="input" type="email" placeholder="you@example.com" />
+          </div>
 
-<hr style="margin: 30px 0; border-color:#222;">
+          <div class="field">
+            <label class="label" for="signupPassword">Password</label>
+            <input id="signupPassword" class="input" type="password" placeholder="Create a password" />
+          </div>
 
-<h2>Login</h2>
+          <div class="row">
+            <div class="field">
+              <label class="label" for="signupUsername">Username</label>
+              <input id="signupUsername" class="input" type="text" placeholder="thatboytaythou" />
+            </div>
 
-<input id="loginEmail" placeholder="Email">
-<input id="loginPassword" type="password" placeholder="Password">
+            <div class="field">
+              <label class="label" for="signupDisplayName">Display Name</label>
+              <input id="signupDisplayName" class="input" type="text" placeholder="Rich Bizness" />
+            </div>
+          </div>
 
-<button class="loginBtn" id="loginBtn">Log In</button>
+          <button id="signupBtn" class="cta primary" type="button">Sign Up</button>
+        </div>
 
-<p id="msg"></p>
+        <div id="loginPanel" class="panel">
+          <h2 class="panel-title">Welcome back</h2>
+          <p class="panel-copy">Log in to manage your profile, uploads, and artist page.</p>
 
-</div>
+          <div class="field">
+            <label class="label" for="loginEmail">Email</label>
+            <input id="loginEmail" class="input" type="email" placeholder="you@example.com" />
+          </div>
 
-<script type="module">
-import { createClient } from "https://esm.sh/@supabase/supabase-js"
+          <div class="field">
+            <label class="label" for="loginPassword">Password</label>
+            <input id="loginPassword" class="input" type="password" placeholder="Enter your password" />
+          </div>
 
-const supabase = createClient(
-  "https://ksvdcguykmceevocgpdj.supabase.co",
-  "YOUR_ANON_KEY"
-)
+          <button id="loginBtn" class="cta secondary" type="button">Log In</button>
+        </div>
 
-const msg = document.getElementById("msg")
+        <div class="divider"></div>
+        <div id="msg" class="message"></div>
+      </div>
 
-function setMsg(text, error=false){
-  msg.textContent = text
-  msg.style.color = error ? "red" : "#19e68c"
-}
+      <div class="footer">
+        <a class="ghost" href="/index.html">← Back Home</a>
+      </div>
+    </div>
+  </div>
 
-// 🔥 SIGN UP
-async function signUp(){
-  const email = document.getElementById("email").value
-  const password = document.getElementById("password").value
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js";
 
-  const { error } = await supabase.auth.signUp({
-    email,
-    password
-  })
+    const supabase = createClient(
+      "https://ksvdequymkceevocgpdj.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+    );
 
-  if (error){
-    setMsg(error.message, true)
-    return
-  }
+    const msg = document.getElementById("msg");
+    const signupBtn = document.getElementById("signupBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const signupPanel = document.getElementById("signupPanel");
+    const loginPanel = document.getElementById("loginPanel");
+    const tabSignup = document.getElementById("tabSignup");
+    const tabLogin = document.getElementById("tabLogin");
 
-  setMsg("Check your email to confirm 🔥")
-}
+    function setMsg(text, error = false) {
+      msg.textContent = text;
+      msg.className = "message " + (error ? "err" : "ok");
+    }
 
-// 🔥 LOGIN
-async function logIn(){
-  const email = document.getElementById("loginEmail").value
-  const password = document.getElementById("loginPassword").value
+    function setLoading(button, on, loadingText) {
+      if (on) {
+        button.dataset.original = button.textContent;
+        button.textContent = loadingText;
+        button.disabled = true;
+      } else {
+        button.textContent = button.dataset.original || button.textContent;
+        button.disabled = false;
+      }
+    }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password
-  })
+    function showSignup() {
+      signupPanel.classList.add("active");
+      loginPanel.classList.remove("active");
+      tabSignup.classList.add("active");
+      tabLogin.classList.remove("active");
+      setMsg("");
+    }
 
-  if (error){
-    setMsg(error.message, true)
-    return
-  }
+    function showLogin() {
+      loginPanel.classList.add("active");
+      signupPanel.classList.remove("active");
+      tabLogin.classList.add("active");
+      tabSignup.classList.remove("active");
+      setMsg("");
+    }
 
-  window.location.href = "/profile.html"
-}
+    async function ensureProfile(user, username, displayName) {
+      const { data: existing, error: existingError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-document.getElementById("signupBtn").onclick = signUp
-document.getElementById("loginBtn").onclick = logIn
-</script>
+      if (existingError) {
+        return { ok: false, message: existingError.message };
+      }
 
+      if (existing) {
+        return { ok: true };
+      }
+
+      const fallbackName = user.email?.split("@")[0] || "artist";
+
+      const { error: insertError } = await supabase
+        .from("profiles")
+        .insert([
+          {
+            id: user.id,
+            username: username || fallbackName,
+            display_name: displayName || fallbackName,
+            bio: ""
+          }
+        ]);
+
+      if (insertError) {
+        return { ok: false, message: insertError.message };
+      }
+
+      return { ok: true };
+    }
+
+    async function signUp() {
+      const email = document.getElementById("signupEmail").value.trim();
+      const password = document.getElementById("signupPassword").value;
+      const username = document.getElementById("signupUsername").value.trim();
+      const displayName = document.getElementById("signupDisplayName").value.trim();
+
+      if (!email || !password || !username || !displayName) {
+        setMsg("Fill out all sign up fields.", true);
+        return;
+      }
+
+      setLoading(signupBtn, true, "Creating...");
+      setMsg("");
+
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: "https://rich-bizness.com/auth.html",
+            data: {
+              username,
+              display_name: displayName
+            }
+          }
+        });
+
+        if (error) {
+          setMsg(error.message, true);
+          return;
+        }
+
+        if (data.user && data.session) {
+          const result = await ensureProfile(data.user, username, displayName);
+          if (!result.ok) {
+            setMsg("Account created, but profile setup failed: " + result.message, true);
+            return;
+          }
+
+          setMsg("Account created successfully.");
+          window.location.href = "/profile.html";
+          return;
+        }
+
+        setMsg("Check your email to confirm your account.");
+        showLogin();
+        document.getElementById("loginEmail").value = email;
+      } catch (err) {
+        setMsg("Load failed: " + err.message, true);
+      } finally {
+        setLoading(signupBtn, false, "Creating...");
+      }
+    }
+
+    async function logIn() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+
+      if (!email || !password) {
+        setMsg("Enter your email and password.", true);
+        return;
+      }
+
+      setLoading(loginBtn, true, "Logging in...");
+      setMsg("");
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          setMsg(error.message, true);
+          return;
+        }
+
+        if (!data.user) {
+          setMsg("No user returned.", true);
+          return;
+        }
+
+        const result = await ensureProfile(data.user);
+        if (!result.ok) {
+          setMsg("Login worked, but profile setup failed: " + result.message, true);
+          return;
+        }
+
+        setMsg("Login successful.");
+        window.location.href = "/profile.html";
+      } catch (err) {
+        setMsg("Load failed: " + err.message, true);
+      } finally {
+        setLoading(loginBtn, false, "Logging in...");
+      }
+    }
+
+    tabSignup.addEventListener("click", showSignup);
+    tabLogin.addEventListener("click", showLogin);
+    signupBtn.addEventListener("click", signUp);
+    loginBtn.addEventListener("click", logIn);
+
+    try {
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        setMsg("Session check failed: " + error.message, true);
+      } else if (session?.user) {
+        window.location.href = "/profile.html";
+      }
+    } catch (err) {
+      setMsg("Load failed: " + err.message, true);
+    }
+  </script>
 </body>
 </html>
