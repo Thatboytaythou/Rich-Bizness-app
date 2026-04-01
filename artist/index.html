@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artist Profile - Rich Bizness LLC</title>
+  <title>Artist - Rich Bizness LLC</title>
   <style>
     :root {
       --bg: #050505;
-      --panel: rgba(15, 15, 15, 0.9);
+      --panel: rgba(15, 15, 15, 0.92);
       --panel-border: rgba(255,255,255,0.08);
       --text: #f5f5f5;
       --muted: #a8a8a8;
@@ -34,15 +34,40 @@
     }
 
     .page {
-      max-width: 1180px;
+      max-width: 1200px;
       margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
     }
 
     .toplink {
       display: inline-block;
       color: var(--primary);
       text-decoration: none;
-      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ghost-link {
+      text-decoration: none;
+      color: #8ecbff;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: 14px;
       font-weight: 700;
     }
 
@@ -73,31 +98,36 @@
       padding: 28px 22px 24px;
     }
 
-    .profile-top {
-      display: grid;
-      grid-template-columns: 170px 1fr;
-      gap: 24px;
+    .artist-header {
+      display: flex;
       align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
     }
 
     .avatar {
-      width: 170px;
-      height: 170px;
+      width: 92px;
+      height: 92px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: linear-gradient(180deg, #222, #111);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 72px;
-      margin: 0 auto;
-      box-shadow: inset 0 0 30px rgba(255,255,255,0.03);
+      font-size: 34px;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .artist-copy {
+      flex: 1;
+      min-width: 220px;
     }
 
     .headline {
       margin: 0 0 8px;
-      font-size: 46px;
-      line-height: 1.05;
+      font-size: 42px;
+      line-height: 1.04;
       font-weight: 800;
     }
 
@@ -109,7 +139,7 @@
     }
 
     .stats {
-      margin-top: 16px;
+      margin-top: 18px;
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -130,7 +160,7 @@
 
     .status {
       min-height: 24px;
-      margin-top: 16px;
+      margin-top: 18px;
       font-size: 15px;
       font-weight: 700;
     }
@@ -143,25 +173,15 @@
       color: var(--danger);
     }
 
-    .uploads-wrap {
-      margin-top: 28px;
-    }
-
-    .uploads-title {
-      margin: 0 0 14px;
-      font-size: 34px;
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 28px;
       font-weight: 800;
-    }
-
-    .uploads-sub {
-      margin: 0 0 22px;
-      color: var(--muted);
-      font-size: 15px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
       gap: 18px;
     }
 
@@ -171,11 +191,17 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      transition: transform 0.16s ease, border-color 0.16s ease;
+    }
+
+    .upload-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(25,230,140,0.32);
     }
 
     .upload-card img {
       width: 100%;
-      height: 300px;
+      height: 320px;
       object-fit: cover;
       display: block;
       background: #111;
@@ -194,7 +220,28 @@
     .upload-meta {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .like-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .like-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      color: #000;
+      box-shadow: 0 12px 24px rgba(25,230,140,0.18);
     }
 
     .empty {
@@ -215,57 +262,58 @@
         padding: 22px 16px 18px;
       }
 
-      .profile-top {
-        grid-template-columns: 1fr;
-        text-align: center;
-      }
-
       .headline {
-        font-size: 36px;
+        font-size: 34px;
       }
 
-      .stats {
-        justify-content: center;
+      .artist-header {
+        align-items: flex-start;
       }
 
       .avatar {
-        width: 140px;
-        height: 140px;
-        font-size: 60px;
+        width: 78px;
+        height: 78px;
+        font-size: 28px;
       }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <a class="toplink" href="/gallery/index.html">← Back to Gallery</a>
+    <div class="topbar">
+      <a class="toplink" href="/gallery/index.html">← Back to Gallery</a>
+
+      <div class="top-actions">
+        <a class="ghost-link" href="/upload.html">Upload Work</a>
+        <a class="ghost-link" href="/profile.html">My Profile</a>
+      </div>
+    </div>
 
     <div class="hero">
       <div class="glow"></div>
 
       <div class="card">
-        <div class="profile-top">
-          <div class="avatar">🎨</div>
+        <div class="artist-header">
+          <div id="avatar" class="avatar">🎨</div>
 
-          <div>
+          <div class="artist-copy">
             <h1 id="artistName" class="headline">Artist</h1>
-            <p class="sub">Artist profile and uploaded work from Rich Bizness LLC.</p>
+            <p class="sub">Public artist page on Rich Bizness LLC.</p>
 
             <div class="stats">
               <div class="pill">📸 <span id="totalUploads">0 uploads</span></div>
               <div class="pill">❤️ <span id="totalLikes">0 likes</span></div>
-              <div class="pill">🏷️ <span id="topCategory">No category</span></div>
+              <div class="pill">🏷️ <span id="topCategory">No category yet</span></div>
             </div>
-
-            <div id="status" class="status">Loading...</div>
           </div>
         </div>
+
+        <div id="status" class="status">Loading artist...</div>
       </div>
     </div>
 
-    <div class="uploads-wrap">
-      <h2 class="uploads-title">Artist Uploads</h2>
-      <p class="uploads-sub">All uploads from this artist profile.</p>
+    <div class="card">
+      <h2 class="section-title">Uploads</h2>
       <div id="grid" class="grid"></div>
     </div>
   </div>
@@ -278,108 +326,140 @@
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
     );
 
-    const nameEl = document.getElementById("artistName");
+    const params = new URLSearchParams(window.location.search);
+    const artistNameParam = params.get("name");
+
+    const statusEl = document.getElementById("status");
+    const artistNameEl = document.getElementById("artistName");
+    const avatarEl = document.getElementById("avatar");
     const totalUploadsEl = document.getElementById("totalUploads");
     const totalLikesEl = document.getElementById("totalLikes");
     const topCategoryEl = document.getElementById("topCategory");
-    const statusEl = document.getElementById("status");
     const grid = document.getElementById("grid");
+
+    let artistUploads = [];
 
     function setStatus(text, isError = false) {
       statusEl.textContent = text;
       statusEl.className = "status " + (isError ? "err" : "ok");
     }
 
-    function getArtistNameFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("name");
+    function getInitials(name) {
+      if (!name) return "🎨";
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return "🎨";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[1][0]).toUpperCase();
     }
 
-    function getTopCategory(items) {
-      if (!items.length) return "No category";
+    function updateHeader(items) {
+      const totalUploads = items.length;
+      const totalLikes = items.reduce((sum, item) => sum + (item.likes || 0), 0);
 
-      const counts = {};
+      const categoryCounts = {};
       items.forEach(item => {
-        const key = item.category || "Other";
-        counts[key] = (counts[key] || 0) + 1;
+        const key = item.category || "Unknown";
+        categoryCounts[key] = (categoryCounts[key] || 0) + 1;
       });
 
-      let top = "No category";
-      let max = 0;
+      let topCategory = "No category yet";
+      let topCount = 0;
 
-      Object.keys(counts).forEach(category => {
-        if (counts[category] > max) {
-          max = counts[category];
-          top = category;
+      Object.entries(categoryCounts).forEach(([key, count]) => {
+        if (count > topCount) {
+          topCount = count;
+          topCategory = key;
         }
       });
-
-      return top;
-    }
-
-    async function loadArtistPage() {
-      const artist = getArtistNameFromUrl();
-
-      if (!artist) {
-        nameEl.textContent = "Artist Not Found";
-        totalUploadsEl.textContent = "0 uploads";
-        totalLikesEl.textContent = "0 likes";
-        topCategoryEl.textContent = "No category";
-        grid.innerHTML = `<div class="empty">No artist selected.</div>`;
-        setStatus("Missing artist name.", true);
-        return;
-      }
-
-      nameEl.textContent = artist;
-
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("*")
-        .eq("artist", artist)
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        grid.innerHTML = `<div class="empty">${error.message}</div>`;
-        totalUploadsEl.textContent = "0 uploads";
-        totalLikesEl.textContent = "0 likes";
-        topCategoryEl.textContent = "No category";
-        setStatus("Failed to load artist.", true);
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        grid.innerHTML = `<div class="empty">No uploads yet for this artist.</div>`;
-        totalUploadsEl.textContent = "0 uploads";
-        totalLikesEl.textContent = "0 likes";
-        topCategoryEl.textContent = "No category";
-        setStatus("");
-        return;
-      }
-
-      const totalUploads = data.length;
-      const totalLikes = data.reduce((sum, item) => sum + (item.likes || 0), 0);
-      const topCategory = getTopCategory(data);
 
       totalUploadsEl.textContent = `${totalUploads} upload${totalUploads === 1 ? "" : "s"}`;
       totalLikesEl.textContent = `${totalLikes} like${totalLikes === 1 ? "" : "s"}`;
       topCategoryEl.textContent = topCategory;
+    }
+
+    async function likePost(id, currentLikes) {
+      const { error } = await supabase
+        .from("uploads")
+        .update({ likes: (currentLikes || 0) + 1 })
+        .eq("id", id);
+
+      if (error) {
+        setStatus("Like failed: " + error.message, true);
+        return;
+      }
+
+      const item = artistUploads.find(x => x.id === id);
+      if (item) {
+        item.likes = (item.likes || 0) + 1;
+      }
+
+      renderUploads(artistUploads);
+      updateHeader(artistUploads);
+      setStatus("");
+    }
+
+    function renderUploads(items) {
+      if (!items.length) {
+        grid.innerHTML = `<div class="empty">No uploads found for this artist yet.</div>`;
+        return;
+      }
 
       grid.innerHTML = "";
 
-      data.forEach(item => {
+      items.forEach(item => {
         const card = document.createElement("div");
         card.className = "upload-card";
+
         card.innerHTML = `
-          <img src="${item.image_url}" alt="${item.artist || "Upload"}">
+          <img src="${item.file_url}" alt="${item.artist_name || "Upload"}">
           <div class="upload-body">
-            <div class="upload-name">${item.artist || ""}</div>
+            <div class="upload-name">${item.artist_name || ""}</div>
             <div class="upload-meta">${item.category || ""}</div>
-            <div class="upload-meta">❤️ ${item.likes || 0}</div>
+            <div class="upload-meta">${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</div>
+            <div class="like-row">
+              <div class="upload-meta">❤️ ${item.likes || 0}</div>
+              <button class="like-btn">Like</button>
+            </div>
           </div>
         `;
+
+        card.querySelector(".like-btn").addEventListener("click", () => {
+          likePost(item.id, item.likes || 0);
+        });
+
         grid.appendChild(card);
       });
+    }
 
+    async function loadArtistPage() {
+      if (!artistNameParam) {
+        artistNameEl.textContent = "Artist not found";
+        avatarEl.textContent = "❓";
+        grid.innerHTML = `<div class="empty">Missing artist name in URL.</div>`;
+        setStatus("Missing artist name.", true);
+        return;
+      }
+
+      const cleanName = decodeURIComponent(artistNameParam);
+      artistNameEl.textContent = cleanName;
+      avatarEl.textContent = getInitials(cleanName);
+
+      const { data, error } = await supabase
+        .from("uploads")
+        .select("*")
+        .eq("artist_name", cleanName)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        grid.innerHTML = `<div class="empty">${error.message}</div>`;
+        setStatus("Failed to load artist.", true);
+        return;
+      }
+
+      artistUploads = data || [];
+
+      renderUploads(artistUploads);
+      updateHeader(artistUploads);
       setStatus("");
     }
 
