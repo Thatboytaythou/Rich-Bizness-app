@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
 
     if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
       return res.status(500).json({
-        error: "Missing LiveKit environment variables"
+        error: "Missing LiveKit environment variables",
       });
     }
 
@@ -26,20 +26,19 @@ module.exports = async function handler(req, res) {
       roomJoin: true,
       room,
       canPublish,
-      canSubscribe: true
+      canSubscribe: true,
     });
 
     const token = await at.toJwt();
 
     return res.status(200).json({
       token,
-      url: LIVEKIT_URL
+      url: LIVEKIT_URL,
     });
-
   } catch (err) {
     console.error("LIVEKIT ERROR:", err);
     return res.status(500).json({
-      error: err.message
+      error: err.message,
     });
   }
 };
