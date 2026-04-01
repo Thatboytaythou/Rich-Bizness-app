@@ -35,10 +35,11 @@ module.exports = async function handler(req, res) {
       token,
       url: LIVEKIT_URL
     });
+
   } catch (err) {
-    console.error("LIVEKIT TOKEN ERROR:", err);
+    console.error("LIVEKIT ERROR:", err);
     return res.status(500).json({
-      error: err.message || "Token error"
+      error: err.message
     });
   }
 };
