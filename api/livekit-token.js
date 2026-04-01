@@ -1,13 +1,15 @@
-import { AccessToken } from "livekit-server-sdk";
+const { AccessToken } = require("livekit-server-sdk");
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     const LIVEKIT_URL = process.env.LIVEKIT_URL;
     const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
     const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
 
     if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
-      return res.status(500).json({ error: "Missing LiveKit environment variables." });
+      return res.status(500).json({
+        error: "Missing LiveKit environment variables"
+      });
     }
 
     const room = req.query.room || "richbiz-live";
@@ -24,17 +26,19 @@ export default async function handler(req, res) {
       roomJoin: true,
       room,
       canPublish,
-      canSubscribe: true,
+      canSubscribe: true
     });
 
     const token = await at.toJwt();
 
     return res.status(200).json({
       token,
-      url: LIVEKIT_URL,
+      url: LIVEKIT_URL
     });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "Token error" });
+    console.error("LIVEKIT TOKEN ERROR:", err);
+    return res.status(500).json({
+      error: err.message || "Token error"
+    });
   }
-}
+};
