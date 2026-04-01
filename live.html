@@ -1,38 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Go Live</title>
+  <meta charset="UTF-8" />
+  <title>Go Live - Rich Bizness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#000;color:#fff;padding:20px;text-align:center}
+    .wrap{max-width:900px;margin:0 auto}
+    video{width:100%;max-width:700px;border-radius:18px;background:#111}
+    .btn{border:0;border-radius:14px;padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer;margin:8px}
+    .primary{background:#19e68c;color:#000}
+    .secondary{background:#222;color:#fff}
+    .status{margin-top:12px;min-height:24px}
+  </style>
 </head>
-<body style="background:black;color:white;text-align:center">
+<body>
+  <div class="wrap">
+    <h1>🔴 Go Live</h1>
+    <p>Start your live room.</p>
+    <div>
+      <button id="startBtn" class="btn primary">Start Live</button>
+      <button id="stopBtn" class="btn secondary">Stop Live</button>
+    </div>
+    <div class="status" id="status"></div>
+    <video id="localVideo" autoplay muted playsinline></video>
+  </div>
 
-<h1>🔴 GO LIVE</h1>
+  <script type="module">
+    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
 
-<video id="localVideo" autoplay muted playsinline style="width:90%"></video>
-<button onclick="startLive()">Start Live</button>
+    const statusEl = document.getElementById("status");
+    const videoEl = document.getElementById("localVideo");
+    let room;
+    let stream;
 
-<script type="module">
-import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
 
-let room;
+    async function startLive() {
+      try {
+        const username = localStorage.getItem("username") || "guest";
+        const roomName = "live-" + username;
 
-async function startLive() {
-  const res = await fetch('/api/livekit-token?room=richbiz-live&username=host');
-  const data = await res.json();
+        setStatus("Getting token...");
+        const res = await fetch(`/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(username)}&canPublish=true`);
+        const data = await res.json();
 
-  room = await connect(data.url, data.token);
+        room = await connect(data.url, data.token);
 
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: true,
-    audio: true
-  });
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
 
-  stream.getTracks().forEach(track => {
-    room.localParticipant.publishTrack(track);
-  });
+        stream.getTracks().forEach(track => {
+          room.localParticipant.publishTrack(track);
+        });
 
-  document.getElementById("localVideo").srcObject = stream;
-}
-</script>
+        videoEl.srcObject = stream;
+        setStatus("You are live.");
+      } catch (err) {
+        setStatus("Live error: " + err.message);
+      }
+    }
 
+    function stopLive() {
+      if (room) room.disconnect();
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      videoEl.srcObject = null;
+      setStatus("Live ended.");
+    }
+
+    document.getElementById("startBtn").addEventListener("click", startLive);
+    document.getElementById("stopBtn").addEventListener("click", stopLive);
+  </script>
 </body>
 </html>
