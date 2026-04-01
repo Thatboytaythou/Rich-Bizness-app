@@ -2,72 +2,241 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Go Live - Rich Bizness</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Live</title>
   <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#000;color:#fff;padding:20px;text-align:center}
-    .wrap{max-width:900px;margin:0 auto}
-    video{width:100%;max-width:700px;border-radius:18px;background:#111}
-    .btn{border:0;border-radius:14px;padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer;margin:8px}
-    .primary{background:#19e68c;color:#000}
-    .secondary{background:#222;color:#fff}
-    .status{margin-top:12px;min-height:24px}
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 720px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 48px;
+      font-weight: 700;
+    }
+
+    .subtext {
+      margin: 0 0 18px;
+      font-size: 18px;
+      color: #d1d5db;
+    }
+
+    .status {
+      margin: 0 auto 24px;
+      min-height: 24px;
+      font-size: 16px;
+      color: #9ca3af;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 34px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #startBtn {
+      background: #22c55e;
+      color: #000;
+    }
+
+    #stopBtn {
+      background: #27272a;
+      color: #fff;
+    }
+
+    .video-card {
+      width: 100%;
+      background: #0a0a0a;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.04);
+    }
+
+    video {
+      width: 100%;
+      display: block;
+      background: #111;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 28px;
+    }
+
+    .link-box {
+      margin-top: 22px;
+      padding: 16px;
+      border-radius: 18px;
+      background: #111;
+      text-align: left;
+      word-break: break-word;
+    }
+
+    .link-box strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .link-box a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .link-box a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>🔴 Go Live</h1>
-    <p>Start your live room.</p>
-    <div>
-      <button id="startBtn" class="btn primary">Start Live</button>
-      <button id="stopBtn" class="btn secondary">Stop Live</button>
+    <p class="subtext">Start your live room.</p>
+    <div id="status" class="status">Ready to go live.</div>
+
+    <div class="buttons">
+      <button id="startBtn">Start Live</button>
+      <button id="stopBtn">Stop Live</button>
     </div>
-    <div class="status" id="status"></div>
-    <video id="localVideo" autoplay muted playsinline></video>
+
+    <div class="video-card">
+      <video id="localVideo" autoplay playsinline muted></video>
+    </div>
+
+    <div class="link-box" id="watchLinkBox" style="display:none;">
+      <strong>Viewer Link</strong>
+      <a id="watchLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+    </div>
   </div>
 
   <script type="module">
-    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.mjs";
 
     const statusEl = document.getElementById("status");
     const videoEl = document.getElementById("localVideo");
-    let room;
-    let stream;
+    const watchLinkBox = document.getElementById("watchLinkBox");
+    const watchLink = document.getElementById("watchLink");
+
+    let room = null;
+    let stream = null;
 
     function setStatus(text) {
       statusEl.textContent = text;
     }
 
+    function getUsername() {
+      let username = localStorage.getItem("username");
+
+      if (!username || !username.trim()) {
+        username = "guest";
+        localStorage.setItem("username", username);
+      }
+
+      return username.trim();
+    }
+
     async function startLive() {
       try {
-        const username = localStorage.getItem("username") || "guest";
-        const roomName = "live-" + username;
+        if (room) {
+          setStatus("Already live.");
+          return;
+        }
+
+        const username = getUsername();
+        const roomName = `live-${username}`;
+        const viewerUrl = `${window.location.origin}/watch.html?artist=${encodeURIComponent(username)}`;
+
+        watchLink.href = viewerUrl;
+        watchLink.textContent = viewerUrl;
+        watchLinkBox.style.display = "block";
 
         setStatus("Getting token...");
-        const res = await fetch(`/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(username)}&canPublish=true`);
+
+        const res = await fetch(
+          `/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(username)}&canPublish=true`
+        );
+
         const data = await res.json();
 
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to get token");
+        }
+
+        setStatus("Connecting to room...");
         room = await connect(data.url, data.token);
 
+        setStatus("Requesting camera and microphone...");
         stream = await navigator.mediaDevices.getUserMedia({
           video: true,
           audio: true
         });
 
-        stream.getTracks().forEach(track => {
-          room.localParticipant.publishTrack(track);
-        });
+        for (const track of stream.getTracks()) {
+          await room.localParticipant.publishTrack(track);
+        }
 
         videoEl.srcObject = stream;
-        setStatus("You are live.");
+        videoEl.muted = true;
+        await videoEl.play();
+
+        setStatus(`You are live as ${username}.`);
       } catch (err) {
+        console.error("LIVE ERROR:", err);
         setStatus("Live error: " + err.message);
+        alert("Live error: " + err.message);
+
+        if (room) {
+          room.disconnect();
+          room = null;
+        }
+
+        if (stream) {
+          stream.getTracks().forEach(track => track.stop());
+          stream = null;
+        }
+
+        videoEl.srcObject = null;
       }
     }
 
     function stopLive() {
-      if (room) room.disconnect();
-      if (stream) stream.getTracks().forEach(track => track.stop());
+      if (room) {
+        room.disconnect();
+        room = null;
+      }
+
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+
       videoEl.srcObject = null;
       setStatus("Live ended.");
     }
