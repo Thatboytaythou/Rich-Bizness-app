@@ -39,7 +39,7 @@
 
     .shell {
       width: 100%;
-      max-width: 640px;
+      max-width: 680px;
       position: relative;
     }
 
@@ -237,7 +237,7 @@
       <a class="toplink" href="/index.html">← Home</a>
 
       <h1 class="headline">🔥 Upload Your Work 🔥</h1>
-      <p class="sub">Post images or videos to your artist page and gallery.</p>
+      <p class="sub">Post images or videos to your artist page and public gallery.</p>
 
       <div class="field">
         <label class="label" for="artistName">Artist Name</label>
@@ -439,29 +439,28 @@
 
         const fileUrl = publicData.publicUrl;
 
-        const insertPayload = {
+        const payload = {
           user_id: user.id,
           artist_name: artistName,
           file_url: fileUrl,
-          category: category
+          category: category,
+          media_type: mediaType,
+          caption: caption,
+          likes: 0
         };
-
-        // optional columns if they exist in your table
-        insertPayload.media_type = mediaType;
-        insertPayload.caption = caption;
 
         let { error: insertError } = await supabase
           .from("uploads")
-          .insert([insertPayload]);
+          .insert([payload]);
 
         if (insertError && insertError.message.includes("media_type")) {
-          delete insertPayload.media_type;
-          ({ error: insertError } = await supabase.from("uploads").insert([insertPayload]));
+          delete payload.media_type;
+          ({ error: insertError } = await supabase.from("uploads").insert([payload]));
         }
 
         if (insertError && insertError.message.includes("caption")) {
-          delete insertPayload.caption;
-          ({ error: insertError } = await supabase.from("uploads").insert([insertPayload]));
+          delete payload.caption;
+          ({ error: insertError } = await supabase.from("uploads").insert([payload]));
         }
 
         if (insertError) {
