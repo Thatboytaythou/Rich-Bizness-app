@@ -7,15 +7,15 @@
   <style>
     :root {
       --bg: #050505;
-      --panel: rgba(15, 15, 15, 0.9);
+      --panel: rgba(15, 15, 15, 0.92);
       --panel-border: rgba(255,255,255,0.08);
       --text: #f5f5f5;
       --muted: #a8a8a8;
       --primary: #19e68c;
       --primary-dark: #11c775;
       --danger: #ff5a67;
-      --input: #ececec;
       --shadow: 0 20px 60px rgba(0,0,0,0.45);
+      --input: #ececec;
     }
 
     * {
@@ -178,7 +178,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
       gap: 18px;
     }
 
@@ -188,7 +188,6 @@
       border-radius: 20px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-      cursor: pointer;
       transition: transform 0.16s ease, border-color 0.16s ease;
     }
 
@@ -218,7 +217,36 @@
     .upload-meta {
       color: var(--muted);
       font-size: 14px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
+    }
+
+    .upload-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .like-btn,
+    .artist-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .like-btn {
+      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+      color: #000;
+      box-shadow: 0 12px 24px rgba(25,230,140,0.18);
+    }
+
+    .artist-btn {
+      background: rgba(255,255,255,0.06);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .empty {
@@ -268,7 +296,7 @@
       <div class="glow"></div>
 
       <div class="card">
-        <h1 class="headline">🔥 Viral Gallery 🔥</h1>
+        <h1 class="headline">🔥 Artist Gallery 🔥</h1>
         <p class="sub">Explore fresh work from artists, tattoo creators, and 3D makers on Rich Bizness LLC.</p>
 
         <div class="stats">
@@ -319,7 +347,7 @@
 
     function updateStats(items) {
       const totalUploads = items.length;
-      const artistSet = new Set(items.map(item => (item.artist || "").trim()).filter(Boolean));
+      const artistSet = new Set(items.map(item => (item.artist_name || "").trim()).filter(Boolean));
       const totalArtists = artistSet.size;
       const totalLikes = items.reduce((sum, item) => sum + (item.likes || 0), 0);
 
@@ -333,10 +361,35 @@
       const category = categoryFilter.value;
 
       return allUploads.filter(item => {
-        const matchesSearch = !search || (item.artist || "").toLowerCase().includes(search);
+        const matchesSearch = !search || (item.artist_name || "").toLowerCase().includes(search);
         const matchesCategory = category === "all" || item.category === category;
         return matchesSearch && matchesCategory;
       });
+    }
+
+    function openArtist(name) {
+      const artistName = encodeURIComponent(name || "");
+      window.location.href = "/artist/index.html?name=" + artistName;
+    }
+
+    async function likePost(id, currentLikes) {
+      const { error } = await supabase
+        .from("uploads")
+        .update({ likes: (currentLikes || 0) + 1 })
+        .eq("id", id);
+
+      if (error) {
+        setStatus("Like failed: " + error.message, true);
+        return;
+      }
+
+      const item = allUploads.find(x => x.id === id);
+      if (item) {
+        item.likes = (item.likes || 0) + 1;
+      }
+
+      refreshGalleryView();
+      setStatus("");
     }
 
     function renderUploads(items) {
@@ -350,19 +403,57 @@
       items.forEach(item => {
         const card = document.createElement("div");
         card.className = "upload-card";
-        card.innerHTML = `
-          <img src="${item.image_url}" alt="${item.artist || "Upload"}">
-          <div class="upload-body">
-            <div class="upload-name">${item.artist || ""}</div>
-            <div class="upload-meta">${item.category || ""}</div>
-            <div class="upload-meta">❤️ ${item.likes || 0}</div>
-          </div>
-        `;
 
-        card.addEventListener("click", () => {
-          const artistName = encodeURIComponent(item.artist || "");
-          window.location.href = "/artist/index.html?name=" + artistName;
-        });
+        const img = document.createElement("img");
+        img.src = item.file_url;
+        img.alt = item.artist_name || "Upload";
+        img.addEventListener("click", () => openArtist(item.artist_name));
+
+        const body = document.createElement("div");
+        body.className = "upload-body";
+
+        const name = document.createElement("div");
+        name.className = "upload-name";
+        name.textContent = item.artist_name || "";
+
+        const category = document.createElement("div");
+        category.className = "upload-meta";
+        category.textContent = item.category || "";
+
+        const likes = document.createElement("div");
+        likes.className = "upload-meta";
+        likes.textContent = `❤️ ${item.likes || 0}`;
+
+        const date = document.createElement("div");
+        date.className = "upload-meta";
+        date.textContent = item.created_at
+          ? new Date(item.created_at).toLocaleDateString()
+          : "";
+
+        const actions = document.createElement("div");
+        actions.className = "upload-actions";
+
+        const likeBtn = document.createElement("button");
+        likeBtn.className = "like-btn";
+        likeBtn.textContent = `❤️ Like`;
+        likeBtn.addEventListener("click", () => likePost(item.id, item.likes || 0));
+
+        const artistBtn = document.createElement("button");
+        artistBtn.className = "artist-btn";
+        artistBtn.textContent = "View Artist";
+        artistBtn.addEventListener("click", () => openArtist(item.artist_name));
+
+        actions.appendChild(likeBtn);
+        actions.appendChild(artistBtn);
+
+        body.appendChild(name);
+        body.appendChild(category);
+        body.appendChild(likes);
+        body.appendChild(date);
+        body.appendChild(actions);
+
+        card.appendChild(img);
+        card.appendChild(body);
 
         grid.appendChild(card);
       });
@@ -372,7 +463,6 @@
       const filtered = getFilteredUploads();
       renderUploads(filtered);
       updateStats(filtered);
-      setStatus("");
     }
 
     async function loadGallery() {
@@ -402,6 +492,7 @@
       }
 
       refreshGalleryView();
+      setStatus("");
     }
 
     searchInput.addEventListener("input", refreshGalleryView);
