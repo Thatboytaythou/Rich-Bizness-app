@@ -39,7 +39,7 @@
 
     .shell {
       width: 100%;
-      max-width: 620px;
+      max-width: 640px;
       position: relative;
     }
 
@@ -103,19 +103,26 @@
     }
 
     .input,
-    .select {
+    .select,
+    .textarea {
       width: 100%;
       border: 0;
       border-radius: 18px;
-      padding: 18px 18px;
+      padding: 18px;
       font-size: 16px;
       background: var(--input);
       color: #111;
       outline: none;
     }
 
+    .textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
     .input:focus,
-    .select:focus {
+    .select:focus,
+    .textarea:focus {
       box-shadow: 0 0 0 3px rgba(25,230,140,0.28);
     }
 
@@ -130,6 +137,24 @@
       width: 100%;
       color: white;
       font-size: 15px;
+    }
+
+    .preview {
+      margin-top: 14px;
+      display: none;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .preview img,
+    .preview video {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      display: block;
+      background: #000;
     }
 
     .cta {
@@ -212,7 +237,7 @@
       <a class="toplink" href="/index.html">← Home</a>
 
       <h1 class="headline">🔥 Upload Your Work 🔥</h1>
-      <p class="sub">Post your latest tattoo, artwork, or 3D print to your profile.</p>
+      <p class="sub">Post images or videos to your artist page and gallery.</p>
 
       <div class="field">
         <label class="label" for="artistName">Artist Name</label>
@@ -225,13 +250,20 @@
           <option value="Tattoo">Tattoo</option>
           <option value="Art">Art</option>
           <option value="3D Print">3D Print</option>
+          <option value="Video">Video</option>
         </select>
       </div>
 
       <div class="field">
-        <label class="label" for="fileInput">Choose File</label>
+        <label class="label" for="caption">Caption</label>
+        <textarea id="caption" class="textarea" placeholder="Say something about this post..."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="label" for="fileInput">Choose Image or Video</label>
         <div class="filebox">
-          <input id="fileInput" type="file" accept="image/*" />
+          <input id="fileInput" type="file" accept="image/*,video/*" />
+          <div id="preview" class="preview"></div>
         </div>
       </div>
 
@@ -258,9 +290,11 @@
 
     const artistNameInput = document.getElementById("artistName");
     const categoryInput = document.getElementById("category");
+    const captionInput = document.getElementById("caption");
     const fileInput = document.getElementById("fileInput");
     const uploadBtn = document.getElementById("uploadBtn");
     const msg = document.getElementById("msg");
+    const preview = document.getElementById("preview");
 
     function setMsg(text, error = false) {
       msg.textContent = text;
@@ -272,16 +306,50 @@
       uploadBtn.textContent = on ? "Uploading..." : "Upload";
     }
 
+    function getMediaType(file) {
+      if (!file) return null;
+      if (file.type.startsWith("image/")) return "image";
+      if (file.type.startsWith("video/")) return "video";
+      return "file";
+    }
+
+    function showPreview(file) {
+      preview.innerHTML = "";
+      preview.style.display = "none";
+
+      if (!file) return;
+
+      const mediaType = getMediaType(file);
+      const url = URL.createObjectURL(file);
+
+      if (mediaType === "image") {
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Preview";
+        preview.appendChild(img);
+        preview.style.display = "block";
+      } else if (mediaType === "video") {
+        const video = document.createElement("video");
+        video.src = url;
+        video.controls = true;
+        video.muted = true;
+        video.playsInline = true;
+        preview.appendChild(video);
+        preview.style.display = "block";
+      }
+    }
+
+    fileInput.addEventListener("change", () => {
+      showPreview(fileInput.files[0]);
+    });
+
     async function getSessionUser() {
       const {
         data: { session },
         error
       } = await supabase.auth.getSession();
 
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       return session?.user || null;
     }
 
@@ -327,6 +395,7 @@
 
         const artistName = artistNameInput.value.trim();
         const category = categoryInput.value;
+        const caption = captionInput.value.trim();
         const file = fileInput.files[0];
 
         if (!artistName) {
@@ -339,6 +408,12 @@
           return;
         }
 
+        const mediaType = getMediaType(file);
+        if (mediaType !== "image" && mediaType !== "video") {
+          setMsg("Only image and video uploads are supported.", true);
+          return;
+        }
+
         setLoading(true);
         setMsg("Uploading...");
 
@@ -348,7 +423,9 @@
         const { error: storageError } = await supabase.storage
           .from(BUCKET)
           .upload(filePath, file, {
-            upsert: false
+            cacheControl: "3600",
+            upsert: false,
+            contentType: file.type
           });
 
         if (storageError) {
@@ -362,16 +439,30 @@
 
         const fileUrl = publicData.publicUrl;
 
-        const { error: insertError } = await supabase
+        const insertPayload = {
+          user_id: user.id,
+          artist_name: artistName,
+          file_url: fileUrl,
+          category: category
+        };
+
+        // optional columns if they exist in your table
+        insertPayload.media_type = mediaType;
+        insertPayload.caption = caption;
+
+        let { error: insertError } = await supabase
           .from("uploads")
-          .insert([
-            {
-              user_id: user.id,
-              artist_name: artistName,
-              file_url: fileUrl,
-              category: category
-            }
-          ]);
+          .insert([insertPayload]);
+
+        if (insertError && insertError.message.includes("media_type")) {
+          delete insertPayload.media_type;
+          ({ error: insertError } = await supabase.from("uploads").insert([insertPayload]));
+        }
+
+        if (insertError && insertError.message.includes("caption")) {
+          delete insertPayload.caption;
+          ({ error: insertError } = await supabase.from("uploads").insert([insertPayload]));
+        }
 
         if (insertError) {
           setMsg("Database error: " + insertError.message, true);
@@ -380,10 +471,13 @@
 
         setMsg("Upload complete ✅");
         fileInput.value = "";
+        captionInput.value = "";
+        preview.innerHTML = "";
+        preview.style.display = "none";
 
         setTimeout(() => {
           window.location.href = "/profile.html";
-        }, 900);
+        }, 800);
       } catch (err) {
         setMsg("Load failed: " + err.message, true);
       } finally {
