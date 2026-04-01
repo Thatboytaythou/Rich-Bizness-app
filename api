@@ -1,1 +1,25 @@
-livekit-token.js
+export default async function handler(req, res) {
+  const { AccessToken } = await import("livekit-server-sdk");
+
+  const at = new AccessToken(
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET,
+    {
+      identity: "user",
+    }
+  );
+
+  at.addGrant({
+    roomJoin: true,
+    room: "richbiz-live",
+    canPublish: true,
+    canSubscribe: true,
+  });
+
+  const token = await at.toJwt();
+
+  res.status(200).json({
+    token,
+    url: process.env.LIVEKIT_URL,
+  });
+}
