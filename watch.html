@@ -1,31 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Watch Live</title>
+  <meta charset="UTF-8" />
+  <title>Watch Live - Rich Bizness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#000;color:#fff;padding:20px;text-align:center}
+    .wrap{max-width:1000px;margin:0 auto}
+    .status{margin:10px 0 16px;min-height:24px}
+    #videos{display:flex;justify-content:center;flex-wrap:wrap;gap:16px}
+    video,audio{width:100%;max-width:700px;border-radius:18px;background:#111}
+  </style>
 </head>
-<body style="background:black;color:white;text-align:center">
+<body>
+  <div class="wrap">
+    <h1>📺 Watch Live</h1>
+    <div id="status" class="status">Connecting...</div>
+    <div id="videos"></div>
+  </div>
 
-<h1>👀 Watching Live</h1>
-<div id="videos"></div>
+  <script type="module">
+    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
 
-<script type="module">
-import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+    const statusEl = document.getElementById("status");
+    const videosEl = document.getElementById("videos");
 
-async function joinLive() {
-  const res = await fetch('/api/livekit-token?room=richbiz-live&username=viewer');
-  const data = await res.json();
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
 
-  const room = await connect(data.url, data.token);
+    async function joinLive() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const artist = params.get("artist") || "guest";
+        const roomName = "live-" + artist;
 
-  room.on("trackSubscribed", (track) => {
-    const el = track.attach();
-    el.style.width = "90%";
-    document.getElementById("videos").appendChild(el);
-  });
-}
+        const res = await fetch(`/api/livekit-token?room=${encodeURIComponent(roomName)}&username=viewer-${Date.now()}&canPublish=false`);
+        const data = await res.json();
 
-joinLive();
-</script>
+        const room = await connect(data.url, data.token);
 
+        room.on("trackSubscribed", (track) => {
+          const el = track.attach();
+          el.style.width = "100%";
+          el.style.maxWidth = "700px";
+          videosEl.appendChild(el);
+          setStatus("Watching " + artist + " live");
+        });
+
+        room.on("disconnected", () => {
+          setStatus("Stream ended.");
+        });
+      } catch (err) {
+        setStatus("Watch error: " + err.message);
+      }
+    }
+
+    joinLive();
+  </script>
 </body>
 </html>
