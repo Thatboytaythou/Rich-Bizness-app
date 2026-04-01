@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Go Live</title>
+</head>
+<body style="background:black;color:white;text-align:center">
+
+<h1>🔴 GO LIVE</h1>
+
+<video id="localVideo" autoplay muted playsinline style="width:90%"></video>
+<button onclick="startLive()">Start Live</button>
+
+<script type="module">
+import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+
+let room;
+
+async function startLive() {
+  const res = await fetch('/api/livekit-token?room=richbiz-live&username=host');
+  const data = await res.json();
+
+  room = await connect(data.url, data.token);
+
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: true,
+    audio: true
+  });
+
+  stream.getTracks().forEach(track => {
+    room.localParticipant.publishTrack(track);
+  });
+
+  document.getElementById("localVideo").srcObject = stream;
+}
+</script>
+
+</body>
+</html>
