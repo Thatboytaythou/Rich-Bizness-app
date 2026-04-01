@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Watch Live</title>
+</head>
+<body style="background:black;color:white;text-align:center">
+
+<h1>👀 Watching Live</h1>
+<div id="videos"></div>
+
+<script type="module">
+import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+
+async function joinLive() {
+  const res = await fetch('/api/livekit-token?room=richbiz-live&username=viewer');
+  const data = await res.json();
+
+  const room = await connect(data.url, data.token);
+
+  room.on("trackSubscribed", (track) => {
+    const el = track.attach();
+    el.style.width = "90%";
+    document.getElementById("videos").appendChild(el);
+  });
+}
+
+joinLive();
+</script>
+
+</body>
+</html>
