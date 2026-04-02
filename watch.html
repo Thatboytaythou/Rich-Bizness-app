@@ -2,57 +2,408 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Watch Live - Rich Bizness</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watch Live | Rich Bizness LLC</title>
   <style>
-    body{margin:0;font-family:Arial,sans-serif;background:#000;color:#fff;padding:20px;text-align:center}
-    .wrap{max-width:1000px;margin:0 auto}
-    .status{margin:10px 0 16px;min-height:24px}
-    #videos{display:flex;justify-content:center;flex-wrap:wrap;gap:16px}
-    video,audio{width:100%;max-width:700px;border-radius:18px;background:#111}
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 24px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 0;
+      overflow: hidden;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #0b0b0b;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+      margin-bottom: 24px;
+    }
+
+    .hero img {
+      width: 100%;
+      height: 100%;
+      min-height: 260px;
+      object-fit: cover;
+      display: block;
+      background: #090909;
+    }
+
+    .hero-copy {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06));
+    }
+
+    .hero-copy h1 {
+      margin: 0 0 12px;
+      font-size: 40px;
+      font-weight: 900;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      color: #d4d4d8;
+      line-height: 1.7;
+      max-width: 700px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 24px;
+    }
+
+    .panel {
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+    }
+
+    .panel-sub {
+      margin: -4px 0 16px;
+      color: #a1a1aa;
+      font-size: 14px;
+    }
+
+    .video-wrap {
+      width: 100%;
+      background: #090909;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 22px;
+      overflow: hidden;
+      min-height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .video-wrap video,
+    .video-wrap audio {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #090909;
+    }
+
+    .placeholder {
+      color: #71717a;
+      text-align: center;
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .status-box,
+    .info-box {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 14px 16px;
+      color: #d4d4d8;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 14px;
+      word-break: break-word;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 20px;
+    }
+
+    .mini-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .mini-stat {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .mini-stat strong {
+      display: block;
+      font-size: 22px;
+      color: #22c55e;
+      margin-bottom: 6px;
+    }
+
+    .mini-stat span {
+      color: #a1a1aa;
+      font-size: 13px;
+    }
+
+    .tips-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .tip-item {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: #d4d4d8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .tip-item strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 14px;
+      }
+
+      .brand {
+        font-size: 22px;
+      }
+
+      .hero-copy {
+        padding: 20px;
+      }
+
+      .hero-copy h1 {
+        font-size: 30px;
+      }
+
+      .mini-stat-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>📺 Watch Live</h1>
-    <div id="status" class="status">Connecting...</div>
-    <div id="videos"></div>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">RICH BIZNESS WATCH</div>
+
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/artist/">Artist</a>
+        <a href="/gallery/">Gallery</a>
+        <a href="/upload.html">Upload</a>
+        <a href="/live.html">Live</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/auth.html">Auth</a>
+      </nav>
+    </div>
+
+    <section class="hero">
+      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Rich Bizness watch hero" />
+      <div class="hero-copy">
+        <h1>Watch the live stream</h1>
+        <p>
+          Join a creator’s live room, watch their video stream, and stay connected to the Rich Bizness platform.
+          This viewer page joins the room as a subscriber and waits for tracks to appear.
+        </p>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <h2>Live Viewer</h2>
+        <p class="panel-sub">Watching the selected artist room.</p>
+
+        <div id="videos" class="video-wrap">
+          <div class="placeholder">Waiting for stream...</div>
+        </div>
+
+        <div id="status" class="status-box">Connecting...</div>
+
+        <div class="info-box">
+          This page looks for the artist name in the URL.
+          Example:
+          <strong>/watch.html?artist=guest</strong>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <div class="panel">
+          <h2>Viewer Snapshot</h2>
+          <div class="mini-stat-grid">
+            <div class="mini-stat">
+              <strong>Live</strong>
+              <span>Room Mode</span>
+            </div>
+            <div class="mini-stat">
+              <strong>ON</strong>
+              <span>Watch Ready</span>
+            </div>
+            <div class="mini-stat">
+              <strong>1</strong>
+              <span>Viewer Role</span>
+            </div>
+            <div class="mini-stat">
+              <strong>Sync</strong>
+              <span>Room Access</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Viewer Tips</h2>
+          <div class="tips-list">
+            <div class="tip-item">
+              <strong>Use the correct artist name</strong>
+              Match the `artist` query value to the streamer’s saved username.
+            </div>
+            <div class="tip-item">
+              <strong>Wait for the host to publish</strong>
+              The room can connect before the stream video appears.
+            </div>
+            <div class="tip-item">
+              <strong>Refresh if needed</strong>
+              If the host restarts the stream, refreshing can quickly reconnect your view.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script type="module">
-    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.min.js";
+    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.mjs";
 
     const statusEl = document.getElementById("status");
     const videosEl = document.getElementById("videos");
 
+    let room = null;
+
     function setStatus(text) {
       statusEl.textContent = text;
+    }
+
+    function getViewerName() {
+      let username = localStorage.getItem("username");
+
+      if (!username || !username.trim()) {
+        username = `viewer-${Date.now()}`;
+        localStorage.setItem("username", username);
+      }
+
+      return username.trim();
     }
 
     async function joinLive() {
       try {
         const params = new URLSearchParams(window.location.search);
         const artist = params.get("artist") || "guest";
-        const roomName = "live-" + artist;
+        const roomName = `live-${artist}`;
+        const viewer = getViewerName();
 
-        const res = await fetch(`/api/livekit-token?room=${encodeURIComponent(roomName)}&username=viewer-${Date.now()}&canPublish=false`);
+        setStatus("Getting viewer token...");
+
+        const res = await fetch(
+          `/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(viewer)}&canPublish=false`
+        );
+
         const data = await res.json();
 
-        const room = await connect(data.url, data.token);
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to get viewer token");
+        }
+
+        setStatus(`Joining ${artist}'s live room...`);
+        room = await connect(data.url, data.token);
+
+        videosEl.innerHTML = '<div class="placeholder">Connected. Waiting for live video...</div>';
 
         room.on("trackSubscribed", (track) => {
-          const el = track.attach();
-          el.style.width = "100%";
-          el.style.maxWidth = "700px";
-          videosEl.appendChild(el);
-          setStatus("Watching " + artist + " live");
+          const element = track.attach();
+          videosEl.innerHTML = "";
+          videosEl.appendChild(element);
+          setStatus(`Watching ${artist} live`);
+        });
+
+        room.on("trackUnsubscribed", (track) => {
+          const elements = track.detach();
+          elements.forEach(el => el.remove());
         });
 
         room.on("disconnected", () => {
           setStatus("Stream ended.");
+          videosEl.innerHTML = '<div class="placeholder">The live stream has ended.</div>';
         });
       } catch (err) {
+        console.error("WATCH ERROR:", err);
         setStatus("Watch error: " + err.message);
+        alert("Watch error: " + err.message);
       }
     }
 
