@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness Profile</title>
+  <title>Profile | Rich Bizness LLC</title>
   <style>
     * {
       box-sizing: border-box;
@@ -16,32 +16,79 @@
       font-family: Arial, sans-serif;
     }
 
-    .page {
-      max-width: 1100px;
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(0, 0, 0, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 24px;
+      padding: 18px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .profile-card {
-      background: #0b0b0b;
+    .brand {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 28px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      font-size: 14px;
+      font-weight: 700;
     }
 
-    .hero {
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+    }
+
+    .profile-shell {
+      display: grid;
+      gap: 24px;
+    }
+
+    .hero-card {
       position: relative;
-      min-height: 400px;
-      background: #050505;
+      overflow: hidden;
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #0b0b0b;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+      min-height: 430px;
     }
 
-    .hero img {
+    .hero-card img {
       width: 100%;
-      height: 100%;
-      min-height: 400px;
+      height: 430px;
       object-fit: cover;
       display: block;
+      background: #090909;
     }
 
     .hero-overlay {
@@ -49,9 +96,9 @@
       inset: 0;
       background: linear-gradient(
         to top,
-        rgba(0,0,0,0.9) 8%,
-        rgba(0,0,0,0.45) 45%,
-        rgba(0,0,0,0.1) 100%
+        rgba(0,0,0,0.94) 8%,
+        rgba(0,0,0,0.48) 45%,
+        rgba(0,0,0,0.15) 100%
       );
       display: flex;
       align-items: flex-end;
@@ -62,24 +109,65 @@
       width: 100%;
       display: flex;
       justify-content: space-between;
+      gap: 22px;
       align-items: flex-end;
-      gap: 20px;
       flex-wrap: wrap;
     }
 
-    .identity h1 {
+    .identity-block {
+      display: flex;
+      gap: 18px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .avatar-wrap {
+      width: 110px;
+      height: 110px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.14);
+      background: #111;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .identity-text h1 {
       margin: 0 0 8px;
       font-size: 42px;
-      font-weight: 800;
+      font-weight: 900;
       letter-spacing: 0.3px;
     }
 
-    .identity p {
-      margin: 0;
+    .identity-text p {
+      margin: 0 0 12px;
       color: #d4d4d8;
-      font-size: 16px;
-      line-height: 1.5;
+      line-height: 1.6;
       max-width: 700px;
+      font-size: 15px;
+    }
+
+    .meta-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
     }
 
     .hero-actions {
@@ -88,35 +176,32 @@
       flex-wrap: wrap;
     }
 
-    .hero-actions a,
-    .hero-actions button {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
+    .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
     }
 
-    .primary-btn {
+    .btn-primary {
       background: #22c55e;
       color: #000;
     }
 
-    .secondary-btn {
+    .btn-secondary {
       background: rgba(255,255,255,0.1);
       color: #fff;
-      border: 1px solid rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.08);
     }
 
-    .profile-body {
-      padding: 28px;
+    .content-grid {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 340px 1fr;
       gap: 24px;
     }
 
@@ -127,21 +212,28 @@
     }
 
     .panel {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 22px;
-      padding: 20px;
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
     }
 
     .panel h2 {
       margin: 0 0 14px;
-      font-size: 22px;
+      font-size: 24px;
+    }
+
+    .panel-sub {
+      margin: -4px 0 16px;
+      color: #a1a1aa;
+      font-size: 14px;
     }
 
     .bio {
       color: #d4d4d8;
-      line-height: 1.6;
+      line-height: 1.7;
       font-size: 15px;
+      margin: 0;
     }
 
     .stats {
@@ -151,7 +243,7 @@
     }
 
     .stat {
-      background: #0a0a0a;
+      background: #111;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 18px;
       padding: 16px;
@@ -161,8 +253,8 @@
     .stat strong {
       display: block;
       font-size: 24px;
-      margin-bottom: 6px;
       color: #22c55e;
+      margin-bottom: 6px;
     }
 
     .stat span {
@@ -179,11 +271,11 @@
     .tag {
       background: #18181b;
       color: #22c55e;
-      border: 1px solid rgba(34,197,94,0.18);
+      border: 1px solid rgba(34,197,94,0.2);
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .link-list {
@@ -192,48 +284,47 @@
     }
 
     .link-list a {
-      color: #60a5fa;
-      text-decoration: none;
-      background: #0a0a0a;
+      background: #111;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 16px;
       padding: 14px 16px;
-      font-weight: 600;
+      color: #60a5fa;
+      font-weight: 700;
     }
 
     .link-list a:hover {
       text-decoration: underline;
     }
 
-    .section-header {
+    .section-head {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      align-items: center;
+      gap: 14px;
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
 
-    .section-header p {
+    .section-head p {
       margin: 0;
       color: #a1a1aa;
       font-size: 14px;
     }
 
-    .gallery-grid {
+    .featured-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 18px;
     }
 
-    .gallery-item {
-      background: #0a0a0a;
+    .featured-card {
+      background: #111;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 20px;
       overflow: hidden;
     }
 
-    .gallery-item img {
+    .featured-card img {
       width: 100%;
       aspect-ratio: 1 / 1;
       object-fit: cover;
@@ -241,131 +332,196 @@
       background: #090909;
     }
 
-    .gallery-info {
+    .featured-info {
       padding: 14px;
     }
 
-    .gallery-info h3 {
+    .featured-info h3 {
       margin: 0 0 6px;
       font-size: 18px;
     }
 
-    .gallery-info p {
+    .featured-info p {
       margin: 0;
       color: #a1a1aa;
       font-size: 14px;
+      line-height: 1.5;
     }
 
-    .timeline {
+    .activity-list {
       display: grid;
       gap: 14px;
     }
 
-    .timeline-item {
-      background: #0a0a0a;
+    .activity-item {
+      background: #111;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 18px;
       padding: 16px;
     }
 
-    .timeline-item strong {
+    .activity-item strong {
       display: block;
       margin-bottom: 6px;
       font-size: 16px;
     }
 
-    .timeline-item span {
+    .activity-item span {
       display: block;
+      margin-bottom: 8px;
       color: #71717a;
       font-size: 13px;
-      margin-bottom: 8px;
     }
 
-    .timeline-item p {
+    .activity-item p {
       margin: 0;
       color: #d4d4d8;
       line-height: 1.5;
       font-size: 14px;
     }
 
-    @media (max-width: 920px) {
-      .profile-body {
+    .mini-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .upload-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .upload-row input[type="file"] {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .note {
+      margin-top: 14px;
+      color: #a1a1aa;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 980px) {
+      .content-grid {
         grid-template-columns: 1fr;
       }
 
-      .identity h1 {
+      .identity-text h1 {
         font-size: 34px;
       }
     }
 
     @media (max-width: 640px) {
+      .topbar-inner,
       .page {
-        padding: 14px;
+        padding-left: 14px;
+        padding-right: 14px;
       }
 
-      .hero {
-        min-height: 320px;
+      .hero-card {
+        min-height: 360px;
       }
 
-      .hero img {
-        min-height: 320px;
+      .hero-card img {
+        height: 360px;
       }
 
       .hero-overlay {
         padding: 18px;
       }
 
-      .profile-body {
-        padding: 18px;
+      .identity-text h1 {
+        font-size: 28px;
       }
 
-      .identity h1 {
-        font-size: 28px;
+      .brand {
+        font-size: 20px;
       }
 
       .stats {
         grid-template-columns: 1fr 1fr;
       }
+
+      .avatar-wrap {
+        width: 90px;
+        height: 90px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <section class="profile-card">
-      <div class="hero">
-        <img src="images/rich-bizness-profile.jpg" alt="Rich Bizness LLC profile art" />
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">RICH BIZNESS PROFILE</div>
+
+      <nav class="nav-links">
+        <a href="/index.html">Home</a>
+        <a href="/artist/">Artist</a>
+        <a href="/gallery.html">Gallery</a>
+        <a href="/upload.html">Upload</a>
+        <a href="/live.html">Live</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="profile-shell">
+      <section class="hero-card">
+        <img id="heroImage" src="/images/rich-bizness-profile.jpg" alt="Rich Bizness profile banner" />
         <div class="hero-overlay">
           <div class="hero-content">
-            <div class="identity">
-              <h1>Rich Bizness LLC</h1>
-              <p>
-                Creative brand, artist platform, live streaming space, and digital showcase
-                built for art, music, fashion, storytelling, and original drops.
-              </p>
+            <div class="identity-block">
+              <div class="avatar-wrap">
+                <img id="avatarImage" src="/images/rich-bizness-profile.jpg" alt="Profile avatar" />
+              </div>
+
+              <div class="identity-text">
+                <h1 id="profileName">Rich Bizness LLC</h1>
+                <p id="profileBio">
+                  Creative brand, artist platform, live streaming space, and visual showcase
+                  built for art, music, storytelling, fashion, and digital drops.
+                </p>
+
+                <div class="meta-row">
+                  <span class="meta-pill" id="profileRole">Artist</span>
+                  <span class="meta-pill" id="profileEmail">demo@richbizness.com</span>
+                  <span class="meta-pill">Creative Platform</span>
+                </div>
+              </div>
             </div>
 
             <div class="hero-actions">
-              <a class="primary-btn" href="live.html">Go Live</a>
-              <a class="secondary-btn" href="gallery.html">View Gallery</a>
-              <a class="secondary-btn" href="upload.html">Upload Art</a>
+              <a class="btn btn-primary" href="/live.html">Go Live</a>
+              <a class="btn btn-secondary" href="/gallery.html">View Gallery</a>
+              <a class="btn btn-secondary" href="/artist-dashboard.html">Dashboard</a>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="profile-body">
+      <section class="content-grid">
         <aside class="sidebar">
           <div class="panel">
             <h2>About</h2>
             <p class="bio">
-              Rich Bizness LLC is a creative hub for original content, artist promotion,
-              digital products, visual storytelling, and live audience experiences. This
-              page highlights the brand identity, active work, and featured community drops.
+              This profile page pulls your saved browser session data when available.
+              It can show your saved username, email, role, and custom profile image
+              while keeping the Rich Bizness brand style across the platform.
             </p>
           </div>
 
           <div class="panel">
-            <h2>Stats</h2>
+            <h2>Profile Stats</h2>
             <div class="stats">
               <div class="stat">
                 <strong>24</strong>
@@ -387,7 +543,7 @@
           </div>
 
           <div class="panel">
-            <h2>Brand Tags</h2>
+            <h2>Profile Tags</h2>
             <div class="tag-list">
               <span class="tag">Art</span>
               <span class="tag">Streaming</span>
@@ -402,100 +558,195 @@
           <div class="panel">
             <h2>Quick Links</h2>
             <div class="link-list">
-              <a href="gallery.html">Open Gallery</a>
-              <a href="upload.html">Artist Upload Page</a>
-              <a href="live.html">Start Live Stream</a>
-              <a href="watch.html?artist=guest">Watch Live Room</a>
+              <a href="/auth.html">Open Auth</a>
+              <a href="/artist/">Artist Page</a>
+              <a href="/artist-dashboard.html">Artist Dashboard</a>
+              <a href="/upload.html">Upload Artwork</a>
+              <a href="/watch.html?artist=guest">Watch Live</a>
             </div>
+          </div>
+
+          <div class="panel">
+            <h2>Profile Image</h2>
+            <p class="panel-sub">Upload a custom image for this browser session.</p>
+
+            <div class="upload-row">
+              <input id="profileImageInput" type="file" accept="image/*" />
+            </div>
+
+            <div class="mini-actions">
+              <button id="saveDefaultImageBtn" class="btn btn-secondary" type="button">Use Default Image</button>
+              <button id="clearProfileSessionBtn" class="btn btn-secondary" type="button">Clear Session</button>
+            </div>
+
+            <p class="note">
+              Uploaded profile images are saved in browser storage for this device.
+            </p>
           </div>
         </aside>
 
-        <main class="main">
+        <section class="main">
           <div class="panel">
-            <div class="section-header">
+            <div class="section-head">
               <div>
-                <h2 style="margin:0;">Featured Work</h2>
-                <p>Highlighted visuals from the Rich Bizness brand.</p>
+                <h2 style="margin:0;">Featured Visuals</h2>
+                <p>Brand identity and featured artwork previews.</p>
               </div>
             </div>
 
-            <div class="gallery-grid">
-              <div class="gallery-item">
-                <img src="images/rich-bizness-profile.jpg" alt="Rich Bizness main artwork" />
-                <div class="gallery-info">
+            <div class="featured-grid">
+              <div class="featured-card">
+                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Main brand artwork" />
+                <div class="featured-info">
                   <h3>Main Brand Art</h3>
-                  <p>Official profile visual and hero artwork.</p>
+                  <p>Official profile visual used across the Rich Bizness platform.</p>
                 </div>
               </div>
 
-              <div class="gallery-item">
-                <img src="images/gallery-1.jpg" alt="Featured gallery artwork 1" />
-                <div class="gallery-info">
-                  <h3>Creative Drop 01</h3>
-                  <p>Featured brand concept and visual style release.</p>
+              <div class="featured-card">
+                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Featured visual two" />
+                <div class="featured-info">
+                  <h3>Creative Identity</h3>
+                  <p>Extended image placement for a consistent artist and brand presentation.</p>
                 </div>
               </div>
 
-              <div class="gallery-item">
-                <img src="images/gallery-2.jpg" alt="Featured gallery artwork 2" />
-                <div class="gallery-info">
-                  <h3>Creative Drop 02</h3>
-                  <p>Visual storytelling and motion-ready design art.</p>
+              <div class="featured-card">
+                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Featured visual three" />
+                <div class="featured-info">
+                  <h3>Platform Look</h3>
+                  <p>Shared artwork styling used to unify pages, profile, and dashboard UI.</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="panel">
-            <div class="section-header">
+            <div class="section-head">
               <div>
                 <h2 style="margin:0;">Recent Activity</h2>
-                <p>Latest moves from the platform.</p>
+                <p>Latest profile and platform moves.</p>
               </div>
             </div>
 
-            <div class="timeline">
-              <div class="timeline-item">
-                <strong>Live room launched</strong>
+            <div class="activity-list">
+              <div class="activity-item">
+                <strong>Profile page updated</strong>
                 <span>Today</span>
-                <p>The Rich Bizness live streaming room is active and ready for artist sessions.</p>
+                <p>The profile layout was refreshed with hero image, avatar block, quick links, and session-based identity.</p>
               </div>
 
-              <div class="timeline-item">
-                <strong>Gallery updated</strong>
+              <div class="activity-item">
+                <strong>Auth session connected</strong>
+                <span>Recently</span>
+                <p>Saved local auth data can now update username, email, and role across the profile experience.</p>
+              </div>
+
+              <div class="activity-item">
+                <strong>Live system ready</strong>
                 <span>This week</span>
-                <p>New uploads and featured art were added to the public gallery page.</p>
-              </div>
-
-              <div class="timeline-item">
-                <strong>Artist upload portal added</strong>
-                <span>This week</span>
-                <p>Creators can now submit visual work and preview it before saving to the gallery.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <div class="section-header">
-              <div>
-                <h2 style="margin:0;">Profile Details</h2>
-                <p>Custom brand identity section.</p>
+                <p>LiveKit token generation and the live page setup are active and ready for artist broadcasts.</p>
               </div>
             </div>
 
-            <p class="bio">
-              This profile uses your uploaded artwork as the main visual instead of the old
-              fire emoji. To use your image correctly, place the file in your project and name it:
-              <strong>images/rich-bizness-profile.jpg</strong>
-            </p>
-            <p class="bio">
-              If your image is in a different folder, just replace both image paths in this file
-              with your real image path.
-            </p>
+            <div class="mini-actions">
+              <a class="btn btn-primary" href="/gallery.html">Open Gallery</a>
+              <a class="btn btn-secondary" href="/artist/">Open Artist Page</a>
+              <a class="btn btn-secondary" href="/index.html">Back Home</a>
+            </div>
           </div>
-        </main>
-      </div>
-    </section>
-  </div>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const DEFAULT_IMAGE = "/images/rich-bizness-profile.jpg";
+
+    function applyFallbackImages() {
+      document.addEventListener("error", function (e) {
+        if (e.target.tagName === "IMG") {
+          e.target.src = DEFAULT_IMAGE;
+        }
+      }, true);
+    }
+
+    function applySavedSession() {
+      const savedName = localStorage.getItem("username");
+      const savedEmail = localStorage.getItem("userEmail");
+      const savedRole = localStorage.getItem("userRole");
+      const savedImage = localStorage.getItem("profileImage");
+
+      if (savedName) {
+        document.getElementById("profileName").textContent = savedName;
+      }
+
+      if (savedEmail) {
+        document.getElementById("profileEmail").textContent = savedEmail;
+      }
+
+      if (savedRole) {
+        const formattedRole = savedRole.charAt(0).toUpperCase() + savedRole.slice(1);
+        document.getElementById("profileRole").textContent = formattedRole;
+      }
+
+      if (savedImage) {
+        document.getElementById("heroImage").src = savedImage;
+        document.getElementById("avatarImage").src = savedImage;
+
+        document.querySelectorAll(".profile-linked-image").forEach((img) => {
+          img.src = savedImage;
+        });
+      }
+    }
+
+    function handleProfileImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        const base64 = e.target.result;
+        localStorage.setItem("profileImage", base64);
+
+        document.getElementById("heroImage").src = base64;
+        document.getElementById("avatarImage").src = base64;
+
+        document.querySelectorAll(".profile-linked-image").forEach((img) => {
+          img.src = base64;
+        });
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function resetToDefaultImage() {
+      localStorage.removeItem("profileImage");
+      document.getElementById("heroImage").src = DEFAULT_IMAGE;
+      document.getElementById("avatarImage").src = DEFAULT_IMAGE;
+
+      document.querySelectorAll(".profile-linked-image").forEach((img) => {
+        img.src = DEFAULT_IMAGE;
+      });
+    }
+
+    function clearProfileSession() {
+      localStorage.removeItem("username");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("profileImage");
+
+      window.location.reload();
+    }
+
+    applyFallbackImages();
+    applySavedSession();
+
+    document.getElementById("profileImageInput").addEventListener("change", handleProfileImageUpload);
+    document.getElementById("saveDefaultImageBtn").addEventListener("click", resetToDefaultImage);
+    document.getElementById("clearProfileSessionBtn").addEventListener("click", clearProfileSession);
+  </script>
 </body>
 </html>
