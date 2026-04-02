@@ -5,9 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gallery | Rich Bizness LLC</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -40,7 +38,6 @@
     .brand {
       font-size: 28px;
       font-weight: 900;
-      letter-spacing: 0.4px;
     }
 
     .nav-links {
@@ -74,7 +71,6 @@
       min-height: 260px;
       object-fit: cover;
       display: block;
-      background: #090909;
     }
 
     .hero-copy {
@@ -95,7 +91,6 @@
       margin: 0;
       color: #d4d4d8;
       line-height: 1.7;
-      max-width: 700px;
     }
 
     .controls {
@@ -115,10 +110,6 @@
       padding: 14px 16px;
       font-size: 15px;
       outline: none;
-    }
-
-    .controls input::placeholder {
-      color: #71717a;
     }
 
     .summary-row {
@@ -162,12 +153,6 @@
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px;
       overflow: hidden;
-      transition: transform 0.18s ease, border-color 0.18s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(255,255,255,0.16);
     }
 
     .card img {
@@ -260,35 +245,12 @@
         font-size: 34px;
       }
     }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 14px;
-      }
-
-      .brand {
-        font-size: 22px;
-      }
-
-      .hero-copy {
-        padding: 20px;
-      }
-
-      .hero-copy h1 {
-        font-size: 30px;
-      }
-
-      .summary-row h2 {
-        font-size: 24px;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="topbar">
       <div class="brand">RICH BIZNESS GALLERY</div>
-
       <nav class="nav-links">
         <a href="/index.html">Home</a>
         <a href="/artist/">Artist</a>
@@ -302,19 +264,17 @@
     <section class="hero">
       <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Gallery hero" />
       <div class="hero-copy">
-        <h1>Featured art, uploads, and creative drops</h1>
+        <h1>Real gallery, real uploads</h1>
         <p>
-          Browse artwork from the Rich Bizness platform. This page shows featured pieces plus uploads
-          saved from your upload page.
+          Browse artwork pulled directly from Supabase. This is now shared across devices and users.
         </p>
       </div>
     </section>
 
-    <div id="userStatus" class="status-box">Checking session...</div>
+    <div id="statusBox" class="status-box">Loading gallery...</div>
 
     <section class="controls">
       <input id="searchInput" type="text" placeholder="Search by title, artist, category, or description..." />
-
       <select id="categoryFilter">
         <option value="all">All Categories</option>
         <option value="digital">Digital</option>
@@ -323,7 +283,6 @@
         <option value="3d">3D</option>
         <option value="streetwear">Streetwear</option>
       </select>
-
       <select id="sortFilter">
         <option value="newest">Sort: Newest</option>
         <option value="oldest">Sort: Oldest</option>
@@ -335,9 +294,8 @@
     <section class="summary-row">
       <div>
         <h2>Gallery Collection</h2>
-        <p>Search, filter, and browse uploaded and featured work.</p>
+        <p>Search, filter, and browse uploaded work.</p>
       </div>
-
       <div id="galleryCount" class="count-badge">0 pieces</div>
     </section>
 
@@ -353,108 +311,18 @@
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const userStatusEl = document.getElementById("userStatus");
+    const statusBox = document.getElementById("statusBox");
+    const galleryGrid = document.getElementById("galleryGrid");
+    const galleryCount = document.getElementById("galleryCount");
 
-    async function syncUser() {
-      const { data: { session } } = await supabase.auth.getSession();
+    let artworks = [];
 
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const username = email.split("@")[0];
-        localStorage.setItem("username", username);
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("isLoggedIn", "true");
-        userStatusEl.textContent = `Logged in as ${username} ✅`;
-      } else {
-        userStatusEl.textContent = "Browsing as guest";
-      }
-    }
-
-    const featuredArtworks = [
-      {
-        title: "Main Brand Artwork",
-        artist: "Rich Bizness LLC",
-        category: "digital",
-        description: "Official Rich Bizness hero artwork used across the platform brand identity.",
-        image: DEFAULT_IMAGE,
-        date: "2026-04-01",
-        price: "Featured"
-      },
-      {
-        title: "Neon Motion",
-        artist: "Rich Bizness",
-        category: "digital",
-        description: "A high-energy digital piece built around glow, contrast, and motion.",
-        image: DEFAULT_IMAGE,
-        date: "2026-03-27",
-        price: "$250"
-      },
-      {
-        title: "Street Story",
-        artist: "RB Studio",
-        category: "streetwear",
-        description: "A visual concept merging fashion, urban energy, and custom character branding.",
-        image: DEFAULT_IMAGE,
-        date: "2026-03-24",
-        price: "$180"
-      },
-      {
-        title: "Creative Flame",
-        artist: "Rich Bizness",
-        category: "painting",
-        description: "An intense visual built around heat, color, and expressive composition.",
-        image: DEFAULT_IMAGE,
-        date: "2026-03-20",
-        price: "$320"
-      },
-      {
-        title: "Lens Drop",
-        artist: "RB Visuals",
-        category: "photography",
-        description: "Photography-based composition styled for modern promo and brand storytelling.",
-        image: DEFAULT_IMAGE,
-        date: "2026-03-18",
-        price: "$210"
-      },
-      {
-        title: "Render Mode",
-        artist: "Creative Lab",
-        category: "3d",
-        description: "A polished 3D-driven concept ready for product visuals and animated expansion.",
-        image: DEFAULT_IMAGE,
-        date: "2026-03-16",
-        price: "$500"
-      }
-    ];
-
-    function getUploads() {
-      try {
-        const raw = localStorage.getItem("artistUploads");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (err) {
-        console.error("Could not parse artistUploads:", err);
-        return [];
-      }
+    function setStatus(text) {
+      statusBox.textContent = text;
     }
 
     function safeImage(src) {
-      if (!src || src === "undefined" || src === "null") {
-        return DEFAULT_IMAGE;
-      }
-      return src;
-    }
-
-    function normalizeUploads(items) {
-      return items.map((item) => ({
-        title: item.title || "Untitled Artwork",
-        artist: item.artist || item.name || "Unknown Artist",
-        category: (item.category || item.type || "digital").toLowerCase(),
-        description: item.description || "Artist upload from the Rich Bizness platform.",
-        image: safeImage(item.image || item.imageUrl || item.photo || item.url),
-        date: item.date || (item.createdAt ? item.createdAt.slice(0, 10) : new Date().toISOString().slice(0, 10)),
-        price: item.price || "Contact for price"
-      }));
+      return src || DEFAULT_IMAGE;
     }
 
     function formatCategory(category) {
@@ -463,40 +331,53 @@
       return category.charAt(0).toUpperCase() + category.slice(1);
     }
 
-    function getAllArtworks() {
-      const uploads = normalizeUploads(getUploads());
-      return [...uploads, ...featuredArtworks];
+    async function loadArtworks() {
+      setStatus("Loading gallery...");
+
+      const { data, error } = await supabase
+        .from("artworks")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error(error);
+        setStatus("Gallery error: " + error.message);
+        artworks = [];
+        renderGallery([]);
+        return;
+      }
+
+      artworks = data || [];
+      setStatus(`Loaded ${artworks.length} artwork piece${artworks.length === 1 ? "" : "s"}.`);
+      filterAndRenderGallery();
     }
 
     function sortArtworks(items, sortValue) {
       const list = [...items];
 
       if (sortValue === "oldest") {
-        return list.sort((a, b) => new Date(a.date) - new Date(b.date));
+        return list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
       }
 
       if (sortValue === "title-az") {
-        return list.sort((a, b) => a.title.localeCompare(b.title));
+        return list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
       }
 
       if (sortValue === "artist-az") {
-        return list.sort((a, b) => a.artist.localeCompare(b.artist));
+        return list.sort((a, b) => (a.artist_name || "").localeCompare(b.artist_name || ""));
       }
 
-      return list.sort((a, b) => new Date(b.date) - new Date(a.date));
+      return list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     }
 
     function renderGallery(items) {
-      const galleryGrid = document.getElementById("galleryGrid");
-      const galleryCount = document.getElementById("galleryCount");
-
       galleryCount.textContent = `${items.length} piece${items.length === 1 ? "" : "s"}`;
 
       if (!items.length) {
         galleryGrid.innerHTML = `
           <div class="empty-state">
             <h3>No artwork found</h3>
-            <p>Try a different search, category, or sort option.</p>
+            <p>Try a different search or category.</p>
           </div>
         `;
         return;
@@ -504,17 +385,17 @@
 
       galleryGrid.innerHTML = items.map((item) => `
         <article class="card">
-          <img src="${safeImage(item.image)}" alt="${item.title}" loading="lazy" />
+          <img src="${safeImage(item.image_url)}" alt="${item.title || "Artwork"}" loading="lazy" />
           <div class="card-body">
             <div class="title-row">
-              <h3>${item.title}</h3>
+              <h3>${item.title || "Untitled Artwork"}</h3>
               <span class="tag">${formatCategory(item.category)}</span>
             </div>
-            <p class="artist">By ${item.artist}</p>
-            <p class="desc">${item.description}</p>
+            <p class="artist">By ${item.artist_name || "Unknown Artist"}</p>
+            <p class="desc">${item.description || "Artwork from the Rich Bizness platform."}</p>
             <div class="meta">
-              <span>${item.date}</span>
-              <span>${item.price}</span>
+              <span>${item.created_at ? item.created_at.slice(0, 10) : ""}</span>
+              <span>${item.price || "Contact for price"}</span>
             </div>
           </div>
         </article>
@@ -526,23 +407,25 @@
       const categoryValue = document.getElementById("categoryFilter").value;
       const sortValue = document.getElementById("sortFilter").value;
 
-      const allArtworks = getAllArtworks();
+      const filtered = artworks.filter((item) => {
+        const title = (item.title || "").toLowerCase();
+        const artist = (item.artist_name || "").toLowerCase();
+        const category = (item.category || "").toLowerCase();
+        const description = (item.description || "").toLowerCase();
 
-      const filtered = allArtworks.filter((item) => {
         const matchesSearch =
-          item.title.toLowerCase().includes(searchValue) ||
-          item.artist.toLowerCase().includes(searchValue) ||
-          item.category.toLowerCase().includes(searchValue) ||
-          item.description.toLowerCase().includes(searchValue);
+          title.includes(searchValue) ||
+          artist.includes(searchValue) ||
+          category.includes(searchValue) ||
+          description.includes(searchValue);
 
         const matchesCategory =
-          categoryValue === "all" || item.category.toLowerCase() === categoryValue;
+          categoryValue === "all" || category === categoryValue;
 
         return matchesSearch && matchesCategory;
       });
 
-      const sorted = sortArtworks(filtered, sortValue);
-      renderGallery(sorted);
+      renderGallery(sortArtworks(filtered, sortValue));
     }
 
     document.addEventListener("error", function (e) {
@@ -555,8 +438,7 @@
     document.getElementById("categoryFilter").addEventListener("change", filterAndRenderGallery);
     document.getElementById("sortFilter").addEventListener("change", filterAndRenderGallery);
 
-    await syncUser();
-    filterAndRenderGallery();
+    loadArtworks();
   </script>
 </body>
 </html>
