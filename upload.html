@@ -6,7 +6,6 @@
   <title>Upload | Rich Bizness LLC</title>
   <style>
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       min-height: 100vh;
@@ -15,17 +14,8 @@
       font-family: Arial, sans-serif;
       padding: 24px;
     }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
+    a { color: inherit; text-decoration: none; }
+    .page { max-width: 1200px; margin: 0 auto; }
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -34,18 +24,12 @@
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
-
-    .brand {
-      font-size: 28px;
-      font-weight: 900;
-    }
-
+    .brand { font-size: 28px; font-weight: 900; }
     .nav-links {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .nav-links a {
       padding: 10px 14px;
       border-radius: 14px;
@@ -54,35 +38,28 @@
       font-size: 14px;
       font-weight: 700;
     }
-
     .layout {
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 24px;
     }
-
     .panel {
       background: #0b0b0b;
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 24px;
       padding: 22px;
     }
-
     .panel h2 {
       margin: 0 0 14px;
       font-size: 24px;
     }
-
-    .field {
-      margin-bottom: 16px;
-    }
-
+    .field { margin-bottom: 16px; }
     .field label {
       display: block;
       margin-bottom: 8px;
       color: #d4d4d8;
+      font-size: 14px;
     }
-
     .field input,
     .field select,
     .field textarea {
@@ -95,19 +72,16 @@
       font-size: 15px;
       outline: none;
     }
-
     .field textarea {
       min-height: 120px;
       resize: vertical;
     }
-
     .actions {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       margin-top: 8px;
     }
-
     .btn {
       border: 0;
       border-radius: 16px;
@@ -116,26 +90,22 @@
       font-weight: 700;
       cursor: pointer;
     }
-
     .btn-primary {
       background: #22c55e;
       color: #000;
     }
-
     .btn-secondary {
       background: #27272a;
       color: #fff;
     }
-
     .status {
       margin-top: 16px;
-      min-height: 22px;
+      min-height: 24px;
       color: #a1a1aa;
       font-size: 14px;
       line-height: 1.5;
       word-break: break-word;
     }
-
     .preview-box {
       background: #111;
       border-radius: 18px;
@@ -143,7 +113,6 @@
       border: 1px solid rgba(255,255,255,0.08);
       margin-bottom: 18px;
     }
-
     .preview-image {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -151,7 +120,6 @@
       display: block;
       background: #090909;
     }
-
     .preview-placeholder {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -163,32 +131,18 @@
       text-align: center;
       padding: 20px;
     }
-
-    .preview-meta {
-      padding: 16px;
-    }
-
+    .preview-meta { padding: 16px; }
     .preview-meta h3 {
       margin: 0 0 8px;
       font-size: 22px;
     }
-
-    .saved-list {
-      display: grid;
-      gap: 12px;
+    .preview-meta p {
+      margin: 0 0 8px;
+      color: #d4d4d8;
+      line-height: 1.5;
     }
-
-    .saved-item {
-      padding: 14px;
-      border-radius: 16px;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
     @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+      .layout { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -260,8 +214,7 @@
       </section>
 
       <aside class="panel">
-        <h2>Live Preview</h2>
-
+        <h2>Preview</h2>
         <div class="preview-box">
           <div id="previewMedia"></div>
           <div class="preview-meta">
@@ -270,9 +223,6 @@
             <p id="previewDescription">Your artwork preview will appear here.</p>
           </div>
         </div>
-
-        <h2>Recent Uploads</h2>
-        <div id="savedList" class="saved-list"></div>
       </aside>
     </section>
   </div>
@@ -299,14 +249,16 @@
     const previewTitleEl = document.getElementById("previewTitle");
     const previewArtistEl = document.getElementById("previewArtist");
     const previewDescriptionEl = document.getElementById("previewDescription");
-    const savedListEl = document.getElementById("savedList");
 
     let localPreviewData = "";
     let uploadedPublicUrl = "";
 
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
     async function syncUser() {
       const { data: { session } } = await supabase.auth.getSession();
-
       if (session?.user?.email) {
         const email = session.user.email;
         const username = email.split("@")[0];
@@ -314,55 +266,23 @@
         localStorage.setItem("userEmail", email);
         localStorage.setItem("isLoggedIn", "true");
         if (!artistNameEl.value) artistNameEl.value = username;
-      } else {
-        const localUser = localStorage.getItem("username");
-        if (localUser && !artistNameEl.value) artistNameEl.value = localUser;
+        return { username, email };
       }
+      return {
+        username: localStorage.getItem("username") || "Unknown Artist",
+        email: localStorage.getItem("userEmail") || null
+      };
     }
 
-    function setStatus(text) {
-      statusEl.textContent = text;
-    }
-
-    function getUploads() {
-      try {
-        const raw = localStorage.getItem("artistUploads");
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    }
-
-    function saveUploads(items) {
-      localStorage.setItem("artistUploads", JSON.stringify(items));
-    }
-
-    function safeImage(src) {
-      return src || DEFAULT_IMAGE;
-    }
-
-    function renderSavedList() {
-      const uploads = getUploads();
-
-      if (!uploads.length) {
-        savedListEl.innerHTML = `<div class="saved-item">No uploads yet</div>`;
-        return;
-      }
-
-      savedListEl.innerHTML = uploads.slice().reverse().slice(0, 5).map(item => `
-        <div class="saved-item">
-          <strong>${item.title || "Untitled Artwork"}</strong>
-          <div>${item.artist || "Unknown Artist"} · ${item.category || "digital"}</div>
-        </div>
-      `).join("");
+    function previewImage() {
+      return uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData || DEFAULT_IMAGE;
     }
 
     function renderPreview() {
       const title = artTitleEl.value.trim() || "Untitled Artwork";
       const artist = artistNameEl.value.trim() || "Unknown Artist";
       const description = artDescriptionEl.value.trim() || "Your artwork preview will appear here.";
-      const image = safeImage(uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData);
+      const image = previewImage();
 
       previewTitleEl.textContent = title;
       previewArtistEl.textContent = `By ${artist}`;
@@ -373,6 +293,19 @@
       } else {
         previewMediaEl.innerHTML = `<div class="preview-placeholder">Upload an image or paste a URL to preview.</div>`;
       }
+    }
+
+    function clearForm() {
+      artTitleEl.value = "";
+      artCategoryEl.value = "digital";
+      artDescriptionEl.value = "";
+      artPriceEl.value = "";
+      artImageFileEl.value = "";
+      artImageUrlEl.value = "";
+      localPreviewData = "";
+      uploadedPublicUrl = "";
+      setStatus("Form cleared.");
+      renderPreview();
     }
 
     function readLocalPreview(file) {
@@ -409,15 +342,16 @@
 
     async function saveArtwork() {
       try {
-        await syncUser();
+        const user = await syncUser();
 
-        const artist = artistNameEl.value.trim() || localStorage.getItem("username") || "Unknown Artist";
+        const artist_name = artistNameEl.value.trim() || user.username || "Unknown Artist";
+        const artist_email = user.email;
         const title = artTitleEl.value.trim();
         const category = artCategoryEl.value;
         const description = artDescriptionEl.value.trim();
         const price = artPriceEl.value.trim() || "Contact for price";
         const file = artImageFileEl.files[0];
-        let image = artImageUrlEl.value.trim();
+        let image_url = artImageUrlEl.value.trim();
 
         if (!title) {
           setStatus("Artwork title is required.");
@@ -425,50 +359,33 @@
         }
 
         if (file) {
-          setStatus("Uploading file to Supabase...");
-          image = await uploadFileToSupabase(file);
-          uploadedPublicUrl = image;
-        } else if (!image) {
-          image = DEFAULT_IMAGE;
+          setStatus("Uploading image...");
+          image_url = await uploadFileToSupabase(file);
+          uploadedPublicUrl = image_url;
+        } else if (!image_url) {
+          image_url = DEFAULT_IMAGE;
         }
 
-        const uploads = getUploads();
-        uploads.push({
-          artist,
+        setStatus("Saving artwork...");
+
+        const { error } = await supabase.from("artworks").insert({
+          artist_name,
+          artist_email,
           title,
           category,
           description,
           price,
-          image,
-          createdAt: new Date().toISOString(),
-          date: new Date().toISOString().slice(0, 10)
+          image_url
         });
 
-        saveUploads(uploads);
-        setStatus("Artwork uploaded and saved.");
-        renderSavedList();
-        renderPreview();
-        artImageFileEl.value = "";
-        localPreviewData = "";
+        if (error) throw error;
+
+        setStatus("Artwork uploaded and saved to gallery.");
+        clearForm();
       } catch (err) {
         console.error(err);
         setStatus("Upload failed: " + err.message);
       }
-    }
-
-    function clearForm() {
-      artistNameEl.value = "";
-      artTitleEl.value = "";
-      artCategoryEl.value = "digital";
-      artDescriptionEl.value = "";
-      artPriceEl.value = "";
-      artImageFileEl.value = "";
-      artImageUrlEl.value = "";
-      localPreviewData = "";
-      uploadedPublicUrl = "";
-      setStatus("Form cleared.");
-      renderPreview();
-      syncUser();
     }
 
     [
@@ -492,7 +409,6 @@
 
     await syncUser();
     renderPreview();
-    renderSavedList();
   </script>
 </body>
 </html>
