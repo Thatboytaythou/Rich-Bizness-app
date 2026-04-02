@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Messages</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    .chat-box {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #333;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      background: #111;
+      color: white;
+      border: none;
+    }
+
+    button {
+      background: #22c55e;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Messages</h1>
+
+<div id="chat" class="chat-box"></div>
+
+<div class="input-row">
+  <input id="msgInput" placeholder="Type message..." />
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+const supabase = createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+);
+
+const chat = document.getElementById("chat");
+const msgInput = document.getElementById("msgInput");
+
+const ROOM = "global"; // simple room for now
+
+async function loadMessages() {
+  const { data } = await supabase
+    .from("live_chat_messages")
+    .select("*")
+    .eq("room_name", ROOM)
+    .order("created_at", { ascending: true });
+
+  chat.innerHTML = "";
+
+  data.forEach(msg => {
+    chat.innerHTML += `
+      <div class="message">
+        <b>${msg.sender_username}:</b> ${msg.body}
+      </div>
+    `;
+  });
+
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMessage() {
+  const username = localStorage.getItem("username") || "guest";
+
+  const text = msgInput.value;
+  if (!text) return;
+
+  await supabase.from("live_chat_messages").insert([{
+    room_name: ROOM,
+    sender_username: username,
+    body: text
+  }]);
+
+  msgInput.value = "";
+}
+
+supabase
+  .channel("chat")
+  .on(
+    "postgres_changes",
+    {
+      event: "INSERT",
+      schema: "public",
+      table: "live_chat_messages"
+    },
+    payload => {
+      loadMessages();
+    }
+  )
+  .subscribe();
+
+loadMessages();
+</script>
+
+</body>
+</html>
