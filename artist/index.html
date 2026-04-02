@@ -3,428 +3,501 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artist - Rich Bizness LLC</title>
+  <title>Artist Page | Rich Bizness LLC</title>
   <style>
-    :root {
-      --bg:#050505;
-      --panel:rgba(15,15,15,.92);
-      --border:rgba(255,255,255,.08);
-      --text:#f5f5f5;
-      --muted:#a8a8a8;
-      --primary:#19e68c;
-      --primary-dark:#11c775;
-      --danger:#ff5a67;
+    * {
+      box-sizing: border-box;
     }
-
-    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
+      background: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
-      color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(25,230,140,.14), transparent 30%),
-        radial-gradient(circle at top right, rgba(255,255,255,.07), transparent 22%),
-        linear-gradient(180deg, #080808 0%, #020202 100%);
-      padding: 24px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
     .page {
       max-width: 1200px;
       margin: 0 auto;
+      padding: 24px;
     }
 
-    .topbar {
+    .hero {
+      position: relative;
+      min-height: 460px;
+      border-radius: 30px;
+      overflow: hidden;
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+    }
+
+    .hero img {
+      width: 100%;
+      height: 460px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        to top,
+        rgba(0,0,0,0.92) 8%,
+        rgba(0,0,0,0.45) 45%,
+        rgba(0,0,0,0.15) 100%
+      );
+      display: flex;
+      align-items: flex-end;
+      padding: 30px;
+    }
+
+    .hero-content {
+      width: 100%;
       display: flex;
       justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .artist-head h1 {
+      margin: 0 0 10px;
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+
+    .artist-head p {
+      margin: 0;
+      color: #d4d4d8;
+      max-width: 720px;
+      line-height: 1.6;
+      font-size: 16px;
+    }
+
+    .hero-buttons {
+      display: flex;
       gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
     }
 
-    .toplink,
-    .ghost-link {
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .toplink {
-      color: var(--primary);
-    }
-
-    .ghost-link {
-      color: #8ecbff;
-      background: rgba(255,255,255,.05);
-      padding: 12px 16px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.07);
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 28px;
-      padding: 24px;
-      margin-bottom: 22px;
-    }
-
-    .artist-header {
-      display: flex;
-      align-items: center;
-      gap: 18px;
-      flex-wrap: wrap;
-    }
-
-    .avatar {
-      width: 92px;
-      height: 92px;
-      border-radius: 50%;
-      background: #111;
-      display: flex;
+    .btn {
+      display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 34px;
-      border: 1px solid rgba(255,255,255,.08);
+      padding: 14px 18px;
+      border-radius: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer;
     }
 
-    .headline {
-      margin: 0 0 8px;
-      font-size: 42px;
-      font-weight: 800;
+    .btn-primary {
+      background: #22c55e;
+      color: #000;
     }
 
-    .sub {
-      margin: 0;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.5;
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border-color: rgba(255,255,255,0.08);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .sidebar,
+    .main {
+      display: grid;
+      gap: 20px;
+    }
+
+    .panel {
+      background: #0b0b0b;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 24px;
+    }
+
+    .bio {
+      color: #d4d4d8;
+      line-height: 1.6;
+      font-size: 15px;
     }
 
     .stats {
-      margin-top: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .stat {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat strong {
+      display: block;
+      color: #22c55e;
+      font-size: 24px;
+      margin-bottom: 6px;
+    }
+
+    .stat span {
+      color: #a1a1aa;
+      font-size: 13px;
+    }
+
+    .tag-list {
       display: flex;
       flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      background: #18181b;
+      color: #22c55e;
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .link-list {
+      display: grid;
       gap: 12px;
     }
 
-    .pill {
-      padding: 12px 14px;
+    .link-list a {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 16px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
+      padding: 14px 16px;
+      color: #60a5fa;
+      font-weight: 700;
+    }
+
+    .link-list a:hover {
+      text-decoration: underline;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: #a1a1aa;
       font-size: 14px;
-      font-weight: 700;
     }
 
-    .status {
-      min-height: 24px;
-      margin-top: 18px;
-      font-size: 15px;
-      font-weight: 700;
-    }
-
-    .section-title {
-      margin: 0 0 16px;
-      font-size: 28px;
-      font-weight: 800;
-    }
-
-    .grid {
+    .art-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       gap: 18px;
     }
 
-    .upload-card {
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
+    .art-card {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 20px;
       overflow: hidden;
     }
 
-    .media-wrap {
+    .art-card img {
       width: 100%;
-      height: 320px;
-      background: #080808;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-
-    .media-wrap img,
-    .media-wrap video {
-      width: 100%;
-      height: 100%;
+      aspect-ratio: 1 / 1;
       object-fit: cover;
       display: block;
-      background: #000;
+      background: #090909;
     }
 
-    .upload-body {
+    .art-info {
       padding: 14px;
     }
 
-    .upload-name {
+    .art-info h3 {
+      margin: 0 0 6px;
       font-size: 18px;
-      font-weight: 800;
-      margin-bottom: 6px;
     }
 
-    .upload-meta {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .caption {
-      color: #ddd;
+    .art-info p {
+      margin: 0;
+      color: #a1a1aa;
       font-size: 14px;
       line-height: 1.5;
-      margin-bottom: 10px;
     }
 
-    .like-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 10px;
+    .timeline {
+      display: grid;
+      gap: 14px;
     }
 
-    .like-btn,
-    .watch-btn {
-      border: 0;
-      border-radius: 14px;
-      padding: 12px 14px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .like-btn {
-      background: linear-gradient(180deg, var(--primary), var(--primary-dark));
-      color: #000;
-    }
-
-    .watch-btn {
-      background: rgba(255,255,255,.06);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .empty {
-      padding: 22px;
+    .timeline-item {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 18px;
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
-      text-align: center;
-      border: 1px solid rgba(255,255,255,.07);
+      padding: 16px;
     }
 
-    @media (max-width: 760px) {
-      body { padding: 14px; }
-      .headline { font-size: 34px; }
-      .media-wrap { height: 260px; }
+    .timeline-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .timeline-item span {
+      display: block;
+      margin-bottom: 8px;
+      color: #71717a;
+      font-size: 13px;
+    }
+
+    .timeline-item p {
+      margin: 0;
+      color: #d4d4d8;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    .cta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 920px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .artist-head h1 {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 14px;
+      }
+
+      .hero {
+        min-height: 360px;
+      }
+
+      .hero img {
+        height: 360px;
+      }
+
+      .hero-overlay {
+        padding: 20px;
+      }
+
+      .artist-head h1 {
+        font-size: 30px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="topbar">
-      <a class="toplink" href="/gallery/index.html">← Back to Gallery</a>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a class="ghost-link" href="/watch.html">📺 Watch Live</a>
-        <a class="ghost-link" href="/upload.html">Upload Work</a>
-      </div>
-    </div>
+    <section class="hero">
+      <img src="images/rich-bizness-profile.jpg" alt="Artist hero artwork" />
+      <div class="hero-overlay">
+        <div class="hero-content">
+          <div class="artist-head">
+            <h1>Rich Bizness Artist</h1>
+            <p>
+              Original visual creator, live streamer, and creative brand builder.
+              This artist page highlights featured work, live content, profile info,
+              and direct access to the Rich Bizness platform.
+            </p>
+          </div>
 
-    <div class="card">
-      <div class="artist-header">
-        <div id="avatar" class="avatar">🎨</div>
-        <div>
-          <h1 id="artistName" class="headline">Artist</h1>
-          <p class="sub">Public artist page on Rich Bizness LLC.</p>
+          <div class="hero-buttons">
+            <a class="btn btn-primary" href="live.html">Go Live</a>
+            <a class="btn btn-secondary" href="watch.html?artist=guest">Watch Live</a>
+            <a class="btn btn-secondary" href="gallery.html">Open Gallery</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="panel">
+          <h2>Artist Bio</h2>
+          <p class="bio">
+            Rich Bizness Artist blends digital art, storytelling, culture, fashion,
+            and live audience energy into one brand experience. This page is built
+            to showcase work, connect with viewers, and support future drops and collabs.
+          </p>
+        </div>
+
+        <div class="panel">
+          <h2>Artist Stats</h2>
           <div class="stats">
-            <div class="pill">📸 <span id="totalUploads">0 uploads</span></div>
-            <div class="pill">❤️ <span id="totalLikes">0 likes</span></div>
-            <div class="pill">🏷️ <span id="topCategory">No category yet</span></div>
+            <div class="stat">
+              <strong>18</strong>
+              <span>Projects</span>
+            </div>
+            <div class="stat">
+              <strong>9</strong>
+              <span>Live Sets</span>
+            </div>
+            <div class="stat">
+              <strong>6</strong>
+              <span>Collabs</span>
+            </div>
+            <div class="stat">
+              <strong>24K</strong>
+              <span>Views</span>
+            </div>
           </div>
         </div>
-      </div>
-      <div id="status" class="status">Loading artist...</div>
-    </div>
 
-    <div class="card">
-      <h2 class="section-title">Uploads</h2>
-      <div id="grid" class="grid"></div>
-    </div>
-  </div>
-
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js";
-
-    const supabase = createClient(
-      "https://ksvdequymkceevocgpdj.supabase.co",
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
-    );
-
-    const params = new URLSearchParams(window.location.search);
-    const artistNameParam = params.get("name");
-
-    const statusEl = document.getElementById("status");
-    const artistNameEl = document.getElementById("artistName");
-    const avatarEl = document.getElementById("avatar");
-    const totalUploadsEl = document.getElementById("totalUploads");
-    const totalLikesEl = document.getElementById("totalLikes");
-    const topCategoryEl = document.getElementById("topCategory");
-    const grid = document.getElementById("grid");
-
-    let artistUploads = [];
-
-    function setStatus(text) {
-      statusEl.textContent = text;
-    }
-
-    function getInitials(name) {
-      if (!name) return "🎨";
-      const parts = name.trim().split(/\s+/).filter(Boolean);
-      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-
-    function detectMediaType(item) {
-      if (item.media_type) return item.media_type;
-      return /\.(mp4|webm|ogg|mov|m4v)$/i.test(item.file_url || "") ? "video" : "image";
-    }
-
-    function renderMedia(item) {
-      if (detectMediaType(item) === "video") {
-        return `
-          <div class="media-wrap">
-            <video controls playsinline preload="metadata">
-              <source src="${item.file_url}">
-            </video>
+        <div class="panel">
+          <h2>Creative Tags</h2>
+          <div class="tag-list">
+            <span class="tag">Digital Art</span>
+            <span class="tag">Streetwear</span>
+            <span class="tag">Animation</span>
+            <span class="tag">3D</span>
+            <span class="tag">Music</span>
+            <span class="tag">Live Shows</span>
           </div>
-        `;
-      }
-
-      return `
-        <div class="media-wrap">
-          <img src="${item.file_url}" alt="${item.artist_name || "Upload"}">
         </div>
-      `;
-    }
 
-    function updateHeader(items) {
-      totalUploadsEl.textContent = `${items.length} uploads`;
-      totalLikesEl.textContent = `${items.reduce((sum, item) => sum + (item.likes || 0), 0)} likes`;
+        <div class="panel">
+          <h2>Quick Links</h2>
+          <div class="link-list">
+            <a href="profile.html">Main Profile</a>
+            <a href="gallery.html">Gallery Page</a>
+            <a href="upload.html">Upload Artwork</a>
+            <a href="live.html">Start Live Room</a>
+            <a href="watch.html?artist=guest">Viewer Page</a>
+          </div>
+        </div>
+      </aside>
 
-      const counts = {};
-      items.forEach(item => {
-        const key = item.category || "Unknown";
-        counts[key] = (counts[key] || 0) + 1;
-      });
+      <main class="main">
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h2 style="margin:0;">Featured Artwork</h2>
+              <p>Highlighting selected pieces from the artist collection.</p>
+            </div>
+          </div>
 
-      let topCategory = "No category yet";
-      let topCount = 0;
+          <div class="art-grid">
+            <div class="art-card">
+              <img src="images/rich-bizness-profile.jpg" alt="Featured artwork main" />
+              <div class="art-info">
+                <h3>Main Character Art</h3>
+                <p>Official Rich Bizness visual identity piece and featured brand image.</p>
+              </div>
+            </div>
 
-      Object.entries(counts).forEach(([key, count]) => {
-        if (count > topCount) {
-          topCount = count;
-          topCategory = key;
-        }
-      });
+            <div class="art-card">
+              <img src="images/gallery-1.jpg" alt="Artwork 1" />
+              <div class="art-info">
+                <h3>Creative Drop 01</h3>
+                <p>Visual concept art designed for promo, storytelling, and digital launch use.</p>
+              </div>
+            </div>
 
-      topCategoryEl.textContent = topCategory;
-    }
-
-    async function likePost(id, currentLikes) {
-      const { error } = await supabase
-        .from("uploads")
-        .update({ likes: (currentLikes || 0) + 1 })
-        .eq("id", id);
-
-      if (error) {
-        setStatus("Like failed: " + error.message);
-        return;
-      }
-
-      const item = artistUploads.find(x => x.id === id);
-      if (item) item.likes = (item.likes || 0) + 1;
-
-      renderUploads(artistUploads);
-      updateHeader(artistUploads);
-      setStatus("");
-    }
-
-    function renderUploads(items) {
-      if (!items.length) {
-        grid.innerHTML = `<div class="empty">No uploads found for this artist yet.</div>`;
-        return;
-      }
-
-      grid.innerHTML = items.map(item => `
-        <div class="upload-card">
-          ${renderMedia(item)}
-          <div class="upload-body">
-            <div class="upload-name">${item.artist_name || ""}</div>
-            <div class="upload-meta">${item.category || ""}</div>
-            ${item.caption ? `<div class="caption">${item.caption}</div>` : ""}
-            <div class="upload-meta">${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</div>
-            <div class="like-row">
-              <div class="upload-meta">❤️ ${item.likes || 0}</div>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button class="like-btn" data-id="${item.id}" data-likes="${item.likes || 0}">Like</button>
-                <button class="watch-btn" data-artist="${item.artist_name || ""}">Watch Live</button>
+            <div class="art-card">
+              <img src="images/gallery-2.jpg" alt="Artwork 2" />
+              <div class="art-info">
+                <h3>Creative Drop 02</h3>
+                <p>Second feature image used to expand the brand’s visual style direction.</p>
               </div>
             </div>
           </div>
         </div>
-      `).join("");
 
-      grid.querySelectorAll(".like-btn").forEach(btn => {
-        btn.addEventListener("click", () => likePost(btn.dataset.id, Number(btn.dataset.likes)));
-      });
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h2 style="margin:0;">Artist Journey</h2>
+              <p>Recent moves and platform updates.</p>
+            </div>
+          </div>
 
-      grid.querySelectorAll(".watch-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          window.location.href = "/watch.html?artist=" + encodeURIComponent(btn.dataset.artist || "guest");
-        });
-      });
-    }
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>Artist page launched</strong>
+              <span>Today</span>
+              <p>The new dedicated artist page is now live with branding, art, and stream access.</p>
+            </div>
 
-    async function loadArtistPage() {
-      if (!artistNameParam) {
-        artistNameEl.textContent = "Artist not found";
-        avatarEl.textContent = "❓";
-        grid.innerHTML = `<div class="empty">Missing artist name in URL.</div>`;
-        return setStatus("Missing artist name.");
-      }
+            <div class="timeline-item">
+              <strong>Live stream platform connected</strong>
+              <span>Recently</span>
+              <p>LiveKit streaming was set up and connected to the Rich Bizness site successfully.</p>
+            </div>
 
-      const cleanName = decodeURIComponent(artistNameParam);
-      artistNameEl.textContent = cleanName;
-      avatarEl.textContent = getInitials(cleanName);
+            <div class="timeline-item">
+              <strong>Gallery and upload pages added</strong>
+              <span>This week</span>
+              <p>Artwork can now be displayed publicly and saved through the upload system.</p>
+            </div>
+          </div>
+        </div>
 
-      const { data, error } = await supabase
-        .from("uploads")
-        .select("*")
-        .eq("artist_name", cleanName)
-        .order("created_at", { ascending: false });
+        <div class="panel">
+          <div class="section-head">
+            <div>
+              <h2 style="margin:0;">Artist Actions</h2>
+              <p>Use these to move through the platform fast.</p>
+            </div>
+          </div>
 
-      if (error) {
-        grid.innerHTML = `<div class="empty">${error.message}</div>`;
-        return setStatus("Failed to load artist.");
-      }
+          <p class="bio">
+            This page can be duplicated later for multiple artists, each with a different
+            hero image, name, gallery set, and live room. Right now it is set up as the
+            main Rich Bizness artist profile.
+          </p>
 
-      artistUploads = data || [];
-      renderUploads(artistUploads);
-      updateHeader(artistUploads);
-      setStatus("");
-    }
-
-    await loadArtistPage();
-  </script>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="upload.html">Upload New Art</a>
+            <a class="btn btn-secondary" href="gallery.html">See All Art</a>
+            <a class="btn btn-secondary" href="index.html">Back Home</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
 </body>
 </html>
