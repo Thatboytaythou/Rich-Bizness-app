@@ -85,6 +85,7 @@
       min-height: 320px;
       object-fit: cover;
       display: block;
+      background: #090909;
     }
 
     .hero-copy {
@@ -329,13 +330,14 @@
         <a href="/upload.html">Upload</a>
         <a href="/live.html">Live</a>
         <a href="/profile.html">Profile</a>
+        <a href="/auth.html">Auth</a>
       </nav>
     </div>
   </header>
 
   <section class="hero">
     <div class="hero-card">
-      <img src="/images/rich-bizness-profile.jpg" alt="Rich Bizness gallery hero" />
+      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Rich Bizness gallery hero" />
       <div class="hero-copy">
         <h1>Featured art, uploads, and creative drops</h1>
         <p>
@@ -392,13 +394,15 @@
   </footer>
 
   <script>
+    const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
+
     const featuredArtworks = [
       {
         title: "Main Brand Artwork",
         artist: "Rich Bizness LLC",
         category: "digital",
         description: "Official Rich Bizness hero artwork used across the platform brand identity.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-04-01",
         price: "Featured"
       },
@@ -407,7 +411,7 @@
         artist: "Rich Bizness",
         category: "digital",
         description: "A high-energy digital piece built around glow, contrast, and motion.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-03-27",
         price: "$250"
       },
@@ -416,7 +420,7 @@
         artist: "RB Studio",
         category: "streetwear",
         description: "A visual concept merging fashion, urban energy, and custom character branding.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-03-24",
         price: "$180"
       },
@@ -425,7 +429,7 @@
         artist: "Rich Bizness",
         category: "painting",
         description: "An intense visual built around heat, color, and expressive composition.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-03-20",
         price: "$320"
       },
@@ -434,7 +438,7 @@
         artist: "RB Visuals",
         category: "photography",
         description: "Photography-based composition styled for modern promo and brand storytelling.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-03-18",
         price: "$210"
       },
@@ -443,7 +447,7 @@
         artist: "Creative Lab",
         category: "3d",
         description: "A polished 3D-driven concept ready for product visuals and animated expansion.",
-        image: "/images/rich-bizness-profile.jpg",
+        image: DEFAULT_IMAGE,
         date: "2026-03-16",
         price: "$500"
       }
@@ -460,13 +464,20 @@
       }
     }
 
+    function safeImage(src) {
+      if (!src || src === "undefined" || src === "null") {
+        return DEFAULT_IMAGE;
+      }
+      return src;
+    }
+
     function normalizeUploads(items) {
       return items.map((item) => ({
         title: item.title || "Untitled Artwork",
         artist: item.artist || item.name || "Unknown Artist",
         category: (item.category || item.type || "digital").toLowerCase(),
         description: item.description || "Artist upload from the Rich Bizness platform.",
-        image: item.image || item.imageUrl || item.photo || item.url || "/images/rich-bizness-profile.jpg",
+        image: safeImage(item.image || item.imageUrl || item.photo || item.url),
         date: item.date || (item.createdAt ? item.createdAt.slice(0, 10) : new Date().toISOString().slice(0, 10)),
         price: item.price || "Contact for price"
       }));
@@ -519,7 +530,7 @@
 
       galleryGrid.innerHTML = items.map((item) => `
         <article class="card">
-          <img src="${item.image}" alt="${item.title}" loading="lazy" />
+          <img src="${safeImage(item.image)}" alt="${item.title}" loading="lazy" />
           <div class="card-body">
             <div class="title-row">
               <h3>${item.title}</h3>
@@ -559,6 +570,12 @@
       const sorted = sortArtworks(filtered, sortValue);
       renderGallery(sorted);
     }
+
+    document.addEventListener("error", function (e) {
+      if (e.target.tagName === "IMG") {
+        e.target.src = DEFAULT_IMAGE;
+      }
+    }, true);
 
     document.getElementById("searchInput").addEventListener("input", filterAndRenderGallery);
     document.getElementById("categoryFilter").addEventListener("change", filterAndRenderGallery);
