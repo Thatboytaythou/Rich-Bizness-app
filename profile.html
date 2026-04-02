@@ -467,7 +467,7 @@
       <nav class="nav-links">
         <a href="/index.html">Home</a>
         <a href="/artist/">Artist</a>
-        <a href="/gallery.html">Gallery</a>
+        <a href="/gallery/">Gallery</a>
         <a href="/upload.html">Upload</a>
         <a href="/live.html">Live</a>
       </nav>
@@ -477,12 +477,12 @@
   <main class="page">
     <div class="profile-shell">
       <section class="hero-card">
-        <img id="heroImage" src="/images/rich-bizness-profile.jpg" alt="Rich Bizness profile banner" />
+        <img id="heroImage" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Rich Bizness profile banner" />
         <div class="hero-overlay">
           <div class="hero-content">
             <div class="identity-block">
               <div class="avatar-wrap">
-                <img id="avatarImage" src="/images/rich-bizness-profile.jpg" alt="Profile avatar" />
+                <img id="avatarImage" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Profile avatar" />
               </div>
 
               <div class="identity-text">
@@ -502,8 +502,7 @@
 
             <div class="hero-actions">
               <a class="btn btn-primary" href="/live.html">Go Live</a>
-              <a class="btn btn-secondary" href="/gallery.html">View Gallery</a>
-              <a class="btn btn-secondary" href="/artist-dashboard.html">Dashboard</a>
+              <a class="btn btn-secondary" href="/gallery/">View Gallery</a>
             </div>
           </div>
         </div>
@@ -560,28 +559,9 @@
             <div class="link-list">
               <a href="/auth.html">Open Auth</a>
               <a href="/artist/">Artist Page</a>
-              <a href="/artist-dashboard.html">Artist Dashboard</a>
-              <a href="/upload.html">Upload Artwork</a>
+              <a href="/gallery/">Gallery Page</a>
               <a href="/watch.html?artist=guest">Watch Live</a>
             </div>
-          </div>
-
-          <div class="panel">
-            <h2>Profile Image</h2>
-            <p class="panel-sub">Upload a custom image for this browser session.</p>
-
-            <div class="upload-row">
-              <input id="profileImageInput" type="file" accept="image/*" />
-            </div>
-
-            <div class="mini-actions">
-              <button id="saveDefaultImageBtn" class="btn btn-secondary" type="button">Use Default Image</button>
-              <button id="clearProfileSessionBtn" class="btn btn-secondary" type="button">Clear Session</button>
-            </div>
-
-            <p class="note">
-              Uploaded profile images are saved in browser storage for this device.
-            </p>
           </div>
         </aside>
 
@@ -596,7 +576,7 @@
 
             <div class="featured-grid">
               <div class="featured-card">
-                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Main brand artwork" />
+                <img class="profile-linked-image" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Main brand artwork" />
                 <div class="featured-info">
                   <h3>Main Brand Art</h3>
                   <p>Official profile visual used across the Rich Bizness platform.</p>
@@ -604,7 +584,7 @@
               </div>
 
               <div class="featured-card">
-                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Featured visual two" />
+                <img class="profile-linked-image" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Featured visual two" />
                 <div class="featured-info">
                   <h3>Creative Identity</h3>
                   <p>Extended image placement for a consistent artist and brand presentation.</p>
@@ -612,10 +592,10 @@
               </div>
 
               <div class="featured-card">
-                <img class="profile-linked-image" src="/images/rich-bizness-profile.jpg" alt="Featured visual three" />
+                <img class="profile-linked-image" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Featured visual three" />
                 <div class="featured-info">
                   <h3>Platform Look</h3>
-                  <p>Shared artwork styling used to unify pages, profile, and dashboard UI.</p>
+                  <p>Shared artwork styling used to unify pages, profile, and gallery UI.</p>
                 </div>
               </div>
             </div>
@@ -650,7 +630,7 @@
             </div>
 
             <div class="mini-actions">
-              <a class="btn btn-primary" href="/gallery.html">Open Gallery</a>
+              <a class="btn btn-primary" href="/gallery/">Open Gallery</a>
               <a class="btn btn-secondary" href="/artist/">Open Artist Page</a>
               <a class="btn btn-secondary" href="/index.html">Back Home</a>
             </div>
@@ -661,92 +641,39 @@
   </main>
 
   <script>
-    const DEFAULT_IMAGE = "/images/rich-bizness-profile.jpg";
+    const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
 
-    function applyFallbackImages() {
-      document.addEventListener("error", function (e) {
-        if (e.target.tagName === "IMG") {
-          e.target.src = DEFAULT_IMAGE;
-        }
-      }, true);
+    document.addEventListener("error", function (e) {
+      if (e.target.tagName === "IMG") {
+        e.target.src = DEFAULT_IMAGE;
+      }
+    }, true);
+
+    const savedName = localStorage.getItem("username");
+    const savedEmail = localStorage.getItem("userEmail");
+    const savedRole = localStorage.getItem("userRole");
+    const savedImage = localStorage.getItem("profileImage");
+
+    if (savedName) {
+      document.getElementById("profileName").textContent = savedName;
     }
 
-    function applySavedSession() {
-      const savedName = localStorage.getItem("username");
-      const savedEmail = localStorage.getItem("userEmail");
-      const savedRole = localStorage.getItem("userRole");
-      const savedImage = localStorage.getItem("profileImage");
-
-      if (savedName) {
-        document.getElementById("profileName").textContent = savedName;
-      }
-
-      if (savedEmail) {
-        document.getElementById("profileEmail").textContent = savedEmail;
-      }
-
-      if (savedRole) {
-        const formattedRole = savedRole.charAt(0).toUpperCase() + savedRole.slice(1);
-        document.getElementById("profileRole").textContent = formattedRole;
-      }
-
-      if (savedImage) {
-        document.getElementById("heroImage").src = savedImage;
-        document.getElementById("avatarImage").src = savedImage;
-
-        document.querySelectorAll(".profile-linked-image").forEach((img) => {
-          img.src = savedImage;
-        });
-      }
+    if (savedEmail) {
+      document.getElementById("profileEmail").textContent = savedEmail;
     }
 
-    function handleProfileImageUpload(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = function (e) {
-        const base64 = e.target.result;
-        localStorage.setItem("profileImage", base64);
-
-        document.getElementById("heroImage").src = base64;
-        document.getElementById("avatarImage").src = base64;
-
-        document.querySelectorAll(".profile-linked-image").forEach((img) => {
-          img.src = base64;
-        });
-      };
-
-      reader.readAsDataURL(file);
+    if (savedRole) {
+      document.getElementById("profileRole").textContent =
+        savedRole.charAt(0).toUpperCase() + savedRole.slice(1);
     }
 
-    function resetToDefaultImage() {
-      localStorage.removeItem("profileImage");
-      document.getElementById("heroImage").src = DEFAULT_IMAGE;
-      document.getElementById("avatarImage").src = DEFAULT_IMAGE;
-
+    if (savedImage) {
+      document.getElementById("heroImage").src = savedImage;
+      document.getElementById("avatarImage").src = savedImage;
       document.querySelectorAll(".profile-linked-image").forEach((img) => {
-        img.src = DEFAULT_IMAGE;
+        img.src = savedImage;
       });
     }
-
-    function clearProfileSession() {
-      localStorage.removeItem("username");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("userRole");
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("profileImage");
-
-      window.location.reload();
-    }
-
-    applyFallbackImages();
-    applySavedSession();
-
-    document.getElementById("profileImageInput").addEventListener("change", handleProfileImageUpload);
-    document.getElementById("saveDefaultImageBtn").addEventListener("click", resetToDefaultImage);
-    document.getElementById("clearProfileSessionBtn").addEventListener("click", clearProfileSession);
   </script>
 </body>
 </html>
