@@ -193,6 +193,7 @@
       color: #a1a1aa;
       font-size: 14px;
       line-height: 1.5;
+      word-break: break-word;
     }
 
     .preview-box {
@@ -283,6 +284,13 @@
       margin-top: 14px;
     }
 
+    .small-note {
+      margin-top: 10px;
+      color: #71717a;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
     @media (max-width: 980px) {
       .hero,
       .layout {
@@ -329,8 +337,8 @@
       <div class="hero-copy">
         <h1>Upload artwork to your platform</h1>
         <p>
-          Save artist uploads directly into browser storage, preview the piece before saving,
-          and have it show up automatically on your gallery page.
+          Upload real files to your Supabase bucket, preview them before saving,
+          and store the returned public URL so your gallery page can display them.
         </p>
       </div>
     </section>
@@ -338,7 +346,7 @@
     <section class="layout">
       <section class="panel">
         <h2>Upload Artwork</h2>
-        <p class="panel-sub">Fill out the form and save the artwork to local storage.</p>
+        <p class="panel-sub">Upload image file to Supabase Storage and save metadata locally.</p>
 
         <div class="field">
           <label for="artistName">Artist Name</label>
@@ -382,15 +390,20 @@
         </div>
 
         <div class="actions">
-          <button id="submitBtn" class="btn btn-primary" type="button">Save Artwork</button>
+          <button id="submitBtn" class="btn btn-primary" type="button">Upload & Save Artwork</button>
           <button id="clearBtn" class="btn btn-secondary" type="button">Clear Form</button>
         </div>
 
         <div id="status" class="status">Ready for upload.</div>
 
         <div class="helper-box">
-          This saves uploads in <strong>localStorage</strong> on this device, under
-          <strong>artistUploads</strong>. Your <strong>/gallery/</strong> page can read and show them automatically.
+          This version uploads files to Supabase bucket <strong>Artist-uploads</strong>.
+          After upload, it saves the public file URL into <strong>localStorage</strong> under
+          <strong>artistUploads</strong> so your current gallery page can still show it.
+        </div>
+
+        <div class="small-note">
+          Replace <strong>YOUR_SUPABASE_URL</strong> and <strong>YOUR_SUPABASE_ANON_KEY</strong> in the script below.
         </div>
       </section>
 
@@ -414,8 +427,15 @@
     </section>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
+
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+    const SUPABASE_BUCKET = "Artist-uploads";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const artistNameEl = document.getElementById("artistName");
     const artTitleEl = document.getElementById("artTitle");
@@ -432,7 +452,8 @@
     const previewTagEl = document.getElementById("previewTag");
     const savedListEl = document.getElementById("savedList");
 
-    let uploadedImageData = "";
+    let localPreviewData = "";
+    let uploadedPublicUrl = "";
 
     function setStatus(text) {
       statusEl.textContent = text;
@@ -492,12 +513,16 @@
         .join("");
     }
 
+    function getPreviewImage() {
+      return safeImage(uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData);
+    }
+
     function renderPreview() {
       const title = artTitleEl.value.trim() || "Untitled Artwork";
       const artist = artistNameEl.value.trim() || "Unknown Artist";
       const description = artDescriptionEl.value.trim() || "Your artwork preview will appear here.";
       const category = artCategoryEl.value || "digital";
-      const imageUrl = safeImage(artImageUrlEl.value.trim() || uploadedImageData);
+      const previewImage = getPreviewImage();
 
       previewTitleEl.textContent = title;
       previewArtistEl.textContent = `By ${artist}`;
@@ -506,8 +531,8 @@
         ? "3D"
         : category.charAt(0).toUpperCase() + category.slice(1);
 
-      if (artImageUrlEl.value.trim() || uploadedImageData) {
-        previewMediaEl.innerHTML = `<img class="preview-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(title)}" />`;
+      if (uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData) {
+        previewMediaEl.innerHTML = `<img class="preview-image" src="${escapeHtml(previewImage)}" alt="${escapeHtml(title)}" />`;
       } else {
         previewMediaEl.innerHTML = `<div class="preview-placeholder">Upload an image or paste an image URL to preview your artwork.</div>`;
       }
@@ -521,14 +546,15 @@
       artPriceEl.value = "";
       artImageFileEl.value = "";
       artImageUrlEl.value = "";
-      uploadedImageData = "";
+      localPreviewData = "";
+      uploadedPublicUrl = "";
       setStatus("Form cleared.");
       renderPreview();
     }
 
-    function handleFileUpload(file) {
+    function readLocalPreview(file) {
       if (!file) {
-        uploadedImageData = "";
+        localPreviewData = "";
         renderPreview();
         return;
       }
@@ -536,10 +562,11 @@
       const reader = new FileReader();
 
       reader.onload = function (event) {
-        uploadedImageData = event.target.result;
+        localPreviewData = event.target.result;
+        uploadedPublicUrl = "";
         artImageUrlEl.value = "";
         renderPreview();
-        setStatus("Image loaded and ready to save.");
+        setStatus("Preview loaded. Tap upload to send file to Supabase.");
       };
 
       reader.onerror = function () {
@@ -549,36 +576,87 @@
       reader.readAsDataURL(file);
     }
 
-    function saveArtwork() {
-      const artist = artistNameEl.value.trim() || localStorage.getItem("username") || "Unknown Artist";
-      const title = artTitleEl.value.trim();
-      const category = artCategoryEl.value;
-      const description = artDescriptionEl.value.trim();
-      const price = artPriceEl.value.trim() || "Contact for price";
-      const image = artImageUrlEl.value.trim() || uploadedImageData || DEFAULT_IMAGE;
+    async function uploadFileToSupabase(file) {
+      if (!file) return "";
 
-      if (!title) {
-        setStatus("Artwork title is required.");
-        return;
+      if (
+        SUPABASE_URL === "YOUR_SUPABASE_URL" ||
+        SUPABASE_ANON_KEY === "YOUR_SUPABASE_ANON_KEY"
+      ) {
+        throw new Error("Add your Supabase URL and anon key in upload.html first.");
       }
 
-      const uploads = getUploads();
+      const cleanedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const filePath = `artwork-${Date.now()}-${cleanedName}`;
 
-      uploads.push({
-        artist,
-        title,
-        category,
-        description,
-        price,
-        image,
-        createdAt: new Date().toISOString(),
-        date: new Date().toISOString().slice(0, 10)
-      });
+      const { error: uploadError } = await supabaseClient.storage
+        .from(SUPABASE_BUCKET)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
 
-      saveUploads(uploads);
-      setStatus("Artwork saved to gallery storage.");
-      renderSavedList();
-      clearForm();
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: publicData } = supabaseClient.storage
+        .from(SUPABASE_BUCKET)
+        .getPublicUrl(filePath);
+
+      if (!publicData || !publicData.publicUrl) {
+        throw new Error("Could not create public URL for uploaded file.");
+      }
+
+      return publicData.publicUrl;
+    }
+
+    async function saveArtwork() {
+      try {
+        const artist = artistNameEl.value.trim() || localStorage.getItem("username") || "Unknown Artist";
+        const title = artTitleEl.value.trim();
+        const category = artCategoryEl.value;
+        const description = artDescriptionEl.value.trim();
+        const price = artPriceEl.value.trim() || "Contact for price";
+        const file = artImageFileEl.files[0];
+        let image = artImageUrlEl.value.trim();
+
+        if (!title) {
+          setStatus("Artwork title is required.");
+          return;
+        }
+
+        if (file) {
+          setStatus("Uploading file to Supabase...");
+          image = await uploadFileToSupabase(file);
+          uploadedPublicUrl = image;
+        } else if (!image) {
+          image = DEFAULT_IMAGE;
+        }
+
+        const uploads = getUploads();
+
+        uploads.push({
+          artist,
+          title,
+          category,
+          description,
+          price,
+          image,
+          createdAt: new Date().toISOString(),
+          date: new Date().toISOString().slice(0, 10)
+        });
+
+        saveUploads(uploads);
+        setStatus("Artwork uploaded and saved.");
+        renderSavedList();
+        renderPreview();
+        artImageFileEl.value = "";
+        localPreviewData = "";
+      } catch (err) {
+        console.error("UPLOAD ERROR:", err);
+        setStatus("Upload failed: " + err.message);
+      }
     }
 
     [
@@ -595,7 +673,7 @@
 
     artImageFileEl.addEventListener("change", (event) => {
       const file = event.target.files[0];
-      handleFileUpload(file);
+      readLocalPreview(file);
     });
 
     document.addEventListener("error", function (e) {
