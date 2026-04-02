@@ -126,11 +126,11 @@
 
     .video-wrap {
       width: 100%;
+      min-height: 260px;
       background: #090909;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 22px;
       overflow: hidden;
-      min-height: 260px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -154,7 +154,8 @@
     }
 
     .status-box,
-    .info-box {
+    .info-box,
+    .link-box {
       background: #111;
       border: 1px solid rgba(255,255,255,0.06);
       border-radius: 18px;
@@ -164,6 +165,11 @@
       line-height: 1.6;
       margin-bottom: 14px;
       word-break: break-word;
+    }
+
+    .link-box a {
+      color: #60a5fa;
+      font-weight: 700;
     }
 
     .side-stack {
@@ -197,25 +203,27 @@
       font-size: 13px;
     }
 
-    .tips-list {
-      display: grid;
+    .btn-row {
+      display: flex;
       gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
 
-    .tip-item {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
+    .btn {
+      border: 0;
       border-radius: 16px;
-      padding: 14px 16px;
-      color: #d4d4d8;
-      font-size: 14px;
-      line-height: 1.5;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #27272a;
+      color: #fff;
     }
 
-    .tip-item strong {
-      display: block;
-      margin-bottom: 6px;
-      color: #fff;
+    .btn-primary {
+      background: #22c55e;
+      color: #000;
     }
 
     @media (max-width: 980px) {
@@ -241,10 +249,6 @@
       .hero-copy h1 {
         font-size: 30px;
       }
-
-      .mini-stat-grid {
-        grid-template-columns: 1fr 1fr;
-      }
     }
   </style>
 </head>
@@ -265,12 +269,12 @@
     </div>
 
     <section class="hero">
-      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Rich Bizness watch hero" />
+      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Watch live hero" />
       <div class="hero-copy">
         <h1>Watch the live stream</h1>
         <p>
           Join a creator’s live room, watch their video stream, and stay connected to the Rich Bizness platform.
-          This viewer page joins the room as a subscriber and waits for tracks to appear.
+          This page joins the room as a subscriber and waits for tracks to appear.
         </p>
       </div>
     </section>
@@ -280,16 +284,26 @@
         <h2>Live Viewer</h2>
         <p class="panel-sub">Watching the selected artist room.</p>
 
+        <div class="btn-row">
+          <button id="joinBtn" class="btn btn-primary" type="button">Join Stream</button>
+          <button id="leaveBtn" class="btn" type="button">Leave Stream</button>
+        </div>
+
         <div id="videos" class="video-wrap">
           <div class="placeholder">Waiting for stream...</div>
         </div>
 
-        <div id="status" class="status-box">Connecting...</div>
+        <div id="status" class="status-box">Ready to connect.</div>
+
+        <div class="link-box">
+          Current artist room:
+          <strong id="artistLabel">guest</strong>
+        </div>
 
         <div class="info-box">
           This page looks for the artist name in the URL.
           Example:
-          <strong>/watch.html?artist=guest</strong>
+          <strong>/watch.html?artist=thatboytay3d</strong>
         </div>
       </div>
 
@@ -315,62 +329,76 @@
             </div>
           </div>
         </div>
-
-        <div class="panel">
-          <h2>Viewer Tips</h2>
-          <div class="tips-list">
-            <div class="tip-item">
-              <strong>Use the correct artist name</strong>
-              Match the `artist` query value to the streamer’s saved username.
-            </div>
-            <div class="tip-item">
-              <strong>Wait for the host to publish</strong>
-              The room can connect before the stream video appears.
-            </div>
-            <div class="tip-item">
-              <strong>Refresh if needed</strong>
-              If the host restarts the stream, refreshing can quickly reconnect your view.
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   </div>
 
   <script type="module">
-    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.mjs";
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    import { connect } from "https://cdn.jsdelivr.net/npm/livekit-client/+esm";
+
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const statusEl = document.getElementById("status");
     const videosEl = document.getElementById("videos");
+    const artistLabel = document.getElementById("artistLabel");
 
     let room = null;
+    let currentArtist = "guest";
 
     function setStatus(text) {
       statusEl.textContent = text;
     }
 
-    function getViewerName() {
-      let username = localStorage.getItem("username");
+    async function syncViewer() {
+      const { data: { session } } = await supabase.auth.getSession();
 
-      if (!username || !username.trim()) {
-        username = `viewer-${Date.now()}`;
+      if (session?.user?.email) {
+        const email = session.user.email;
+        const username = email.split("@")[0];
         localStorage.setItem("username", username);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("isLoggedIn", "true");
+        return username;
       }
 
-      return username.trim();
+      const saved = localStorage.getItem("username");
+      if (saved) return saved;
+
+      const fallback = `viewer-${Date.now()}`;
+      localStorage.setItem("username", fallback);
+      return fallback;
+    }
+
+    function getArtistFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("artist") || "guest";
+    }
+
+    function clearMediaArea(message = "Waiting for stream...") {
+      videosEl.innerHTML = `<div class="placeholder">${message}</div>`;
     }
 
     async function joinLive() {
       try {
-        const params = new URLSearchParams(window.location.search);
-        const artist = params.get("artist") || "guest";
-        const roomName = `live-${artist}`;
-        const viewer = getViewerName();
+        if (room) {
+          setStatus("Already connected.");
+          return;
+        }
+
+        currentArtist = getArtistFromUrl();
+        artistLabel.textContent = currentArtist;
+
+        const viewerName = await syncViewer();
+        const roomName = `live-${currentArtist}`;
 
         setStatus("Getting viewer token...");
 
         const res = await fetch(
-          `/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(viewer)}&canPublish=false`
+          `/api/livekit-token?room=${encodeURIComponent(roomName)}&username=${encodeURIComponent(viewerName)}&canPublish=false`
         );
 
         const data = await res.json();
@@ -379,35 +407,52 @@
           throw new Error(data.error || "Failed to get viewer token");
         }
 
-        setStatus(`Joining ${artist}'s live room...`);
+        setStatus(`Joining ${currentArtist}'s live room...`);
         room = await connect(data.url, data.token);
 
-        videosEl.innerHTML = '<div class="placeholder">Connected. Waiting for live video...</div>';
+        clearMediaArea("Connected. Waiting for live video...");
 
         room.on("trackSubscribed", (track) => {
           const element = track.attach();
           videosEl.innerHTML = "";
           videosEl.appendChild(element);
-          setStatus(`Watching ${artist} live`);
+          setStatus(`Watching ${currentArtist} live`);
         });
 
         room.on("trackUnsubscribed", (track) => {
           const elements = track.detach();
           elements.forEach(el => el.remove());
+          clearMediaArea("Track removed. Waiting for stream...");
         });
 
         room.on("disconnected", () => {
           setStatus("Stream ended.");
-          videosEl.innerHTML = '<div class="placeholder">The live stream has ended.</div>';
+          clearMediaArea("The live stream has ended.");
+          room = null;
         });
       } catch (err) {
         console.error("WATCH ERROR:", err);
         setStatus("Watch error: " + err.message);
-        alert("Watch error: " + err.message);
+        clearMediaArea("Could not connect to stream.");
       }
     }
 
-    joinLive();
+    function leaveLive() {
+      if (room) {
+        room.disconnect();
+        room = null;
+      }
+
+      setStatus("Disconnected.");
+      clearMediaArea("You left the stream.");
+    }
+
+    document.getElementById("joinBtn").addEventListener("click", joinLive);
+    document.getElementById("leaveBtn").addEventListener("click", leaveLive);
+
+    currentArtist = getArtistFromUrl();
+    artistLabel.textContent = currentArtist;
+    setStatus(`Ready to watch ${currentArtist}.`);
   </script>
 </body>
 </html>
