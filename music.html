@@ -1,46 +1,385 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Music</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #7CFC00;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #202020;
+      border: 1px solid #333;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .controls input,
+    .controls select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #101010;
+      color: white;
+      font-size: 15px;
+    }
+
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 22px;
+    }
+
+    .music-card {
+      background: #151515;
+      border: 1px solid #2d2d2d;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 18px rgba(0,0,0,0.22);
+    }
+
+    .music-cover {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      display: block;
+      background: #101010;
+    }
+
+    .music-body {
+      padding: 16px;
+    }
+
+    .music-title {
+      font-size: 1.15rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .music-artist {
+      color: #bbb;
+      margin-bottom: 8px;
+    }
+
+    .music-genre {
+      display: inline-block;
+      margin-bottom: 12px;
+      font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(124,252,0,0.12);
+      border: 1px solid rgba(124,252,0,0.3);
+      color: #baff8a;
+    }
+
+    .music-description {
+      color: #d2d2d2;
+      font-size: 14px;
+      line-height: 1.45;
+      margin-bottom: 14px;
+      min-height: 42px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .status-box {
+      display: none;
+      margin-bottom: 18px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ddd;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255,0,0,0.08);
+      border: 1px solid rgba(255,80,80,0.35);
+      color: #ff9c9c;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 20px;
+      color: #aaa;
+      border: 1px dashed #333;
+      border-radius: 16px;
+      background: #131313;
+    }
+
+    @media (max-width: 900px) {
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .music-cover {
+        height: 240px;
+      }
+    }
+  </style>
 </head>
-<body style="background:black;color:white;font-family:sans-serif;padding:20px;">
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">Music</div>
 
-<h1>Music</h1>
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="live.html">Go Live</a>
+      </div>
+    </div>
 
-<div id="musicList"></div>
+    <div class="controls">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by title, artist, genre, or description"
+      />
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+      <select id="genreFilter">
+        <option value="all">All Genres</option>
+        <option value="Hip Hop">Hip Hop</option>
+        <option value="Rap">Rap</option>
+        <option value="R&B">R&B</option>
+        <option value="Pop">Pop</option>
+        <option value="Rock">Rock</option>
+        <option value="Gospel">Gospel</option>
+        <option value="Trap">Trap</option>
+        <option value="Drill">Drill</option>
+        <option value="Instrumental">Instrumental</option>
+        <option value="Other">Other</option>
+      </select>
 
-<script>
-const supabase = supabase.createClient(
-  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
-);
+      <select id="sortSelect">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="title-az">Title A to Z</option>
+        <option value="title-za">Title Z to A</option>
+        <option value="artist-az">Artist A to Z</option>
+      </select>
+    </div>
 
-async function loadMusic() {
-  const { data } = await supabase
-    .from("music")
-    .select("*")
-    .order("created_at", { ascending: false });
+    <div id="statusBox" class="status-box info">Loading music...</div>
+    <div id="musicGrid" class="music-grid"></div>
+  </div>
 
-  const container = document.getElementById("musicList");
+  <script>
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
-  data.forEach(song => {
-    const div = document.createElement("div");
-    div.style.marginBottom = "20px";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    div.innerHTML = `
-      <h3>${song.title}</h3>
-      <p>${song.artist_name}</p>
-      <audio controls src="${song.audio_url}"></audio>
-    `;
+    const musicGrid = document.getElementById("musicGrid");
+    const statusBox = document.getElementById("statusBox");
+    const searchInput = document.getElementById("searchInput");
+    const genreFilter = document.getElementById("genreFilter");
+    const sortSelect = document.getElementById("sortSelect");
 
-    container.appendChild(div);
-  });
-}
+    let allMusic = [];
 
-loadMusic();
-</script>
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+      statusBox.style.display = "block";
+    }
 
+    function hideStatus() {
+      statusBox.textContent = "";
+      statusBox.className = "status-box";
+      statusBox.style.display = "none";
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function getFilteredMusic() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const selectedGenre = genreFilter.value;
+      const sortValue = sortSelect.value;
+
+      let filtered = [...allMusic];
+
+      if (selectedGenre !== "all") {
+        filtered = filtered.filter(item => item.genre === selectedGenre);
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(item => {
+          const title = (item.title || "").toLowerCase();
+          const artist = (item.artist_name || "").toLowerCase();
+          const genre = (item.genre || "").toLowerCase();
+          const description = (item.description || "").toLowerCase();
+
+          return (
+            title.includes(searchTerm) ||
+            artist.includes(searchTerm) ||
+            genre.includes(searchTerm) ||
+            description.includes(searchTerm)
+          );
+        });
+      }
+
+      filtered.sort((a, b) => {
+        switch (sortValue) {
+          case "oldest":
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+          case "title-az":
+            return (a.title || "").localeCompare(b.title || "");
+          case "title-za":
+            return (b.title || "").localeCompare(a.title || "");
+          case "artist-az":
+            return (a.artist_name || "").localeCompare(b.artist_name || "");
+          case "newest":
+          default:
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        }
+      });
+
+      return filtered;
+    }
+
+    function renderMusic() {
+      const filteredMusic = getFilteredMusic();
+
+      if (!filteredMusic.length) {
+        musicGrid.innerHTML = `
+          <div class="empty-state">
+            <h2>No music found</h2>
+            <p>Try changing your filters or upload a new track.</p>
+          </div>
+        `;
+        return;
+      }
+
+      musicGrid.innerHTML = filteredMusic.map(song => {
+        const title = escapeHtml(song.title || "Untitled");
+        const artist = escapeHtml(song.artist_name || "Unknown Artist");
+        const genre = escapeHtml(song.genre || "Other");
+        const description = escapeHtml(song.description || "No description added.");
+        const audioUrl = escapeHtml(song.audio_url || "");
+        const coverUrl = escapeHtml(song.cover_url || "https://placehold.co/600x600?text=Music");
+
+        return `
+          <div class="music-card">
+            <img
+              class="music-cover"
+              src="${coverUrl}"
+              alt="${title}"
+              onerror="this.src='https://placehold.co/600x600?text=Music';"
+            />
+            <div class="music-body">
+              <div class="music-title">${title}</div>
+              <div class="music-artist">By ${artist}</div>
+              <div class="music-genre">${genre}</div>
+              <div class="music-description">${description}</div>
+              <audio controls preload="none">
+                <source src="${audioUrl}" />
+                Your browser does not support the audio element.
+              </audio>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    async function loadMusic() {
+      showStatus("Loading music...", "info");
+
+      try {
+        const { data, error } = await supabaseClient
+          .from("music")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        allMusic = data || [];
+        hideStatus();
+        renderMusic();
+      } catch (error) {
+        console.error("Music load error:", error);
+        showStatus("Failed to load music: " + error.message, "error");
+      }
+    }
+
+    searchInput.addEventListener("input", renderMusic);
+    genreFilter.addEventListener("change", renderMusic);
+    sortSelect.addEventListener("change", renderMusic);
+
+    loadMusic();
+  </script>
 </body>
 </html>
