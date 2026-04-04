@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gallery | Rich Bizness LLC</title>
+  <title>Artwork Gallery</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -11,20 +14,14 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      background: #000;
-      color: #fff;
       font-family: Arial, sans-serif;
-      padding: 24px;
+      background: #0d0d0d;
+      color: white;
+      padding: 20px;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      max-width: 1200px;
+    .container {
+      max-width: 1300px;
       margin: 0 auto;
     }
 
@@ -34,471 +31,399 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
-    .brand {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.4px;
-    }
-
-    .nav-links {
+    .top-links {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .nav-links a {
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #1b1b1b;
+      border: 1px solid #333;
       padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 14px;
-      font-weight: 700;
+      border-radius: 10px;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 0;
-      overflow: hidden;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #0b0b0b;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
-      margin-bottom: 24px;
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
     }
 
-    .hero img {
-      width: 100%;
-      height: 100%;
-      min-height: 260px;
-      object-fit: cover;
-      display: block;
-      background: #090909;
-    }
-
-    .hero-copy {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06));
-    }
-
-    .hero-copy h1 {
-      margin: 0 0 12px;
-      font-size: 40px;
-      font-weight: 900;
-    }
-
-    .hero-copy p {
+    h1 {
       margin: 0;
-      color: #d4d4d8;
-      line-height: 1.7;
-      max-width: 700px;
-    }
-
-    .status-box {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 14px 16px;
-      color: #d4d4d8;
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 18px;
+      color: #7CFC00;
+      font-size: 2rem;
     }
 
     .controls {
       display: grid;
-      grid-template-columns: 1.3fr 0.8fr 0.8fr;
+      grid-template-columns: 1.3fr 1fr 1fr;
       gap: 14px;
-      margin-bottom: 22px;
+      margin-bottom: 26px;
     }
 
     .controls input,
     .controls select {
       width: 100%;
-      background: #111;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 16px;
-      padding: 14px 16px;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #151515;
+      color: white;
       font-size: 15px;
-      outline: none;
-    }
-
-    .controls input::placeholder {
-      color: #71717a;
-    }
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .summary-row h2 {
-      margin: 0;
-      font-size: 30px;
-    }
-
-    .summary-row p {
-      margin: 4px 0 0;
-      color: #a1a1aa;
-      font-size: 14px;
-    }
-
-    .count-badge {
-      padding: 10px 14px;
-      border-radius: 14px;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #d4d4d8;
-      font-size: 14px;
-      font-weight: 700;
     }
 
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 22px;
     }
 
     .card {
-      background: #0b0b0b;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
+      background: #171717;
+      border: 1px solid #2c2c2c;
+      border-radius: 18px;
       overflow: hidden;
-      transition: transform 0.18s ease, border-color 0.18s ease;
+      box-shadow: 0 0 18px rgba(0,0,0,0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
     }
 
     .card:hover {
       transform: translateY(-4px);
-      border-color: rgba(255,255,255,0.16);
+      border-color: #7CFC00;
     }
 
-    .card img {
+    .card-image {
       width: 100%;
-      aspect-ratio: 1 / 1;
+      height: 250px;
       object-fit: cover;
       display: block;
-      background: #090909;
+      background: #111;
     }
 
     .card-body {
       padding: 16px;
     }
 
-    .title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .card-meta {
+      color: #bbb;
+      font-size: 14px;
       margin-bottom: 8px;
     }
 
-    .title-row h3 {
-      margin: 0;
-      font-size: 20px;
-      line-height: 1.3;
+    .card-price {
+      color: #7CFC00;
+      font-size: 1.05rem;
+      font-weight: bold;
+      margin-bottom: 10px;
     }
 
-    .tag {
-      background: #18181b;
-      color: #22c55e;
-      border: 1px solid rgba(34,197,94,0.2);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .artist {
-      margin: 0 0 10px;
-      color: #d4d4d8;
-      font-size: 14px;
-    }
-
-    .desc {
-      margin: 0 0 14px;
-      color: #a1a1aa;
-      line-height: 1.6;
-      font-size: 14px;
-      min-height: 44px;
-    }
-
-    .meta {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: #71717a;
+    .card-category {
+      display: inline-block;
       font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(124, 252, 0, 0.12);
+      border: 1px solid rgba(124, 252, 0, 0.3);
+      color: #baff8a;
+      margin-bottom: 12px;
+    }
+
+    .card-description {
+      color: #d5d5d5;
+      font-size: 14px;
+      line-height: 1.45;
+      min-height: 48px;
+    }
+
+    .status-box {
+      display: none;
+      margin-bottom: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255, 0, 0, 0.08);
+      border: 1px solid rgba(255, 80, 80, 0.35);
+      color: #ff9c9c;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #ddd;
     }
 
     .empty-state {
-      background: #0b0b0b;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 40px 24px;
       text-align: center;
-      color: #a1a1aa;
+      padding: 50px 20px;
+      color: #aaa;
+      border: 1px dashed #333;
+      border-radius: 16px;
+      background: #131313;
     }
 
-    @media (max-width: 920px) {
-      .hero,
+    @media (max-width: 900px) {
       .controls {
         grid-template-columns: 1fr;
       }
 
-      .hero-copy h1 {
-        font-size: 34px;
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 14px;
-      }
-
-      .brand {
-        font-size: 22px;
-      }
-
-      .hero-copy {
-        padding: 20px;
-      }
-
-      .hero-copy h1 {
-        font-size: 30px;
-      }
-
-      .summary-row h2 {
-        font-size: 24px;
+      .card-image {
+        height: 220px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="container">
     <div class="topbar">
-      <div class="brand">RICH BIZNESS GALLERY</div>
+      <h1>Artwork Gallery</h1>
 
-      <nav class="nav-links">
-        <a href="/index.html">Home</a>
-        <a href="/artist/">Artist</a>
-        <a href="/upload.html">Upload</a>
-        <a href="/live.html">Live</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/auth.html">Auth</a>
-      </nav>
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="upload.html">Upload</a>
+        <a href="profile.html">Profile</a>
+      </div>
     </div>
 
-    <section class="hero">
-      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Gallery hero" />
-      <div class="hero-copy">
-        <h1>Real gallery, real uploads</h1>
-        <p>
-          Browse artwork pulled directly from Supabase. This page is now connected to your
-          real <strong>artworks</strong> table instead of localStorage.
-        </p>
-      </div>
-    </section>
-
-    <div id="statusBox" class="status-box">Loading gallery...</div>
-
-    <section class="controls">
-      <input id="searchInput" type="text" placeholder="Search by title, artist, category, or description..." />
+    <div class="controls">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by title, artist, category, or description"
+      />
 
       <select id="categoryFilter">
         <option value="all">All Categories</option>
-        <option value="digital">Digital</option>
-        <option value="painting">Painting</option>
-        <option value="photography">Photography</option>
-        <option value="3d">3D</option>
-        <option value="streetwear">Streetwear</option>
+        <option value="Painting">Painting</option>
+        <option value="Drawing">Drawing</option>
+        <option value="Digital Art">Digital Art</option>
+        <option value="Photography">Photography</option>
+        <option value="3D Printing">3D Printing</option>
+        <option value="Custom Design">Custom Design</option>
+        <option value="Other">Other</option>
       </select>
 
-      <select id="sortFilter">
-        <option value="newest">Sort: Newest</option>
-        <option value="oldest">Sort: Oldest</option>
-        <option value="title-az">Sort: Title A-Z</option>
-        <option value="artist-az">Sort: Artist A-Z</option>
+      <select id="sortSelect">
+        <option value="newest">Newest First</option>
+        <option value="oldest">Oldest First</option>
+        <option value="price-low">Price: Low to High</option>
+        <option value="price-high">Price: High to Low</option>
+        <option value="title-az">Title: A to Z</option>
+        <option value="title-za">Title: Z to A</option>
       </select>
-    </section>
+    </div>
 
-    <section class="summary-row">
-      <div>
-        <h2>Gallery Collection</h2>
-        <p>Search, filter, and browse uploaded work.</p>
-      </div>
-
-      <div id="galleryCount" class="count-badge">0 pieces</div>
-    </section>
-
-    <section id="galleryGrid" class="gallery-grid"></section>
+    <div id="statusBox" class="status-box info">Loading artwork...</div>
+    <div id="galleryGrid" class="gallery-grid"></div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+  <script>
+    // =========================
+    // SUPABASE CONFIG
+    // =========================
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const statusBox = document.getElementById("statusBox");
+    // =========================
+    // ELEMENTS
+    // =========================
     const galleryGrid = document.getElementById("galleryGrid");
-    const galleryCount = document.getElementById("galleryCount");
+    const statusBox = document.getElementById("statusBox");
+    const searchInput = document.getElementById("searchInput");
+    const categoryFilter = document.getElementById("categoryFilter");
+    const sortSelect = document.getElementById("sortSelect");
 
-    let artworks = [];
+    // =========================
+    // STATE
+    // =========================
+    let allArtwork = [];
 
-    function setStatus(text) {
-      statusBox.textContent = text;
+    // =========================
+    // HELPERS
+    // =========================
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+      statusBox.style.display = "block";
     }
 
-    function safeImage(src) {
-      if (!src || src === "undefined" || src === "null") {
-        return DEFAULT_IMAGE;
-      }
-      return src;
+    function hideStatus() {
+      statusBox.textContent = "";
+      statusBox.className = "status-box";
+      statusBox.style.display = "none";
     }
 
-    function formatCategory(category) {
-      if (!category) return "Artwork";
-      if (category.toLowerCase() === "3d") return "3D";
-      return category.charAt(0).toUpperCase() + category.slice(1);
+    function formatPrice(value) {
+      const number = Number(value || 0);
+      return `$${number.toFixed(2)}`;
     }
 
-    async function syncUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const username = email.split("@")[0];
-        localStorage.setItem("username", username);
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("isLoggedIn", "true");
-      }
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
     }
 
-    async function loadArtworks() {
-      setStatus("Loading gallery...");
+    function getFilteredArtwork() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const selectedCategory = categoryFilter.value;
+      const sortValue = sortSelect.value;
 
-      const { data, error } = await supabase
-        .from("artworks")
-        .select("*")
-        .order("created_at", { ascending: false });
+      let filtered = [...allArtwork];
 
-      if (error) {
-        console.error("GALLERY LOAD ERROR:", error);
-        setStatus("Gallery error: " + error.message);
-        artworks = [];
-        renderGallery([]);
-        return;
+      if (selectedCategory !== "all") {
+        filtered = filtered.filter(item => item.category === selectedCategory);
       }
 
-      artworks = data || [];
-      setStatus(`Loaded ${artworks.length} artwork piece${artworks.length === 1 ? "" : "s"}.`);
-      filterAndRenderGallery();
+      if (searchTerm) {
+        filtered = filtered.filter(item => {
+          const title = (item.title || "").toLowerCase();
+          const artist = (item.artist_name || "").toLowerCase();
+          const category = (item.category || "").toLowerCase();
+          const description = (item.description || "").toLowerCase();
+
+          return (
+            title.includes(searchTerm) ||
+            artist.includes(searchTerm) ||
+            category.includes(searchTerm) ||
+            description.includes(searchTerm)
+          );
+        });
+      }
+
+      filtered.sort((a, b) => {
+        switch (sortValue) {
+          case "oldest":
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+
+          case "price-low":
+            return Number(a.price || 0) - Number(b.price || 0);
+
+          case "price-high":
+            return Number(b.price || 0) - Number(a.price || 0);
+
+          case "title-az":
+            return (a.title || "").localeCompare(b.title || "");
+
+          case "title-za":
+            return (b.title || "").localeCompare(a.title || "");
+
+          case "newest":
+          default:
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        }
+      });
+
+      return filtered;
     }
 
-    function sortArtworks(items, sortValue) {
-      const list = [...items];
+    function renderGallery() {
+      const filteredArtwork = getFilteredArtwork();
 
-      if (sortValue === "oldest") {
-        return list.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      }
-
-      if (sortValue === "title-az") {
-        return list.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
-      }
-
-      if (sortValue === "artist-az") {
-        return list.sort((a, b) => (a.artist_name || "").localeCompare(b.artist_name || ""));
-      }
-
-      return list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    }
-
-    function renderGallery(items) {
-      galleryCount.textContent = `${items.length} piece${items.length === 1 ? "" : "s"}`;
-
-      if (!items.length) {
+      if (!filteredArtwork.length) {
         galleryGrid.innerHTML = `
           <div class="empty-state">
-            <h3>No artwork found</h3>
-            <p>Try a different search or category, or upload your first piece.</p>
+            <h2>No artwork found</h2>
+            <p>Try changing your search, category, or upload some new art.</p>
           </div>
         `;
         return;
       }
 
-      galleryGrid.innerHTML = items.map((item) => `
-        <article class="card">
-          <img src="${safeImage(item.image_url)}" alt="${item.title || "Artwork"}" loading="lazy" />
-          <div class="card-body">
-            <div class="title-row">
-              <h3>${item.title || "Untitled Artwork"}</h3>
-              <span class="tag">${formatCategory(item.category)}</span>
-            </div>
-            <p class="artist">By ${item.artist_name || "Unknown Artist"}</p>
-            <p class="desc">${item.description || "Artwork from the Rich Bizness platform."}</p>
-            <div class="meta">
-              <span>${item.created_at ? item.created_at.slice(0, 10) : ""}</span>
-              <span>${item.price || "Contact for price"}</span>
+      galleryGrid.innerHTML = filteredArtwork.map(item => {
+        const title = escapeHtml(item.title || "Untitled");
+        const artist = escapeHtml(item.artist_name || "Unknown Artist");
+        const category = escapeHtml(item.category || "Other");
+        const description = escapeHtml(item.description || "No description added.");
+        const imageUrl = escapeHtml(item.image_url || "");
+        const price = formatPrice(item.price);
+
+        return `
+          <div class="card">
+            <img
+              class="card-image"
+              src="${imageUrl}"
+              alt="${title}"
+              onerror="this.src='https://placehold.co/600x400?text=No+Image';"
+            />
+            <div class="card-body">
+              <div class="card-title">${title}</div>
+              <div class="card-meta">By ${artist}</div>
+              <div class="card-price">${price}</div>
+              <div class="card-category">${category}</div>
+              <div class="card-description">${description}</div>
             </div>
           </div>
-        </article>
-      `).join("");
+        `;
+      }).join("");
     }
 
-    function filterAndRenderGallery() {
-      const searchValue = document.getElementById("searchInput").value.trim().toLowerCase();
-      const categoryValue = document.getElementById("categoryFilter").value;
-      const sortValue = document.getElementById("sortFilter").value;
+    // =========================
+    // FETCH ARTWORK
+    // =========================
+    async function loadArtwork() {
+      showStatus("Loading artwork...", "info");
 
-      const filtered = artworks.filter((item) => {
-        const title = (item.title || "").toLowerCase();
-        const artist = (item.artist_name || "").toLowerCase();
-        const category = (item.category || "").toLowerCase();
-        const description = (item.description || "").toLowerCase();
+      try {
+        const { data, error } = await supabaseClient
+          .from("artwork")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-        const matchesSearch =
-          title.includes(searchValue) ||
-          artist.includes(searchValue) ||
-          category.includes(searchValue) ||
-          description.includes(searchValue);
+        if (error) {
+          throw error;
+        }
 
-        const matchesCategory =
-          categoryValue === "all" || category === categoryValue;
+        allArtwork = data || [];
 
-        return matchesSearch && matchesCategory;
-      });
+        if (!allArtwork.length) {
+          hideStatus();
+          renderGallery();
+          return;
+        }
 
-      renderGallery(sortArtworks(filtered, sortValue));
-    }
-
-    document.getElementById("searchInput").addEventListener("input", filterAndRenderGallery);
-    document.getElementById("categoryFilter").addEventListener("change", filterAndRenderGallery);
-    document.getElementById("sortFilter").addEventListener("change", filterAndRenderGallery);
-
-    document.addEventListener("error", function (e) {
-      if (e.target.tagName === "IMG") {
-        e.target.src = DEFAULT_IMAGE;
+        hideStatus();
+        renderGallery();
+      } catch (error) {
+        console.error("Gallery load error:", error);
+        showStatus("Failed to load gallery: " + error.message, "error");
       }
-    }, true);
+    }
 
-    await syncUser();
-    await loadArtworks();
+    // =========================
+    // EVENTS
+    // =========================
+    searchInput.addEventListener("input", renderGallery);
+    categoryFilter.addEventListener("change", renderGallery);
+    sortSelect.addEventListener("change", renderGallery);
+
+    // =========================
+    // INIT
+    // =========================
+    loadArtwork();
   </script>
 </body>
 </html>
