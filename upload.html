@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload | Rich Bizness LLC</title>
+  <title>Upload Artwork</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -11,589 +14,328 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      background: #000;
-      color: #fff;
       font-family: Arial, sans-serif;
-      padding: 24px;
+      background: #0d0d0d;
+      color: #fff;
+      padding: 20px;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      max-width: 1200px;
+    .container {
+      max-width: 720px;
       margin: 0 auto;
+      background: #171717;
+      border: 1px solid #2c2c2c;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 0 25px rgba(0,0,0,0.3);
     }
 
-    .topbar {
+    h1 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #7CFC00;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #ddd;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #101010;
+      color: white;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+    }
+
+    button {
+      border: none;
+      background: linear-gradient(135deg, #7CFC00, #2e8b57);
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    button:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .preview-box {
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    .preview-box img {
+      max-width: 100%;
+      max-height: 320px;
+      border-radius: 14px;
+      border: 1px solid #333;
+      display: none;
+    }
+
+    .message {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 12px;
+      display: none;
+      font-weight: bold;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(0,255,100,0.08);
+      border: 1px solid rgba(124,252,0,0.35);
+      color: #baff8a;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(255,0,0,0.08);
+      border: 1px solid rgba(255,80,80,0.35);
+      color: #ff9a9a;
+    }
+
+    .small-note {
+      color: #aaa;
+      font-size: 14px;
+      margin-top: 6px;
+    }
+
+    .top-links {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
+      gap: 10px;
       flex-wrap: wrap;
       margin-bottom: 20px;
     }
 
-    .brand {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.4px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #222;
+      border: 1px solid #333;
       padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 14px;
-      font-weight: 700;
+      border-radius: 10px;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 0;
-      overflow: hidden;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #0b0b0b;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.35);
-      margin-bottom: 24px;
-    }
-
-    .hero img {
-      width: 100%;
-      height: 100%;
-      min-height: 260px;
-      object-fit: cover;
-      display: block;
-      background: #090909;
-    }
-
-    .hero-copy {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06));
-    }
-
-    .hero-copy h1 {
-      margin: 0 0 12px;
-      font-size: 40px;
-      font-weight: 900;
-    }
-
-    .hero-copy p {
-      margin: 0;
-      color: #d4d4d8;
-      line-height: 1.7;
-      max-width: 720px;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 24px;
-    }
-
-    .panel {
-      background: #0b0b0b;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 22px;
-    }
-
-    .panel h2 {
-      margin: 0 0 14px;
-      font-size: 24px;
-    }
-
-    .panel-sub {
-      margin: -4px 0 16px;
-      color: #a1a1aa;
-      font-size: 14px;
-    }
-
-    .field {
-      margin-bottom: 16px;
-    }
-
-    .field label {
-      display: block;
-      font-size: 14px;
-      color: #d4d4d8;
-      margin-bottom: 8px;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: #111;
-      color: #fff;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .field textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .field input::placeholder,
-    .field textarea::placeholder {
-      color: #71717a;
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .btn-primary {
-      background: #22c55e;
-      color: #000;
-    }
-
-    .btn-secondary {
-      background: #27272a;
-      color: #fff;
-    }
-
-    .status {
-      margin-top: 16px;
-      min-height: 22px;
-      color: #a1a1aa;
-      font-size: 14px;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .preview-box {
-      background: #111;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 18px;
-    }
-
-    .preview-image {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      object-fit: cover;
-      background: #090909;
-      display: block;
-    }
-
-    .preview-placeholder {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #71717a;
-      text-align: center;
-      padding: 20px;
-      background: #090909;
-    }
-
-    .preview-meta {
-      padding: 16px;
-    }
-
-    .preview-meta h3 {
-      margin: 0 0 8px;
-      font-size: 22px;
-    }
-
-    .preview-meta p {
-      margin: 0 0 8px;
-      color: #d4d4d8;
-      line-height: 1.5;
-    }
-
-    .mini-tag {
-      display: inline-block;
-      margin-top: 6px;
-      background: #18181b;
-      color: #22c55e;
-      border: 1px solid rgba(34,197,94,0.2);
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 12px;
-    }
-
-    .helper-box {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 14px 16px;
-      color: #d4d4d8;
-      font-size: 14px;
-      line-height: 1.6;
-      margin-top: 14px;
-    }
-
-    .small-note {
-      margin-top: 10px;
-      color: #71717a;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    @media (max-width: 980px) {
-      .hero,
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 14px;
-      }
-
-      .brand {
-        font-size: 22px;
-      }
-
-      .hero-copy {
-        padding: 20px;
-      }
-
-      .hero-copy h1 {
-        font-size: 30px;
-      }
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">RICH BIZNESS UPLOAD</div>
-
-      <nav class="nav-links">
-        <a href="/index.html">Home</a>
-        <a href="/artist/">Artist</a>
-        <a href="/gallery/">Gallery</a>
-        <a href="/live.html">Live</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/auth.html">Auth</a>
-      </nav>
+  <div class="container">
+    <div class="top-links">
+      <a href="index.html">Home</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="profile.html">Profile</a>
     </div>
 
-    <section class="hero">
-      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Rich Bizness upload hero" />
-      <div class="hero-copy">
-        <h1>Upload artwork to your platform</h1>
-        <p>
-          Upload real files to Supabase Storage, save them to your real artworks table,
-          and make them show up in the gallery for everyone.
-        </p>
+    <h1>Upload Artwork</h1>
+
+    <form id="uploadForm">
+      <div class="form-group">
+        <label for="title">Artwork Title</label>
+        <input type="text" id="title" placeholder="Enter artwork title" required />
       </div>
-    </section>
 
-    <section class="layout">
-      <section class="panel">
-        <h2>Upload Artwork</h2>
-        <p class="panel-sub">Upload image file to Supabase Storage and save metadata to the artworks table.</p>
+      <div class="form-group">
+        <label for="artist_name">Artist Name</label>
+        <input type="text" id="artist_name" placeholder="Enter artist name" required />
+      </div>
 
-        <div class="field">
-          <label for="artistName">Artist Name</label>
-          <input id="artistName" type="text" placeholder="Enter artist name" />
-        </div>
+      <div class="form-group">
+        <label for="price">Price (USD)</label>
+        <input type="number" id="price" placeholder="Enter price" min="0" step="0.01" required />
+      </div>
 
-        <div class="field">
-          <label for="artTitle">Artwork Title</label>
-          <input id="artTitle" type="text" placeholder="Enter artwork title" />
-        </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" required>
+          <option value="">Select category</option>
+          <option value="Painting">Painting</option>
+          <option value="Drawing">Drawing</option>
+          <option value="Digital Art">Digital Art</option>
+          <option value="Photography">Photography</option>
+          <option value="3D Printing">3D Printing</option>
+          <option value="Custom Design">Custom Design</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
 
-        <div class="field">
-          <label for="artCategory">Category</label>
-          <select id="artCategory">
-            <option value="digital">Digital</option>
-            <option value="painting">Painting</option>
-            <option value="photography">Photography</option>
-            <option value="3d">3D</option>
-            <option value="streetwear">Streetwear</option>
-          </select>
-        </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Describe the artwork"></textarea>
+      </div>
 
-        <div class="field">
-          <label for="artDescription">Description</label>
-          <textarea id="artDescription" placeholder="Tell people about the artwork"></textarea>
-        </div>
+      <div class="form-group">
+        <label for="image">Artwork Image</label>
+        <input type="file" id="image" accept="image/*" required />
+        <div class="small-note">Upload JPG, PNG, WEBP, or similar image file.</div>
+      </div>
 
-        <div class="field">
-          <label for="artPrice">Price</label>
-          <input id="artPrice" type="text" placeholder="$200 or Contact for price" />
-        </div>
+      <div class="preview-box">
+        <img id="imagePreview" alt="Artwork Preview" />
+      </div>
 
-        <div class="field">
-          <label for="artImageFile">Upload Image File</label>
-          <input id="artImageFile" type="file" accept="image/*" />
-        </div>
+      <div class="form-group" style="margin-top: 18px;">
+        <button type="submit" id="submitBtn">Upload Artwork</button>
+      </div>
+    </form>
 
-        <div class="field">
-          <label for="artImageUrl">Or Paste Image URL</label>
-          <input id="artImageUrl" type="url" placeholder="https://example.com/image.png" />
-        </div>
-
-        <div class="actions">
-          <button id="submitBtn" class="btn btn-primary" type="button">Upload & Save Artwork</button>
-          <button id="clearBtn" class="btn btn-secondary" type="button">Clear Form</button>
-        </div>
-
-        <div id="status" class="status">Ready for upload.</div>
-
-        <div class="helper-box">
-          This page uploads files into <strong>Artist-uploads</strong> and then inserts a row into
-          your <strong>artworks</strong> table so the gallery becomes real.
-        </div>
-
-        <div class="small-note">
-          Make sure your Supabase table is named <strong>artworks</strong> and your bucket is named <strong>Artist-uploads</strong>.
-        </div>
-      </section>
-
-      <aside class="panel">
-        <h2>Live Preview</h2>
-        <p class="panel-sub">Preview the artwork before saving.</p>
-
-        <div class="preview-box">
-          <div id="previewMedia"></div>
-          <div class="preview-meta">
-            <h3 id="previewTitle">Untitled Artwork</h3>
-            <p id="previewArtist">By Unknown Artist</p>
-            <p id="previewDescription">Your artwork preview will appear here.</p>
-            <span id="previewTag" class="mini-tag">Digital</span>
-          </div>
-        </div>
-      </aside>
-    </section>
+    <div id="messageBox" class="message"></div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+  <script>
+    // =========================
+    // SUPABASE CONFIG
+    // =========================
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const SUPABASE_BUCKET = "Artist-uploads";
-    const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const artistNameEl = document.getElementById("artistName");
-    const artTitleEl = document.getElementById("artTitle");
-    const artCategoryEl = document.getElementById("artCategory");
-    const artDescriptionEl = document.getElementById("artDescription");
-    const artPriceEl = document.getElementById("artPrice");
-    const artImageFileEl = document.getElementById("artImageFile");
-    const artImageUrlEl = document.getElementById("artImageUrl");
-    const statusEl = document.getElementById("status");
-    const previewMediaEl = document.getElementById("previewMedia");
-    const previewTitleEl = document.getElementById("previewTitle");
-    const previewArtistEl = document.getElementById("previewArtist");
-    const previewDescriptionEl = document.getElementById("previewDescription");
-    const previewTagEl = document.getElementById("previewTag");
+    // =========================
+    // ELEMENTS
+    // =========================
+    const uploadForm = document.getElementById("uploadForm");
+    const titleInput = document.getElementById("title");
+    const artistNameInput = document.getElementById("artist_name");
+    const priceInput = document.getElementById("price");
+    const categoryInput = document.getElementById("category");
+    const descriptionInput = document.getElementById("description");
+    const imageInput = document.getElementById("image");
+    const imagePreview = document.getElementById("imagePreview");
+    const submitBtn = document.getElementById("submitBtn");
+    const messageBox = document.getElementById("messageBox");
 
-    let localPreviewData = "";
-    let uploadedPublicUrl = "";
-
-    function setStatus(text) {
-      statusEl.textContent = text;
+    // =========================
+    // HELPERS
+    // =========================
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+      messageBox.style.display = "block";
     }
 
-    function safeImage(src) {
-      if (!src || src === "undefined" || src === "null") {
-        return DEFAULT_IMAGE;
-      }
-      return src;
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+      messageBox.style.display = "none";
     }
 
-    async function syncUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const username = email.split("@")[0];
-
-        localStorage.setItem("username", username);
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("isLoggedIn", "true");
-
-        if (!artistNameEl.value) {
-          artistNameEl.value = username;
-        }
-
-        return { username, email };
-      }
-
-      const localUser = localStorage.getItem("username") || "Unknown Artist";
-      const localEmail = localStorage.getItem("userEmail") || null;
-
-      if (!artistNameEl.value && localUser !== "Unknown Artist") {
-        artistNameEl.value = localUser;
-      }
-
-      return { username: localUser, email: localEmail };
+    function sanitizeFileName(name) {
+      return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     }
 
-    function getPreviewImage() {
-      return safeImage(uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData);
-    }
+    // =========================
+    // IMAGE PREVIEW
+    // =========================
+    imageInput.addEventListener("change", () => {
+      const file = imageInput.files[0];
 
-    function renderPreview() {
-      const title = artTitleEl.value.trim() || "Untitled Artwork";
-      const artist = artistNameEl.value.trim() || "Unknown Artist";
-      const description = artDescriptionEl.value.trim() || "Your artwork preview will appear here.";
-      const category = artCategoryEl.value || "digital";
-      const previewImage = getPreviewImage();
-
-      previewTitleEl.textContent = title;
-      previewArtistEl.textContent = `By ${artist}`;
-      previewDescriptionEl.textContent = description;
-      previewTagEl.textContent = category === "3d"
-        ? "3D"
-        : category.charAt(0).toUpperCase() + category.slice(1);
-
-      if (uploadedPublicUrl || artImageUrlEl.value.trim() || localPreviewData) {
-        previewMediaEl.innerHTML = `<img class="preview-image" src="${previewImage}" alt="${title}" />`;
-      } else {
-        previewMediaEl.innerHTML = `<div class="preview-placeholder">Upload an image or paste an image URL to preview your artwork.</div>`;
-      }
-    }
-
-    function clearForm() {
-      artTitleEl.value = "";
-      artCategoryEl.value = "digital";
-      artDescriptionEl.value = "";
-      artPriceEl.value = "";
-      artImageFileEl.value = "";
-      artImageUrlEl.value = "";
-      localPreviewData = "";
-      uploadedPublicUrl = "";
-      setStatus("Form cleared.");
-      renderPreview();
-      syncUser();
-    }
-
-    function readLocalPreview(file) {
       if (!file) {
-        localPreviewData = "";
-        renderPreview();
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
         return;
       }
 
       const reader = new FileReader();
-
-      reader.onload = function (event) {
-        localPreviewData = event.target.result;
-        uploadedPublicUrl = "";
-        artImageUrlEl.value = "";
-        renderPreview();
-        setStatus("Preview loaded. Tap upload to send file to Supabase.");
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
       };
-
-      reader.onerror = function () {
-        setStatus("Could not read image file.");
-      };
-
       reader.readAsDataURL(file);
-    }
+    });
 
-    async function uploadFileToSupabase(file) {
-      const cleanedName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-      const filePath = `artwork-${Date.now()}-${cleanedName}`;
+    // =========================
+    // FORM SUBMIT
+    // =========================
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage();
 
-      const { error: uploadError } = await supabase.storage
-        .from(SUPABASE_BUCKET)
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
+      const title = titleInput.value.trim();
+      const artist_name = artistNameInput.value.trim();
+      const price = parseFloat(priceInput.value);
+      const category = categoryInput.value;
+      const description = descriptionInput.value.trim();
+      const file = imageInput.files[0];
 
-      if (uploadError) {
-        throw uploadError;
+      if (!title || !artist_name || !category || !file || isNaN(price)) {
+        showMessage("Please fill out all required fields.", "error");
+        return;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from(SUPABASE_BUCKET)
-        .getPublicUrl(filePath);
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading...";
 
-      if (!publicUrlData?.publicUrl) {
-        throw new Error("Could not create public URL for uploaded file.");
-      }
-
-      return publicUrlData.publicUrl;
-    }
-
-    async function saveArtwork() {
       try {
-        const user = await syncUser();
+        // Build unique file path
+        const fileExt = file.name.split(".").pop();
+        const safeName = sanitizeFileName(file.name.replace(/\.[^/.]+$/, ""));
+        const fileName = `${Date.now()}_${safeName}.${fileExt}`;
+        const filePath = `uploads/${fileName}`;
 
-        const artist_name = artistNameEl.value.trim() || user.username || "Unknown Artist";
-        const artist_email = user.email || null;
-        const title = artTitleEl.value.trim();
-        const category = artCategoryEl.value;
-        const description = artDescriptionEl.value.trim();
-        const price = artPriceEl.value.trim() || "Contact for price";
-        const file = artImageFileEl.files[0];
-        let image_url = artImageUrlEl.value.trim();
+        // 1. Upload image to Supabase Storage bucket: artwork
+        const { error: uploadError } = await supabaseClient.storage
+          .from("artwork")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false
+          });
 
-        if (!title) {
-          setStatus("Artwork title is required.");
-          return;
+        if (uploadError) {
+          throw uploadError;
         }
 
-        if (file) {
-          setStatus("Uploading file to Supabase...");
-          image_url = await uploadFileToSupabase(file);
-          uploadedPublicUrl = image_url;
-        } else if (!image_url) {
-          image_url = DEFAULT_IMAGE;
-        }
+        // 2. Get public image URL
+        const { data: publicUrlData } = supabaseClient.storage
+          .from("artwork")
+          .getPublicUrl(filePath);
 
-        setStatus("Saving artwork to database...");
+        const image_url = publicUrlData.publicUrl;
 
-        const { error: insertError } = await supabase
-          .from("artworks")
+        // 3. Save artwork row in Supabase table: artwork
+        const { error: insertError } = await supabaseClient
+          .from("artwork")
           .insert([
             {
-              artist_name,
-              artist_email,
               title,
+              artist_name,
+              price,
               category,
               description,
-              price,
-              image_url
+              image_url,
+              created_at: new Date().toISOString()
             }
           ]);
 
@@ -601,42 +343,19 @@
           throw insertError;
         }
 
-        setStatus("Artwork uploaded and saved to gallery.");
-        clearForm();
-      } catch (err) {
-        console.error("UPLOAD ERROR:", err);
-        setStatus("Upload failed: " + err.message);
+        showMessage("Artwork uploaded successfully.", "success");
+
+        uploadForm.reset();
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
+      } catch (error) {
+        console.error("Upload failed:", error);
+        showMessage("Upload failed: " + error.message, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload Artwork";
       }
-    }
-
-    [
-      artistNameEl,
-      artTitleEl,
-      artCategoryEl,
-      artDescriptionEl,
-      artPriceEl,
-      artImageUrlEl
-    ].forEach((el) => {
-      el.addEventListener("input", renderPreview);
-      el.addEventListener("change", renderPreview);
     });
-
-    artImageFileEl.addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      readLocalPreview(file);
-    });
-
-    document.addEventListener("error", function (e) {
-      if (e.target.tagName === "IMG") {
-        e.target.src = DEFAULT_IMAGE;
-      }
-    }, true);
-
-    document.getElementById("submitBtn").addEventListener("click", saveArtwork);
-    document.getElementById("clearBtn").addEventListener("click", clearForm);
-
-    await syncUser();
-    renderPreview();
   </script>
 </body>
 </html>
