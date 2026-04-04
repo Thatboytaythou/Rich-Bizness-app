@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music</title>
+</head>
+<body style="background:black;color:white;font-family:sans-serif;padding:20px;">
+
+<h1>Music</h1>
+
+<div id="musicList"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+<script>
+const supabase = supabase.createClient(
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+);
+
+async function loadMusic() {
+  const { data } = await supabase
+    .from("music")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const container = document.getElementById("musicList");
+
+  data.forEach(song => {
+    const div = document.createElement("div");
+    div.style.marginBottom = "20px";
+
+    div.innerHTML = `
+      <h3>${song.title}</h3>
+      <p>${song.artist_name}</p>
+      <audio controls src="${song.audio_url}"></audio>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+loadMusic();
+</script>
+
+</body>
+</html>
