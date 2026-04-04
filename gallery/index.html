@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Artwork Gallery</title>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -15,7 +14,7 @@
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #0d0d0d;
+      background: #0b0b0b;
       color: white;
       padding: 20px;
     }
@@ -32,6 +31,12 @@
       gap: 16px;
       flex-wrap: wrap;
       margin-bottom: 24px;
+    }
+
+    .brand {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #7CFC00;
     }
 
     .top-links {
@@ -52,12 +57,6 @@
     .top-links a:hover {
       color: #7CFC00;
       border-color: #7CFC00;
-    }
-
-    h1 {
-      margin: 0;
-      color: #7CFC00;
-      font-size: 2rem;
     }
 
     .controls {
@@ -85,7 +84,7 @@
     }
 
     .card {
-      background: #171717;
+      background: #151515;
       border: 1px solid #2c2c2c;
       border-radius: 18px;
       overflow: hidden;
@@ -135,8 +134,8 @@
       font-size: 13px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(124, 252, 0, 0.12);
-      border: 1px solid rgba(124, 252, 0, 0.3);
+      background: rgba(124,252,0,0.12);
+      border: 1px solid rgba(124,252,0,0.3);
       color: #baff8a;
       margin-bottom: 12px;
     }
@@ -193,11 +192,14 @@
 <body>
   <div class="container">
     <div class="topbar">
-      <h1>Artwork Gallery</h1>
+      <div class="brand">Artwork Gallery</div>
 
       <div class="top-links">
         <a href="index.html">Home</a>
-        <a href="upload.html">Upload</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="live.html">Go Live</a>
         <a href="profile.html">Profile</a>
       </div>
     </div>
@@ -235,31 +237,19 @@
   </div>
 
   <script>
-    // =========================
-    // SUPABASE CONFIG
-    // =========================
     const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // =========================
-    // ELEMENTS
-    // =========================
     const galleryGrid = document.getElementById("galleryGrid");
     const statusBox = document.getElementById("statusBox");
     const searchInput = document.getElementById("searchInput");
     const categoryFilter = document.getElementById("categoryFilter");
     const sortSelect = document.getElementById("sortSelect");
 
-    // =========================
-    // STATE
-    // =========================
     let allArtwork = [];
 
-    // =========================
-    // HELPERS
-    // =========================
     function showStatus(message, type = "info") {
       statusBox.textContent = message;
       statusBox.className = `status-box ${type}`;
@@ -381,9 +371,6 @@
       }).join("");
     }
 
-    // =========================
-    // FETCH ARTWORK
-    // =========================
     async function loadArtwork() {
       showStatus("Loading artwork...", "info");
 
@@ -399,12 +386,6 @@
 
         allArtwork = data || [];
 
-        if (!allArtwork.length) {
-          hideStatus();
-          renderGallery();
-          return;
-        }
-
         hideStatus();
         renderGallery();
       } catch (error) {
@@ -413,16 +394,10 @@
       }
     }
 
-    // =========================
-    // EVENTS
-    // =========================
     searchInput.addEventListener("input", renderGallery);
     categoryFilter.addEventListener("change", renderGallery);
     sortSelect.addEventListener("change", renderGallery);
 
-    // =========================
-    // INIT
-    // =========================
     loadArtwork();
   </script>
 </body>
