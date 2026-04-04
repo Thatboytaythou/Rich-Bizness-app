@@ -1,76 +1,66 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
-import Stripe from "stripe";
-
-dotenv.config();
+import { AccessToken } from "livekit-server-sdk";
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+const LIVEKIT_URL = process.env.LIVEKIT_URL || "YOUR_LIVEKIT_URL";
+const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "YOUR_LIVEKIT_API_KEY";
+const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "YOUR_LIVEKIT_API_SECRET";
 
-if (!stripeSecretKey) {
-  throw new Error("Missing STRIPE_SECRET_KEY in .env");
-}
-
-const stripe = new Stripe(stripeSecretKey);
-
-app.get("/", (req, res) => {
-  res.send("Stripe server is running.");
-});
-
-app.post("/create-checkout-session", async (req, res) => {
+app.post("/getToken", async (req, res) => {
   try {
-    const { title, price, image } = req.body;
+    const {
+      room_name,
+      participant_identity,
+      participant_name,
+      participant_metadata,
+      participant_attributes
+    } = req.body || {};
 
-    if (!title || !price) {
-      return res.status(400).json({
-        error: "Missing required fields: title and price"
-      });
+    if (!room_name) {
+      return res.status(400).json({ error: "room_name is required" });
     }
 
-    const amount = Number(price);
-
-    if (Number.isNaN(amount) || amount <= 0) {
-      return res.status(400).json({
-        error: "Price must be a valid positive number"
-      });
+    if (!participant_identity) {
+      return res.status(400).json({ error: "participant_identity is required" });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          quantity: 1,
-          price_data: {
-            currency: "usd",
-            unit_amount: amount,
-            product_data: {
-              name: title,
-              images: image ? [image] : []
-            }
-          }
-        }
-      ],
-      success_url: "http://127.0.0.1:5500/success.html",
-      cancel_url: "http://127.0.0.1:5500/cancel.html"
+    const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+      identity: participant_identity,
+      name: participant_name || participant_identity,
+      metadata: participant_metadata || "",
+      attributes: participant_attributes || {},
+      ttl: "1h"
     });
 
-    return res.json({ id: session.id });
+    token.addGrant({
+      roomJoin: true,
+      room: room_name,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true
+    });
+
+    const jwt = await token.toJwt();
+
+    return res.status(201).json({
+      server_url: LIVEKIT_URL,
+      participant_token: jwt
+    });
   } catch (error) {
-    console.error("Stripe error:", error);
+    console.error("LiveKit token error:", error);
     return res.status(500).json({
-      error: error.message || "Server error"
+      error: "Failed to generate token"
     });
   }
 });
 
-const PORT = 4242;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`LiveKit token server running on http://localhost:${PORT}`);
 });
