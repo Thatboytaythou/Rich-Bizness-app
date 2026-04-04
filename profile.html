@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile | Rich Bizness LLC</title>
+  <title>Artist Profile</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -11,19 +13,14 @@
 
     body {
       margin: 0;
-      background: #000;
-      color: #fff;
       font-family: Arial, sans-serif;
-      padding: 24px;
+      background: #0a0a0a;
+      color: white;
+      padding: 20px;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
-      max-width: 1200px;
+    .container {
+      max-width: 1300px;
       margin: 0 auto;
     }
 
@@ -33,556 +30,773 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .brand {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.4px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a,
-    .nav-links button {
-      padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #0b0b0b;
-      margin-bottom: 24px;
-      min-height: 520px;
-    }
-
-    .hero img {
-      width: 100%;
-      height: 520px;
-      object-fit: cover;
-      display: block;
-      background: #090909;
-    }
-
-    .hero-overlay {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to top,
-        rgba(0,0,0,0.94) 10%,
-        rgba(0,0,0,0.45) 48%,
-        rgba(0,0,0,0.12) 100%
-      );
-      display: flex;
-      align-items: flex-end;
-      padding: 32px;
-    }
-
-    .hero-content {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 24px;
-      flex-wrap: wrap;
-    }
-
-    .identity h1 {
-      margin: 0 0 10px;
-      font-size: 48px;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    .identity p {
-      margin: 0 0 16px;
-      max-width: 760px;
-      color: #d4d4d8;
-      line-height: 1.7;
-      font-size: 16px;
-    }
-
-    .pill-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .pill {
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .hero-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px 24px;
-      border-radius: 18px;
-      font-size: 16px;
+      font-size: 2rem;
       font-weight: 800;
-      border: 0;
-      cursor: pointer;
+      color: #7CFC00;
     }
 
-    .btn-primary {
-      background: #22c55e;
-      color: #000;
+    .top-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .btn-secondary {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #1b1b1b;
+      border: 1px solid #333;
+      padding: 10px 14px;
+      border-radius: 10px;
     }
 
-    .status-box {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 14px 16px;
-      color: #d4d4d8;
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 18px;
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
     }
 
-    .layout {
+    .profile-hero {
       display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 24px;
-    }
-
-    .sidebar,
-    .main {
-      display: grid;
-      gap: 20px;
+      grid-template-columns: 320px 1fr;
+      gap: 22px;
+      margin-bottom: 28px;
     }
 
     .panel {
-      background: #0b0b0b;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
+      background: #151515;
+      border: 1px solid #2c2c2c;
+      border-radius: 20px;
       padding: 22px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.18);
     }
 
-    .panel h2 {
-      margin: 0 0 14px;
-      font-size: 24px;
-    }
-
-    .panel p {
-      margin: 0;
-      color: #d4d4d8;
-      line-height: 1.7;
-      font-size: 15px;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-
-    .stat {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 16px;
+    .avatar-wrap {
       text-align: center;
     }
 
-    .stat strong {
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #2f2f2f;
+      margin: 0 auto 16px;
       display: block;
-      font-size: 24px;
-      color: #22c55e;
+      background: #101010;
+    }
+
+    .display-name {
+      font-size: 1.8rem;
+      font-weight: bold;
       margin-bottom: 6px;
+      text-align: center;
     }
 
-    .stat span {
-      color: #a1a1aa;
-      font-size: 13px;
-    }
-
-    .section-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+    .username {
+      color: #a7a7a7;
+      text-align: center;
       margin-bottom: 14px;
     }
 
-    .section-head h2 {
-      margin: 0;
-      font-size: 24px;
+    .bio {
+      color: #d2d2d2;
+      line-height: 1.5;
+      text-align: center;
+      margin-bottom: 18px;
+      white-space: pre-wrap;
     }
 
-    .section-head p {
-      margin: 0;
-      color: #a1a1aa;
+    .social-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .social-links a {
+      text-decoration: none;
+      color: white;
+      background: #202020;
+      border: 1px solid #333;
+      padding: 10px 12px;
+      border-radius: 10px;
       font-size: 14px;
     }
 
-    .art-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
+    .social-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
     }
 
-    .art-card {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 20px;
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .stat-card {
+      background: #101010;
+      border: 1px solid #2a2a2a;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .stat-card .label {
+      color: #bcbcbc;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .stat-card .value {
+      color: #7CFC00;
+      font-size: 1.4rem;
+      font-weight: bold;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      color: #7CFC00;
+      margin-bottom: 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    .form-group.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #ddd;
+    }
+
+    input,
+    textarea,
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #101010;
+      color: white;
+      font-size: 15px;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+    }
+
+    button {
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, #7CFC00, #2e8b57);
+      color: black;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(0,255,100,0.08);
+      border: 1px solid rgba(124,252,0,0.35);
+      color: #baff8a;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(255,0,0,0.08);
+      border: 1px solid rgba(255,80,80,0.35);
+      color: #ff9a9a;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: #151515;
+      border: 1px solid #2c2c2c;
+      border-radius: 18px;
       overflow: hidden;
     }
 
-    .art-card img {
+    .card img {
       width: 100%;
-      aspect-ratio: 1 / 1;
+      height: 240px;
       object-fit: cover;
       display: block;
-      background: #090909;
+      background: #101010;
     }
 
-    .art-info {
-      padding: 14px;
+    .card-body {
+      padding: 16px;
     }
 
-    .art-info h3 {
-      margin: 0 0 6px;
-      font-size: 18px;
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
     }
 
-    .art-info p {
-      margin: 0 0 8px;
-      color: #a1a1aa;
+    .card-meta {
+      color: #bbb;
       font-size: 14px;
-      line-height: 1.5;
+      margin-bottom: 8px;
     }
 
-    .art-meta {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: #71717a;
+    .card-price {
+      color: #7CFC00;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .card-description {
+      color: #d4d4d4;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .music-tag {
+      display: inline-block;
       font-size: 13px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(124,252,0,0.12);
+      border: 1px solid rgba(124,252,0,0.3);
+      color: #baff8a;
+      margin-bottom: 12px;
+    }
+
+    audio {
+      width: 100%;
       margin-top: 10px;
     }
 
     .empty-state {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 24px;
-      color: #a1a1aa;
       text-align: center;
+      padding: 36px 20px;
+      color: #aaa;
+      border: 1px dashed #333;
+      border-radius: 16px;
+      background: #131313;
     }
 
     @media (max-width: 980px) {
-      .layout {
+      .profile-hero {
         grid-template-columns: 1fr;
       }
 
-      .hero img {
-        height: 440px;
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
       }
 
-      .identity h1 {
-        font-size: 38px;
+      .form-grid {
+        grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 640px) {
-      body {
-        padding: 14px;
-      }
-
-      .brand {
-        font-size: 22px;
-      }
-
-      .hero {
-        min-height: 420px;
-      }
-
-      .hero img {
-        height: 420px;
-      }
-
-      .hero-overlay {
-        padding: 20px;
-      }
-
-      .identity h1 {
-        font-size: 30px;
-      }
-
-      .stats {
-        grid-template-columns: 1fr 1fr;
+      .stats-grid {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="container">
     <div class="topbar">
-      <div class="brand">RICH BIZNESS PROFILE</div>
+      <div class="brand">Artist Profile</div>
 
-      <nav class="nav-links">
-        <a href="/index.html">Home</a>
-        <a href="/artist/">Artist</a>
-        <a href="/gallery/">Gallery</a>
-        <a href="/upload.html">Upload</a>
-        <a href="/live.html">Live</a>
-        <a href="/auth.html">Auth</a>
-        <button id="logoutBtn" type="button">Logout</button>
-      </nav>
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="live.html">Go Live</a>
+      </div>
     </div>
 
-    <div id="statusBox" class="status-box">Checking profile session...</div>
+    <div class="profile-hero">
+      <div class="panel">
+        <div class="avatar-wrap">
+          <img id="profileAvatar" class="avatar" src="https://placehold.co/300x300?text=Artist" alt="Profile Avatar" />
+          <div class="display-name" id="profileDisplayName">Artist Name</div>
+          <div class="username" id="profileUsername">@username</div>
+          <div class="bio" id="profileBio">No bio added yet.</div>
 
-    <section class="hero">
-      <img id="heroImage" src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Profile hero" />
-      <div class="hero-overlay">
-        <div class="hero-content">
-          <div class="identity">
-            <h1 id="profileName">Rich Bizness</h1>
-            <p id="profileBio">
-              Creative brand, artist platform, live streaming space, and visual showcase built for art,
-              music, storytelling, fashion, and digital drops.
-            </p>
-
-            <div class="pill-row">
-              <div id="profileRole" class="pill">Guest</div>
-              <div id="profileEmail" class="pill">not signed in</div>
-              <div class="pill">Creative Platform</div>
-            </div>
-
-            <div class="hero-actions">
-              <a class="btn btn-primary" href="/live.html">Go Live</a>
-              <a class="btn btn-secondary" href="/gallery/">View Gallery</a>
-            </div>
-          </div>
+          <div class="social-links" id="socialLinks"></div>
         </div>
       </div>
-    </section>
 
-    <section class="layout">
-      <aside class="sidebar">
-        <div class="panel">
-          <h2>About</h2>
-          <p>
-            This profile page syncs your Supabase session, shows your email and username,
-            and loads your real artwork from the Supabase <strong>artworks</strong> table.
-          </p>
-        </div>
-
-        <div class="panel">
-          <h2>Profile Stats</h2>
-          <div class="stats">
-            <div class="stat">
-              <strong id="statUploads">0</strong>
-              <span>Uploads</span>
-            </div>
-            <div class="stat">
-              <strong id="statLive">1</strong>
-              <span>Live Profile</span>
-            </div>
-            <div class="stat">
-              <strong id="statCategory">0</strong>
-              <span>Categories</span>
-            </div>
-            <div class="stat">
-              <strong id="statFeatured">ON</strong>
-              <span>Artist Status</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <main class="main">
-        <div class="panel">
-          <div class="section-head">
-            <div>
-              <h2>Your Uploaded Artwork</h2>
-              <p>Real uploads pulled from Supabase.</p>
-            </div>
+      <div class="panel">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="label">Art Pieces</div>
+            <div class="value" id="artCount">0</div>
           </div>
 
-          <div id="artGrid" class="art-grid"></div>
+          <div class="stat-card">
+            <div class="label">Tracks</div>
+            <div class="value" id="musicCount">0</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="label">Artwork Value</div>
+            <div class="value" id="artValue">$0.00</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="label">Profile Status</div>
+            <div class="value" id="profileStatusText">Guest</div>
+          </div>
         </div>
-      </main>
-    </section>
+
+        <div class="section-title">Edit Profile</div>
+
+        <form id="profileForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" placeholder="username" />
+            </div>
+
+            <div class="form-group">
+              <label for="display_name">Display Name</label>
+              <input type="text" id="display_name" placeholder="Artist Name" />
+            </div>
+
+            <div class="form-group full">
+              <label for="bio">Bio</label>
+              <textarea id="bioInput" placeholder="Tell people about yourself"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="instagram_url">Instagram URL</label>
+              <input type="url" id="instagram_url" placeholder="https://instagram.com/yourname" />
+            </div>
+
+            <div class="form-group">
+              <label for="twitter_url">Twitter/X URL</label>
+              <input type="url" id="twitter_url" placeholder="https://x.com/yourname" />
+            </div>
+
+            <div class="form-group full">
+              <label for="website_url">Website URL</label>
+              <input type="url" id="website_url" placeholder="https://yourwebsite.com" />
+            </div>
+
+            <div class="form-group full">
+              <label for="avatar_file">Profile Image</label>
+              <input type="file" id="avatar_file" accept="image/*" />
+            </div>
+
+            <div class="form-group full">
+              <button type="submit" id="saveProfileBtn">Save Profile</button>
+            </div>
+          </div>
+        </form>
+
+        <div id="messageBox" class="message"></div>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <div class="panel">
+        <div class="section-title">Artwork</div>
+        <div id="artworkGrid" class="cards-grid"></div>
+      </div>
+
+      <div class="panel">
+        <div class="section-title">Music</div>
+        <div id="musicGrid" class="cards-grid"></div>
+      </div>
+    </div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+  <script>
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const DEFAULT_IMAGE = "/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const statusBox = document.getElementById("statusBox");
-    const profileNameEl = document.getElementById("profileName");
-    const profileEmailEl = document.getElementById("profileEmail");
-    const profileRoleEl = document.getElementById("profileRole");
-    const artGridEl = document.getElementById("artGrid");
-    const statUploadsEl = document.getElementById("statUploads");
-    const statCategoryEl = document.getElementById("statCategory");
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileDisplayName = document.getElementById("profileDisplayName");
+    const profileUsername = document.getElementById("profileUsername");
+    const profileBio = document.getElementById("profileBio");
+    const socialLinks = document.getElementById("socialLinks");
 
-    function setStatus(text) {
-      statusBox.textContent = text;
+    const artCount = document.getElementById("artCount");
+    const musicCount = document.getElementById("musicCount");
+    const artValue = document.getElementById("artValue");
+    const profileStatusText = document.getElementById("profileStatusText");
+
+    const profileForm = document.getElementById("profileForm");
+    const usernameInput = document.getElementById("username");
+    const displayNameInput = document.getElementById("display_name");
+    const bioInput = document.getElementById("bioInput");
+    const instagramInput = document.getElementById("instagram_url");
+    const twitterInput = document.getElementById("twitter_url");
+    const websiteInput = document.getElementById("website_url");
+    const avatarFileInput = document.getElementById("avatar_file");
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
+    const messageBox = document.getElementById("messageBox");
+
+    const artworkGrid = document.getElementById("artworkGrid");
+    const musicGrid = document.getElementById("musicGrid");
+
+    let currentUser = null;
+    let currentProfile = null;
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+      messageBox.style.display = "block";
     }
 
-    function safeImage(src) {
-      if (!src || src === "undefined" || src === "null") {
-        return DEFAULT_IMAGE;
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+      messageBox.style.display = "none";
+    }
+
+    function escapeHtml(text) {
+      if (text === null || text === undefined) return "";
+      return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function sanitizeFileName(name) {
+      return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    }
+
+    function formatMoney(value) {
+      return Number(value || 0).toFixed(2);
+    }
+
+    function normalizeUrl(url) {
+      if (!url) return "";
+      const trimmed = url.trim();
+      if (!trimmed) return "";
+      if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+        return trimmed;
       }
-      return src;
+      return "https://" + trimmed;
     }
 
-    function formatDate(dateString) {
-      if (!dateString) return "";
-      return dateString.slice(0, 10);
-    }
+    function renderSocialLinks(profile) {
+      const links = [];
 
-    async function syncUser() {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const username = email.split("@")[0];
-
-        localStorage.setItem("username", username);
-        localStorage.setItem("userEmail", email);
-        localStorage.setItem("isLoggedIn", "true");
-
-        profileNameEl.textContent = username;
-        profileEmailEl.textContent = email;
-        profileRoleEl.textContent = "Admin";
-        setStatus(`Logged in as ${username} ✅`);
-
-        return { username, email };
+      if (profile.instagram_url) {
+        links.push(`<a href="${escapeHtml(profile.instagram_url)}" target="_blank">Instagram</a>`);
       }
 
-      const username = localStorage.getItem("username") || "Guest";
-      const email = localStorage.getItem("userEmail") || "not signed in";
-
-      profileNameEl.textContent = username;
-      profileEmailEl.textContent = email;
-      profileRoleEl.textContent = "Guest";
-      setStatus("No active Supabase session. Showing saved local profile.");
-
-      return { username, email: email === "not signed in" ? null : email };
-    }
-
-    async function loadMyArtworks(user) {
-      let query = supabase
-        .from("artworks")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (user.email) {
-        query = query.eq("artist_email", user.email);
-      } else {
-        query = query.eq("artist_name", user.username);
+      if (profile.twitter_url) {
+        links.push(`<a href="${escapeHtml(profile.twitter_url)}" target="_blank">X / Twitter</a>`);
       }
 
-      const { data, error } = await query;
+      if (profile.website_url) {
+        links.push(`<a href="${escapeHtml(profile.website_url)}" target="_blank">Website</a>`);
+      }
 
-      if (error) {
-        console.error("PROFILE ARTWORK LOAD ERROR:", error);
-        artGridEl.innerHTML = `
-          <div class="empty-state">
-            Could not load artwork: ${error.message}
-          </div>
+      socialLinks.innerHTML = links.length ? links.join("") : `<span style="color:#888;">No social links yet.</span>`;
+    }
+
+    function renderProfile(profile) {
+      const displayName = profile?.display_name || "Artist Name";
+      const username = profile?.username || "username";
+      const bio = profile?.bio || "No bio added yet.";
+      const avatarUrl = profile?.avatar_url || "https://placehold.co/300x300?text=Artist";
+
+      profileDisplayName.textContent = displayName;
+      profileUsername.textContent = "@" + username;
+      profileBio.textContent = bio;
+      profileAvatar.src = avatarUrl;
+
+      usernameInput.value = profile?.username || "";
+      displayNameInput.value = profile?.display_name || "";
+      bioInput.value = profile?.bio || "";
+      instagramInput.value = profile?.instagram_url || "";
+      twitterInput.value = profile?.twitter_url || "";
+      websiteInput.value = profile?.website_url || "";
+
+      renderSocialLinks(profile || {});
+    }
+
+    function renderArtwork(items) {
+      if (!items.length) {
+        artworkGrid.innerHTML = `
+          <div class="empty-state">No artwork uploaded yet.</div>
         `;
-        statUploadsEl.textContent = "0";
-        statCategoryEl.textContent = "0";
         return;
       }
 
-      const artworks = data || [];
-      statUploadsEl.textContent = artworks.length;
-
-      const categories = [...new Set(
-        artworks
-          .map(item => (item.category || "").toLowerCase())
-          .filter(Boolean)
-      )];
-      statCategoryEl.textContent = categories.length;
-
-      if (!artworks.length) {
-        artGridEl.innerHTML = `
-          <div class="empty-state">
-            No uploads yet. Go to <strong>Upload</strong> and add your first artwork.
+      artworkGrid.innerHTML = items.map(item => `
+        <div class="card">
+          <img
+            src="${escapeHtml(item.image_url || "https://placehold.co/600x400?text=No+Image")}"
+            alt="${escapeHtml(item.title || "Artwork")}"
+            onerror="this.src='https://placehold.co/600x400?text=No+Image';"
+          />
+          <div class="card-body">
+            <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+            <div class="card-meta">${escapeHtml(item.category || "Other")}</div>
+            <div class="card-price">$${formatMoney(item.price)}</div>
+            <div class="card-description">${escapeHtml(item.description || "No description added.")}</div>
           </div>
-        `;
-        return;
-      }
-
-      artGridEl.innerHTML = artworks.map(item => `
-        <article class="art-card">
-          <img src="${safeImage(item.image_url)}" alt="${item.title || "Artwork"}" />
-          <div class="art-info">
-            <h3>${item.title || "Untitled Artwork"}</h3>
-            <p>${item.description || "Artwork from the Rich Bizness platform."}</p>
-            <div class="art-meta">
-              <span>${item.category || "digital"}</span>
-              <span>${item.price || "Contact for price"}</span>
-              <span>${formatDate(item.created_at)}</span>
-            </div>
-          </div>
-        </article>
+        </div>
       `).join("");
     }
 
-    document.addEventListener("error", function (e) {
-      if (e.target.tagName === "IMG") {
-        e.target.src = DEFAULT_IMAGE;
+    function renderMusic(items) {
+      if (!items.length) {
+        musicGrid.innerHTML = `
+          <div class="empty-state">No music uploaded yet.</div>
+        `;
+        return;
       }
-    }, true);
 
-    document.getElementById("logoutBtn").addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      localStorage.removeItem("username");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("isLoggedIn");
-      window.location.href = "/auth.html";
+      musicGrid.innerHTML = items.map(item => `
+        <div class="card">
+          <img
+            src="${escapeHtml(item.cover_url || "https://placehold.co/600x600?text=Music")}"
+            alt="${escapeHtml(item.title || "Track")}"
+            onerror="this.src='https://placehold.co/600x600?text=Music';"
+          />
+          <div class="card-body">
+            <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+            <div class="card-meta">By ${escapeHtml(item.artist_name || "Unknown Artist")}</div>
+            <div class="music-tag">${escapeHtml(item.genre || "Other")}</div>
+            <div class="card-description">${escapeHtml(item.description || "No description added.")}</div>
+            <audio controls preload="none">
+              <source src="${escapeHtml(item.audio_url || "")}" />
+              Your browser does not support the audio element.
+            </audio>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadProfile() {
+      const {
+        data: { user },
+        error: userError
+      } = await supabaseClient.auth.getUser();
+
+      if (userError) {
+        console.error("User error:", userError);
+      }
+
+      currentUser = user || null;
+
+      if (!currentUser) {
+        profileStatusText.textContent = "Guest";
+        renderProfile(null);
+        renderArtwork([]);
+        renderMusic([]);
+        showMessage("You are not logged in. Profile editing needs Supabase Auth login.", "error");
+        return;
+      }
+
+      profileStatusText.textContent = "Logged In";
+
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error("Profile load error:", profileError);
+      }
+
+      if (!profile) {
+        currentProfile = {
+          id: currentUser.id,
+          username: currentUser.email ? currentUser.email.split("@")[0] : "artist",
+          display_name: currentUser.email ? currentUser.email.split("@")[0] : "Artist Name",
+          bio: "",
+          avatar_url: "",
+          instagram_url: "",
+          twitter_url: "",
+          website_url: ""
+        };
+      } else {
+        currentProfile = profile;
+      }
+
+      renderProfile(currentProfile);
+
+      await loadArtistContent();
+    }
+
+    async function loadArtistContent() {
+      if (!currentUser) return;
+
+      const [{ data: artItems, error: artError }, { data: musicItems, error: musicError }] = await Promise.all([
+        supabaseClient
+          .from("artwork")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false }),
+        supabaseClient
+          .from("music")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false })
+      ]);
+
+      if (artError) {
+        console.error("Artwork load error:", artError);
+      }
+
+      if (musicError) {
+        console.error("Music load error:", musicError);
+      }
+
+      const artwork = artItems || [];
+      const music = musicItems || [];
+
+      renderArtwork(artwork);
+      renderMusic(music);
+
+      artCount.textContent = artwork.length;
+      musicCount.textContent = music.length;
+
+      const totalArtValue = artwork.reduce((sum, item) => sum + Number(item.price || 0), 0);
+      artValue.textContent = "$" + totalArtValue.toFixed(2);
+    }
+
+    async function uploadAvatar(file) {
+      if (!file || !currentUser) return currentProfile?.avatar_url || null;
+
+      const ext = file.name.split(".").pop();
+      const base = sanitizeFileName(file.name.replace(/\.[^/.]+$/, ""));
+      const fileName = `${currentUser.id}_${Date.now()}_${base}.${ext}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabaseClient.storage
+        .from("profile-images")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabaseClient.storage
+        .from("profile-images")
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    }
+
+    profileForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage();
+
+      if (!currentUser) {
+        showMessage("You need to be logged in to save your profile.", "error");
+        return;
+      }
+
+      saveProfileBtn.disabled = true;
+      saveProfileBtn.textContent = "Saving...";
+
+      try {
+        let avatar_url = currentProfile?.avatar_url || null;
+
+        if (avatarFileInput.files[0]) {
+          avatar_url = await uploadAvatar(avatarFileInput.files[0]);
+        }
+
+        const row = {
+          id: currentUser.id,
+          username: usernameInput.value.trim() || (currentUser.email ? currentUser.email.split("@")[0] : "artist"),
+          display_name: displayNameInput.value.trim() || "Artist Name",
+          bio: bioInput.value.trim(),
+          avatar_url,
+          instagram_url: normalizeUrl(instagramInput.value),
+          twitter_url: normalizeUrl(twitterInput.value),
+          website_url: normalizeUrl(websiteInput.value),
+          updated_at: new Date().toISOString()
+        };
+
+        if (!currentProfile?.created_at) {
+          row.created_at = new Date().toISOString();
+        }
+
+        const { error } = await supabaseClient
+          .from("profiles")
+          .upsert([row]);
+
+        if (error) {
+          throw error;
+        }
+
+        currentProfile = row;
+        renderProfile(currentProfile);
+        showMessage("Profile saved successfully.", "success");
+      } catch (error) {
+        console.error("Profile save error:", error);
+        showMessage("Could not save profile: " + error.message, "error");
+      } finally {
+        saveProfileBtn.disabled = false;
+        saveProfileBtn.textContent = "Save Profile";
+      }
     });
 
-    const user = await syncUser();
-    await loadMyArtworks(user);
+    loadProfile();
   </script>
 </body>
 </html>
