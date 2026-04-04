@@ -1,64 +1,377 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upload Music</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b0b0b;
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      background: #151515;
+      border: 1px solid #2d2d2d;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.25);
+    }
+
+    h1 {
+      margin-top: 0;
+      margin-bottom: 22px;
+      text-align: center;
+      color: #7CFC00;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #202020;
+      border: 1px solid #333;
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #ddd;
+    }
+
+    input,
+    textarea,
+    select,
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #101010;
+      color: white;
+      font-size: 16px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+    }
+
+    button {
+      border: none;
+      background: linear-gradient(135deg, #7CFC00, #2e8b57);
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .preview-wrap {
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .preview-wrap img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 14px;
+      border: 1px solid #333;
+      display: none;
+    }
+
+    .message {
+      display: none;
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(0,255,100,0.08);
+      border: 1px solid rgba(124,252,0,0.35);
+      color: #baff8a;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(255,0,0,0.08);
+      border: 1px solid rgba(255,80,80,0.35);
+      color: #ff9a9a;
+    }
+
+    .small-note {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: 6px;
+    }
+  </style>
 </head>
-<body style="background:black;color:white;font-family:sans-serif;padding:20px;">
+<body>
+  <div class="container">
+    <div class="top-links">
+      <a href="index.html">Home</a>
+      <a href="music.html">Music</a>
+      <a href="upload.html">Upload Art</a>
+      <a href="live.html">Go Live</a>
+    </div>
 
-<h1>Upload Music</h1>
+    <h1>Upload Music</h1>
 
-<input type="text" id="title" placeholder="Song Title"><br><br>
-<input type="text" id="artist" placeholder="Artist Name"><br><br>
-<input type="file" id="audio"><br><br>
+    <form id="musicUploadForm">
+      <div class="form-group">
+        <label for="title">Song Title</label>
+        <input type="text" id="title" placeholder="Enter song title" required />
+      </div>
 
-<button onclick="uploadMusic()">Upload</button>
+      <div class="form-group">
+        <label for="artist_name">Artist Name</label>
+        <input type="text" id="artist_name" placeholder="Enter artist name" required />
+      </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+      <div class="form-group">
+        <label for="genre">Genre</label>
+        <select id="genre">
+          <option value="">Select genre</option>
+          <option value="Hip Hop">Hip Hop</option>
+          <option value="Rap">Rap</option>
+          <option value="R&B">R&B</option>
+          <option value="Pop">Pop</option>
+          <option value="Rock">Rock</option>
+          <option value="Gospel">Gospel</option>
+          <option value="Trap">Trap</option>
+          <option value="Drill">Drill</option>
+          <option value="Instrumental">Instrumental</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
 
-<script>
-const supabase = supabase.createClient(
-  "YOUR_SUPABASE_URL",
-  "YOUR_SUPABASE_ANON_KEY"
-);
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" placeholder="Describe the track"></textarea>
+      </div>
 
-async function uploadMusic() {
-  const file = document.getElementById("audio").files[0];
-  const title = document.getElementById("title").value;
-  const artist = document.getElementById("artist").value;
+      <div class="form-group">
+        <label for="cover">Cover Image</label>
+        <input type="file" id="cover" accept="image/*" />
+        <div class="small-note">Optional cover art.</div>
+      </div>
 
-  const fileName = Date.now() + "-" + file.name;
+      <div class="preview-wrap">
+        <img id="coverPreview" alt="Cover Preview" />
+      </div>
 
-  const { error: uploadError } = await supabase.storage
-    .from("music-files")
-    .upload(fileName, file);
+      <div class="form-group">
+        <label for="audio">Audio File</label>
+        <input type="file" id="audio" accept="audio/*" required />
+        <div class="small-note">Upload MP3, WAV, M4A, or similar audio file.</div>
+      </div>
 
-  if (uploadError) {
-    alert(uploadError.message);
-    return;
-  }
+      <div class="form-group">
+        <button type="submit" id="submitBtn">Upload Music</button>
+      </div>
+    </form>
 
-  const { data } = supabase.storage
-    .from("music-files")
-    .getPublicUrl(fileName);
+    <div id="messageBox" class="message"></div>
+  </div>
 
-  const { error: dbError } = await supabase
-    .from("music")
-    .insert([
-      {
-        title,
-        artist_name: artist,
-        audio_url: data.publicUrl
+  <script>
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const form = document.getElementById("musicUploadForm");
+    const titleInput = document.getElementById("title");
+    const artistInput = document.getElementById("artist_name");
+    const genreInput = document.getElementById("genre");
+    const descriptionInput = document.getElementById("description");
+    const coverInput = document.getElementById("cover");
+    const audioInput = document.getElementById("audio");
+    const coverPreview = document.getElementById("coverPreview");
+    const submitBtn = document.getElementById("submitBtn");
+    const messageBox = document.getElementById("messageBox");
+
+    function showMessage(text, type) {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+      messageBox.style.display = "block";
+    }
+
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+      messageBox.style.display = "none";
+    }
+
+    function sanitizeFileName(name) {
+      return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    }
+
+    coverInput.addEventListener("change", () => {
+      const file = coverInput.files[0];
+
+      if (!file) {
+        coverPreview.src = "";
+        coverPreview.style.display = "none";
+        return;
       }
-    ]);
 
-  if (dbError) {
-    alert(dbError.message);
-    return;
-  }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        coverPreview.src = e.target.result;
+        coverPreview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    });
 
-  alert("Music uploaded!");
-}
-</script>
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMessage();
 
+      const title = titleInput.value.trim();
+      const artist_name = artistInput.value.trim();
+      const genre = genreInput.value;
+      const description = descriptionInput.value.trim();
+      const coverFile = coverInput.files[0];
+      const audioFile = audioInput.files[0];
+
+      if (!title || !artist_name || !audioFile) {
+        showMessage("Please fill out title, artist name, and audio file.", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading...";
+
+      try {
+        let cover_url = null;
+
+        if (coverFile) {
+          const coverExt = coverFile.name.split(".").pop();
+          const coverBaseName = sanitizeFileName(coverFile.name.replace(/\.[^/.]+$/, ""));
+          const coverFileName = `${Date.now()}_${coverBaseName}.${coverExt}`;
+          const coverPath = `covers/${coverFileName}`;
+
+          const { error: coverUploadError } = await supabaseClient.storage
+            .from("music-covers")
+            .upload(coverPath, coverFile, {
+              cacheControl: "3600",
+              upsert: false
+            });
+
+          if (coverUploadError) {
+            throw coverUploadError;
+          }
+
+          const { data: coverUrlData } = supabaseClient.storage
+            .from("music-covers")
+            .getPublicUrl(coverPath);
+
+          cover_url = coverUrlData.publicUrl;
+        }
+
+        const audioExt = audioFile.name.split(".").pop();
+        const audioBaseName = sanitizeFileName(audioFile.name.replace(/\.[^/.]+$/, ""));
+        const audioFileName = `${Date.now()}_${audioBaseName}.${audioExt}`;
+        const audioPath = `tracks/${audioFileName}`;
+
+        const { error: audioUploadError } = await supabaseClient.storage
+          .from("music-files")
+          .upload(audioPath, audioFile, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (audioUploadError) {
+          throw audioUploadError;
+        }
+
+        const { data: audioUrlData } = supabaseClient.storage
+          .from("music-files")
+          .getPublicUrl(audioPath);
+
+        const audio_url = audioUrlData.publicUrl;
+
+        const {
+          data: { user }
+        } = await supabaseClient.auth.getUser();
+
+        const row = {
+          title,
+          artist_name,
+          genre,
+          description,
+          audio_url,
+          cover_url,
+          created_at: new Date().toISOString()
+        };
+
+        if (user && user.id) {
+          row.user_id = user.id;
+        }
+
+        const { error: insertError } = await supabaseClient
+          .from("music")
+          .insert([row]);
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        showMessage("Music uploaded successfully.", "success");
+        form.reset();
+        coverPreview.src = "";
+        coverPreview.style.display = "none";
+      } catch (error) {
+        console.error("Music upload error:", error);
+        showMessage("Upload failed: " + error.message, "error");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload Music";
+      }
+    });
+  </script>
 </body>
 </html>
