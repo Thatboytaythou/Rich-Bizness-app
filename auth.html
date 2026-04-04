@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Auth | Rich Bizness LLC</title>
+  <title>Auth - Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -11,19 +13,13 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
-      background: #000;
-      color: #fff;
       font-family: Arial, sans-serif;
-      padding: 24px;
+      background: #0a0a0a;
+      color: white;
+      padding: 20px;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .page {
+    .container {
       max-width: 1100px;
       margin: 0 auto;
     }
@@ -34,432 +30,570 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 20px;
+      margin-bottom: 24px;
     }
 
     .brand {
-      font-size: 28px;
-      font-weight: 900;
-      letter-spacing: 0.4px;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #7CFC00;
     }
 
-    .nav-links {
+    .top-links {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .nav-links a {
+    .top-links a {
+      text-decoration: none;
+      color: white;
+      background: #1b1b1b;
+      border: 1px solid #333;
       padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-size: 14px;
-      font-weight: 700;
+      border-radius: 10px;
     }
 
-    .hero {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      overflow: hidden;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: #0b0b0b;
-      margin-bottom: 24px;
+    .top-links a:hover {
+      color: #7CFC00;
+      border-color: #7CFC00;
     }
 
-    .hero img {
-      width: 100%;
-      height: 100%;
-      min-height: 260px;
-      object-fit: cover;
-      display: block;
-      background: #090909;
-    }
-
-    .hero-copy {
-      padding: 28px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: linear-gradient(135deg, rgba(34,197,94,0.08), rgba(59,130,246,0.06));
-    }
-
-    .hero-copy h1 {
-      margin: 0 0 12px;
-      font-size: 40px;
-      font-weight: 900;
-    }
-
-    .hero-copy p {
-      margin: 0;
-      color: #d4d4d8;
-      line-height: 1.7;
-    }
-
-    .auth-shell {
+    .layout {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 24px;
     }
 
     .panel {
-      background: #0b0b0b;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
+      background: #151515;
+      border: 1px solid #2c2c2c;
+      border-radius: 20px;
       padding: 24px;
+      box-shadow: 0 0 18px rgba(0,0,0,0.18);
     }
 
-    .toggle-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 22px;
-      flex-wrap: wrap;
-    }
-
-    .toggle-btn {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-      background: #27272a;
-      color: #fff;
-    }
-
-    .toggle-btn.active {
-      background: #22c55e;
-      color: #000;
-    }
-
-    h2 {
-      margin: 0 0 10px;
-      font-size: 28px;
+    h1, h2 {
+      margin-top: 0;
+      color: #7CFC00;
     }
 
     .subtext {
-      margin: 0 0 20px;
-      color: #a1a1aa;
-      line-height: 1.6;
+      color: #cfcfcf;
+      line-height: 1.5;
+      margin-bottom: 18px;
     }
 
-    .field {
-      margin-bottom: 16px;
+    .form-group {
+      margin-bottom: 14px;
     }
 
-    .field label {
+    label {
       display: block;
       margin-bottom: 8px;
-      color: #d4d4d8;
-      font-size: 14px;
+      font-weight: bold;
+      color: #ddd;
     }
 
-    .field input {
+    input,
+    button {
       width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      background: #101010;
+      color: white;
+      font-size: 15px;
+    }
+
+    button {
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(135deg, #7CFC00, #2e8b57);
+      color: black;
+    }
+
+    button:hover {
+      opacity: 0.95;
+    }
+
+    button.secondary {
+      background: #1e1e1e;
+      color: white;
+      border: 1px solid #333;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+
+    .message.success {
+      display: block;
+      background: rgba(0,255,100,0.08);
+      border: 1px solid rgba(124,252,0,0.35);
+      color: #baff8a;
+    }
+
+    .message.error {
+      display: block;
+      background: rgba(255,0,0,0.08);
+      border: 1px solid rgba(255,80,80,0.35);
+      color: #ff9a9a;
+    }
+
+    .message.info {
+      display: block;
+      background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.1);
-      background: #111;
-      color: #fff;
+      color: #e6e6e6;
+    }
+
+    .user-box {
+      background: #101010;
+      border: 1px solid #2b2b2b;
       border-radius: 16px;
       padding: 16px;
-      font-size: 16px;
-      outline: none;
+      margin-top: 18px;
     }
 
-    .action-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 16px;
-      padding: 14px 18px;
-      font-size: 15px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .btn-primary {
-      background: #22c55e;
-      color: #000;
-    }
-
-    .btn-secondary {
-      background: #27272a;
-      color: #fff;
-    }
-
-    .status-box,
-    .info-box {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 14px 16px;
-      color: #d4d4d8;
-      font-size: 14px;
-      line-height: 1.6;
-      margin-top: 16px;
+    .user-row {
+      margin-bottom: 8px;
+      color: #d4d4d4;
       word-break: break-word;
     }
 
-    .info-box strong {
-      color: #fff;
+    .user-label {
+      color: #7CFC00;
+      font-weight: bold;
     }
 
-    .hidden {
-      display: none;
+    .small-note {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: 8px;
     }
 
-    @media (max-width: 980px) {
-      .hero,
-      .auth-shell {
+    @media (max-width: 900px) {
+      .layout {
         grid-template-columns: 1fr;
       }
-    }
 
-    @media (max-width: 640px) {
-      body {
-        padding: 14px;
-      }
-
-      .brand {
-        font-size: 22px;
-      }
-
-      .hero-copy {
-        padding: 20px;
-      }
-
-      .hero-copy h1 {
-        font-size: 30px;
+      .button-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="container">
     <div class="topbar">
-      <div class="brand">RICH BIZNESS AUTH</div>
+      <div class="brand">Auth</div>
 
-      <nav class="nav-links">
-        <a href="/index.html">Home</a>
-        <a href="/artist/">Artist</a>
-        <a href="/gallery/">Gallery</a>
-        <a href="/upload.html">Upload</a>
-        <a href="/live.html">Live</a>
-        <a href="/profile.html">Profile</a>
-      </nav>
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="profile.html">Profile</a>
+        <a href="live.html">Go Live</a>
+      </div>
     </div>
 
-    <section class="hero">
-      <img src="/images/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Auth hero" />
-      <div class="hero-copy">
-        <h1>Sign in to Rich Bizness</h1>
-        <p>
-          Secure login powered by Supabase. Sign in, create an account, and keep your
-          artist identity synced across profile, upload, and live pages.
-        </p>
-      </div>
-    </section>
-
-    <section class="auth-shell">
+    <div class="layout">
       <div class="panel">
-        <div class="toggle-row">
-          <button id="showSignInBtn" class="toggle-btn active" type="button">Sign In</button>
-          <button id="showSignUpBtn" class="toggle-btn" type="button">Create Account</button>
-        </div>
-
-        <div id="signInView">
-          <h2>Welcome back</h2>
-          <p class="subtext">Sign in with your email and password.</p>
-
-          <div class="field">
-            <label for="signInEmail">Email</label>
-            <input id="signInEmail" type="email" placeholder="Email" />
-          </div>
-
-          <div class="field">
-            <label for="signInPassword">Password</label>
-            <input id="signInPassword" type="password" placeholder="Password" />
-          </div>
-
-          <div class="action-row">
-            <button id="signInBtn" class="btn btn-primary" type="button">Sign In</button>
-            <button id="demoBtn" class="btn btn-secondary" type="button">Use Demo Artist</button>
-          </div>
-        </div>
-
-        <div id="signUpView" class="hidden">
-          <h2>Create account</h2>
-          <p class="subtext">Make a new Supabase account for your artist profile.</p>
-
-          <div class="field">
-            <label for="signUpEmail">Email</label>
-            <input id="signUpEmail" type="email" placeholder="Email" />
-          </div>
-
-          <div class="field">
-            <label for="signUpPassword">Password</label>
-            <input id="signUpPassword" type="password" placeholder="Password" />
-          </div>
-
-          <div class="action-row">
-            <button id="signUpBtn" class="btn btn-primary" type="button">Create Account</button>
-          </div>
-        </div>
-
-        <div id="status" class="status-box">Ready.</div>
-      </div>
-
-      <div class="panel">
-        <h2>What this does right now</h2>
+        <h1>Sign Up / Log In</h1>
         <p class="subtext">
-          After sign in or sign up, this page syncs your Supabase session into browser storage
-          so the rest of your pages can use it.
+          Create your account, log in, and connect your profile to artwork, music, and live features.
         </p>
 
-        <div class="info-box">
-          It stores:
-          <br /><strong>username</strong>
-          <br /><strong>userEmail</strong>
-          <br /><strong>isLoggedIn</strong>
-        </div>
+        <form id="authForm">
+          <div class="form-group">
+            <label for="display_name">Display Name</label>
+            <input type="text" id="display_name" placeholder="Rich Bizness" />
+          </div>
 
-        <div class="info-box">
-          Your live page can read <strong>username</strong> from localStorage and use it for
-          the live room name.
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="richbizness" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="you@example.com" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter password" required />
+          </div>
+
+          <div class="button-row">
+            <button type="button" id="signUpBtn">Sign Up</button>
+            <button type="button" id="loginBtn" class="secondary">Log In</button>
+          </div>
+
+          <div style="margin-top:10px;">
+            <button type="button" id="resetBtn" class="secondary">Send Password Reset Email</button>
+          </div>
+        </form>
+
+        <div id="messageBox" class="message"></div>
+        <div class="small-note">
+          Use your Supabase Auth email settings if you want signup confirmation and reset emails to work.
         </div>
       </div>
-    </section>
+
+      <div class="panel">
+        <h2>Account Status</h2>
+        <p class="subtext">
+          This section shows the current logged-in user and lets you log out.
+        </p>
+
+        <div class="user-box">
+          <div class="user-row"><span class="user-label">Status:</span> <span id="authStatus">Checking...</span></div>
+          <div class="user-row"><span class="user-label">Email:</span> <span id="userEmail">-</span></div>
+          <div class="user-row"><span class="user-label">User ID:</span> <span id="userId">-</span></div>
+          <div class="user-row"><span class="user-label">Profile:</span> <span id="profileStatus">-</span></div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <button type="button" id="logoutBtn" class="secondary">Log Out</button>
+        </div>
+
+        <div class="small-note">
+          After login, your profile page can load your artist info, art uploads, and music uploads using your user ID.
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+  <script>
+    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const signInView = document.getElementById("signInView");
-    const signUpView = document.getElementById("signUpView");
-    const showSignInBtn = document.getElementById("showSignInBtn");
-    const showSignUpBtn = document.getElementById("showSignUpBtn");
-    const statusEl = document.getElementById("status");
+    const displayNameInput = document.getElementById("display_name");
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
 
-    const signInEmailEl = document.getElementById("signInEmail");
-    const signInPasswordEl = document.getElementById("signInPassword");
-    const signUpEmailEl = document.getElementById("signUpEmail");
-    const signUpPasswordEl = document.getElementById("signUpPassword");
+    const signUpBtn = document.getElementById("signUpBtn");
+    const loginBtn = document.getElementById("loginBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-    function setStatus(text) {
-      statusEl.textContent = text;
+    const messageBox = document.getElementById("messageBox");
+    const authStatus = document.getElementById("authStatus");
+    const userEmail = document.getElementById("userEmail");
+    const userId = document.getElementById("userId");
+    const profileStatus = document.getElementById("profileStatus");
+
+    function showMessage(text, type = "info") {
+      messageBox.textContent = text;
+      messageBox.className = `message ${type}`;
+      messageBox.style.display = "block";
     }
 
-    function saveLocalUser(email) {
-      const username = email.split("@")[0];
-      localStorage.setItem("username", username);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("isLoggedIn", "true");
+    function clearMessage() {
+      messageBox.textContent = "";
+      messageBox.className = "message";
+      messageBox.style.display = "none";
     }
 
-    function showSignIn() {
-      signInView.classList.remove("hidden");
-      signUpView.classList.add("hidden");
-      showSignInBtn.classList.add("active");
-      showSignUpBtn.classList.remove("active");
-      setStatus("Ready.");
+    function setLoadingState(isLoading) {
+      signUpBtn.disabled = isLoading;
+      loginBtn.disabled = isLoading;
+      resetBtn.disabled = isLoading;
+      logoutBtn.disabled = isLoading;
     }
 
-    function showSignUp() {
-      signUpView.classList.remove("hidden");
-      signInView.classList.add("hidden");
-      showSignUpBtn.classList.add("active");
-      showSignInBtn.classList.remove("active");
-      setStatus("Ready to create account.");
+    function sanitizeUsername(value) {
+      return value
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_]/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
     }
 
-    showSignInBtn.addEventListener("click", showSignIn);
-    showSignUpBtn.addEventListener("click", showSignUp);
+    async function ensureProfile(user, fallbackDisplayName = "", fallbackUsername = "") {
+      if (!user) return;
 
-    document.getElementById("signInBtn").addEventListener("click", async () => {
-      const email = signInEmailEl.value.trim();
-      const password = signInPasswordEl.value;
+      const safeEmailName = user.email ? user.email.split("@")[0] : "artist";
+      const username = sanitizeUsername(fallbackUsername || safeEmailName || "artist");
+      const displayName = (fallbackDisplayName || safeEmailName || "Artist").trim();
 
-      if (!email || !password) {
-        setStatus("Enter your email and password.");
-        return;
+      const { data: existingProfile, error: selectError } = await supabaseClient
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (selectError) {
+        throw selectError;
       }
 
-      setStatus("Signing in...");
+      if (!existingProfile) {
+        const { error: insertError } = await supabaseClient
+          .from("profiles")
+          .insert([
+            {
+              id: user.id,
+              username,
+              display_name: displayName,
+              bio: "",
+              avatar_url: "",
+              instagram_url: "",
+              twitter_url: "",
+              website_url: "",
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }
+          ]);
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
+        if (insertError) {
+          throw insertError;
+        }
+
+        return "created";
+      }
+
+      let shouldUpdate = false;
+      const updateRow = {
+        id: existingProfile.id,
+        updated_at: new Date().toISOString()
+      };
+
+      if (!existingProfile.username && username) {
+        updateRow.username = username;
+        shouldUpdate = true;
+      }
+
+      if (!existingProfile.display_name && displayName) {
+        updateRow.display_name = displayName;
+        shouldUpdate = true;
+      }
+
+      if (shouldUpdate) {
+        const { error: updateError } = await supabaseClient
+          .from("profiles")
+          .upsert([updateRow]);
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        return "updated";
+      }
+
+      return "exists";
+    }
+
+    async function refreshUserStatus() {
+      const {
+        data: { user },
+        error
+      } = await supabaseClient.auth.getUser();
 
       if (error) {
-        setStatus("❌ " + error.message);
+        authStatus.textContent = "Error";
+        userEmail.textContent = "-";
+        userId.textContent = "-";
+        profileStatus.textContent = error.message;
         return;
       }
 
-      if (data?.user?.email) {
-        saveLocalUser(data.user.email);
-      }
-
-      setStatus("✅ Logged in");
-      window.location.href = "/profile.html";
-    });
-
-    document.getElementById("signUpBtn").addEventListener("click", async () => {
-      const email = signUpEmailEl.value.trim();
-      const password = signUpPasswordEl.value;
-
-      if (!email || !password) {
-        setStatus("Enter your email and password.");
+      if (!user) {
+        authStatus.textContent = "Logged Out";
+        userEmail.textContent = "-";
+        userId.textContent = "-";
+        profileStatus.textContent = "No active session";
         return;
       }
 
-      setStatus("Creating account...");
+      authStatus.textContent = "Logged In";
+      userEmail.textContent = user.email || "-";
+      userId.textContent = user.id || "-";
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password
-      });
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("id, username, display_name")
+        .eq("id", user.id)
+        .maybeSingle();
 
-      if (error) {
-        setStatus("❌ " + error.message);
+      if (profileError) {
+        profileStatus.textContent = "Profile error: " + profileError.message;
         return;
       }
 
-      if (data?.user?.email) {
-        saveLocalUser(data.user.email);
+      if (profile) {
+        profileStatus.textContent = `Ready (${profile.username || "no username"})`;
+      } else {
+        profileStatus.textContent = "Missing profile row";
       }
-
-      setStatus("✅ Account created. You can sign in now.");
-
-      signInEmailEl.value = email;
-      signInPasswordEl.value = password;
-      showSignIn();
-    });
-
-    document.getElementById("demoBtn").addEventListener("click", () => {
-      localStorage.setItem("username", "demoartist");
-      localStorage.setItem("userEmail", "demoartist@richbizness.com");
-      localStorage.setItem("isLoggedIn", "true");
-      setStatus("✅ Demo artist loaded");
-      window.location.href = "/profile.html";
-    });
-
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session?.user?.email) {
-      saveLocalUser(session.user.email);
-      setStatus("✅ Session found. You are already signed in.");
     }
+
+    async function handleSignUp() {
+      clearMessage();
+      setLoadingState(true);
+
+      try {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const displayName = displayNameInput.value.trim();
+        const username = sanitizeUsername(usernameInput.value);
+
+        if (!email || !password) {
+          throw new Error("Email and password are required.");
+        }
+
+        const { data, error } = await supabaseClient.auth.signUp({
+          email,
+          password
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.user) {
+          try {
+            await ensureProfile(data.user, displayName, username);
+          } catch (profileError) {
+            console.error("Profile create error after signup:", profileError);
+          }
+        }
+
+        if (data.session) {
+          showMessage("Signup successful and you are logged in.", "success");
+        } else {
+          showMessage("Signup successful. Check your email to confirm your account if confirmation is enabled.", "success");
+        }
+
+        await refreshUserStatus();
+      } catch (error) {
+        console.error("Signup error:", error);
+        showMessage("Signup failed: " + error.message, "error");
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    async function handleLogin() {
+      clearMessage();
+      setLoadingState(true);
+
+      try {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const displayName = displayNameInput.value.trim();
+        const username = sanitizeUsername(usernameInput.value);
+
+        if (!email || !password) {
+          throw new Error("Email and password are required.");
+        }
+
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (data.user) {
+          await ensureProfile(data.user, displayName, username);
+        }
+
+        showMessage("Logged in successfully.", "success");
+        await refreshUserStatus();
+      } catch (error) {
+        console.error("Login error:", error);
+        showMessage("Login failed: " + error.message, "error");
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    async function handleResetPassword() {
+      clearMessage();
+      setLoadingState(true);
+
+      try {
+        const email = emailInput.value.trim();
+
+        if (!email) {
+          throw new Error("Enter your email first.");
+        }
+
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + "/auth.html"
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        showMessage("Password reset email sent.", "success");
+      } catch (error) {
+        console.error("Reset error:", error);
+        showMessage("Reset failed: " + error.message, "error");
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    async function handleLogout() {
+      clearMessage();
+      setLoadingState(true);
+
+      try {
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+          throw error;
+        }
+
+        showMessage("Logged out successfully.", "success");
+        await refreshUserStatus();
+      } catch (error) {
+        console.error("Logout error:", error);
+        showMessage("Logout failed: " + error.message, "error");
+      } finally {
+        setLoadingState(false);
+      }
+    }
+
+    signUpBtn.addEventListener("click", handleSignUp);
+    loginBtn.addEventListener("click", handleLogin);
+    resetBtn.addEventListener("click", handleResetPassword);
+    logoutBtn.addEventListener("click", handleLogout);
+
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth event:", event, session);
+      await refreshUserStatus();
+    });
+
+    refreshUserStatus();
   </script>
 </body>
 </html>
