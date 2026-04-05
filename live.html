@@ -4,524 +4,120 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Go Live | Rich Bizness</title>
-
+  <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #050505;
-      color: #ffffff;
-      min-height: 100vh;
-      padding: 24px;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .container {
-      max-width: 1300px;
-      margin: 0 auto;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .brand {
-      font-size: 34px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow: 0 0 16px rgba(57,255,20,0.25);
-    }
-
-    .top-links {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .top-links a {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.10);
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-weight: 700;
-      transition: 0.2s ease;
-    }
-
-    .top-links a:hover {
-      color: #39ff14;
-      border-color: rgba(57,255,20,0.45);
-      background: rgba(57,255,20,0.12);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 22px;
-    }
-
-    .card {
-      background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 22px;
-      padding: 22px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
-    }
-
-    h1, h2 {
-      color: #39ff14;
-      margin-bottom: 16px;
-    }
-
-    h1 {
-      font-size: 34px;
-    }
-
-    .subtext {
-      color: #d3d3d3;
-      margin-bottom: 22px;
-      line-height: 1.5;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #f2f2f2;
-    }
-
-    input {
-      width: 100%;
-      background: #121212;
-      color: #ffffff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
-    }
-
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
-    button {
-      border: none;
-      border-radius: 14px;
-      padding: 13px 18px;
-      font-size: 15px;
-      font-weight: 900;
-      cursor: pointer;
-      transition: 0.18s ease;
-    }
-
-    .btn-green {
-      background: #39ff14;
-      color: #000;
-    }
-
-    .btn-red {
-      background: #8f1d2c;
-      color: #fff;
-    }
-
-    .btn-dark {
-      background: #1c1c1c;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-green:hover,
-    .btn-red:hover,
-    .btn-dark:hover {
-      transform: translateY(-1px);
-    }
-
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      display: none;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .status-box.success {
-      display: block;
-      background: rgba(57,255,20,0.12);
-      border: 1px solid rgba(57,255,20,0.35);
-      color: #98ff83;
-    }
-
-    .status-box.error {
-      display: block;
-      background: rgba(255,70,70,0.12);
-      border: 1px solid rgba(255,70,70,0.35);
-      color: #ff9b9b;
-    }
-
-    .status-box.info {
-      display: block;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
-    }
-
-    .stage-box {
-      min-height: 620px;
-      border-radius: 22px;
-      overflow: hidden;
-      background: #090909;
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .stage-box video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: #000;
-    }
-
-    .stage-placeholder {
-      color: #bfbfbf;
-      text-align: center;
-      padding: 30px;
-      line-height: 1.5;
-    }
-
-    .live-badge {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: #ff304f;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.5px;
-      display: none;
-      z-index: 5;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat-box {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 14px;
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 22px;
-      font-weight: 900;
-      color: #39ff14;
-      margin-bottom: 4px;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: #cfcfcf;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-    }
-
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 16px;
-      }
-
-      .brand {
-        font-size: 28px;
-      }
-
-      h1 {
-        font-size: 28px;
-      }
-
-      .button-grid,
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-      .stage-box {
-        min-height: 380px;
-      }
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,sans-serif;background:#050505;color:#fff;padding:24px}
+    .container{max-width:1200px;margin:0 auto}
+    .topbar{display:flex;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:24px}
+    .brand{font-size:32px;font-weight:900;color:#39ff14}
+    .top-links{display:flex;gap:10px;flex-wrap:wrap}
+    .top-links a{padding:10px 14px;border-radius:10px;background:#111;border:1px solid #222;text-decoration:none;color:#fff}
+    .card{background:#0d0d0d;border:1px solid #222;border-radius:22px;padding:22px;margin-bottom:20px}
+    h1,h2{color:#39ff14;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    input{width:100%;padding:14px;border-radius:12px;border:1px solid #333;background:#111;color:#fff}
+    button{padding:13px 18px;border:none;border-radius:12px;font-weight:900;cursor:pointer}
+    .green{background:#39ff14;color:#000}
+    .dark{background:#171717;color:#fff;border:1px solid #333}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+    #status{margin-top:14px;padding:12px 14px;background:#111;border:1px solid #222;border-radius:12px}
+    #videoWrap{margin-top:18px;border-radius:22px;overflow:hidden;background:#000;min-height:420px;display:flex;align-items:center;justify-content:center}
+    #localVideo video{width:100%;max-height:70vh;object-fit:cover;display:block}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <div class="container">
-
     <div class="topbar">
-      <div class="brand">Rich Bizness Live</div>
-
+      <div class="brand">Go Live</div>
       <div class="top-links">
         <a href="index.html">Home</a>
-        <a href="auth.html">Auth</a>
         <a href="profile.html">Profile</a>
-        <a href="artist.html">Artist</a>
-        <a href="upload.html">Upload Art</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="music.html">Music</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="sports.html">Sports</a>
-        <a href="upload-sports.html">Upload Sports</a>
-        <a href="watch.html">Watch Live</a>
+        <a href="watch.html">Watch</a>
+        <a href="messages.html">Messages</a>
       </div>
     </div>
 
-    <div class="layout">
-      <div class="card">
-        <h1>Go Live</h1>
-        <p class="subtext">
-          Start your live room so viewers can join and watch from the watch page.
-        </p>
-
-        <div class="form-group">
-          <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" value="richbizness-live-room" />
-        </div>
-
-        <div class="form-group">
-          <label for="identityInput">Host Identity</label>
-          <input id="identityInput" type="text" value="artist-host" />
-        </div>
-
-        <div class="form-group">
-          <label for="displayNameInput">Display Name</label>
-          <input id="displayNameInput" type="text" value="Rich Bizness" />
-        </div>
-
-        <div class="button-grid">
-          <button id="startBtn" class="btn-green">Start Live</button>
-          <button id="endBtn" class="btn-red">End Live</button>
-          <button id="cameraBtn" class="btn-dark">Turn Camera Off</button>
-          <button id="micBtn" class="btn-dark">Turn Mic Off</button>
-          <button id="copyBtn" class="btn-dark">Copy Room Name</button>
-          <button id="watchBtn" class="btn-dark">Open Viewer Page</button>
-        </div>
-
-        <div id="statusBox" class="status-box info">Not connected</div>
-
-        <div class="stats">
-          <div class="stat-box">
-            <div id="liveState" class="stat-number">OFF</div>
-            <div class="stat-label">Live Room</div>
-          </div>
-          <div class="stat-box">
-            <div id="viewerCount" class="stat-number">0</div>
-            <div class="stat-label">Viewers In Room</div>
-          </div>
-          <div class="stat-box">
-            <div id="mediaState" class="stat-number">READY</div>
-            <div class="stat-label">Media State</div>
-          </div>
-        </div>
+    <div class="card">
+      <h1>Start Live Stream</h1>
+      <div class="grid">
+        <input id="roomName" placeholder="Room name" />
+        <input id="participantName" placeholder="Your name / host name" />
       </div>
+      <div class="row">
+        <button id="joinBtn" class="green">Start Live</button>
+        <button id="leaveBtn" class="dark">End Live</button>
+      </div>
+      <div id="status">Ready.</div>
+    </div>
 
-      <div class="card">
-        <h2>Live Stage</h2>
-
-        <div class="stage-box" id="stageBox">
-          <div id="liveBadge" class="live-badge">LIVE</div>
-          <div id="stagePlaceholder" class="stage-placeholder">
-            Your live video will appear here after you connect.
-          </div>
-        </div>
+    <div class="card">
+      <h2>Camera Preview</h2>
+      <div id="videoWrap">
+        <div id="localVideo">Your stream preview will show here.</div>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import {
-      Room,
-      RoomEvent,
-      createLocalVideoTrack,
-      createLocalAudioTrack
-    } from "https://esm.sh/livekit-client";
-
-    const roomNameInput = document.getElementById("roomNameInput");
-    const identityInput = document.getElementById("identityInput");
-    const displayNameInput = document.getElementById("displayNameInput");
-
-    const startBtn = document.getElementById("startBtn");
-    const endBtn = document.getElementById("endBtn");
-    const cameraBtn = document.getElementById("cameraBtn");
-    const micBtn = document.getElementById("micBtn");
-    const copyBtn = document.getElementById("copyBtn");
-    const watchBtn = document.getElementById("watchBtn");
-
-    const statusBox = document.getElementById("statusBox");
-    const liveState = document.getElementById("liveState");
-    const viewerCount = document.getElementById("viewerCount");
-    const mediaState = document.getElementById("mediaState");
-
-    const stageBox = document.getElementById("stageBox");
-    const stagePlaceholder = document.getElementById("stagePlaceholder");
-    const liveBadge = document.getElementById("liveBadge");
+  <script>
+    const { Room, RoomEvent, createLocalVideoTrack, createLocalAudioTrack } = LivekitClient;
 
     let room = null;
     let localVideoTrack = null;
     let localAudioTrack = null;
-    let localVideoElement = null;
-    let cameraEnabled = true;
-    let micEnabled = true;
 
-    function showStatus(message, type = "info") {
+    const roomNameInput = document.getElementById("roomName");
+    const participantNameInput = document.getElementById("participantName");
+    const joinBtn = document.getElementById("joinBtn");
+    const leaveBtn = document.getElementById("leaveBtn");
+    const statusBox = document.getElementById("status");
+    const localVideoWrap = document.getElementById("localVideo");
+
+    function setStatus(message) {
       statusBox.textContent = message;
-      statusBox.className = `status-box ${type}`;
-      statusBox.style.display = "block";
-    }
-
-    function updateViewerCount() {
-      if (!room) {
-        viewerCount.textContent = "0";
-        return;
-      }
-      viewerCount.textContent = String(room.remoteParticipants.size);
-    }
-
-    function setConnectedUI() {
-      liveState.textContent = "LIVE";
-      mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
-      liveBadge.style.display = "block";
-      showStatus("Live and connected.", "success");
-    }
-
-    function setDisconnectedUI(message = "Live ended.") {
-      liveState.textContent = "OFF";
-      viewerCount.textContent = "0";
-      mediaState.textContent = "READY";
-      liveBadge.style.display = "none";
-      showStatus(message, "info");
-    }
-
-    function clearStage() {
-      if (localVideoTrack) {
-        try {
-          localVideoTrack.detach().forEach(el => el.remove());
-        } catch {}
-      }
-
-      if (localVideoElement) {
-        try {
-          localVideoElement.remove();
-        } catch {}
-      }
-
-      localVideoElement = null;
-      stagePlaceholder.style.display = "block";
     }
 
     async function startLive() {
       try {
-        showStatus("Connecting live room...", "info");
-
         const roomName = roomNameInput.value.trim();
-        const identity = identityInput.value.trim();
-        const displayName = displayNameInput.value.trim();
+        const participantName = participantNameInput.value.trim();
 
-        if (!roomName) {
-          showStatus("Room name is required.", "error");
+        if (!roomName || !participantName) {
+          setStatus("Enter room name and host name.");
           return;
         }
 
-        if (!identity) {
-          showStatus("Host identity is required.", "error");
-          return;
-        }
+        setStatus("Creating host token...");
 
-        if (room) {
-          showStatus("Already connected.", "info");
-          return;
-        }
-
-        const response = await fetch("/get-livekit-token", {
+        const res = await fetch("/api/livekit-token", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             roomName,
-            identity,
-            name: displayName,
+            participantName,
             role: "host"
           })
         });
 
-        const data = await response.json();
+        const json = await res.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to get live token.");
+        if (!res.ok) {
+          throw new Error(json.error || "Failed to get LiveKit token");
         }
 
         room = new Room();
 
-        room.on(RoomEvent.Connected, () => {
-          updateViewerCount();
-        });
-
         room.on(RoomEvent.Disconnected, () => {
-          setDisconnectedUI("Disconnected from live room.");
-          clearStage();
-          room = null;
+          setStatus("Disconnected.");
+          localVideoWrap.innerHTML = "Your stream preview will show here.";
         });
 
-        room.on(RoomEvent.ParticipantConnected, () => {
-          updateViewerCount();
-        });
+        setStatus("Connecting to LiveKit...");
 
-        room.on(RoomEvent.ParticipantDisconnected, () => {
-          updateViewerCount();
-        });
+        await room.connect(json.url, json.token);
 
-        await room.connect(data.url, data.token);
+        setStatus("Creating local camera and mic...");
 
         localVideoTrack = await createLocalVideoTrack();
         localAudioTrack = await createLocalAudioTrack();
@@ -529,20 +125,17 @@
         await room.localParticipant.publishTrack(localVideoTrack);
         await room.localParticipant.publishTrack(localAudioTrack);
 
-        localVideoElement = localVideoTrack.attach();
-        stagePlaceholder.style.display = "none";
-        stageBox.appendChild(localVideoElement);
+        localVideoWrap.innerHTML = "";
+        const el = localVideoTrack.attach();
+        el.style.width = "100%";
+        el.style.height = "100%";
+        el.style.objectFit = "cover";
+        localVideoWrap.appendChild(el);
 
-        cameraEnabled = true;
-        micEnabled = true;
-        cameraBtn.textContent = "Turn Camera Off";
-        micBtn.textContent = "Turn Mic Off";
-
-        setConnectedUI();
-        updateViewerCount();
+        setStatus(`Live now in room: ${roomName}`);
       } catch (error) {
-        console.error("Live error:", error);
-        showStatus(error.message || "Failed to start live.", "error");
+        console.error(error);
+        setStatus(error.message || "Could not start live stream.");
       }
     }
 
@@ -550,105 +143,29 @@
       try {
         if (localVideoTrack) {
           localVideoTrack.stop();
-          localVideoTrack.detach().forEach(el => el.remove());
+          localVideoTrack = null;
         }
 
         if (localAudioTrack) {
           localAudioTrack.stop();
+          localAudioTrack = null;
         }
 
         if (room) {
-          room.disconnect();
+          await room.disconnect();
+          room = null;
         }
 
-        room = null;
-        localVideoTrack = null;
-        localAudioTrack = null;
-        localVideoElement = null;
-        cameraEnabled = true;
-        micEnabled = true;
-
-        clearStage();
-        setDisconnectedUI("Live ended.");
+        localVideoWrap.innerHTML = "Your stream preview will show here.";
+        setStatus("Live ended.");
       } catch (error) {
-        console.error("End live error:", error);
-        showStatus(error.message || "Failed to end live.", "error");
+        console.error(error);
+        setStatus("Error ending live.");
       }
     }
 
-    async function toggleCamera() {
-      try {
-        if (!localVideoTrack) {
-          showStatus("Start live first.", "error");
-          return;
-        }
-
-        cameraEnabled = !cameraEnabled;
-
-        if (cameraEnabled) {
-          await localVideoTrack.unmute();
-          cameraBtn.textContent = "Turn Camera Off";
-        } else {
-          await localVideoTrack.mute();
-          cameraBtn.textContent = "Turn Camera On";
-        }
-
-        mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
-      } catch (error) {
-        console.error("Camera toggle error:", error);
-        showStatus(error.message || "Failed to toggle camera.", "error");
-      }
-    }
-
-    async function toggleMic() {
-      try {
-        if (!localAudioTrack) {
-          showStatus("Start live first.", "error");
-          return;
-        }
-
-        micEnabled = !micEnabled;
-
-        if (micEnabled) {
-          await localAudioTrack.unmute();
-          micBtn.textContent = "Turn Mic Off";
-        } else {
-          await localAudioTrack.mute();
-          micBtn.textContent = "Turn Mic On";
-        }
-
-        mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
-      } catch (error) {
-        console.error("Mic toggle error:", error);
-        showStatus(error.message || "Failed to toggle mic.", "error");
-      }
-    }
-
-    async function copyRoomName() {
-      try {
-        await navigator.clipboard.writeText(roomNameInput.value.trim());
-        showStatus("Room name copied.", "success");
-      } catch {
-        showStatus("Could not copy room name.", "error");
-      }
-    }
-
-    function openWatchPage() {
-      window.open("watch.html", "_blank");
-    }
-
-    startBtn.addEventListener("click", startLive);
-    endBtn.addEventListener("click", endLive);
-    cameraBtn.addEventListener("click", toggleCamera);
-    micBtn.addEventListener("click", toggleMic);
-    copyBtn.addEventListener("click", copyRoomName);
-    watchBtn.addEventListener("click", openWatchPage);
-
-    window.addEventListener("beforeunload", () => {
-      if (room) {
-        room.disconnect();
-      }
-    });
+    joinBtn.addEventListener("click", startLive);
+    leaveBtn.addEventListener("click", endLive);
   </script>
 </body>
 </html>
