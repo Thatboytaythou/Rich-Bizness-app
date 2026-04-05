@@ -6,465 +6,215 @@
   <title>Music | Rich Bizness</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:Arial;background:#050505;color:#fff;padding:24px;}
+    .container{max-width:1380px;margin:0 auto;}
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #050505;
-      color: #fff;
-      min-height: 100vh;
-      padding: 24px;
-    }
+    .topbar{display:flex;justify-content:space-between;flex-wrap:wrap;margin-bottom:24px;}
+    .brand{display:flex;align-items:center;gap:12px;font-size:30px;font-weight:900;color:#39ff14;}
+    .top-links{display:flex;gap:10px;flex-wrap:wrap;}
+    .top-links a{background:#111;padding:10px 14px;border-radius:10px;border:1px solid #222;}
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
+    .controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;}
+    input,select{padding:12px;border-radius:10px;background:#111;color:#fff;border:1px solid #333;}
 
-    .container {
-      max-width: 1320px;
-      margin: 0 auto;
-    }
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;}
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
+    .card{background:#0d0d0d;border-radius:18px;border:1px solid #222;overflow:hidden;}
+    .cover{height:220px;background:#111;}
+    .cover img{width:100%;height:100%;object-fit:cover;}
 
-    .brand {
-      font-size: 34px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow: 0 0 16px rgba(57,255,20,0.25);
-    }
+    .body{padding:16px;}
+    .title{font-size:20px;color:#39ff14;font-weight:900;margin-bottom:6px;}
 
-    .top-links {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
+    .artist{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+    .artist img{width:36px;height:36px;border-radius:10px;}
 
-    .top-links a {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-weight: 700;
-      transition: 0.2s ease;
-    }
+    .desc{font-size:13px;color:#ccc;margin-bottom:10px;}
 
-    .top-links a:hover {
-      background: rgba(57,255,20,0.18);
-      border-color: rgba(57,255,20,0.5);
-      color: #39ff14;
-    }
+    audio{width:100%;margin-bottom:10px;}
 
-    .hero {
-      margin-bottom: 24px;
-      padding: 28px;
-      border-radius: 24px;
-      background: rgba(10,10,10,0.82);
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 16px 50px rgba(0,0,0,0.45);
-    }
+    .row{display:flex;justify-content:space-between;margin-bottom:10px;}
+    .price{color:#39ff14;font-weight:900;}
 
-    .hero h1 {
-      font-size: 44px;
-      color: #39ff14;
-      margin-bottom: 12px;
-      line-height: 1.05;
-    }
-
-    .hero p {
-      color: #d4d4d4;
-      font-size: 17px;
-      line-height: 1.55;
-      max-width: 840px;
-    }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1.2fr 0.8fr 0.8fr;
-      gap: 14px;
-      margin-bottom: 24px;
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(12,12,12,0.84);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .controls input,
-    .controls select {
-      width: 100%;
-      background: #121212;
-      color: #fff;
-      border: 1px solid #2c2c2c;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .controls input:focus,
-    .controls select:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
-    }
-
-    .status-box {
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      display: none;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .status-box.info {
-      display: block;
-      background: rgba(57,255,20,0.12);
-      border: 1px solid rgba(57,255,20,0.4);
-      color: #9dff8a;
-    }
-
-    .status-box.error {
-      display: block;
-      background: rgba(255,60,60,0.12);
-      border: 1px solid rgba(255,60,60,0.38);
-      color: #ff8d8d;
-    }
-
-    .music-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: rgba(10,10,10,0.9);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 16px 40px rgba(0,0,0,0.48);
-    }
-
-    .cover {
-      width: 100%;
-      height: 260px;
-      object-fit: cover;
-      background: #141414;
-      display: block;
-    }
-
-    .card-body {
-      padding: 16px;
-    }
-
-    .track-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: #39ff14;
-      margin-bottom: 8px;
-      line-height: 1.2;
-    }
-
-    .track-meta {
-      color: #d0d0d0;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-
-    .genre-pill {
-      display: inline-block;
-      font-size: 12px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      text-transform: uppercase;
-      color: #000;
-      background: #39ff14;
-      padding: 6px 10px;
-      border-radius: 999px;
-      margin-bottom: 12px;
-    }
-
-    .track-description {
-      color: #e0e0e0;
-      font-size: 14px;
-      line-height: 1.5;
-      margin-bottom: 14px;
-      min-height: 44px;
-    }
-
-    audio {
-      width: 100%;
-      margin-top: 6px;
-      filter: invert(0) hue-rotate(0deg);
-    }
-
-    .empty {
-      background: rgba(10,10,10,0.9);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 20px;
-      padding: 36px 22px;
-      text-align: center;
-      color: #d7d7d7;
-      grid-column: 1 / -1;
-    }
-
-    .empty h2 {
-      color: #39ff14;
-      margin-bottom: 10px;
-    }
-
-    @media (max-width: 900px) {
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 36px;
-      }
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 16px;
-      }
-
-      .brand {
-        font-size: 28px;
-      }
-
-      .hero {
-        padding: 20px;
-      }
-
-      .hero h1 {
-        font-size: 30px;
-      }
-    }
+    .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+    button{padding:10px;border-radius:10px;font-weight:900;border:none;cursor:pointer;}
+    .green{background:#39ff14;color:#000;}
+    .dark{background:#111;color:#fff;border:1px solid #333;}
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">Rich Bizness Music</div>
 
-      <div class="top-links">
-        <a href="index.html">Home</a>
-        <a href="auth.html">Auth</a>
-        <a href="profile.html">Profile</a>
-        <a href="artist.html">Artist</a>
-        <a href="upload.html">Upload Art</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="sports.html">Sports</a>
-        <a href="upload-sports.html">Upload Sports</a>
-        <a href="live.html">Go Live</a>
-        <a href="watch.html">Watch Live</a>
-      </div>
+<div class="container">
+
+  <div class="topbar">
+    <div class="brand">🎵 Music</div>
+    <div class="top-links">
+      <a href="index.html">Home</a>
+      <a href="upload-music.html">Upload</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="gaming.html">Gaming</a>
+      <a href="messages.html">Messages</a>
     </div>
-
-    <div class="hero">
-      <h1>Music Library</h1>
-      <p>
-        Stream tracks, discover artists, and build your sound catalog on Rich Bizness.
-      </p>
-    </div>
-
-    <div class="controls">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search by title, artist, genre, or description"
-      />
-
-      <select id="genreFilter">
-        <option value="all">All Genres</option>
-        <option value="Hip-Hop">Hip-Hop</option>
-        <option value="R&B">R&B</option>
-        <option value="Pop">Pop</option>
-        <option value="Rock">Rock</option>
-        <option value="Gospel">Gospel</option>
-        <option value="Trap">Trap</option>
-        <option value="Afrobeats">Afrobeats</option>
-        <option value="Other">Other</option>
-      </select>
-
-      <select id="sortSelect">
-        <option value="newest">Newest First</option>
-        <option value="oldest">Oldest First</option>
-        <option value="title-az">Title A to Z</option>
-        <option value="title-za">Title Z to A</option>
-      </select>
-    </div>
-
-    <div id="statusBox" class="status-box info">Loading music...</div>
-
-    <div id="musicGrid" class="music-grid"></div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+  <div class="controls">
+    <input id="search" placeholder="Search music..." />
+    <select id="genre">
+      <option value="all">All Genres</option>
+      <option>Hip-Hop</option>
+      <option>R&B</option>
+      <option>Pop</option>
+      <option>Rock</option>
+      <option>Other</option>
+    </select>
+    <select id="sort">
+      <option value="new">Newest</option>
+      <option value="price-low">Price Low</option>
+      <option value="price-high">Price High</option>
+    </select>
+  </div>
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <div id="grid" class="grid"></div>
 
-    const musicGrid = document.getElementById("musicGrid");
-    const statusBox = document.getElementById("statusBox");
-    const searchInput = document.getElementById("searchInput");
-    const genreFilter = document.getElementById("genreFilter");
-    const sortSelect = document.getElementById("sortSelect");
+</div>
 
-    let allTracks = [];
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabase = supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "YOUR_SUPABASE_ANON_KEY"
+);
 
-    function showStatus(message, type = "info") {
-      statusBox.textContent = message;
-      statusBox.className = `status-box ${type}`;
-      statusBox.style.display = "block";
-    }
+let allMusic = [];
+let profiles = {};
 
-    function hideStatus() {
-      statusBox.style.display = "none";
-    }
+async function loadProfiles(ids){
+  const {data} = await supabase.from("profiles")
+    .select("id,display_name,avatar_url")
+    .in("id",ids);
 
-    function escapeHtml(value) {
-      return String(value || "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
+  data.forEach(p=>profiles[p.id]=p);
+}
 
-    function getFilteredTracks() {
-      const searchTerm = searchInput.value.trim().toLowerCase();
-      const selectedGenre = genreFilter.value;
-      const sortValue = sortSelect.value;
+function name(id){
+  return profiles[id]?.display_name || "Artist";
+}
 
-      let filtered = [...allTracks];
+function avatar(id){
+  return profiles[id]?.avatar_url || "https://placehold.co/100";
+}
 
-      if (selectedGenre !== "all") {
-        filtered = filtered.filter(item => (item.genre || "") === selectedGenre);
-      }
+async function loadMusic(){
+  const {data} = await supabase.from("music")
+    .select("*")
+    .order("created_at",{ascending:false});
 
-      if (searchTerm) {
-        filtered = filtered.filter(item => {
-          const title = (item.title || "").toLowerCase();
-          const artist = (item.artist_name || "").toLowerCase();
-          const genre = (item.genre || "").toLowerCase();
-          const description = (item.description || "").toLowerCase();
+  allMusic = data || [];
+  await loadProfiles(allMusic.map(x=>x.user_id));
+  render();
+}
 
-          return (
-            title.includes(searchTerm) ||
-            artist.includes(searchTerm) ||
-            genre.includes(searchTerm) ||
-            description.includes(searchTerm)
-          );
-        });
-      }
+function render(){
+  const search = document.getElementById("search").value.toLowerCase();
+  const genre = document.getElementById("genre").value;
+  const sort = document.getElementById("sort").value;
 
-      filtered.sort((a, b) => {
-        switch (sortValue) {
-          case "oldest":
-            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
-          case "title-az":
-            return (a.title || "").localeCompare(b.title || "");
-          case "title-za":
-            return (b.title || "").localeCompare(a.title || "");
-          case "newest":
-          default:
-            return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-        }
-      });
+  let list = [...allMusic];
 
-      return filtered;
-    }
+  if(genre!=="all"){
+    list = list.filter(x=>x.genre===genre);
+  }
 
-    function renderMusic() {
-      const filtered = getFilteredTracks();
+  if(search){
+    list = list.filter(x=>
+      (x.title||"").toLowerCase().includes(search) ||
+      name(x.user_id).toLowerCase().includes(search)
+    );
+  }
 
-      if (!filtered.length) {
-        musicGrid.innerHTML = `
-          <div class="empty">
-            <h2>No music found</h2>
-            <p>Try another search or upload some tracks.</p>
-          </div>
-        `;
-        return;
-      }
+  if(sort==="price-low"){
+    list.sort((a,b)=>a.price_cents-b.price_cents);
+  }else if(sort==="price-high"){
+    list.sort((a,b)=>b.price_cents-a.price_cents);
+  }
 
-      musicGrid.innerHTML = filtered.map(track => {
-        const title = escapeHtml(track.title || "Untitled");
-        const artist = escapeHtml(track.artist_name || "Unknown Artist");
-        const genre = escapeHtml(track.genre || "Other");
-        const description = escapeHtml(track.description || "No description added.");
-        const coverUrl = escapeHtml(track.cover_url || "https://placehold.co/600x600?text=No+Cover");
-        const audioUrl = escapeHtml(track.audio_url || "");
+  document.getElementById("grid").innerHTML = list.map(x=>`
+    <div class="card">
+      <div class="cover">
+        <img src="${x.cover_url||'https://placehold.co/400'}">
+      </div>
 
-        return `
-          <div class="card">
-            <img
-              class="cover"
-              src="${coverUrl}"
-              alt="${title}"
-              onerror="this.src='https://placehold.co/600x600?text=No+Cover';"
-            />
-            <div class="card-body">
-              <div class="track-title">${title}</div>
-              <div class="track-meta">${artist}</div>
-              <div class="genre-pill">${genre}</div>
-              <div class="track-description">${description}</div>
-              <audio controls src="${audioUrl}"></audio>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
+      <div class="body">
+        <div class="title">${x.title}</div>
 
-    async function loadMusic() {
-      showStatus("Loading music...", "info");
+        <div class="artist">
+          <img src="${avatar(x.user_id)}">
+          <div>${name(x.user_id)}</div>
+        </div>
 
-      try {
-        const { data, error } = await supabaseClient
-          .from("music")
-          .select("*")
-          .order("created_at", { ascending: false });
+        <div class="desc">${x.description||""}</div>
 
-        if (error) {
-          throw error;
-        }
+        <audio controls src="${x.audio_url}"></audio>
 
-        allTracks = data || [];
-        hideStatus();
-        renderMusic();
-      } catch (error) {
-        console.error("Music load error:", error);
-        showStatus("Failed to load music: " + error.message, "error");
-      }
-    }
+        <div class="row">
+          ${
+            x.is_for_sale && x.price_cents>0
+            ? `<div class="price">$${(x.price_cents/100).toFixed(2)}</div>`
+            : `<div>Free</div>`
+          }
+          <a href="artist.html?id=${x.user_id}">Artist</a>
+        </div>
 
-    searchInput.addEventListener("input", renderMusic);
-    genreFilter.addEventListener("change", renderMusic);
-    sortSelect.addEventListener("change", renderMusic);
+        <div class="btns">
+          <button class="dark" onclick="msg('${x.user_id}')">Message</button>
+          ${
+            x.is_for_sale && x.price_cents>0
+            ? `<button class="green" onclick="buy(${x.id},${x.price_cents},'${x.title}','${x.user_id}')">Buy</button>`
+            : `<button class="green">Play</button>`
+          }
+        </div>
 
-    loadMusic();
-  </script>
+      </div>
+    </div>
+  `).join("");
+}
+
+async function msg(id){
+  const {data} = await supabase.auth.getUser();
+  if(!data.user) return location="auth.html";
+
+  localStorage.setItem("openConversationId",id);
+  location="messages.html";
+}
+
+async function buy(id,price,title,seller){
+  const {data} = await supabase.auth.getUser();
+  if(!data.user) return location="auth.html";
+
+  const res = await fetch("/api/create-checkout-session",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      buyerUserId:data.user.id,
+      sellerUserId:seller,
+      contentType:"music",
+      contentId:id,
+      title:title,
+      amountCents:price
+    })
+  });
+
+  const j = await res.json();
+  location = j.url;
+}
+
+document.getElementById("search").oninput=render;
+document.getElementById("genre").onchange=render;
+document.getElementById("sort").onchange=render;
+
+loadMusic();
+</script>
+
 </body>
 </html>
