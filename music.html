@@ -3,23 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Music</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Music | Rich Bizness</title>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      margin: 0;
       font-family: Arial, sans-serif;
-      background: #0b0b0b;
-      color: white;
-      padding: 20px;
+      background: #050505;
+      color: #fff;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
     .container {
-      max-width: 1280px;
+      max-width: 1320px;
       margin: 0 auto;
     }
 
@@ -27,145 +30,133 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 14px;
+      gap: 16px;
       flex-wrap: wrap;
       margin-bottom: 24px;
     }
 
     .brand {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #7CFC00;
+      font-size: 34px;
+      font-weight: 900;
+      color: #39ff14;
     }
 
     .top-links {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
     .top-links a {
-      text-decoration: none;
-      color: white;
-      background: #202020;
-      border: 1px solid #333;
-      padding: 10px 14px;
-      border-radius: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
     }
 
-    .top-links a:hover {
-      color: #7CFC00;
-      border-color: #7CFC00;
+    .hero {
+      margin-bottom: 24px;
+      padding: 28px;
+      border-radius: 24px;
+      background: rgba(10,10,10,0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hero h1 {
+      font-size: 44px;
+      color: #39ff14;
+      margin-bottom: 12px;
+    }
+
+    .hero p {
+      color: #d4d4d4;
+      font-size: 17px;
+      line-height: 1.5;
+      max-width: 840px;
     }
 
     .controls {
       display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
+      grid-template-columns: 1.2fr 0.8fr 0.8fr;
       gap: 14px;
       margin-bottom: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(12,12,12,0.84);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .controls input,
     .controls select {
       width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #101010;
-      color: white;
+      background: #121212;
+      color: #fff;
+      border: 1px solid #2c2c2c;
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 15px;
     }
 
     .music-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 22px;
+      gap: 18px;
     }
 
-    .music-card {
-      background: #151515;
-      border: 1px solid #2d2d2d;
+    .card {
+      background: rgba(10,10,10,0.9);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 0 18px rgba(0,0,0,0.22);
     }
 
-    .music-cover {
+    .cover {
       width: 100%;
-      height: 280px;
+      height: 260px;
       object-fit: cover;
+      background: #141414;
       display: block;
-      background: #101010;
     }
 
-    .music-body {
+    .card-body {
       padding: 16px;
     }
 
-    .music-title {
-      font-size: 1.15rem;
-      font-weight: bold;
+    .track-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #39ff14;
       margin-bottom: 8px;
     }
 
-    .music-artist {
-      color: #bbb;
-      margin-bottom: 8px;
-    }
-
-    .music-genre {
-      display: inline-block;
-      margin-bottom: 12px;
-      font-size: 13px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(124,252,0,0.12);
-      border: 1px solid rgba(124,252,0,0.3);
-      color: #baff8a;
-    }
-
-    .music-description {
-      color: #d2d2d2;
+    .track-meta {
+      color: #d0d0d0;
       font-size: 14px;
-      line-height: 1.45;
+      margin-bottom: 10px;
+    }
+
+    .track-description {
+      color: #e0e0e0;
+      font-size: 14px;
+      line-height: 1.5;
       margin-bottom: 14px;
-      min-height: 42px;
+      min-height: 44px;
     }
 
     audio {
       width: 100%;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
-    .status-box {
-      display: none;
-      margin-bottom: 18px;
-      padding: 14px;
-      border-radius: 12px;
-      font-weight: bold;
-    }
-
-    .status-box.info {
-      display: block;
-      background: rgba(255,255,255,0.05);
+    .empty {
+      background: rgba(10,10,10,0.9);
       border: 1px solid rgba(255,255,255,0.08);
-      color: #ddd;
-    }
-
-    .status-box.error {
-      display: block;
-      background: rgba(255,0,0,0.08);
-      border: 1px solid rgba(255,80,80,0.35);
-      color: #ff9c9c;
-    }
-
-    .empty-state {
+      border-radius: 20px;
+      padding: 36px 22px;
       text-align: center;
-      padding: 50px 20px;
-      color: #aaa;
-      border: 1px dashed #333;
-      border-radius: 16px;
-      background: #131313;
+      color: #d7d7d7;
+      grid-column: 1 / -1;
     }
 
     @media (max-width: 900px) {
@@ -173,8 +164,22 @@
         grid-template-columns: 1fr;
       }
 
-      .music-cover {
-        height: 240px;
+      .hero h1 {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+      }
+
+      .brand {
+        font-size: 28px;
+      }
+
+      .hero h1 {
+        font-size: 30px;
       }
     }
   </style>
@@ -182,35 +187,36 @@
 <body>
   <div class="container">
     <div class="topbar">
-      <div class="brand">Music</div>
+      <div class="brand">Rich Bizness Music</div>
 
       <div class="top-links">
         <a href="index.html">Home</a>
         <a href="gallery.html">Gallery</a>
         <a href="upload.html">Upload Art</a>
+        <a href="profile.html">Profile</a>
         <a href="upload-music.html">Upload Music</a>
+        <a href="sports.html">Sports</a>
         <a href="live.html">Go Live</a>
       </div>
     </div>
 
+    <div class="hero">
+      <h1>Music Library</h1>
+      <p>Stream tracks, discover artists, and build your sound catalog on Rich Bizness.</p>
+    </div>
+
     <div class="controls">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="Search by title, artist, genre, or description"
-      />
+      <input type="text" id="searchInput" placeholder="Search by title, artist, genre, or description" />
 
       <select id="genreFilter">
         <option value="all">All Genres</option>
-        <option value="Hip Hop">Hip Hop</option>
-        <option value="Rap">Rap</option>
+        <option value="Hip-Hop">Hip-Hop</option>
         <option value="R&B">R&B</option>
         <option value="Pop">Pop</option>
         <option value="Rock">Rock</option>
         <option value="Gospel">Gospel</option>
         <option value="Trap">Trap</option>
-        <option value="Drill">Drill</option>
-        <option value="Instrumental">Instrumental</option>
+        <option value="Afrobeats">Afrobeats</option>
         <option value="Other">Other</option>
       </select>
 
@@ -219,59 +225,35 @@
         <option value="oldest">Oldest First</option>
         <option value="title-az">Title A to Z</option>
         <option value="title-za">Title Z to A</option>
-        <option value="artist-az">Artist A to Z</option>
       </select>
     </div>
 
-    <div id="statusBox" class="status-box info">Loading music...</div>
     <div id="musicGrid" class="music-grid"></div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const musicGrid = document.getElementById("musicGrid");
-    const statusBox = document.getElementById("statusBox");
     const searchInput = document.getElementById("searchInput");
     const genreFilter = document.getElementById("genreFilter");
     const sortSelect = document.getElementById("sortSelect");
 
-    let allMusic = [];
+    let allTracks = [];
 
-    function showStatus(message, type = "info") {
-      statusBox.textContent = message;
-      statusBox.className = `status-box ${type}`;
-      statusBox.style.display = "block";
-    }
-
-    function hideStatus() {
-      statusBox.textContent = "";
-      statusBox.className = "status-box";
-      statusBox.style.display = "none";
-    }
-
-    function escapeHtml(text) {
-      if (text === null || text === undefined) return "";
-      return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function getFilteredMusic() {
+    function getFilteredTracks() {
       const searchTerm = searchInput.value.trim().toLowerCase();
       const selectedGenre = genreFilter.value;
       const sortValue = sortSelect.value;
 
-      let filtered = [...allMusic];
+      let filtered = [...allTracks];
 
       if (selectedGenre !== "all") {
-        filtered = filtered.filter(item => item.genre === selectedGenre);
+        filtered = filtered.filter(item => (item.genre || "") === selectedGenre);
       }
 
       if (searchTerm) {
@@ -298,8 +280,6 @@
             return (a.title || "").localeCompare(b.title || "");
           case "title-za":
             return (b.title || "").localeCompare(a.title || "");
-          case "artist-az":
-            return (a.artist_name || "").localeCompare(b.artist_name || "");
           case "newest":
           default:
             return new Date(b.created_at || 0) - new Date(a.created_at || 0);
@@ -310,69 +290,49 @@
     }
 
     function renderMusic() {
-      const filteredMusic = getFilteredMusic();
+      const filtered = getFilteredTracks();
 
-      if (!filteredMusic.length) {
+      if (!filtered.length) {
         musicGrid.innerHTML = `
-          <div class="empty-state">
-            <h2>No music found</h2>
-            <p>Try changing your filters or upload a new track.</p>
+          <div class="empty">
+            <h2 style="color:#39ff14; margin-bottom:10px;">No music found</h2>
+            <p>Try another search or upload some tracks.</p>
           </div>
         `;
         return;
       }
 
-      musicGrid.innerHTML = filteredMusic.map(song => {
-        const title = escapeHtml(song.title || "Untitled");
-        const artist = escapeHtml(song.artist_name || "Unknown Artist");
-        const genre = escapeHtml(song.genre || "Other");
-        const description = escapeHtml(song.description || "No description added.");
-        const audioUrl = escapeHtml(song.audio_url || "");
-        const coverUrl = escapeHtml(song.cover_url || "https://placehold.co/600x600?text=Music");
-
-        return `
-          <div class="music-card">
-            <img
-              class="music-cover"
-              src="${coverUrl}"
-              alt="${title}"
-              onerror="this.src='https://placehold.co/600x600?text=Music';"
-            />
-            <div class="music-body">
-              <div class="music-title">${title}</div>
-              <div class="music-artist">By ${artist}</div>
-              <div class="music-genre">${genre}</div>
-              <div class="music-description">${description}</div>
-              <audio controls preload="none">
-                <source src="${audioUrl}" />
-                Your browser does not support the audio element.
-              </audio>
-            </div>
+      musicGrid.innerHTML = filtered.map(track => `
+        <div class="card">
+          <img
+            class="cover"
+            src="${track.cover_url || "https://placehold.co/600x600?text=No+Cover"}"
+            alt="${track.title || "Track Cover"}"
+            onerror="this.src='https://placehold.co/600x600?text=No+Cover';"
+          />
+          <div class="card-body">
+            <div class="track-title">${track.title || "Untitled"}</div>
+            <div class="track-meta">${track.artist_name || "Unknown Artist"} • ${track.genre || "Other"}</div>
+            <div class="track-description">${track.description || "No description added."}</div>
+            <audio controls src="${track.audio_url || ""}"></audio>
           </div>
-        `;
-      }).join("");
+        </div>
+      `).join("");
     }
 
     async function loadMusic() {
-      showStatus("Loading music...", "info");
+      const { data, error } = await supabaseClient
+        .from("music")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      try {
-        const { data, error } = await supabaseClient
-          .from("music")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          throw error;
-        }
-
-        allMusic = data || [];
-        hideStatus();
-        renderMusic();
-      } catch (error) {
-        console.error("Music load error:", error);
-        showStatus("Failed to load music: " + error.message, "error");
+      if (error) {
+        musicGrid.innerHTML = `<div class="empty">Failed to load music: ${error.message}</div>`;
+        return;
       }
+
+      allTracks = data || [];
+      renderMusic();
     }
 
     searchInput.addEventListener("input", renderMusic);
