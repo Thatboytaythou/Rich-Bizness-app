@@ -1,66 +1,75 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 import { AccessToken } from "livekit-server-sdk";
 
+dotenv.config();
+
 const app = express();
+const PORT = process.env.PORT || 3001;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-const LIVEKIT_URL = process.env.LIVEKIT_URL || "YOUR_LIVEKIT_URL";
-const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "YOUR_LIVEKIT_API_KEY";
-const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "YOUR_LIVEKIT_API_SECRET";
-
-app.post("/getToken", async (req, res) => {
+app.post("/get-livekit-token", async (req, res) => {
   try {
-    const {
-      room_name,
-      participant_identity,
-      participant_name,
-      participant_metadata,
-      participant_attributes
-    } = req.body || {};
+    const { roomName, identity, name, role } = req.body;
 
-    if (!room_name) {
-      return res.status(400).json({ error: "room_name is required" });
+    if (!roomName || !identity) {
+      return res.status(400).json({
+        error: "roomName and identity are required"
+      });
     }
 
-    if (!participant_identity) {
-      return res.status(400).json({ error: "participant_identity is required" });
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+    const livekitUrl = process.env.LIVEKIT_URL;
+
+    if (!apiKey || !apiSecret || !livekitUrl) {
+      return res.status(500).json({
+        error: "Missing LiveKit environment variables"
+      });
     }
 
-    const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
-      identity: participant_identity,
-      name: participant_name || participant_identity,
-      metadata: participant_metadata || "",
-      attributes: participant_attributes || {},
-      ttl: "1h"
+    const token = new AccessToken(apiKey, apiSecret, {
+      identity,
+      name: name || identity
     });
+
+    const isHost = role === "host";
 
     token.addGrant({
       roomJoin: true,
-      room: room_name,
-      canPublish: true,
+      room: roomName,
+      canPublish: isHost,
       canSubscribe: true,
       canPublishData: true
     });
 
     const jwt = await token.toJwt();
 
-    return res.status(201).json({
-      server_url: LIVEKIT_URL,
-      participant_token: jwt
+    return res.json({
+      token: jwt,
+      url: livekitUrl
     });
   } catch (error) {
-    console.error("LiveKit token error:", error);
+    console.error("Token error:", error);
     return res.status(500).json({
-      error: "Failed to generate token"
+      error: "Failed to create LiveKit token"
     });
   }
 });
 
-const PORT = process.env.PORT || 3000;
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 app.listen(PORT, () => {
-  console.log(`LiveKit token server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
