@@ -6,52 +6,51 @@ export default async function handler(req, res) {
   }
 
   try {
-    const LIVEKIT_URL = process.env.LIVEKIT_URL;
     const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
     const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
+    const LIVEKIT_URL = process.env.LIVEKIT_URL;
 
-    if (!LIVEKIT_URL || !LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
+    if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_URL) {
       return res.status(500).json({
         error: "Missing LiveKit environment variables"
       });
     }
 
     const {
-      room_name,
-      participant_identity,
-      participant_name
+      roomName,
+      participantName,
+      role = "viewer"
     } = req.body || {};
 
-    if (!room_name) {
-      return res.status(400).json({ error: "room_name is required" });
+    if (!roomName || !participantName) {
+      return res.status(400).json({
+        error: "roomName and participantName are required"
+      });
     }
 
-    if (!participant_identity) {
-      return res.status(400).json({ error: "participant_identity is required" });
-    }
-
-    const at = new AccessToken(
-      LIVEKIT_API_KEY,
-      LIVEKIT_API_SECRET,
-      {
-        identity: participant_identity,
-        name: participant_name || participant_identity
-      }
-    );
-
-    at.addGrant({
-      roomJoin: true,
-      room: room_name,
-      canPublish: true,
-      canSubscribe: true,
-      canPublishData: true
+    const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+      identity: participantName,
+      ttl: "2h"
     });
 
-    const participant_token = await at.toJwt();
+    const isHost = role === "host";
+
+    token.addGrant({
+      room: roomName,
+      roomJoin: true,
+      canPublish: isHost,
+      canPublishData: true,
+      canSubscribe: true
+    });
+
+    const jwt = await token.toJwt();
 
     return res.status(200).json({
-      participant_token,
-      server_url: LIVEKIT_URL
+      token: jwt,
+      url: LIVEKIT_URL,
+      roomName,
+      participantName,
+      role
     });
   } catch (error) {
     console.error("LiveKit token error:", error);
