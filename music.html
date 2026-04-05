@@ -6,7 +6,11 @@
   <title>Music | Rich Bizness</title>
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       font-family: Arial, sans-serif;
@@ -39,6 +43,7 @@
       font-size: 34px;
       font-weight: 900;
       color: #39ff14;
+      text-shadow: 0 0 16px rgba(57,255,20,0.25);
     }
 
     .top-links {
@@ -53,6 +58,13 @@
       padding: 10px 16px;
       border-radius: 12px;
       font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .top-links a:hover {
+      background: rgba(57,255,20,0.18);
+      border-color: rgba(57,255,20,0.5);
+      color: #39ff14;
     }
 
     .hero {
@@ -61,18 +73,20 @@
       border-radius: 24px;
       background: rgba(10,10,10,0.82);
       border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 16px 50px rgba(0,0,0,0.45);
     }
 
     .hero h1 {
       font-size: 44px;
       color: #39ff14;
       margin-bottom: 12px;
+      line-height: 1.05;
     }
 
     .hero p {
       color: #d4d4d4;
       font-size: 17px;
-      line-height: 1.5;
+      line-height: 1.55;
       max-width: 840px;
     }
 
@@ -96,6 +110,37 @@
       border-radius: 14px;
       padding: 14px 16px;
       font-size: 15px;
+      outline: none;
+    }
+
+    .controls input:focus,
+    .controls select:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+    }
+
+    .status-box {
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(57,255,20,0.12);
+      border: 1px solid rgba(57,255,20,0.4);
+      color: #9dff8a;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255,60,60,0.12);
+      border: 1px solid rgba(255,60,60,0.38);
+      color: #ff8d8d;
     }
 
     .music-grid {
@@ -109,6 +154,13 @@
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
       overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.48);
     }
 
     .cover {
@@ -128,12 +180,26 @@
       font-weight: 800;
       color: #39ff14;
       margin-bottom: 8px;
+      line-height: 1.2;
     }
 
     .track-meta {
       color: #d0d0d0;
       font-size: 14px;
       margin-bottom: 10px;
+    }
+
+    .genre-pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: #000;
+      background: #39ff14;
+      padding: 6px 10px;
+      border-radius: 999px;
+      margin-bottom: 12px;
     }
 
     .track-description {
@@ -147,6 +213,7 @@
     audio {
       width: 100%;
       margin-top: 6px;
+      filter: invert(0) hue-rotate(0deg);
     }
 
     .empty {
@@ -157,6 +224,11 @@
       text-align: center;
       color: #d7d7d7;
       grid-column: 1 / -1;
+    }
+
+    .empty h2 {
+      color: #39ff14;
+      margin-bottom: 10px;
     }
 
     @media (max-width: 900px) {
@@ -178,6 +250,10 @@
         font-size: 28px;
       }
 
+      .hero {
+        padding: 20px;
+      }
+
       .hero h1 {
         font-size: 30px;
       }
@@ -191,22 +267,32 @@
 
       <div class="top-links">
         <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload Art</a>
+        <a href="auth.html">Auth</a>
         <a href="profile.html">Profile</a>
+        <a href="artist.html">Artist</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="gallery.html">Gallery</a>
         <a href="upload-music.html">Upload Music</a>
         <a href="sports.html">Sports</a>
+        <a href="upload-sports.html">Upload Sports</a>
         <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
       </div>
     </div>
 
     <div class="hero">
       <h1>Music Library</h1>
-      <p>Stream tracks, discover artists, and build your sound catalog on Rich Bizness.</p>
+      <p>
+        Stream tracks, discover artists, and build your sound catalog on Rich Bizness.
+      </p>
     </div>
 
     <div class="controls">
-      <input type="text" id="searchInput" placeholder="Search by title, artist, genre, or description" />
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="Search by title, artist, genre, or description"
+      />
 
       <select id="genreFilter">
         <option value="all">All Genres</option>
@@ -228,22 +314,44 @@
       </select>
     </div>
 
+    <div id="statusBox" class="status-box info">Loading music...</div>
+
     <div id="musicGrid" class="music-grid"></div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const musicGrid = document.getElementById("musicGrid");
+    const statusBox = document.getElementById("statusBox");
     const searchInput = document.getElementById("searchInput");
     const genreFilter = document.getElementById("genreFilter");
     const sortSelect = document.getElementById("sortSelect");
 
     let allTracks = [];
+
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+      statusBox.style.display = "block";
+    }
+
+    function hideStatus() {
+      statusBox.style.display = "none";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
 
     function getFilteredTracks() {
       const searchTerm = searchInput.value.trim().toLowerCase();
@@ -295,44 +403,61 @@
       if (!filtered.length) {
         musicGrid.innerHTML = `
           <div class="empty">
-            <h2 style="color:#39ff14; margin-bottom:10px;">No music found</h2>
+            <h2>No music found</h2>
             <p>Try another search or upload some tracks.</p>
           </div>
         `;
         return;
       }
 
-      musicGrid.innerHTML = filtered.map(track => `
-        <div class="card">
-          <img
-            class="cover"
-            src="${track.cover_url || "https://placehold.co/600x600?text=No+Cover"}"
-            alt="${track.title || "Track Cover"}"
-            onerror="this.src='https://placehold.co/600x600?text=No+Cover';"
-          />
-          <div class="card-body">
-            <div class="track-title">${track.title || "Untitled"}</div>
-            <div class="track-meta">${track.artist_name || "Unknown Artist"} • ${track.genre || "Other"}</div>
-            <div class="track-description">${track.description || "No description added."}</div>
-            <audio controls src="${track.audio_url || ""}"></audio>
+      musicGrid.innerHTML = filtered.map(track => {
+        const title = escapeHtml(track.title || "Untitled");
+        const artist = escapeHtml(track.artist_name || "Unknown Artist");
+        const genre = escapeHtml(track.genre || "Other");
+        const description = escapeHtml(track.description || "No description added.");
+        const coverUrl = escapeHtml(track.cover_url || "https://placehold.co/600x600?text=No+Cover");
+        const audioUrl = escapeHtml(track.audio_url || "");
+
+        return `
+          <div class="card">
+            <img
+              class="cover"
+              src="${coverUrl}"
+              alt="${title}"
+              onerror="this.src='https://placehold.co/600x600?text=No+Cover';"
+            />
+            <div class="card-body">
+              <div class="track-title">${title}</div>
+              <div class="track-meta">${artist}</div>
+              <div class="genre-pill">${genre}</div>
+              <div class="track-description">${description}</div>
+              <audio controls src="${audioUrl}"></audio>
+            </div>
           </div>
-        </div>
-      `).join("");
+        `;
+      }).join("");
     }
 
     async function loadMusic() {
-      const { data, error } = await supabaseClient
-        .from("music")
-        .select("*")
-        .order("created_at", { ascending: false });
+      showStatus("Loading music...", "info");
 
-      if (error) {
-        musicGrid.innerHTML = `<div class="empty">Failed to load music: ${error.message}</div>`;
-        return;
+      try {
+        const { data, error } = await supabaseClient
+          .from("music")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        allTracks = data || [];
+        hideStatus();
+        renderMusic();
+      } catch (error) {
+        console.error("Music load error:", error);
+        showStatus("Failed to load music: " + error.message, "error");
       }
-
-      allTracks = data || [];
-      renderMusic();
     }
 
     searchInput.addEventListener("input", renderMusic);
