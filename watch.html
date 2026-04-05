@@ -3,105 +3,369 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch Live</title>
+  <title>Watch Live | Rich Bizness</title>
+
   <style>
-    body {
+    * {
+      box-sizing: border-box;
       margin: 0;
-      background: #000;
-      color: white;
+      padding: 0;
+    }
+
+    body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      background: #050505;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 24px;
     }
-    .wrap {
-      max-width: 1100px;
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .container {
+      max-width: 1300px;
       margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      font-size: 34px;
+      font-weight: 900;
+      color: #39ff14;
+      text-shadow: 0 0 16px rgba(57,255,20,0.25);
+    }
+
+    .top-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .top-links a {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .top-links a:hover {
+      color: #39ff14;
+      border-color: rgba(57,255,20,0.45);
+      background: rgba(57,255,20,0.12);
+    }
+
+    .layout {
       display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 20px;
+      grid-template-columns: 360px 1fr;
+      gap: 22px;
     }
-    .panel, .stage {
-      background: #111;
-      border-radius: 18px;
-      border: 1px solid #1f1f1f;
-      padding: 20px;
+
+    .card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
     }
+
     h1, h2 {
       color: #39ff14;
+      margin-bottom: 16px;
     }
-    input, button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border-radius: 12px;
-      border: none;
-      font-size: 15px;
+
+    h1 {
+      font-size: 34px;
     }
-    input {
-      background: #1d1d1d;
-      color: #fff;
+
+    .subtext {
+      color: #d3d3d3;
+      margin-bottom: 22px;
+      line-height: 1.5;
     }
-    button {
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
       font-weight: 800;
-      cursor: pointer;
+      color: #f2f2f2;
     }
-    .green {
+
+    input {
+      width: 100%;
+      background: #121212;
+      color: #ffffff;
+      border: 1px solid #2b2b2b;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn-green {
       background: #39ff14;
       color: #000;
     }
-    .dark {
-      background: #222;
+
+    .btn-dark {
+      background: #1c1c1c;
       color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .video-shell {
-      min-height: 520px;
+
+    .btn-green:hover,
+    .btn-dark:hover {
+      transform: translateY(-1px);
+    }
+
+    .status-box {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .status-box.success {
+      display: block;
+      background: rgba(57,255,20,0.12);
+      border: 1px solid rgba(57,255,20,0.35);
+      color: #98ff83;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255,70,70,0.12);
+      border: 1px solid rgba(255,70,70,0.35);
+      color: #ff9b9b;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(57,255,20,0.08);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d8ffd0;
+    }
+
+    .stage-box {
+      min-height: 620px;
+      border-radius: 22px;
+      overflow: hidden;
+      background: #090909;
+      border: 1px solid rgba(255,255,255,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 14px;
-      background: #080808;
-      overflow: hidden;
+      position: relative;
     }
-    .video-shell video {
+
+    .stage-box video {
       width: 100%;
-      max-height: 75vh;
+      height: 100%;
       object-fit: cover;
       display: block;
-      background: black;
+      background: #000;
     }
-    #status {
-      margin-top: 14px;
+
+    .stage-placeholder {
+      color: #bfbfbf;
+      text-align: center;
+      padding: 30px;
+      line-height: 1.5;
+    }
+
+    .live-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: #ff304f;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      display: none;
+      z-index: 5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat-box {
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 22px;
+      font-weight: 900;
       color: #39ff14;
+      margin-bottom: 4px;
     }
-    #errorBox {
-      margin-top: 10px;
-      color: #ff6b6b;
+
+    .stat-label {
+      font-size: 12px;
+      color: #cfcfcf;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
     }
-    @media (max-width: 900px) {
-      .wrap {
+
+    @media (max-width: 980px) {
+      .layout {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .brand {
+        font-size: 28px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .button-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .stage-box {
+        min-height: 380px;
       }
     }
   </style>
 </head>
 <body>
-  <p><a href="index.html" style="color:white;">← Home</a></p>
+  <div class="container">
 
-  <div class="wrap">
-    <div class="panel">
-      <h1>Watch Stream</h1>
-      <input id="roomName" value="richbizness-live-room" placeholder="Room name" />
-      <input id="identity" placeholder="Viewer identity" />
-      <input id="displayName" value="Fan Viewer" placeholder="Display name" />
-      <button id="joinBtn" class="green">Join Stream</button>
-      <button id="leaveBtn" class="dark">Leave</button>
-      <div id="status">Not connected</div>
-      <div id="errorBox"></div>
+    <div class="topbar">
+      <div class="brand">Rich Bizness Watch</div>
+
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="auth.html">Auth</a>
+        <a href="profile.html">Profile</a>
+        <a href="artist.html">Artist</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="sports.html">Sports</a>
+        <a href="upload-sports.html">Upload Sports</a>
+        <a href="live.html">Go Live</a>
+      </div>
     </div>
 
-    <div class="stage">
-      <h2>Live Watch</h2>
-      <div id="videoShell" class="video-shell">
-        <p id="placeholder">Waiting for host video...</p>
+    <div class="layout">
+      <div class="card">
+        <h1>Watch Live</h1>
+        <p class="subtext">
+          Join the live room and watch the stream.
+        </p>
+
+        <div class="form-group">
+          <label for="roomNameInput">Room Name</label>
+          <input id="roomNameInput" type="text" value="richbizness-live-room" />
+        </div>
+
+        <div class="form-group">
+          <label for="identityInput">Viewer Identity</label>
+          <input id="identityInput" type="text" value="" placeholder="viewer-12345" />
+        </div>
+
+        <div class="form-group">
+          <label for="displayNameInput">Display Name</label>
+          <input id="displayNameInput" type="text" value="Fan Viewer" />
+        </div>
+
+        <div class="button-grid">
+          <button id="joinBtn" class="btn-green">Join Stream</button>
+          <button id="leaveBtn" class="btn-dark">Leave Stream</button>
+          <button id="copyBtn" class="btn-dark">Copy Room Name</button>
+          <button id="hostBtn" class="btn-dark">Open Host Page</button>
+        </div>
+
+        <div id="statusBox" class="status-box info">Not connected</div>
+
+        <div class="stats">
+          <div class="stat-box">
+            <div id="watchState" class="stat-number">OFF</div>
+            <div class="stat-label">Watch State</div>
+          </div>
+          <div class="stat-box">
+            <div id="participantCount" class="stat-number">0</div>
+            <div class="stat-label">People In Room</div>
+          </div>
+          <div class="stat-box">
+            <div id="streamState" class="stat-number">WAIT</div>
+            <div class="stat-label">Stream State</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Live Watch</h2>
+
+        <div class="stage-box" id="stageBox">
+          <div id="liveBadge" class="live-badge">LIVE</div>
+          <div id="stagePlaceholder" class="stage-placeholder">
+            Waiting for the host video to appear.
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -113,57 +377,148 @@
       Track
     } from "https://esm.sh/livekit-client";
 
-    const roomNameInput = document.getElementById("roomName");
-    const identityInput = document.getElementById("identity");
-    const displayNameInput = document.getElementById("displayName");
+    const roomNameInput = document.getElementById("roomNameInput");
+    const identityInput = document.getElementById("identityInput");
+    const displayNameInput = document.getElementById("displayNameInput");
+
     const joinBtn = document.getElementById("joinBtn");
     const leaveBtn = document.getElementById("leaveBtn");
-    const status = document.getElementById("status");
-    const errorBox = document.getElementById("errorBox");
-    const videoShell = document.getElementById("videoShell");
-    const placeholder = document.getElementById("placeholder");
+    const copyBtn = document.getElementById("copyBtn");
+    const hostBtn = document.getElementById("hostBtn");
+
+    const statusBox = document.getElementById("statusBox");
+    const watchState = document.getElementById("watchState");
+    const participantCount = document.getElementById("participantCount");
+    const streamState = document.getElementById("streamState");
+
+    const stageBox = document.getElementById("stageBox");
+    const stagePlaceholder = document.getElementById("stagePlaceholder");
+    const liveBadge = document.getElementById("liveBadge");
 
     let room = null;
+    let attachedElements = [];
 
-    function makeIdentity() {
+    function makeViewerIdentity() {
       return "viewer-" + Math.random().toString(36).slice(2, 10);
     }
 
-    if (!identityInput.value) {
-      identityInput.value = makeIdentity();
+    if (!identityInput.value.trim()) {
+      identityInput.value = makeViewerIdentity();
+    }
+
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+      statusBox.style.display = "block";
+    }
+
+    function updateParticipantCount() {
+      if (!room) {
+        participantCount.textContent = "0";
+        return;
+      }
+      participantCount.textContent = String(room.remoteParticipants.size + 1);
+    }
+
+    function setConnectedUI() {
+      watchState.textContent = "LIVE";
+      showStatus("Connected to stream.", "success");
+    }
+
+    function setDisconnectedUI(message = "Disconnected.") {
+      watchState.textContent = "OFF";
+      participantCount.textContent = "0";
+      streamState.textContent = "WAIT";
+      liveBadge.style.display = "none";
+      showStatus(message, "info");
+    }
+
+    function clearStage() {
+      attachedElements.forEach(el => {
+        try {
+          el.remove();
+        } catch {}
+      });
+      attachedElements = [];
+
+      stageBox.querySelectorAll("video, audio").forEach(el => {
+        try {
+          el.remove();
+        } catch {}
+      });
+
+      stagePlaceholder.style.display = "block";
+      streamState.textContent = "WAIT";
+      liveBadge.style.display = "none";
     }
 
     function attachTrack(track) {
       const el = track.attach();
 
       if (track.kind === Track.Kind.Video) {
-        const oldVideos = videoShell.querySelectorAll("video");
-        oldVideos.forEach(v => v.remove());
-        placeholder.style.display = "none";
-        videoShell.appendChild(el);
+        stageBox.querySelectorAll("video").forEach(video => {
+          try {
+            video.remove();
+          } catch {}
+        });
+
+        stagePlaceholder.style.display = "none";
+        liveBadge.style.display = "block";
+        streamState.textContent = "LIVE";
+        stageBox.appendChild(el);
       }
 
       if (track.kind === Track.Kind.Audio) {
         el.style.display = "none";
-        videoShell.appendChild(el);
+        stageBox.appendChild(el);
       }
+
+      attachedElements.push(el);
     }
 
     function detachTrack(track) {
-      track.detach().forEach(el => el.remove());
-      const remaining = videoShell.querySelectorAll("video");
-      if (!remaining.length) {
-        placeholder.style.display = "block";
+      const els = track.detach();
+      els.forEach(el => {
+        try {
+          el.remove();
+        } catch {}
+      });
+
+      const hasVideo = stageBox.querySelectorAll("video").length > 0;
+      if (!hasVideo) {
+        stagePlaceholder.style.display = "block";
+        streamState.textContent = "WAIT";
+        liveBadge.style.display = "none";
       }
     }
 
-    joinBtn.addEventListener("click", async () => {
-      errorBox.textContent = "";
+    function bindParticipantTracks(participant) {
+      participant.trackPublications.forEach(publication => {
+        if (publication.isSubscribed && publication.track) {
+          attachTrack(publication.track);
+        }
+      });
+    }
 
+    async function joinStream() {
       try {
+        if (room) {
+          showStatus("Already connected.", "info");
+          return;
+        }
+
+        showStatus("Joining stream...", "info");
+
         const roomName = roomNameInput.value.trim();
-        const identity = identityInput.value.trim() || makeIdentity();
+        const identity = identityInput.value.trim() || makeViewerIdentity();
         const displayName = displayNameInput.value.trim() || identity;
+
+        if (!roomName) {
+          showStatus("Room name is required.", "error");
+          return;
+        }
+
+        identityInput.value = identity;
 
         const response = await fetch("/get-livekit-token", {
           method: "POST",
@@ -181,50 +536,94 @@
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to get token");
+          throw new Error(data.error || "Failed to get viewer token.");
         }
 
-        room = new Room({ adaptiveStream: true, dynacast: true });
-
-        room.on(RoomEvent.TrackSubscribed, (track) => {
-          attachTrack(track);
+        room = new Room({
+          adaptiveStream: true,
+          dynacast: true
         });
 
-        room.on(RoomEvent.TrackUnsubscribed, (track) => {
-          detachTrack(track);
+        room.on(RoomEvent.Connected, () => {
+          updateParticipantCount();
+          setConnectedUI();
         });
 
         room.on(RoomEvent.Disconnected, () => {
-          status.textContent = "Disconnected";
-          placeholder.style.display = "block";
+          clearStage();
+          setDisconnectedUI("Disconnected from stream.");
+          room = null;
         });
 
-        await room.connect(data.url, data.token, { autoSubscribe: true });
+        room.on(RoomEvent.ParticipantConnected, participant => {
+          updateParticipantCount();
+          bindParticipantTracks(participant);
+        });
+
+        room.on(RoomEvent.ParticipantDisconnected, () => {
+          updateParticipantCount();
+        });
+
+        room.on(RoomEvent.TrackSubscribed, track => {
+          attachTrack(track);
+        });
+
+        room.on(RoomEvent.TrackUnsubscribed, track => {
+          detachTrack(track);
+        });
+
+        await room.connect(data.url, data.token, {
+          autoSubscribe: true
+        });
 
         room.remoteParticipants.forEach(participant => {
-          participant.trackPublications.forEach(publication => {
-            if (publication.isSubscribed && publication.track) {
-              attachTrack(publication.track);
-            }
-          });
+          bindParticipantTracks(participant);
         });
 
-        status.textContent = "Watching stream";
+        updateParticipantCount();
       } catch (error) {
-        console.error(error);
-        status.textContent = "Connection failed";
-        errorBox.textContent = error.message;
+        console.error("Watch error:", error);
+        showStatus(error.message || "Failed to join stream.", "error");
       }
-    });
+    }
 
-    leaveBtn.addEventListener("click", () => {
+    async function leaveStream() {
+      try {
+        if (room) {
+          room.disconnect();
+        }
+
+        room = null;
+        clearStage();
+        setDisconnectedUI("Left stream.");
+      } catch (error) {
+        console.error("Leave stream error:", error);
+        showStatus(error.message || "Failed to leave stream.", "error");
+      }
+    }
+
+    async function copyRoomName() {
+      try {
+        await navigator.clipboard.writeText(roomNameInput.value.trim());
+        showStatus("Room name copied.", "success");
+      } catch {
+        showStatus("Could not copy room name.", "error");
+      }
+    }
+
+    function openHostPage() {
+      window.open("live.html", "_blank");
+    }
+
+    joinBtn.addEventListener("click", joinStream);
+    leaveBtn.addEventListener("click", leaveStream);
+    copyBtn.addEventListener("click", copyRoomName);
+    hostBtn.addEventListener("click", openHostPage);
+
+    window.addEventListener("beforeunload", () => {
       if (room) {
         room.disconnect();
-        room = null;
       }
-      videoShell.querySelectorAll("video,audio").forEach(el => el.remove());
-      placeholder.style.display = "block";
-      status.textContent = "Not connected";
     });
   </script>
 </body>
