@@ -3,647 +3,190 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Go Live - Rich Bizness Art</title>
-
-  <script type="module">
-    import {
-      Room,
-      RoomEvent,
-      Track
-    } from "https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.esm.mjs";
-
-    let room = null;
-    let isLive = false;
-
-    const els = {};
-
-    function $(id) {
-      return document.getElementById(id);
-    }
-
-    function setStatus(message, type = "info") {
-      els.statusBox.textContent = message;
-      els.statusBox.className = `status-box ${type}`;
-      els.statusBox.style.display = "block";
-    }
-
-    function clearStatus() {
-      els.statusBox.textContent = "";
-      els.statusBox.className = "status-box";
-      els.statusBox.style.display = "none";
-    }
-
-    function setButtonsState(liveState) {
-      isLive = liveState;
-      els.startBtn.disabled = liveState;
-      els.endBtn.disabled = !liveState;
-      els.toggleCamBtn.disabled = !liveState;
-      els.toggleMicBtn.disabled = !liveState;
-      els.copyRoomBtn.disabled = !liveState;
-      els.joinViewerBtn.disabled = false;
-    }
-
-    function createVideoContainer(identity, isLocal = false) {
-      const wrapper = document.createElement("div");
-      wrapper.className = "video-card";
-      wrapper.id = `participant-${identity}`;
-
-      const label = document.createElement("div");
-      label.className = "video-label";
-      label.textContent = isLocal ? `${identity} (You)` : identity;
-
-      const mediaWrap = document.createElement("div");
-      mediaWrap.className = "video-media";
-      mediaWrap.id = `media-${identity}`;
-
-      wrapper.appendChild(mediaWrap);
-      wrapper.appendChild(label);
-
-      return wrapper;
-    }
-
-    function ensureParticipantCard(identity, isLocal = false) {
-      let card = document.getElementById(`participant-${identity}`);
-      if (!card) {
-        card = createVideoContainer(identity, isLocal);
-        els.videoGrid.appendChild(card);
-      }
-      return card;
-    }
-
-    function attachTrack(track, participantIdentity, isLocal = false) {
-      ensureParticipantCard(participantIdentity, isLocal);
-      const mediaWrap = document.getElementById(`media-${participantIdentity}`);
-
-      const attachedElement = track.attach();
-      attachedElement.classList.add("video-element");
-
-      if (track.kind === Track.Kind.Audio) {
-        attachedElement.style.display = "none";
-      }
-
-      mediaWrap.appendChild(attachedElement);
-    }
-
-    function detachParticipantTracks(identity) {
-      const card = document.getElementById(`participant-${identity}`);
-      if (card) card.remove();
-    }
-
-    async function startLive() {
-      try {
-        clearStatus();
-
-        const roomName = els.roomName.value.trim() || "richbizness-live-room";
-        const participantIdentity =
-          els.identity.value.trim() || `artist-${Math.floor(Math.random() * 100000)}`;
-        const participantName = els.displayName.value.trim() || participantIdentity;
-
-        setStatus("Creating live token...", "info");
-
-        const tokenRes = await fetch("/api/livekit-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            room_name: roomName,
-            participant_identity: participantIdentity,
-            participant_name: participantName
-          })
-        });
-
-        const tokenData = await tokenRes.json();
-
-        if (!tokenRes.ok) {
-          throw new Error(tokenData.error || "Failed to get LiveKit token");
-        }
-
-        room = new Room();
-
-        room
-          .on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-            attachTrack(track, participant.identity, false);
-          })
-          .on(RoomEvent.TrackUnsubscribed, (track) => {
-            track.detach().forEach((el) => el.remove());
-          })
-          .on(RoomEvent.ParticipantDisconnected, (participant) => {
-            detachParticipantTracks(participant.identity);
-          })
-          .on(RoomEvent.Disconnected, () => {
-            setStatus("Disconnected from live room.", "info");
-            els.viewerCount.textContent = "0";
-          })
-          .on(RoomEvent.ParticipantConnected, () => {
-            els.viewerCount.textContent = String(room.remoteParticipants.size);
-          });
-
-        setStatus("Connecting to room...", "info");
-
-        await room.connect(tokenData.server_url, tokenData.participant_token);
-
-        // Enable camera + mic after connect
-        await room.localParticipant.setCameraEnabled(true);
-        await room.localParticipant.setMicrophoneEnabled(true);
-
-        // Show local tracks
-        const localIdentity = room.localParticipant.identity;
-        ensureParticipantCard(localIdentity, true);
-
-        room.localParticipant.videoTrackPublications.forEach((pub) => {
-          if (pub.track) attachTrack(pub.track, localIdentity, true);
-        });
-
-        room.localParticipant.audioTrackPublications.forEach((pub) => {
-          if (pub.track) attachTrack(pub.track, localIdentity, true);
-        });
-
-        els.liveRoomText.textContent = roomName;
-        els.viewerCount.textContent = String(room.remoteParticipants.size);
-        setButtonsState(true);
-        setStatus(`You are live in room: ${roomName}`, "success");
-      } catch (error) {
-        console.error("Start live error:", error);
-        setStatus(`Live failed: ${error.message}`, "error");
-      }
-    }
-
-    async function endLive() {
-      try {
-        if (room) {
-          room.disconnect();
-          room = null;
-        }
-        els.videoGrid.innerHTML = "";
-        setButtonsState(false);
-        setStatus("Live ended.", "info");
-      } catch (error) {
-        console.error("End live error:", error);
-        setStatus(`Could not end live cleanly: ${error.message}`, "error");
-      }
-    }
-
-    async function toggleCamera() {
-      if (!room) return;
-      try {
-        const enabled = room.localParticipant.isCameraEnabled;
-        await room.localParticipant.setCameraEnabled(!enabled);
-        els.toggleCamBtn.textContent = enabled ? "Turn Camera Off" : "Turn Camera On";
-        els.toggleCamBtn.textContent = !enabled ? "Turn Camera Off" : "Turn Camera On";
-      } catch (error) {
-        setStatus(`Camera error: ${error.message}`, "error");
-      }
-    }
-
-    async function toggleMicrophone() {
-      if (!room) return;
-      try {
-        const enabled = room.localParticipant.isMicrophoneEnabled;
-        await room.localParticipant.setMicrophoneEnabled(!enabled);
-        els.toggleMicBtn.textContent = enabled ? "Turn Mic Off" : "Turn Mic On";
-        els.toggleMicBtn.textContent = !enabled ? "Turn Mic Off" : "Turn Mic On";
-      } catch (error) {
-        setStatus(`Mic error: ${error.message}`, "error");
-      }
-    }
-
-    async function copyRoomName() {
-      try {
-        await navigator.clipboard.writeText(els.liveRoomText.textContent);
-        setStatus("Room name copied.", "success");
-      } catch (error) {
-        setStatus("Could not copy room name.", "error");
-      }
-    }
-
-    function joinViewerMode() {
-      const roomName = els.roomName.value.trim() || "richbizness-live-room";
-      const viewerUrl = `${window.location.pathname}?viewer=1&room=${encodeURIComponent(roomName)}`;
-      window.location.href = viewerUrl;
-    }
-
-    async function startViewerMode() {
-      try {
-        clearStatus();
-
-        const params = new URLSearchParams(window.location.search);
-        const roomName = params.get("room") || "richbizness-live-room";
-        const participantIdentity = `viewer-${Math.floor(Math.random() * 100000)}`;
-        const participantName = participantIdentity;
-
-        els.pageTitle.textContent = "Watch Live";
-        els.hostControls.style.display = "none";
-        setStatus("Joining as viewer...", "info");
-
-        const tokenRes = await fetch("/api/livekit-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            room_name: roomName,
-            participant_identity: participantIdentity,
-            participant_name: participantName
-          })
-        });
-
-        const tokenData = await tokenRes.json();
-
-        if (!tokenRes.ok) {
-          throw new Error(tokenData.error || "Failed to get viewer token");
-        }
-
-        room = new Room();
-
-        room
-          .on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-            attachTrack(track, participant.identity, false);
-          })
-          .on(RoomEvent.TrackUnsubscribed, (track) => {
-            track.detach().forEach((el) => el.remove());
-          })
-          .on(RoomEvent.ParticipantDisconnected, (participant) => {
-            detachParticipantTracks(participant.identity);
-          });
-
-        await room.connect(tokenData.server_url, tokenData.participant_token);
-
-        els.liveRoomText.textContent = roomName;
-        els.viewerCount.textContent = String(room.remoteParticipants.size);
-        setStatus(`Watching room: ${roomName}`, "success");
-      } catch (error) {
-        console.error("Viewer mode error:", error);
-        setStatus(`Viewer join failed: ${error.message}`, "error");
-      }
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      els.pageTitle = $("pageTitle");
-      els.roomName = $("roomName");
-      els.identity = $("identity");
-      els.displayName = $("displayName");
-      els.startBtn = $("startBtn");
-      els.endBtn = $("endBtn");
-      els.toggleCamBtn = $("toggleCamBtn");
-      els.toggleMicBtn = $("toggleMicBtn");
-      els.copyRoomBtn = $("copyRoomBtn");
-      els.joinViewerBtn = $("joinViewerBtn");
-      els.liveRoomText = $("liveRoomText");
-      els.viewerCount = $("viewerCount");
-      els.videoGrid = $("videoGrid");
-      els.statusBox = $("statusBox");
-      els.hostControls = $("hostControls");
-
-      setButtonsState(false);
-
-      els.startBtn.addEventListener("click", startLive);
-      els.endBtn.addEventListener("click", endLive);
-      els.toggleCamBtn.addEventListener("click", toggleCamera);
-      els.toggleMicBtn.addEventListener("click", toggleMicrophone);
-      els.copyRoomBtn.addEventListener("click", copyRoomName);
-      els.joinViewerBtn.addEventListener("click", joinViewerMode);
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("viewer") === "1") {
-        startViewerMode();
-      }
-    });
-  </script>
-
+  <title>Go Live</title>
   <style>
-    * { box-sizing: border-box; }
-
     body {
       margin: 0;
+      background: #000;
+      color: #fff;
       font-family: Arial, sans-serif;
-      background: #0c0c0c;
-      color: white;
       padding: 20px;
     }
-
-    .container {
-      max-width: 1300px;
+    .wrap {
+      max-width: 1100px;
       margin: 0 auto;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .brand {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: #7CFC00;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      text-decoration: none;
-      color: white;
-      background: #171717;
-      border: 1px solid #333;
-      padding: 10px 14px;
-      border-radius: 10px;
-    }
-
-    .nav-links a:hover {
-      color: #7CFC00;
-      border-color: #7CFC00;
-    }
-
-    .hero {
       display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 22px;
-      align-items: start;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
     }
-
-    .panel {
-      background: #151515;
-      border: 1px solid #2a2a2a;
-      border-radius: 20px;
+    .panel, .stage {
+      background: #111;
+      border-radius: 18px;
+      border: 1px solid #1f1f1f;
       padding: 20px;
     }
-
-    .panel h1,
-    .panel h2 {
-      margin-top: 0;
-      margin-bottom: 14px;
+    h1, h2 {
+      color: #39ff14;
     }
-
-    .panel h1 {
-      color: #7CFC00;
-      font-size: 2rem;
-    }
-
-    .subtext {
-      color: #cfcfcf;
-      line-height: 1.5;
-      margin-bottom: 18px;
-    }
-
-    .form-group {
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 7px;
-      font-weight: bold;
-      color: #ddd;
-    }
-
-    input,
-    button {
+    input, button {
       width: 100%;
       padding: 12px;
+      margin-top: 12px;
       border-radius: 12px;
-      border: 1px solid #333;
-      background: #101010;
-      color: white;
+      border: none;
       font-size: 15px;
     }
-
-    button {
-      cursor: pointer;
-      font-weight: bold;
-      transition: 0.2s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-      opacity: 0.97;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #7CFC00, #2e8b57);
-      color: black;
-      border: none;
-    }
-
-    .btn-secondary {
-      background: #1b1b1b;
-    }
-
-    .btn-danger {
-      background: #3a1313;
-      border-color: #5c2424;
-    }
-
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .button-grid.single {
-      grid-template-columns: 1fr;
-    }
-
-    .status-box {
-      display: none;
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: bold;
-    }
-
-    .status-box.info {
-      display: block;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #e6e6e6;
-    }
-
-    .status-box.success {
-      display: block;
-      background: rgba(0,255,100,0.08);
-      border: 1px solid rgba(124,252,0,0.35);
-      color: #baff8a;
-    }
-
-    .status-box.error {
-      display: block;
-      background: rgba(255,0,0,0.08);
-      border: 1px solid rgba(255,80,80,0.35);
-      color: #ff9d9d;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat-card {
-      background: #101010;
-      border: 1px solid #2a2a2a;
-      border-radius: 16px;
-      padding: 16px;
-    }
-
-    .stat-card .label {
-      color: #bbb;
-      font-size: 14px;
-      margin-bottom: 6px;
-    }
-
-    .stat-card .value {
-      font-size: 1.1rem;
-      font-weight: bold;
-      color: #7CFC00;
-      word-break: break-word;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 18px;
-      min-height: 420px;
-    }
-
-    .video-card {
-      position: relative;
-      background: #0f0f0f;
-      border: 1px solid #2b2b2b;
-      border-radius: 18px;
-      overflow: hidden;
-      min-height: 280px;
-    }
-
-    .video-media {
-      width: 100%;
-      min-height: 280px;
-      background: #090909;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .video-element {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: black;
-    }
-
-    .video-label {
-      position: absolute;
-      left: 12px;
-      bottom: 12px;
-      background: rgba(0,0,0,0.65);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 8px 10px;
-      border-radius: 10px;
-      font-size: 14px;
+    input {
+      background: #1d1d1d;
       color: white;
     }
-
-    .empty-video {
-      color: #888;
-      border: 1px dashed #333;
-      border-radius: 18px;
-      padding: 28px;
-      text-align: center;
-      background: #111;
+    button {
+      font-weight: 800;
+      cursor: pointer;
     }
-
-    @media (max-width: 980px) {
-      .hero {
+    .green {
+      background: #39ff14;
+      color: #000;
+    }
+    .dark {
+      background: #222;
+      color: #fff;
+    }
+    #videoContainer video {
+      width: 100%;
+      max-height: 70vh;
+      border-radius: 12px;
+      background: black;
+    }
+    #status {
+      margin-top: 14px;
+      color: #39ff14;
+    }
+    #errorBox {
+      margin-top: 10px;
+      color: #ff6b6b;
+    }
+    @media (max-width: 900px) {
+      .wrap {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="topbar">
-      <div class="brand">Rich Bizness Live</div>
+  <p><a href="index.html" style="color:white;">← Home</a></p>
 
-      <div class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload</a>
-        <a href="profile.html">Profile</a>
-      </div>
+  <div class="wrap">
+    <div class="panel">
+      <h1>Host Live</h1>
+      <input id="roomName" value="richbizness-live-room" placeholder="Room name" />
+      <input id="identity" value="host-main" placeholder="Host identity" />
+      <input id="displayName" value="Rich Bizness" placeholder="Display name" />
+      <button id="startBtn" class="green">Start Live</button>
+      <button id="endBtn" class="dark">End Live</button>
+      <div id="status">Not connected</div>
+      <div id="errorBox"></div>
     </div>
 
-    <div class="hero">
-      <div class="panel">
-        <h1 id="pageTitle">Go Live</h1>
-        <p class="subtext">
-          Start your live room, turn on camera and mic, and let people watch your stream.
-        </p>
-
-        <div id="hostControls">
-          <div class="form-group">
-            <label for="roomName">Room Name</label>
-            <input id="roomName" type="text" value="richbizness-live-room" />
-          </div>
-
-          <div class="form-group">
-            <label for="identity">Host Identity</label>
-            <input id="identity" type="text" placeholder="artist-12345" />
-          </div>
-
-          <div class="form-group">
-            <label for="displayName">Display Name</label>
-            <input id="displayName" type="text" placeholder="Rich Bizness" />
-          </div>
-
-          <div class="button-grid">
-            <button id="startBtn" class="btn-primary">Start Live</button>
-            <button id="endBtn" class="btn-danger">End Live</button>
-          </div>
-
-          <div class="button-grid" style="margin-top:10px;">
-            <button id="toggleCamBtn" class="btn-secondary">Turn Camera Off</button>
-            <button id="toggleMicBtn" class="btn-secondary">Turn Mic Off</button>
-          </div>
-        </div>
-
-        <div class="button-grid single" style="margin-top:10px;">
-          <button id="copyRoomBtn" class="btn-secondary">Copy Room Name</button>
-          <button id="joinViewerBtn" class="btn-secondary">Open Viewer Page</button>
-        </div>
-
-        <div id="statusBox" class="status-box"></div>
-
-        <div class="stats">
-          <div class="stat-card">
-            <div class="label">Live Room</div>
-            <div class="value" id="liveRoomText">Not connected</div>
-          </div>
-
-          <div class="stat-card">
-            <div class="label">Viewers In Room</div>
-            <div class="value" id="viewerCount">0</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <h2>Live Stage</h2>
-        <div id="videoGrid" class="video-grid">
-          <div class="empty-video">
-            Your live video will appear here after you connect.
-          </div>
-        </div>
-      </div>
+    <div class="stage">
+      <h2>Live Stage</h2>
+      <div id="videoContainer"></div>
     </div>
   </div>
+
+  <script type="module">
+    import {
+      Room,
+      RoomEvent,
+      createLocalVideoTrack,
+      createLocalAudioTrack
+    } from "https://esm.sh/livekit-client";
+
+    const startBtn = document.getElementById("startBtn");
+    const endBtn = document.getElementById("endBtn");
+    const status = document.getElementById("status");
+    const errorBox = document.getElementById("errorBox");
+    const videoContainer = document.getElementById("videoContainer");
+
+    let room = null;
+    let localVideoTrack = null;
+    let localAudioTrack = null;
+
+    startBtn.addEventListener("click", async () => {
+      errorBox.textContent = "";
+
+      try {
+        const roomName = document.getElementById("roomName").value.trim();
+        const identity = document.getElementById("identity").value.trim();
+        const displayName = document.getElementById("displayName").value.trim();
+
+        const response = await fetch("/get-livekit-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roomName,
+            identity,
+            name: displayName,
+            role: "host"
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to get token");
+        }
+
+        room = new Room();
+
+        room.on(RoomEvent.Disconnected, () => {
+          status.textContent = "Disconnected";
+        });
+
+        await room.connect(data.url, data.token);
+
+        localVideoTrack = await createLocalVideoTrack();
+        localAudioTrack = await createLocalAudioTrack();
+
+        await room.localParticipant.publishTrack(localVideoTrack);
+        await room.localParticipant.publishTrack(localAudioTrack);
+
+        const el = localVideoTrack.attach();
+        videoContainer.innerHTML = "";
+        videoContainer.appendChild(el);
+
+        status.textContent = "Live and connected";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "Connection failed";
+        errorBox.textContent = error.message;
+      }
+    });
+
+    endBtn.addEventListener("click", () => {
+      try {
+        if (localVideoTrack) {
+          localVideoTrack.stop();
+          localVideoTrack.detach().forEach(el => el.remove());
+        }
+
+        if (localAudioTrack) {
+          localAudioTrack.stop();
+        }
+
+        if (room) {
+          room.disconnect();
+        }
+
+        room = null;
+        localVideoTrack = null;
+        localAudioTrack = null;
+        videoContainer.innerHTML = "";
+        status.textContent = "Live ended";
+      } catch (error) {
+        errorBox.textContent = error.message;
+      }
+    });
+  </script>
 </body>
 </html>
