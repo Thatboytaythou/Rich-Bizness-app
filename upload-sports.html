@@ -1,115 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Upload Sports | Rich Bizness</title>
-<style>
-body{background:#050505;color:#fff;font-family:Arial;padding:20px}
-.container{max-width:900px;margin:auto}
-.title{font-size:36px;color:#39ff14;font-weight:900;margin-bottom:20px}
-.card{background:#0d0d0d;padding:20px;border-radius:16px;border:1px solid rgba(255,255,255,0.08)}
-label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700}
-input,textarea,select{width:100%;padding:12px;border-radius:10px;border:none;background:#121212;color:#fff}
-button{margin-top:16px;padding:14px;border:none;border-radius:12px;font-weight:900;cursor:pointer}
-.btn-green{background:#39ff14;color:#000}
-.preview{margin-top:20px}
-video{width:100%;border-radius:12px}
-.status{margin-top:15px;padding:10px;border-radius:10px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Sports | Rich Bizness</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #050505;
+      color: #fff;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .container {
+      max-width: 1150px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      font-size: 34px;
+      font-weight: 900;
+      color: #39ff14;
+      text-shadow: 0 0 16px rgba(57,255,20,0.25);
+    }
+
+    .top-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .top-links a {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .top-links a:hover {
+      color: #39ff14;
+      border-color: rgba(57,255,20,0.45);
+      background: rgba(57,255,20,0.12);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 22px;
+    }
+
+    .card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 22px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
+
+    h1, h2 {
+      color: #39ff14;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 34px;
+    }
+
+    .subtext {
+      color: #d3d3d3;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #f2f2f2;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      background: #121212;
+      color: #fff;
+      border: 1px solid #2b2b2b;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+    }
+
+    input[type="file"] {
+      padding: 12px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn-green {
+      background: #39ff14;
+      color: #000;
+    }
+
+    .btn-dark {
+      background: #1c1c1c;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-green:hover,
+    .btn-dark:hover {
+      transform: translateY(-1px);
+    }
+
+    .status-box {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .status-box.success {
+      display: block;
+      background: rgba(57,255,20,0.12);
+      border: 1px solid rgba(57,255,20,0.35);
+      color: #98ff83;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255,70,70,0.12);
+      border: 1px solid rgba(255,70,70,0.35);
+      color: #ff9b9b;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(57,255,20,0.08);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d8ffd0;
+    }
+
+    .preview-box {
+      width: 100%;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 18px;
+    }
+
+    .preview-placeholder {
+      color: #bfbfbf;
+      text-align: center;
+      padding: 28px;
+      line-height: 1.5;
+    }
+
+    video {
+      width: 100%;
+      border-radius: 18px;
+      display: none;
+      background: #000;
+    }
+
+    .info-list {
+      margin-top: 16px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .info-list h3 {
+      color: #39ff14;
+      margin-bottom: 10px;
+    }
+
+    .info-list p {
+      color: #d8d8d8;
+      line-height: 1.5;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 950px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .brand {
+        font-size: 28px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="container">
-<div class="title">Upload Sports Clip</div>
-<div class="card">
-<label>Title</label>
-<input id="title" placeholder="Crazy dunk / Game winner">
+  <div class="container">
 
-<label>Description</label>
-<textarea id="description"></textarea>
+    <div class="topbar">
+      <div class="brand">Rich Bizness Upload Sports</div>
 
-<label>Sport</label>
-<select id="category">
-  <option>NBA</option>
-  <option>NFL</option>
-  <option>Boxing</option>
-  <option>Soccer</option>
-  <option>Street Ball</option>
-  <option>Other</option>
-</select>
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="auth.html">Auth</a>
+        <a href="profile.html">Profile</a>
+        <a href="artist.html">Artist</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="sports.html">Sports</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+      </div>
+    </div>
 
-<label>Upload Video</label>
-<input type="file" id="file" accept="video/*">
+    <div class="layout">
+      <div class="card">
+        <h1>Upload Sports Clip</h1>
+        <p class="subtext">
+          Upload highlights, reactions, edits, and sports content to your sports feed.
+        </p>
 
-<button class="btn-green" onclick="upload()">Upload Clip</button>
-<div id="status" class="status"></div>
+        <div class="form-group">
+          <label for="titleInput">Title</label>
+          <input id="titleInput" type="text" placeholder="Crazy dunk / game winner / hot take" />
+        </div>
 
-<div class="preview">
-  <video id="preview" controls></video>
-</div>
-</div>
-</div>
+        <div class="form-group">
+          <label for="categoryInput">Sport</label>
+          <select id="categoryInput">
+            <option value="NBA">NBA</option>
+            <option value="NFL">NFL</option>
+            <option value="Boxing">Boxing</option>
+            <option value="Soccer">Soccer</option>
+            <option value="Street Ball">Street Ball</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const supabase = window.supabase.createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
-);
-const BUCKET = "sports";
-const fileInput = document.getElementById("file");
-const preview = document.getElementById("preview");
-const statusBox = document.getElementById("status");
+        <div class="form-group">
+          <label for="descriptionInput">Description</label>
+          <textarea id="descriptionInput" placeholder="Describe the clip"></textarea>
+        </div>
 
-fileInput.addEventListener("change", () => {
-  const file = fileInput.files[0];
-  if (!file) return;
-  preview.src = URL.createObjectURL(file);
-});
+        <div class="form-group">
+          <label for="videoInput">Upload Video</label>
+          <input id="videoInput" type="file" accept="video/*" />
+        </div>
 
-async function upload() {
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    alert("Login first");
-    window.location.href = "auth.html";
-    return;
-  }
+        <div class="button-row">
+          <button id="uploadBtn" class="btn-green">Upload Clip</button>
+          <button id="clearBtn" class="btn-dark" type="button">Clear</button>
+        </div>
 
-  const file = fileInput.files[0];
-  const title = document.getElementById("title").value;
-  const description = document.getElementById("description").value;
-  const category = document.getElementById("category").value;
+        <div id="statusBox" class="status-box info">Ready to upload.</div>
+      </div>
 
-  if (!file) {
-    statusBox.innerText = "Select a video";
-    return;
-  }
+      <div class="card">
+        <h2>Preview</h2>
 
-  statusBox.innerText = "Uploading...";
+        <div class="preview-box">
+          <video id="previewVideo" controls></video>
+          <div id="previewPlaceholder" class="preview-placeholder">
+            Your sports clip preview will show here.
+          </div>
+        </div>
 
-  try {
-    const filePath = `${userData.user.id}/${Date.now()}-${file.name}`;
-    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, file);
-    if (uploadError) throw uploadError;
+        <div class="info-list">
+          <h3>Upload Setup</h3>
+          <p>Table name is set to <strong>sports_posts</strong>.</p>
+          <p>Storage bucket is set to <strong>sports</strong>.</p>
+          <p>If your bucket has a different name, change the constant in the script below.</p>
+          <p>Best video types: MP4, MOV, WEBM.</p>
+        </div>
+      </div>
+    </div>
 
-    const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
-    const videoUrl = data.publicUrl;
+  </div>
 
-    const { error: dbError } = await supabase.from("sports_posts").insert([{
-      user_id: userData.user.id,
-      title,
-      description,
-      category,
-      video_url: videoUrl
-    }]);
-    if (dbError) throw dbError;
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-    statusBox.innerText = "Upload successful";
-    setTimeout(() => { window.location.href = "sports.html"; }, 1000);
-  } catch (err) {
-    statusBox.innerText = "Error: " + err.message;
-  }
-}
-</script>
+    const SPORTS_BUCKET = "sports";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const titleInput = document.getElementById("titleInput");
+    const categoryInput = document.getElementById("categoryInput");
+    const descriptionInput = document.getElementById("descriptionInput");
+    const videoInput = document.getElementById("videoInput");
+    const statusBox = document.getElementById("statusBox");
+    const previewVideo = document.getElementById("previewVideo");
+    const previewPlaceholder = document.getElementById("previewPlaceholder");
+
+    function showStatus(message, type = "info") {
+      statusBox.textContent = message;
+      statusBox.className = `status-box ${type}`;
+      statusBox.style.display = "block";
+    }
+
+    function safeFileName(name) {
+      return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    }
+
+    async function requireUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+
+      if (error || !data.user) {
+        window.location.href = "auth.html";
+        return null;
+      }
+
+      return data.user;
+    }
+
+    function previewVideoFile(file) {
+      if (!file) return;
+
+      previewVideo.src = URL.createObjectURL(file);
+      previewVideo.style.display = "block";
+      previewPlaceholder.style.display = "none";
+    }
+
+    async function uploadSports() {
+      const user = await requireUser();
+      if (!user) return;
+
+      const title = titleInput.value.trim();
+      const category = categoryInput.value;
+      const description = descriptionInput.value.trim();
+      const videoFile = videoInput.files[0];
+
+      if (!title) {
+        showStatus("Please enter a title.", "error");
+        return;
+      }
+
+      if (!videoFile) {
+        showStatus("Please choose a video file.", "error");
+        return;
+      }
+
+      showStatus("Uploading sports clip...", "info");
+
+      try {
+        const videoName = safeFileName(videoFile.name);
+        const videoExt = videoName.includes(".") ? videoName.split(".").pop() : "mp4";
+        const videoPath = `${user.id}/video-${Date.now()}-${Math.random().toString(36).slice(2)}.${videoExt}`;
+
+        const { error: videoError } = await supabaseClient.storage
+          .from(SPORTS_BUCKET)
+          .upload(videoPath, videoFile, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (videoError) {
+          throw videoError;
+        }
+
+        const { data: videoPublic } = supabaseClient.storage
+          .from(SPORTS_BUCKET)
+          .getPublicUrl(videoPath);
+
+        const videoUrl = videoPublic.publicUrl;
+
+        const { error: insertError } = await supabaseClient
+          .from("sports_posts")
+          .insert([{
+            user_id: user.id,
+            title: title,
+            description: description,
+            category: category,
+            video_url: videoUrl
+          }]);
+
+        if (insertError) {
+          throw insertError;
+        }
+
+        showStatus("Sports clip uploaded successfully.", "success");
+
+        setTimeout(() => {
+          window.location.href = "sports.html";
+        }, 1200);
+
+      } catch (error) {
+        console.error("Sports upload error:", error);
+        showStatus("Upload failed: " + error.message, "error");
+      }
+    }
+
+    function clearForm() {
+      titleInput.value = "";
+      categoryInput.value = "NBA";
+      descriptionInput.value = "";
+      videoInput.value = "";
+
+      previewVideo.src = "";
+      previewVideo.style.display = "none";
+      previewPlaceholder.style.display = "block";
+
+      showStatus("Form cleared.", "info");
+    }
+
+    videoInput.addEventListener("change", () => previewVideoFile(videoInput.files[0]));
+    document.getElementById("uploadBtn").addEventListener("click", uploadSports);
+    document.getElementById("clearBtn").addEventListener("click", clearForm);
+  </script>
 </body>
 </html>
