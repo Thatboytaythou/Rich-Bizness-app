@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Watch Live | Rich Bizness</title>
+  <title>Go Live | Rich Bizness</title>
 
   <style>
     * {
@@ -54,7 +54,7 @@
 
     .top-links a {
       background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.10);
       padding: 10px 16px;
       border-radius: 12px;
       font-weight: 700;
@@ -146,6 +146,11 @@
       color: #000;
     }
 
+    .btn-red {
+      background: #8f1d2c;
+      color: #fff;
+    }
+
     .btn-dark {
       background: #1c1c1c;
       color: #fff;
@@ -153,6 +158,7 @@
     }
 
     .btn-green:hover,
+    .btn-red:hover,
     .btn-dark:hover {
       transform: translateY(-1px);
     }
@@ -184,7 +190,7 @@
     .status-box.info {
       display: block;
       background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.2);
+      border: 1px solid rgba(57,255,20,0.20);
       color: #d8ffd0;
     }
 
@@ -293,22 +299,28 @@
   <div class="container">
 
     <div class="topbar">
-      <div class="brand">Rich Bizness Watch</div>
+      <div class="brand">Rich Bizness Live</div>
 
       <div class="top-links">
         <a href="index.html">Home</a>
-        <a href="gallery/index.html">Gallery</a>
-        <a href="upload.html">Upload Art</a>
+        <a href="auth.html">Auth</a>
         <a href="profile.html">Profile</a>
-        <a href="live.html">Go Live</a>
+        <a href="artist.html">Artist</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="sports.html">Sports</a>
+        <a href="upload-sports.html">Upload Sports</a>
+        <a href="watch.html">Watch Live</a>
       </div>
     </div>
 
     <div class="layout">
       <div class="card">
-        <h1>Watch Live</h1>
+        <h1>Go Live</h1>
         <p class="subtext">
-          Join the live room and watch the stream.
+          Start your live room so viewers can join and watch from the watch page.
         </p>
 
         <div class="form-group">
@@ -317,47 +329,49 @@
         </div>
 
         <div class="form-group">
-          <label for="identityInput">Viewer Identity</label>
-          <input id="identityInput" type="text" value="" placeholder="viewer-12345" />
+          <label for="identityInput">Host Identity</label>
+          <input id="identityInput" type="text" value="artist-host" />
         </div>
 
         <div class="form-group">
           <label for="displayNameInput">Display Name</label>
-          <input id="displayNameInput" type="text" value="Fan Viewer" />
+          <input id="displayNameInput" type="text" value="Rich Bizness" />
         </div>
 
         <div class="button-grid">
-          <button id="joinBtn" class="btn-green">Join Stream</button>
-          <button id="leaveBtn" class="btn-dark">Leave Stream</button>
+          <button id="startBtn" class="btn-green">Start Live</button>
+          <button id="endBtn" class="btn-red">End Live</button>
+          <button id="cameraBtn" class="btn-dark">Turn Camera Off</button>
+          <button id="micBtn" class="btn-dark">Turn Mic Off</button>
           <button id="copyBtn" class="btn-dark">Copy Room Name</button>
-          <button id="hostBtn" class="btn-dark">Open Host Page</button>
+          <button id="watchBtn" class="btn-dark">Open Viewer Page</button>
         </div>
 
         <div id="statusBox" class="status-box info">Not connected</div>
 
         <div class="stats">
           <div class="stat-box">
-            <div id="watchState" class="stat-number">OFF</div>
-            <div class="stat-label">Watch State</div>
+            <div id="liveState" class="stat-number">OFF</div>
+            <div class="stat-label">Live Room</div>
           </div>
           <div class="stat-box">
-            <div id="participantCount" class="stat-number">0</div>
-            <div class="stat-label">People In Room</div>
+            <div id="viewerCount" class="stat-number">0</div>
+            <div class="stat-label">Viewers In Room</div>
           </div>
           <div class="stat-box">
-            <div id="streamState" class="stat-number">WAIT</div>
-            <div class="stat-label">Stream State</div>
+            <div id="mediaState" class="stat-number">READY</div>
+            <div class="stat-label">Media State</div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2>Live Watch</h2>
+        <h2>Live Stage</h2>
 
         <div class="stage-box" id="stageBox">
           <div id="liveBadge" class="live-badge">LIVE</div>
           <div id="stagePlaceholder" class="stage-placeholder">
-            Waiting for the host video to appear.
+            Your live video will appear here after you connect.
           </div>
         </div>
       </div>
@@ -368,37 +382,36 @@
     import {
       Room,
       RoomEvent,
-      Track
+      createLocalVideoTrack,
+      createLocalAudioTrack
     } from "https://esm.sh/livekit-client";
 
     const roomNameInput = document.getElementById("roomNameInput");
     const identityInput = document.getElementById("identityInput");
     const displayNameInput = document.getElementById("displayNameInput");
 
-    const joinBtn = document.getElementById("joinBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
+    const startBtn = document.getElementById("startBtn");
+    const endBtn = document.getElementById("endBtn");
+    const cameraBtn = document.getElementById("cameraBtn");
+    const micBtn = document.getElementById("micBtn");
     const copyBtn = document.getElementById("copyBtn");
-    const hostBtn = document.getElementById("hostBtn");
+    const watchBtn = document.getElementById("watchBtn");
 
     const statusBox = document.getElementById("statusBox");
-    const watchState = document.getElementById("watchState");
-    const participantCount = document.getElementById("participantCount");
-    const streamState = document.getElementById("streamState");
+    const liveState = document.getElementById("liveState");
+    const viewerCount = document.getElementById("viewerCount");
+    const mediaState = document.getElementById("mediaState");
 
     const stageBox = document.getElementById("stageBox");
     const stagePlaceholder = document.getElementById("stagePlaceholder");
     const liveBadge = document.getElementById("liveBadge");
 
     let room = null;
-    let attachedElements = [];
-
-    function makeViewerIdentity() {
-      return "viewer-" + Math.random().toString(36).slice(2, 10);
-    }
-
-    if (!identityInput.value.trim()) {
-      identityInput.value = makeViewerIdentity();
-    }
+    let localVideoTrack = null;
+    let localAudioTrack = null;
+    let localVideoElement = null;
+    let cameraEnabled = true;
+    let micEnabled = true;
 
     function showStatus(message, type = "info") {
       statusBox.textContent = message;
@@ -406,113 +419,68 @@
       statusBox.style.display = "block";
     }
 
-    function updateParticipantCount() {
+    function updateViewerCount() {
       if (!room) {
-        participantCount.textContent = "0";
+        viewerCount.textContent = "0";
         return;
       }
-      participantCount.textContent = String(room.remoteParticipants.size + 1);
+      viewerCount.textContent = String(room.remoteParticipants.size);
     }
 
     function setConnectedUI() {
-      watchState.textContent = "LIVE";
-      showStatus("Connected to stream.", "success");
+      liveState.textContent = "LIVE";
+      mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
+      liveBadge.style.display = "block";
+      showStatus("Live and connected.", "success");
     }
 
-    function setDisconnectedUI(message = "Disconnected.") {
-      watchState.textContent = "OFF";
-      participantCount.textContent = "0";
-      streamState.textContent = "WAIT";
+    function setDisconnectedUI(message = "Live ended.") {
+      liveState.textContent = "OFF";
+      viewerCount.textContent = "0";
+      mediaState.textContent = "READY";
       liveBadge.style.display = "none";
       showStatus(message, "info");
     }
 
     function clearStage() {
-      attachedElements.forEach(el => {
+      if (localVideoTrack) {
         try {
-          el.remove();
+          localVideoTrack.detach().forEach(el => el.remove());
         } catch {}
-      });
-      attachedElements = [];
+      }
 
-      stageBox.querySelectorAll("video, audio").forEach(el => {
+      if (localVideoElement) {
         try {
-          el.remove();
+          localVideoElement.remove();
         } catch {}
-      });
+      }
 
+      localVideoElement = null;
       stagePlaceholder.style.display = "block";
-      streamState.textContent = "WAIT";
-      liveBadge.style.display = "none";
     }
 
-    function attachTrack(track) {
-      const el = track.attach();
-
-      if (track.kind === Track.Kind.Video) {
-        stageBox.querySelectorAll("video").forEach(video => {
-          try {
-            video.remove();
-          } catch {}
-        });
-
-        stagePlaceholder.style.display = "none";
-        liveBadge.style.display = "block";
-        streamState.textContent = "LIVE";
-        stageBox.appendChild(el);
-      }
-
-      if (track.kind === Track.Kind.Audio) {
-        el.style.display = "none";
-        stageBox.appendChild(el);
-      }
-
-      attachedElements.push(el);
-    }
-
-    function detachTrack(track) {
-      const els = track.detach();
-      els.forEach(el => {
-        try {
-          el.remove();
-        } catch {}
-      });
-
-      const hasVideo = stageBox.querySelectorAll("video").length > 0;
-      if (!hasVideo) {
-        stagePlaceholder.style.display = "block";
-        streamState.textContent = "WAIT";
-        liveBadge.style.display = "none";
-      }
-    }
-
-    function bindParticipantTracks(participant) {
-      participant.trackPublications.forEach(publication => {
-        if (publication.isSubscribed && publication.track) {
-          attachTrack(publication.track);
-        }
-      });
-    }
-
-    async function joinStream() {
+    async function startLive() {
       try {
-        if (room) {
-          showStatus("Already connected.", "info");
-          return;
-        }
-
-        showStatus("Joining stream...", "info");
+        showStatus("Connecting live room...", "info");
 
         const roomName = roomNameInput.value.trim();
-        const identity = identityInput.value.trim() || makeViewerIdentity();
-        const displayName = displayNameInput.value.trim() || identity;
+        const identity = identityInput.value.trim();
+        const displayName = displayNameInput.value.trim();
 
         if (!roomName) {
           showStatus("Room name is required.", "error");
           return;
         }
 
-        identityInput.value = identity;
+        if (!identity) {
+          showStatus("Host identity is required.", "error");
+          return;
+        }
+
+        if (room) {
+          showStatus("Already connected.", "info");
+          return;
+        }
 
         const response = await fetch("/get-livekit-token", {
           method: "POST",
@@ -523,76 +491,136 @@
             roomName,
             identity,
             name: displayName,
-            role: "viewer"
+            role: "host"
           })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to get viewer token.");
+          throw new Error(data.error || "Failed to get live token.");
         }
 
-        room = new Room({
-          adaptiveStream: true,
-          dynacast: true
-        });
+        room = new Room();
 
         room.on(RoomEvent.Connected, () => {
-          updateParticipantCount();
-          setConnectedUI();
+          updateViewerCount();
         });
 
         room.on(RoomEvent.Disconnected, () => {
+          setDisconnectedUI("Disconnected from live room.");
           clearStage();
-          setDisconnectedUI("Disconnected from stream.");
           room = null;
         });
 
-        room.on(RoomEvent.ParticipantConnected, participant => {
-          updateParticipantCount();
-          bindParticipantTracks(participant);
+        room.on(RoomEvent.ParticipantConnected, () => {
+          updateViewerCount();
         });
 
         room.on(RoomEvent.ParticipantDisconnected, () => {
-          updateParticipantCount();
+          updateViewerCount();
         });
 
-        room.on(RoomEvent.TrackSubscribed, track => {
-          attachTrack(track);
-        });
+        await room.connect(data.url, data.token);
 
-        room.on(RoomEvent.TrackUnsubscribed, track => {
-          detachTrack(track);
-        });
+        localVideoTrack = await createLocalVideoTrack();
+        localAudioTrack = await createLocalAudioTrack();
 
-        await room.connect(data.url, data.token, {
-          autoSubscribe: true
-        });
+        await room.localParticipant.publishTrack(localVideoTrack);
+        await room.localParticipant.publishTrack(localAudioTrack);
 
-        room.remoteParticipants.forEach(participant => {
-          bindParticipantTracks(participant);
-        });
+        localVideoElement = localVideoTrack.attach();
+        stagePlaceholder.style.display = "none";
+        stageBox.appendChild(localVideoElement);
 
-        updateParticipantCount();
+        cameraEnabled = true;
+        micEnabled = true;
+        cameraBtn.textContent = "Turn Camera Off";
+        micBtn.textContent = "Turn Mic Off";
+
+        setConnectedUI();
+        updateViewerCount();
       } catch (error) {
-        console.error("Watch error:", error);
-        showStatus(error.message || "Failed to join stream.", "error");
+        console.error("Live error:", error);
+        showStatus(error.message || "Failed to start live.", "error");
       }
     }
 
-    async function leaveStream() {
+    async function endLive() {
       try {
+        if (localVideoTrack) {
+          localVideoTrack.stop();
+          localVideoTrack.detach().forEach(el => el.remove());
+        }
+
+        if (localAudioTrack) {
+          localAudioTrack.stop();
+        }
+
         if (room) {
           room.disconnect();
         }
 
         room = null;
+        localVideoTrack = null;
+        localAudioTrack = null;
+        localVideoElement = null;
+        cameraEnabled = true;
+        micEnabled = true;
+
         clearStage();
-        setDisconnectedUI("Left stream.");
+        setDisconnectedUI("Live ended.");
       } catch (error) {
-        console.error("Leave stream error:", error);
-        showStatus(error.message || "Failed to leave stream.", "error");
+        console.error("End live error:", error);
+        showStatus(error.message || "Failed to end live.", "error");
+      }
+    }
+
+    async function toggleCamera() {
+      try {
+        if (!localVideoTrack) {
+          showStatus("Start live first.", "error");
+          return;
+        }
+
+        cameraEnabled = !cameraEnabled;
+
+        if (cameraEnabled) {
+          await localVideoTrack.unmute();
+          cameraBtn.textContent = "Turn Camera Off";
+        } else {
+          await localVideoTrack.mute();
+          cameraBtn.textContent = "Turn Camera On";
+        }
+
+        mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
+      } catch (error) {
+        console.error("Camera toggle error:", error);
+        showStatus(error.message || "Failed to toggle camera.", "error");
+      }
+    }
+
+    async function toggleMic() {
+      try {
+        if (!localAudioTrack) {
+          showStatus("Start live first.", "error");
+          return;
+        }
+
+        micEnabled = !micEnabled;
+
+        if (micEnabled) {
+          await localAudioTrack.unmute();
+          micBtn.textContent = "Turn Mic Off";
+        } else {
+          await localAudioTrack.mute();
+          micBtn.textContent = "Turn Mic On";
+        }
+
+        mediaState.textContent = cameraEnabled && micEnabled ? "ON" : "MIX";
+      } catch (error) {
+        console.error("Mic toggle error:", error);
+        showStatus(error.message || "Failed to toggle mic.", "error");
       }
     }
 
@@ -605,14 +633,16 @@
       }
     }
 
-    function openHostPage() {
-      window.open("live.html", "_blank");
+    function openWatchPage() {
+      window.open("watch.html", "_blank");
     }
 
-    joinBtn.addEventListener("click", joinStream);
-    leaveBtn.addEventListener("click", leaveStream);
+    startBtn.addEventListener("click", startLive);
+    endBtn.addEventListener("click", endLive);
+    cameraBtn.addEventListener("click", toggleCamera);
+    micBtn.addEventListener("click", toggleMic);
     copyBtn.addEventListener("click", copyRoomName);
-    hostBtn.addEventListener("click", openHostPage);
+    watchBtn.addEventListener("click", openWatchPage);
 
     window.addEventListener("beforeunload", () => {
       if (room) {
