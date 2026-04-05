@@ -1,160 +1,102 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gallery</title>
-
-<style>
-body {
-  margin:0;
-  background:black;
-  color:white;
-  font-family:Arial;
-}
-
-h1 {
-  text-align:center;
-  color:#39ff14;
-}
-
-.top-links {
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  margin:20px;
-}
-
-.top-links a {
-  color:white;
-  text-decoration:none;
-  background:#111;
-  padding:10px;
-  border-radius:8px;
-}
-
-.controls {
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  margin-bottom:20px;
-  flex-wrap:wrap;
-}
-
-input, select {
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#111;
-  color:white;
-}
-
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:20px;
-  padding:20px;
-}
-
-.card {
-  background:#111;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-.card img {
-  width:100%;
-  height:250px;
-  object-fit:cover;
-}
-
-.card-body {
-  padding:10px;
-}
-
-.title {
-  color:#39ff14;
-}
-
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery</title>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #39ff14;
+    }
+    .grid {
+      max-width: 1200px;
+      margin: 30px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: #111;
+      border: 1px solid #1f1f1f;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .card img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      display: block;
+      background: #1d1d1d;
+    }
+    .content {
+      padding: 14px;
+    }
+    .content h3 {
+      margin: 0 0 8px;
+      color: #39ff14;
+    }
+    a {
+      color: #fff;
+      text-decoration: none;
+    }
+  </style>
 </head>
-
 <body>
+  <p><a href="index.html">← Home</a></p>
+  <h1>Artist Gallery</h1>
+  <div id="gallery" class="grid"></div>
 
-<h1>Gallery</h1>
+  <script src="env.js"></script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    const supabase = createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
+    const gallery = document.getElementById("gallery");
 
-<div class="top-links">
-<a href="/index.html">Home</a>
-<a href="/upload.html">Upload</a>
-<a href="/live.html">Go Live</a>
-<a href="/profile.html">Profile</a>
-</div>
+    function escapeHtml(str = "") {
+      return str
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
 
-<div class="controls">
-<input id="search" placeholder="Search...">
-<select id="sort">
-<option value="newest">Newest</option>
-<option value="oldest">Oldest</option>
-</select>
-</div>
+    async function loadGallery() {
+      const { data, error } = await supabase
+        .from("artworks")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-<div id="gallery" class="grid"></div>
+      if (error) {
+        gallery.innerHTML = "<p>Could not load gallery.</p>";
+        return;
+      }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+      if (!data || data.length === 0) {
+        gallery.innerHTML = "<p>No artwork yet.</p>";
+        return;
+      }
 
-<script>
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+      gallery.innerHTML = data.map(item => `
+        <div class="card">
+          <img src="${escapeHtml(item.image_url || "")}" alt="${escapeHtml(item.title || "art")}" />
+          <div class="content">
+            <h3>${escapeHtml(item.title || "Untitled")}</h3>
+            <p>${escapeHtml(item.description || "")}</p>
+          </div>
+        </div>
+      `).join("");
+    }
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-const gallery = document.getElementById("gallery");
-
-let allData = [];
-
-async function loadGallery() {
-  const { data, error } = await supabase
-    .from("artworks")
-    .select("*")
-    .order("created_at", { ascending:false });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
-
-  allData = data;
-  render();
-}
-
-function render() {
-  const search = document.getElementById("search").value.toLowerCase();
-  const sort = document.getElementById("sort").value;
-
-  let filtered = allData.filter(item =>
-    (item.title || "").toLowerCase().includes(search)
-  );
-
-  if (sort === "oldest") {
-    filtered.reverse();
-  }
-
-  gallery.innerHTML = filtered.map(item => `
-    <div class="card">
-      <img src="${item.image_url}">
-      <div class="card-body">
-        <div class="title">${item.title || "Untitled"}</div>
-        <div>${item.description || ""}</div>
-      </div>
-    </div>
-  `).join("");
-}
-
-document.getElementById("search").addEventListener("input", render);
-document.getElementById("sort").addEventListener("change", render);
-
-loadGallery();
-</script>
-
+    loadGallery();
+  </script>
 </body>
 </html>
