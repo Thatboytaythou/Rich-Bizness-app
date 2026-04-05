@@ -1,125 +1,960 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Messages</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages | Rich Bizness</title>
+
   <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background: black;
-      color: white;
-      font-family: Arial;
-      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #050505;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 24px;
     }
 
-    .chat-box {
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #333;
-      padding: 10px;
-      margin-bottom: 10px;
+    a {
+      text-decoration: none;
+      color: inherit;
     }
 
-    .message {
-      margin-bottom: 10px;
+    .container {
+      max-width: 1450px;
+      margin: 0 auto;
     }
 
-    .input-row {
+    .topbar {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 32px;
+      font-weight: 900;
+      color: #39ff14;
+      text-shadow: 0 0 16px rgba(57,255,20,0.25);
+    }
+
+    .brand img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #111;
+      padding: 6px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .top-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .top-links a {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.10);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .top-links a:hover {
+      color: #39ff14;
+      border-color: rgba(57,255,20,0.45);
+      background: rgba(57,255,20,0.12);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 22px;
+    }
+
+    .card {
+      background: #0d0d0d;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    }
+
+    h1, h2 {
+      color: #39ff14;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      font-size: 34px;
+    }
+
+    .subtext {
+      color: #d3d3d3;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .status-box {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .status-box.success {
+      display: block;
+      background: rgba(57,255,20,0.12);
+      border: 1px solid rgba(57,255,20,0.35);
+      color: #98ff83;
+    }
+
+    .status-box.error {
+      display: block;
+      background: rgba(255,70,70,0.12);
+      border: 1px solid rgba(255,70,70,0.35);
+      color: #ff9b9b;
+    }
+
+    .status-box.info {
+      display: block;
+      background: rgba(57,255,20,0.08);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d8ffd0;
+    }
+
+    .conversation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 670px;
+      overflow-y: auto;
+      margin-top: 12px;
+      padding-right: 4px;
+    }
+
+    .conversation-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 16px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .conversation-item:hover,
+    .conversation-item.active {
+      border-color: rgba(57,255,20,0.45);
+      background: rgba(57,255,20,0.08);
+    }
+
+    .conversation-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      object-fit: cover;
+      background: #1a1a1a;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .conversation-content {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .conversation-title {
+      font-weight: 900;
+      margin-bottom: 6px;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .conversation-meta {
+      font-size: 13px;
+      color: #bfbfbf;
+      line-height: 1.4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .new-chat-box {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .new-chat-box input {
+      width: 100%;
+      background: #121212;
+      color: #fff;
+      border: 1px solid #2b2b2b;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+
+    .new-chat-box input:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+    }
+
+    .chat-wrap {
+      display: flex;
+      flex-direction: column;
+      min-height: 760px;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 16px;
+    }
+
+    .chat-header-avatar {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .chat-header-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: #39ff14;
+      margin-bottom: 5px;
+    }
+
+    .chat-header-sub {
+      color: #cfcfcf;
+      font-size: 14px;
+    }
+
+    .messages-box {
+      flex: 1;
+      min-height: 460px;
+      max-height: 580px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-right: 6px;
+    }
+
+    .message-row {
+      display: flex;
+      align-items: flex-end;
       gap: 10px;
     }
 
-    input {
-      flex: 1;
-      padding: 10px;
+    .message-row.mine {
+      justify-content: flex-end;
+    }
+
+    .message-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      object-fit: cover;
       background: #111;
-      color: white;
-      border: none;
+      border: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .message-row.mine .message-avatar {
+      display: none;
+    }
+
+    .bubble {
+      max-width: 78%;
+      padding: 12px 14px;
+      border-radius: 16px;
+      line-height: 1.45;
+      word-break: break-word;
+      background: #171717;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .message-row.mine .bubble {
+      background: rgba(57,255,20,0.14);
+      border-color: rgba(57,255,20,0.35);
+    }
+
+    .bubble-top {
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #c7ffc0;
+    }
+
+    .bubble-text {
+      font-size: 14px;
+      color: #ffffff;
+      white-space: pre-wrap;
+    }
+
+    .bubble-time {
+      font-size: 11px;
+      color: #bfbfbf;
+      margin-top: 8px;
+    }
+
+    .composer {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 95px;
+      resize: vertical;
+      background: #121212;
+      color: #fff;
+      border: 1px solid #2b2b2b;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
     }
 
     button {
-      background: #22c55e;
       border: none;
-      padding: 10px 20px;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 900;
       cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn-green {
+      background: #39ff14;
+      color: #000;
+    }
+
+    .btn-dark {
+      background: #1c1c1c;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-green:hover,
+    .btn-dark:hover {
+      transform: translateY(-1px);
+    }
+
+    .empty-state {
+      height: 100%;
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #bfbfbf;
+      border: 1px dashed rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    @media (max-width: 1050px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-wrap {
+        min-height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+
+      .brand {
+        font-size: 28px;
+      }
+
+      h1 {
+        font-size: 28px;
+      }
+
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .bubble {
+        max-width: 92%;
+      }
+
+      .chat-header {
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
-
 <body>
-
-<h1>Messages</h1>
-
-<div id="chat" class="chat-box"></div>
-
-<div class="input-row">
-  <input id="msgInput" placeholder="Type message..." />
-  <button onclick="sendMessage()">Send</button>
-</div>
-
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-const supabase = createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-);
-
-const chat = document.getElementById("chat");
-const msgInput = document.getElementById("msgInput");
-
-const ROOM = "global"; // simple room for now
-
-async function loadMessages() {
-  const { data } = await supabase
-    .from("live_chat_messages")
-    .select("*")
-    .eq("room_name", ROOM)
-    .order("created_at", { ascending: true });
-
-  chat.innerHTML = "";
-
-  data.forEach(msg => {
-    chat.innerHTML += `
-      <div class="message">
-        <b>${msg.sender_username}:</b> ${msg.body}
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-rich-bizness.png" alt="Rich Bizness Logo" />
+        <span>Rich Bizness Messages</span>
       </div>
-    `;
-  });
 
-  chat.scrollTop = chat.scrollHeight;
-}
+      <div class="top-links">
+        <a href="index.html">Home</a>
+        <a href="auth.html">Auth</a>
+        <a href="profile.html">Profile</a>
+        <a href="artist.html">Artist</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload Art</a>
+        <a href="music.html">Music</a>
+        <a href="upload-music.html">Upload Music</a>
+        <a href="sports.html">Sports</a>
+        <a href="upload-sports.html">Upload Sports</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="upload-gaming.html">Upload Gaming</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="messages.html">Messages</a>
+      </div>
+    </div>
 
-async function sendMessage() {
-  const username = localStorage.getItem("username") || "guest";
+    <div class="layout">
+      <div class="card">
+        <h1>Inbox</h1>
+        <p class="subtext">Your conversations live here.</p>
 
-  const text = msgInput.value;
-  if (!text) return;
+        <div id="leftStatus" class="status-box info">Loading conversations...</div>
 
-  await supabase.from("live_chat_messages").insert([{
-    room_name: ROOM,
-    sender_username: username,
-    body: text
-  }]);
+        <div id="conversationList" class="conversation-list"></div>
 
-  msgInput.value = "";
-}
+        <div class="new-chat-box">
+          <h2 style="font-size:22px;">Start Chat</h2>
+          <input id="targetUserIdInput" type="text" placeholder="Paste another user's UUID" />
+          <button id="startChatBtn" class="btn-green">Start Conversation</button>
+        </div>
+      </div>
 
-supabase
-  .channel("chat")
-  .on(
-    "postgres_changes",
-    {
-      event: "INSERT",
-      schema: "public",
-      table: "live_chat_messages"
-    },
-    payload => {
-      loadMessages();
+      <div class="card">
+        <div class="chat-wrap">
+          <div class="chat-header">
+            <img
+              id="chatHeaderAvatar"
+              class="chat-header-avatar"
+              src="https://placehold.co/200x200?text=Chat"
+              alt="Chat Avatar"
+            />
+            <div>
+              <div id="chatHeaderTitle" class="chat-header-title">No chat selected</div>
+              <div id="chatHeaderSub" class="chat-header-sub">Pick a conversation to open it.</div>
+            </div>
+          </div>
+
+          <div id="messagesBox" class="messages-box">
+            <div class="empty-state">Select a conversation to see messages.</div>
+          </div>
+
+          <div id="rightStatus" class="status-box info">Ready.</div>
+
+          <div class="composer">
+            <textarea id="messageInput" placeholder="Type your message"></textarea>
+            <button id="sendBtn" class="btn-green">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const conversationList = document.getElementById("conversationList");
+    const messagesBox = document.getElementById("messagesBox");
+    const leftStatus = document.getElementById("leftStatus");
+    const rightStatus = document.getElementById("rightStatus");
+    const chatHeaderTitle = document.getElementById("chatHeaderTitle");
+    const chatHeaderSub = document.getElementById("chatHeaderSub");
+    const chatHeaderAvatar = document.getElementById("chatHeaderAvatar");
+    const messageInput = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
+    const targetUserIdInput = document.getElementById("targetUserIdInput");
+    const startChatBtn = document.getElementById("startChatBtn");
+
+    let currentUser = null;
+    let conversations = [];
+    let selectedConversationId = null;
+    let realtimeChannel = null;
+    let profileMap = {};
+
+    function showLeftStatus(message, type = "info") {
+      leftStatus.textContent = message;
+      leftStatus.className = `status-box ${type}`;
+      leftStatus.style.display = "block";
     }
-  )
-  .subscribe();
 
-loadMessages();
-</script>
+    function showRightStatus(message, type = "info") {
+      rightStatus.textContent = message;
+      rightStatus.className = `status-box ${type}`;
+      rightStatus.style.display = "block";
+    }
 
+    function hideLeftStatus() {
+      leftStatus.style.display = "none";
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      return new Date(value).toLocaleString();
+    }
+
+    function getAvatarUrl(userId) {
+      return profileMap[userId]?.avatar_url?.trim() || "https://placehold.co/200x200?text=User";
+    }
+
+    function getProfileName(userId) {
+      if (!userId) return "Unknown User";
+      const profile = profileMap[userId];
+      return profile?.display_name?.trim() || userId.slice(0, 8);
+    }
+
+    async function loadProfilesForUserIds(userIds) {
+      const uniqueIds = [...new Set((userIds || []).filter(Boolean))];
+      if (!uniqueIds.length) return;
+
+      const missingIds = uniqueIds.filter(id => !profileMap[id]);
+      if (!missingIds.length) return;
+
+      const { data, error } = await supabaseClient
+        .from("profiles")
+        .select("id, display_name, avatar_url")
+        .in("id", missingIds);
+
+      if (error) {
+        console.error("Profile load error:", error);
+        return;
+      }
+
+      (data || []).forEach(profile => {
+        profileMap[profile.id] = profile;
+      });
+    }
+
+    async function requireUser() {
+      const { data, error } = await supabaseClient.auth.getUser();
+
+      if (error || !data.user) {
+        window.location.href = "auth.html";
+        return null;
+      }
+
+      currentUser = data.user;
+      return currentUser;
+    }
+
+    async function loadConversations() {
+      showLeftStatus("Loading conversations...", "info");
+
+      const { data: memberships, error } = await supabaseClient
+        .from("conversation_members")
+        .select("conversation_id")
+        .eq("user_id", currentUser.id);
+
+      if (error) {
+        showLeftStatus("Failed to load conversations: " + error.message, "error");
+        return;
+      }
+
+      const ids = [...new Set((memberships || []).map(item => item.conversation_id))];
+
+      if (!ids.length) {
+        conversations = [];
+        renderConversationList();
+        showLeftStatus("No conversations yet.", "info");
+        return;
+      }
+
+      const builtConversations = [];
+      const allMemberIds = [];
+
+      for (const conversationId of ids) {
+        const { data: members, error: membersError } = await supabaseClient
+          .from("conversation_members")
+          .select("user_id")
+          .eq("conversation_id", conversationId);
+
+        if (membersError) {
+          console.error("Members load error:", membersError);
+          continue;
+        }
+
+        (members || []).forEach(member => {
+          allMemberIds.push(member.user_id);
+        });
+
+        const { data: latestMessages } = await supabaseClient
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", conversationId)
+          .order("created_at", { ascending: false })
+          .limit(1);
+
+        builtConversations.push({
+          id: conversationId,
+          members: members || [],
+          latestMessage: latestMessages && latestMessages[0] ? latestMessages[0] : null
+        });
+      }
+
+      await loadProfilesForUserIds(allMemberIds);
+
+      conversations = builtConversations.map(convo => {
+        const otherMembers = convo.members.filter(m => m.user_id !== currentUser.id);
+        const displayMembers = otherMembers.length ? otherMembers : convo.members;
+
+        const title = otherMembers.length
+          ? otherMembers.map(m => getProfileName(m.user_id)).join(", ")
+          : `Conversation #${convo.id}`;
+
+        const avatarUserId = displayMembers[0]?.user_id || currentUser.id;
+
+        return {
+          ...convo,
+          title,
+          avatarUserId
+        };
+      }).sort((a, b) => {
+        const aDate = a.latestMessage?.created_at || 0;
+        const bDate = b.latestMessage?.created_at || 0;
+        return new Date(bDate) - new Date(aDate);
+      });
+
+      renderConversationList();
+      if (conversations.length) {
+        hideLeftStatus();
+      } else {
+        showLeftStatus("No conversations yet.", "info");
+      }
+    }
+
+    function renderConversationList() {
+      if (!conversations.length) {
+        conversationList.innerHTML = `<div class="empty-state" style="min-height:180px;">No conversations yet.</div>`;
+        return;
+      }
+
+      conversationList.innerHTML = conversations.map(convo => {
+        const latestPreview = convo.latestMessage
+          ? escapeHtml(convo.latestMessage.content).slice(0, 70)
+          : "No messages yet";
+
+        return `
+          <div class="conversation-item ${selectedConversationId === convo.id ? "active" : ""}" data-id="${convo.id}">
+            <img
+              class="conversation-avatar"
+              src="${escapeHtml(getAvatarUrl(convo.avatarUserId))}"
+              alt="${escapeHtml(convo.title)}"
+              onerror="this.src='https://placehold.co/200x200?text=User';"
+            />
+            <div class="conversation-content">
+              <div class="conversation-title">${escapeHtml(convo.title)}</div>
+              <div class="conversation-meta">${latestPreview}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".conversation-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const id = Number(item.dataset.id);
+          openConversation(id);
+        });
+      });
+    }
+
+    async function loadMessages(conversationId) {
+      const { data, error } = await supabaseClient
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", conversationId)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        showRightStatus("Failed to load messages: " + error.message, "error");
+        return;
+      }
+
+      await renderMessages(data || []);
+    }
+
+    async function renderMessages(messages) {
+      if (!messages.length) {
+        messagesBox.innerHTML = `<div class="empty-state">No messages yet. Send the first one.</div>`;
+        return;
+      }
+
+      const senderIds = messages.map(message => message.sender_id);
+      await loadProfilesForUserIds(senderIds);
+
+      messagesBox.innerHTML = messages.map(message => {
+        const mine = message.sender_id === currentUser.id;
+        const senderName = mine ? "You" : getProfileName(message.sender_id);
+        const senderAvatar = getAvatarUrl(message.sender_id);
+
+        return `
+          <div class="message-row ${mine ? "mine" : ""}">
+            ${mine ? "" : `<img class="message-avatar" src="${escapeHtml(senderAvatar)}" alt="${escapeHtml(senderName)}" onerror="this.src='https://placehold.co/200x200?text=User';" />`}
+            <div class="bubble">
+              <div class="bubble-top">${escapeHtml(senderName)}</div>
+              <div class="bubble-text">${escapeHtml(message.content)}</div>
+              <div class="bubble-time">${escapeHtml(formatDate(message.created_at))}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      messagesBox.scrollTop = messagesBox.scrollHeight;
+    }
+
+    async function openConversation(conversationId) {
+      selectedConversationId = conversationId;
+      renderConversationList();
+
+      const convo = conversations.find(c => c.id === conversationId);
+
+      if (convo) {
+        chatHeaderTitle.textContent = convo.title;
+        chatHeaderSub.textContent = `${convo.members.length} member(s)`;
+        chatHeaderAvatar.src = getAvatarUrl(convo.avatarUserId);
+      } else {
+        chatHeaderTitle.textContent = `Conversation #${conversationId}`;
+        chatHeaderSub.textContent = "Conversation opened";
+        chatHeaderAvatar.src = "https://placehold.co/200x200?text=Chat";
+      }
+
+      await loadMessages(conversationId);
+      subscribeToMessages(conversationId);
+      showRightStatus("Conversation opened.", "success");
+    }
+
+    async function sendMessage() {
+      if (!selectedConversationId) {
+        showRightStatus("Choose a conversation first.", "error");
+        return;
+      }
+
+      const content = messageInput.value.trim();
+      if (!content) {
+        showRightStatus("Type a message first.", "error");
+        return;
+      }
+
+      const { error } = await supabaseClient
+        .from("messages")
+        .insert([{
+          conversation_id: selectedConversationId,
+          sender_id: currentUser.id,
+          content: content
+        }]);
+
+      if (error) {
+        showRightStatus("Failed to send message: " + error.message, "error");
+        return;
+      }
+
+      messageInput.value = "";
+      await loadMessages(selectedConversationId);
+      await loadConversations();
+      showRightStatus("Message sent.", "success");
+    }
+
+    async function startConversation() {
+      const targetUserId = targetUserIdInput.value.trim();
+
+      if (!targetUserId) {
+        showLeftStatus("Paste a target user UUID.", "error");
+        return;
+      }
+
+      if (targetUserId === currentUser.id) {
+        showLeftStatus("You cannot start a chat with yourself.", "error");
+        return;
+      }
+
+      try {
+        const { data: myMemberships, error: myMembershipsError } = await supabaseClient
+          .from("conversation_members")
+          .select("conversation_id")
+          .eq("user_id", currentUser.id);
+
+        if (myMembershipsError) throw myMembershipsError;
+
+        const myConversationIds = (myMemberships || []).map(row => row.conversation_id);
+        let existingConversationId = null;
+
+        if (myConversationIds.length) {
+          const { data: targetMemberships, error: targetMembershipsError } = await supabaseClient
+            .from("conversation_members")
+            .select("conversation_id")
+            .eq("user_id", targetUserId)
+            .in("conversation_id", myConversationIds);
+
+          if (targetMembershipsError) throw targetMembershipsError;
+
+          if (targetMemberships && targetMemberships.length) {
+            existingConversationId = targetMemberships[0].conversation_id;
+          }
+        }
+
+        if (!existingConversationId) {
+          const { data: convoData, error: convoError } = await supabaseClient
+            .from("conversations")
+            .insert([{}])
+            .select()
+            .single();
+
+          if (convoError) throw convoError;
+
+          existingConversationId = convoData.id;
+
+          const { error: membersError } = await supabaseClient
+            .from("conversation_members")
+            .insert([
+              {
+                conversation_id: existingConversationId,
+                user_id: currentUser.id
+              },
+              {
+                conversation_id: existingConversationId,
+                user_id: targetUserId
+              }
+            ]);
+
+          if (membersError) throw membersError;
+        }
+
+        targetUserIdInput.value = "";
+        await loadConversations();
+        await openConversation(existingConversationId);
+        showLeftStatus("Conversation ready.", "success");
+      } catch (error) {
+        showLeftStatus("Failed to start conversation: " + error.message, "error");
+      }
+    }
+
+    function subscribeToMessages(conversationId) {
+      if (realtimeChannel) {
+        supabaseClient.removeChannel(realtimeChannel);
+        realtimeChannel = null;
+      }
+
+      realtimeChannel = supabaseClient
+        .channel(`messages-${conversationId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "messages",
+            filter: `conversation_id=eq.${conversationId}`
+          },
+          async () => {
+            await loadMessages(conversationId);
+            await loadConversations();
+          }
+        )
+        .subscribe();
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    startChatBtn.addEventListener("click", startConversation);
+
+    messageInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    async function startPage() {
+      const user = await requireUser();
+      if (!user) return;
+
+      await loadProfilesForUserIds([user.id]);
+      await loadConversations();
+
+      const savedConversationId = localStorage.getItem("openConversationId");
+
+      if (savedConversationId) {
+        const match = conversations.find(c => String(c.id) === String(savedConversationId));
+        localStorage.removeItem("openConversationId");
+
+        if (match) {
+          await openConversation(match.id);
+          return;
+        }
+      }
+
+      if (conversations.length) {
+        await openConversation(conversations[0].id);
+      } else {
+        showRightStatus("Start a new conversation to begin messaging.", "info");
+      }
+    }
+
+    startPage();
+  </script>
 </body>
 </html>
