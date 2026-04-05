@@ -4,89 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Upload Sports | Rich Bizness</title>
-
 <style>
-body {
-  background:#050505;
-  color:#fff;
-  font-family:Arial;
-  padding:20px;
-}
-
-.container {
-  max-width:900px;
-  margin:auto;
-}
-
-.title {
-  font-size:36px;
-  color:#39ff14;
-  font-weight:900;
-  margin-bottom:20px;
-}
-
-.card {
-  background:#0d0d0d;
-  padding:20px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,0.08);
-}
-
-label {
-  display:block;
-  margin-top:12px;
-  margin-bottom:6px;
-  font-weight:700;
-}
-
-input, textarea, select {
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  background:#121212;
-  color:#fff;
-}
-
-button {
-  margin-top:16px;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  font-weight:900;
-  cursor:pointer;
-}
-
-.btn-green {
-  background:#39ff14;
-  color:#000;
-}
-
-.preview {
-  margin-top:20px;
-}
-
-video {
-  width:100%;
-  border-radius:12px;
-}
-
-.status {
-  margin-top:15px;
-  padding:10px;
-  border-radius:10px;
-}
+body{background:#050505;color:#fff;font-family:Arial;padding:20px}
+.container{max-width:900px;margin:auto}
+.title{font-size:36px;color:#39ff14;font-weight:900;margin-bottom:20px}
+.card{background:#0d0d0d;padding:20px;border-radius:16px;border:1px solid rgba(255,255,255,0.08)}
+label{display:block;margin-top:12px;margin-bottom:6px;font-weight:700}
+input,textarea,select{width:100%;padding:12px;border-radius:10px;border:none;background:#121212;color:#fff}
+button{margin-top:16px;padding:14px;border:none;border-radius:12px;font-weight:900;cursor:pointer}
+.btn-green{background:#39ff14;color:#000}
+.preview{margin-top:20px}
+video{width:100%;border-radius:12px}
+.status{margin-top:15px;padding:10px;border-radius:10px}
 </style>
 </head>
-
 <body>
-
 <div class="container">
-
-<div class="title">🔥 Upload Sports Clip</div>
-
+<div class="title">Upload Sports Clip</div>
 <div class="card">
-
 <label>Title</label>
 <input id="title" placeholder="Crazy dunk / Game winner">
 
@@ -107,44 +42,33 @@ video {
 <input type="file" id="file" accept="video/*">
 
 <button class="btn-green" onclick="upload()">Upload Clip</button>
-
 <div id="status" class="status"></div>
 
 <div class="preview">
   <video id="preview" controls></video>
 </div>
-
 </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 const supabase = window.supabase.createClient(
   "https://ksvdequymkceevocgpdj.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY"
+  "YOUR_SUPABASE_ANON_KEY"
 );
-
-// 🔥 CHANGE THIS IF YOUR BUCKET NAME IS DIFFERENT
 const BUCKET = "sports";
-
 const fileInput = document.getElementById("file");
 const preview = document.getElementById("preview");
 const statusBox = document.getElementById("status");
 
-// preview video
 fileInput.addEventListener("change", () => {
   const file = fileInput.files[0];
   if (!file) return;
-
   preview.src = URL.createObjectURL(file);
 });
 
-// upload function
 async function upload() {
   const { data: userData } = await supabase.auth.getUser();
-
   if (!userData.user) {
     alert("Login first");
     window.location.href = "auth.html";
@@ -165,46 +89,27 @@ async function upload() {
 
   try {
     const filePath = `${userData.user.id}/${Date.now()}-${file.name}`;
-
-    // upload to storage
-    const { error: uploadError } = await supabase.storage
-      .from(BUCKET)
-      .upload(filePath, file);
-
+    const { error: uploadError } = await supabase.storage.from(BUCKET).upload(filePath, file);
     if (uploadError) throw uploadError;
 
-    // get public URL
-    const { data } = supabase.storage
-      .from(BUCKET)
-      .getPublicUrl(filePath);
-
+    const { data } = supabase.storage.from(BUCKET).getPublicUrl(filePath);
     const videoUrl = data.publicUrl;
 
-    // insert into DB
-    const { error: dbError } = await supabase
-      .from("sports_posts")
-      .insert([{
-        user_id: userData.user.id,
-        title,
-        description,
-        category,
-        video_url: videoUrl
-      }]);
-
+    const { error: dbError } = await supabase.from("sports_posts").insert([{
+      user_id: userData.user.id,
+      title,
+      description,
+      category,
+      video_url: videoUrl
+    }]);
     if (dbError) throw dbError;
 
-    statusBox.innerText = "🔥 Upload successful";
-
-    setTimeout(() => {
-      window.location.href = "sports.html";
-    }, 1000);
-
+    statusBox.innerText = "Upload successful";
+    setTimeout(() => { window.location.href = "sports.html"; }, 1000);
   } catch (err) {
-    console.error(err);
     statusBox.innerText = "Error: " + err.message;
   }
 }
 </script>
-
 </body>
 </html>
