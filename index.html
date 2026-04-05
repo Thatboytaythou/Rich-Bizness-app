@@ -3,735 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness Platform</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <title>Rich Bizness</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #0a0a0a;
-      color: #fff;
-      line-height: 1.5;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    img {
-      max-width: 100%;
-      display: block;
-    }
-
-    .container {
-      width: 90%;
-      max-width: 1280px;
-      margin: 0 auto;
-    }
-
-    .navbar {
-      position: sticky;
-      top: 0;
-      z-index: 999;
-      background: rgba(10, 10, 10, 0.95);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid #1f1f1f;
-    }
-
-    .nav-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-      padding: 16px 0;
-    }
-
-    .logo {
-      font-size: 1.5rem;
-      font-weight: 800;
-      color: #7CFC00;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      background: #171717;
-      border: 1px solid #303030;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 12px;
-      transition: 0.2s ease;
-    }
-
-    .nav-links a:hover {
-      color: #7CFC00;
-      border-color: #7CFC00;
-      transform: translateY(-1px);
-    }
-
-    .hero {
-      min-height: 88vh;
-      display: flex;
-      align-items: center;
-      background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.8)),
-        url("https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1600&q=80") center/cover no-repeat;
-      border-bottom: 1px solid #1d1d1d;
-    }
-
-    .hero-content {
-      max-width: 760px;
-      padding: 90px 0;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      margin-bottom: 18px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(124,252,0,0.12);
-      border: 1px solid rgba(124,252,0,0.3);
-      color: #baff8a;
-      font-size: 14px;
-      font-weight: bold;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.4rem, 5vw, 4.8rem);
-      line-height: 1.05;
-      margin-bottom: 18px;
-    }
-
-    .hero p {
-      font-size: 1.08rem;
-      color: #d5d5d5;
-      max-width: 640px;
-      margin-bottom: 28px;
-    }
-
-    .hero-buttons {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 14px 20px;
-      border-radius: 14px;
-      font-weight: bold;
-      border: 1px solid #333;
-      transition: 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #7CFC00, #2e8b57);
-      color: #000;
-      border: none;
-    }
-
-    .btn-secondary {
-      background: #171717;
+      background: #000;
       color: #fff;
     }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      opacity: 0.96;
-    }
-
-    .section {
-      padding: 72px 0;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 24px;
-    }
-
-    .section-header h2 {
-      font-size: 2rem;
-      color: #7CFC00;
-      margin-bottom: 8px;
-    }
-
-    .section-header p {
-      color: #bcbcbc;
-      max-width: 700px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 18px;
-      margin-top: 26px;
-    }
-
-    .stat-card {
-      background: #151515;
-      border: 1px solid #2b2b2b;
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.18);
-    }
-
-    .stat-card h3 {
-      color: #7CFC00;
-      font-size: 2rem;
-      margin-bottom: 8px;
-    }
-
-    .stat-card p {
-      color: #d2d2d2;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 18px;
-      margin-top: 24px;
-    }
-
-    .feature-card {
-      background: #151515;
-      border: 1px solid #2b2b2b;
-      border-radius: 18px;
-      padding: 24px;
-    }
-
-    .feature-card h3 {
-      color: #7CFC00;
-      margin-bottom: 10px;
-    }
-
-    .feature-card p {
-      color: #d2d2d2;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
-      gap: 22px;
-      margin-top: 22px;
-    }
-
-    .card {
-      background: #151515;
-      border: 1px solid #2d2d2d;
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 0 18px rgba(0,0,0,0.22);
-      transition: 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: #7CFC00;
-    }
-
-    .card img {
-      width: 100%;
-      height: 250px;
-      object-fit: cover;
+    header {
       background: #111;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-
-    .card-body {
-      padding: 16px;
+    .logo {
+      color: #39ff14;
+      font-size: 28px;
+      font-weight: 800;
     }
-
-    .card-title {
-      font-size: 1.12rem;
-      font-weight: bold;
-      margin-bottom: 8px;
+    nav a {
+      color: #fff;
+      text-decoration: none;
+      margin-left: 16px;
+      font-weight: 700;
     }
-
-    .card-meta {
-      color: #bfbfbf;
-      font-size: 14px;
-      margin-bottom: 8px;
+    .hero {
+      padding: 80px 20px;
+      text-align: center;
+      background: linear-gradient(180deg, #111, #000);
     }
-
-    .card-price {
-      color: #7CFC00;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    .card-desc {
-      color: #d8d8d8;
-      font-size: 14px;
-      line-height: 1.45;
-    }
-
-    .music-cover {
-      height: 260px !important;
-    }
-
-    .music-tag {
-      display: inline-block;
-      font-size: 13px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(124,252,0,0.12);
-      border: 1px solid rgba(124,252,0,0.3);
-      color: #baff8a;
+    .hero h1 {
+      color: #39ff14;
+      font-size: 48px;
       margin-bottom: 12px;
     }
-
-    audio {
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .status-box,
-    .empty-box {
-      padding: 18px;
-      border-radius: 16px;
-      background: #141414;
-      border: 1px solid #2b2b2b;
+    .hero p {
       color: #ccc;
+      max-width: 700px;
+      margin: 0 auto 24px;
+      font-size: 18px;
     }
-
-    .cta-box {
-      background: linear-gradient(135deg, rgba(124,252,0,0.12), rgba(46,139,87,0.12));
-      border: 1px solid rgba(124,252,0,0.24);
-      border-radius: 24px;
-      padding: 40px 28px;
+    .btn {
+      display: inline-block;
+      padding: 14px 20px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 800;
+      margin: 6px;
+    }
+    .btn-green {
+      background: #39ff14;
+      color: #000;
+    }
+    .btn-dark {
+      background: #222;
+      color: #fff;
+    }
+    .section {
+      padding: 50px 20px;
       text-align: center;
     }
-
-    .cta-box h2 {
-      font-size: 2rem;
-      margin-bottom: 14px;
+    .cards {
+      max-width: 1100px;
+      margin: 30px auto 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 18px;
     }
-
-    .cta-box p {
-      max-width: 760px;
-      margin: 0 auto 22px;
-      color: #d6d6d6;
+    .card {
+      background: #111;
+      padding: 20px;
+      border-radius: 16px;
+      border: 1px solid #1f1f1f;
     }
-
-    .footer {
-      border-top: 1px solid #1f1f1f;
-      padding: 26px 0 36px;
-      color: #a9a9a9;
-      text-align: center;
-    }
-
-    @media (max-width: 768px) {
-      .hero {
-        min-height: auto;
-      }
-
-      .hero-content {
-        padding: 60px 0;
-      }
-
-      .card img,
-      .music-cover {
-        height: 220px !important;
-      }
+    .card h3 {
+      color: #39ff14;
     }
   </style>
 </head>
 <body>
-  <header class="navbar">
-    <div class="container nav-inner">
-      <div class="logo">Rich Bizness</div>
-
-      <nav class="nav-links">
-        <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload Art</a>
-        <a href="music.html">Music</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="live.html">Go Live</a>
-        <a href="profile.html">Profile</a>
-      </nav>
-    </div>
+  <header>
+    <div class="logo">Rich Bizness</div>
+    <nav>
+      <a href="auth.html">Auth</a>
+      <a href="artist.html">Artist</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="upload.html">Upload</a>
+      <a href="live.html">Go Live</a>
+      <a href="watch.html">Watch</a>
+    </nav>
   </header>
 
   <section class="hero">
-    <div class="container">
-      <div class="hero-content">
-        <div class="hero-badge">Art • Music • Live • Brand Building</div>
-        <h1>Build Your Creative Empire In One Place.</h1>
-        <p>
-          Upload artwork, drop music, stream live, grow your fanbase, and turn your platform
-          into a real business for artists, creators, and entrepreneurs.
-        </p>
-
-        <div class="hero-buttons">
-          <a href="gallery.html" class="btn btn-primary">Explore Gallery</a>
-          <a href="music.html" class="btn btn-secondary">Listen To Music</a>
-          <a href="live.html" class="btn btn-secondary">Go Live</a>
-          <a href="upload.html" class="btn btn-secondary">Upload Art</a>
-          <a href="upload-music.html" class="btn btn-secondary">Upload Music</a>
-        </div>
-      </div>
-    </div>
+    <h1>Rich Bizness Platform</h1>
+    <p>Artists can sign in, build a profile, upload artwork, go live, and let fans watch the stream in one place.</p>
+    <a class="btn btn-green" href="auth.html">Get Started</a>
+    <a class="btn btn-dark" href="watch.html">Watch Live</a>
   </section>
 
   <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <h2>Platform Stats</h2>
-          <p>Your homepage can show off your whole ecosystem in one spot.</p>
-        </div>
+    <h2>Platform Features</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>Artist Profiles</h3>
+        <p>Create and edit artist pages with bios and avatars.</p>
       </div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3 id="artCount">0</h3>
-          <p>Art pieces uploaded to the platform.</p>
-        </div>
-
-        <div class="stat-card">
-          <h3 id="musicCount">0</h3>
-          <p>Tracks available in the music section.</p>
-        </div>
-
-        <div class="stat-card">
-          <h3 id="artistCount">0</h3>
-          <p>Artists and creators represented.</p>
-        </div>
-
-        <div class="stat-card">
-          <h3>$<span id="totalValue">0.00</span></h3>
-          <p>Total listed artwork value.</p>
-        </div>
+      <div class="card">
+        <h3>Art Uploads</h3>
+        <p>Upload art to Supabase storage and show it in the gallery.</p>
+      </div>
+      <div class="card">
+        <h3>Livestreaming</h3>
+        <p>Go live through LiveKit and let viewers join the room.</p>
+      </div>
+      <div class="card">
+        <h3>Watch Page</h3>
+        <p>Fans can watch the live stream from a clean watch page.</p>
       </div>
     </div>
   </section>
-
-  <section class="section" style="padding-top: 0;">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <h2>Featured Artwork</h2>
-          <p>Latest artwork uploads pulled from Supabase.</p>
-        </div>
-        <a href="gallery.html" class="btn btn-secondary">View Full Gallery</a>
-      </div>
-
-      <div id="artStatus" class="status-box">Loading artwork...</div>
-      <div id="artGrid" class="grid"></div>
-    </div>
-  </section>
-
-  <section class="section" style="padding-top: 0;">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <h2>Latest Music</h2>
-          <p>Newest tracks from your artists and creators.</p>
-        </div>
-        <a href="music.html" class="btn btn-secondary">Open Music</a>
-      </div>
-
-      <div id="musicStatus" class="status-box">Loading music...</div>
-      <div id="musicGrid" class="grid"></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="section-header">
-        <div>
-          <h2>What The Platform Does</h2>
-          <p>This turns your site into more than just a page. It becomes a creator business hub.</p>
-        </div>
-      </div>
-
-      <div class="features-grid">
-        <div class="feature-card">
-          <h3>Art Marketplace</h3>
-          <p>Upload art, show prices, organize by category, and make your gallery look official.</p>
-        </div>
-
-        <div class="feature-card">
-          <h3>Music Platform</h3>
-          <p>Let artists upload tracks, show cover art, and build a music section right inside the brand.</p>
-        </div>
-
-        <div class="feature-card">
-          <h3>Live Streaming</h3>
-          <p>Go live, connect with your audience, and build hype around art drops, music drops, and events.</p>
-        </div>
-
-        <div class="feature-card">
-          <h3>Fanbase Growth</h3>
-          <p>Later you can add followers, messaging, tipping, subscriptions, and paid access.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="container">
-      <div class="cta-box">
-        <h2>Ready To Build Out The Full Brand?</h2>
-        <p>
-          Start with uploads, then grow into music, livestreams, followers, fan interaction,
-          monetization, and a real creator economy under your own name.
-        </p>
-
-        <div class="hero-buttons" style="justify-content:center;">
-          <a href="upload.html" class="btn btn-primary">Upload Art</a>
-          <a href="upload-music.html" class="btn btn-secondary">Upload Music</a>
-          <a href="live.html" class="btn btn-secondary">Go Live</a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="footer">
-    <div class="container">
-      <p>© 2026 Rich Bizness Platform. Built for artists, music creators, and entrepreneurs.</p>
-    </div>
-  </footer>
-
-  <script>
-    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const artGrid = document.getElementById("artGrid");
-    const musicGrid = document.getElementById("musicGrid");
-    const artStatus = document.getElementById("artStatus");
-    const musicStatus = document.getElementById("musicStatus");
-
-    const artCountEl = document.getElementById("artCount");
-    const musicCountEl = document.getElementById("musicCount");
-    const artistCountEl = document.getElementById("artistCount");
-    const totalValueEl = document.getElementById("totalValue");
-
-    function escapeHtml(text) {
-      if (text === null || text === undefined) return "";
-      return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-
-    function truncateText(text, maxLength = 90) {
-      const str = String(text || "");
-      if (str.length <= maxLength) return str;
-      return str.slice(0, maxLength) + "...";
-    }
-
-    function formatMoney(value) {
-      return Number(value || 0).toFixed(2);
-    }
-
-    function showArtStatus(message) {
-      artStatus.textContent = message;
-      artStatus.style.display = "block";
-    }
-
-    function hideArtStatus() {
-      artStatus.textContent = "";
-      artStatus.style.display = "none";
-    }
-
-    function showMusicStatus(message) {
-      musicStatus.textContent = message;
-      musicStatus.style.display = "block";
-    }
-
-    function hideMusicStatus() {
-      musicStatus.textContent = "";
-      musicStatus.style.display = "none";
-    }
-
-    function renderArt(items) {
-      if (!items.length) {
-        artGrid.innerHTML = `
-          <div class="empty-box">
-            No artwork uploaded yet. Go to Upload Art and add your first piece.
-          </div>
-        `;
-        return;
-      }
-
-      artGrid.innerHTML = items.map(item => {
-        const title = escapeHtml(item.title || "Untitled");
-        const artist = escapeHtml(item.artist_name || "Unknown Artist");
-        const category = escapeHtml(item.category || "Other");
-        const description = escapeHtml(truncateText(item.description || "No description added."));
-        const imageUrl = escapeHtml(item.image_url || "");
-        const price = formatMoney(item.price);
-
-        return `
-          <div class="card">
-            <img
-              src="${imageUrl}"
-              alt="${title}"
-              onerror="this.src='https://placehold.co/600x400?text=No+Image';"
-            />
-            <div class="card-body">
-              <div class="card-title">${title}</div>
-              <div class="card-meta">By ${artist} • ${category}</div>
-              <div class="card-price">$${price}</div>
-              <div class="card-desc">${description}</div>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderMusic(items) {
-      if (!items.length) {
-        musicGrid.innerHTML = `
-          <div class="empty-box">
-            No music uploaded yet. Go to Upload Music and add your first track.
-          </div>
-        `;
-        return;
-      }
-
-      musicGrid.innerHTML = items.map(song => {
-        const title = escapeHtml(song.title || "Untitled");
-        const artist = escapeHtml(song.artist_name || "Unknown Artist");
-        const genre = escapeHtml(song.genre || "Other");
-        const description = escapeHtml(truncateText(song.description || "No description added."));
-        const audioUrl = escapeHtml(song.audio_url || "");
-        const coverUrl = escapeHtml(song.cover_url || "https://placehold.co/600x600?text=Music");
-
-        return `
-          <div class="card">
-            <img
-              class="music-cover"
-              src="${coverUrl}"
-              alt="${title}"
-              onerror="this.src='https://placehold.co/600x600?text=Music';"
-            />
-            <div class="card-body">
-              <div class="card-title">${title}</div>
-              <div class="card-meta">By ${artist}</div>
-              <div class="music-tag">${genre}</div>
-              <div class="card-desc">${description}</div>
-              <audio controls preload="none">
-                <source src="${audioUrl}" />
-                Your browser does not support the audio element.
-              </audio>
-            </div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    async function loadArt() {
-      showArtStatus("Loading artwork...");
-
-      try {
-        const { data, error } = await supabaseClient
-          .from("artwork")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        const artItems = data || [];
-        artCountEl.textContent = artItems.length;
-
-        const totalValue = artItems.reduce((sum, item) => {
-          return sum + Number(item.price || 0);
-        }, 0);
-
-        totalValueEl.textContent = totalValue.toFixed(2);
-
-        const featuredArt = artItems.slice(0, 4);
-        renderArt(featuredArt);
-        hideArtStatus();
-
-        return artItems;
-      } catch (error) {
-        console.error("Art load error:", error);
-        showArtStatus("Could not load artwork: " + error.message);
-        artGrid.innerHTML = "";
-        return [];
-      }
-    }
-
-    async function loadMusic() {
-      showMusicStatus("Loading music...");
-
-      try {
-        const { data, error } = await supabaseClient
-          .from("music")
-          .select("*")
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        const musicItems = data || [];
-        musicCountEl.textContent = musicItems.length;
-
-        const latestMusic = musicItems.slice(0, 4);
-        renderMusic(latestMusic);
-        hideMusicStatus();
-
-        return musicItems;
-      } catch (error) {
-        console.error("Music load error:", error);
-        showMusicStatus("Could not load music: " + error.message);
-        musicGrid.innerHTML = "";
-        return [];
-      }
-    }
-
-    function updateArtistCount(artItems, musicItems) {
-      const names = new Set();
-
-      artItems.forEach(item => {
-        if (item.artist_name && item.artist_name.trim()) {
-          names.add(item.artist_name.trim().toLowerCase());
-        }
-      });
-
-      musicItems.forEach(item => {
-        if (item.artist_name && item.artist_name.trim()) {
-          names.add(item.artist_name.trim().toLowerCase());
-        }
-      });
-
-      artistCountEl.textContent = names.size;
-    }
-
-    async function initHomepage() {
-      const [artItems, musicItems] = await Promise.all([
-        loadArt(),
-        loadMusic()
-      ]);
-
-      updateArtistCount(artItems, musicItems);
-    }
-
-    initHomepage();
-  </script>
 </body>
 </html>
