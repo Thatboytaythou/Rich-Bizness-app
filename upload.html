@@ -3,358 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Artwork</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <title>Upload</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0d0d0d;
+      background: #000;
       color: #fff;
+      font-family: Arial, sans-serif;
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
       padding: 20px;
     }
-
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-      background: #171717;
-      border: 1px solid #2c2c2c;
-      border-radius: 20px;
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: #111;
       padding: 24px;
-      box-shadow: 0 0 25px rgba(0,0,0,0.3);
+      border-radius: 18px;
+      border: 1px solid #1f1f1f;
     }
-
     h1 {
-      text-align: center;
-      margin-bottom: 24px;
-      color: #7CFC00;
+      color: #39ff14;
+      margin-top: 0;
     }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: bold;
-      color: #ddd;
-    }
-
-    input,
-    textarea,
-    select,
-    button {
+    input, textarea, button {
       width: 100%;
       padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      background: #101010;
-      color: white;
-      font-size: 16px;
-    }
-
-    textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    input[type="file"] {
-      padding: 10px;
-    }
-
-    button {
-      border: none;
-      background: linear-gradient(135deg, #7CFC00, #2e8b57);
-      color: #000;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    button:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .preview-box {
       margin-top: 12px;
-      text-align: center;
-    }
-
-    .preview-box img {
-      max-width: 100%;
-      max-height: 320px;
-      border-radius: 14px;
-      border: 1px solid #333;
-      display: none;
-    }
-
-    .message {
-      margin-top: 18px;
-      padding: 12px;
       border-radius: 12px;
-      display: none;
-      font-weight: bold;
+      border: none;
+      font-size: 15px;
     }
-
-    .message.success {
-      display: block;
-      background: rgba(0,255,100,0.08);
-      border: 1px solid rgba(124,252,0,0.35);
-      color: #baff8a;
-    }
-
-    .message.error {
-      display: block;
-      background: rgba(255,0,0,0.08);
-      border: 1px solid rgba(255,80,80,0.35);
-      color: #ff9a9a;
-    }
-
-    .small-note {
-      color: #aaa;
-      font-size: 14px;
-      margin-top: 6px;
-    }
-
-    .top-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-    }
-
-    .top-links a {
-      text-decoration: none;
+    input, textarea {
+      background: #1d1d1d;
       color: white;
-      background: #222;
-      border: 1px solid #333;
-      padding: 10px 14px;
-      border-radius: 10px;
     }
-
-    .top-links a:hover {
-      color: #7CFC00;
-      border-color: #7CFC00;
+    button {
+      background: #39ff14;
+      color: black;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    #msg {
+      margin-top: 14px;
+      color: #39ff14;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="top-links">
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="profile.html">Profile</a>
-    </div>
-
+  <div class="card">
     <h1>Upload Artwork</h1>
-
-    <form id="uploadForm">
-      <div class="form-group">
-        <label for="title">Artwork Title</label>
-        <input type="text" id="title" placeholder="Enter artwork title" required />
-      </div>
-
-      <div class="form-group">
-        <label for="artist_name">Artist Name</label>
-        <input type="text" id="artist_name" placeholder="Enter artist name" required />
-      </div>
-
-      <div class="form-group">
-        <label for="price">Price (USD)</label>
-        <input type="number" id="price" placeholder="Enter price" min="0" step="0.01" required />
-      </div>
-
-      <div class="form-group">
-        <label for="category">Category</label>
-        <select id="category" required>
-          <option value="">Select category</option>
-          <option value="Painting">Painting</option>
-          <option value="Drawing">Drawing</option>
-          <option value="Digital Art">Digital Art</option>
-          <option value="Photography">Photography</option>
-          <option value="3D Printing">3D Printing</option>
-          <option value="Custom Design">Custom Design</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea id="description" placeholder="Describe the artwork"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="image">Artwork Image</label>
-        <input type="file" id="image" accept="image/*" required />
-        <div class="small-note">Upload JPG, PNG, WEBP, or similar image file.</div>
-      </div>
-
-      <div class="preview-box">
-        <img id="imagePreview" alt="Artwork Preview" />
-      </div>
-
-      <div class="form-group" style="margin-top: 18px;">
-        <button type="submit" id="submitBtn">Upload Artwork</button>
-      </div>
-    </form>
-
-    <div id="messageBox" class="message"></div>
+    <input id="title" placeholder="Title" />
+    <textarea id="description" placeholder="Description"></textarea>
+    <input id="fileInput" type="file" accept="image/*" />
+    <button id="uploadBtn">Upload</button>
+    <div id="msg"></div>
+    <p><a href="artist.html" style="color:#fff;">Back to artist page</a></p>
   </div>
 
-  <script>
-    // =========================
-    // SUPABASE CONFIG
-    // =========================
-    const SUPABASE_URL = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+  <script src="env.js"></script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+    const supabase = createClient(window.ENV.SUPABASE_URL, window.ENV.SUPABASE_ANON_KEY);
+    const msg = document.getElementById("msg");
 
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
+      msg.textContent = "";
 
-    // =========================
-    // ELEMENTS
-    // =========================
-    const uploadForm = document.getElementById("uploadForm");
-    const titleInput = document.getElementById("title");
-    const artistNameInput = document.getElementById("artist_name");
-    const priceInput = document.getElementById("price");
-    const categoryInput = document.getElementById("category");
-    const descriptionInput = document.getElementById("description");
-    const imageInput = document.getElementById("image");
-    const imagePreview = document.getElementById("imagePreview");
-    const submitBtn = document.getElementById("submitBtn");
-    const messageBox = document.getElementById("messageBox");
-
-    // =========================
-    // HELPERS
-    // =========================
-    function showMessage(text, type) {
-      messageBox.textContent = text;
-      messageBox.className = `message ${type}`;
-      messageBox.style.display = "block";
-    }
-
-    function clearMessage() {
-      messageBox.textContent = "";
-      messageBox.className = "message";
-      messageBox.style.display = "none";
-    }
-
-    function sanitizeFileName(name) {
-      return name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    }
-
-    // =========================
-    // IMAGE PREVIEW
-    // =========================
-    imageInput.addEventListener("change", () => {
-      const file = imageInput.files[0];
+      const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
+      const file = document.getElementById("fileInput").files[0];
 
       if (!file) {
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
+        msg.textContent = "Choose an image first.";
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        imagePreview.src = e.target.result;
-        imagePreview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
+      const { data: { user } } = await supabase.auth.getUser();
 
-    // =========================
-    // FORM SUBMIT
-    // =========================
-    uploadForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      clearMessage();
-
-      const title = titleInput.value.trim();
-      const artist_name = artistNameInput.value.trim();
-      const price = parseFloat(priceInput.value);
-      const category = categoryInput.value;
-      const description = descriptionInput.value.trim();
-      const file = imageInput.files[0];
-
-      if (!title || !artist_name || !category || !file || isNaN(price)) {
-        showMessage("Please fill out all required fields.", "error");
+      if (!user) {
+        msg.textContent = "You must be logged in.";
         return;
       }
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Uploading...";
+      const ext = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${ext}`;
 
-      try {
-        // Build unique file path
-        const fileExt = file.name.split(".").pop();
-        const safeName = sanitizeFileName(file.name.replace(/\.[^/.]+$/, ""));
-        const fileName = `${Date.now()}_${safeName}.${fileExt}`;
-        const filePath = `uploads/${fileName}`;
+      const { error: uploadError } = await supabase.storage
+        .from("artworks")
+        .upload(fileName, file, { upsert: false });
 
-        // 1. Upload image to Supabase Storage bucket: artwork
-        const { error: uploadError } = await supabaseClient.storage
-          .from("artwork")
-          .upload(filePath, file, {
-            cacheControl: "3600",
-            upsert: false
-          });
-
-        if (uploadError) {
-          throw uploadError;
-        }
-
-        // 2. Get public image URL
-        const { data: publicUrlData } = supabaseClient.storage
-          .from("artwork")
-          .getPublicUrl(filePath);
-
-        const image_url = publicUrlData.publicUrl;
-
-        // 3. Save artwork row in Supabase table: artwork
-        const { error: insertError } = await supabaseClient
-          .from("artwork")
-          .insert([
-            {
-              title,
-              artist_name,
-              price,
-              category,
-              description,
-              image_url,
-              created_at: new Date().toISOString()
-            }
-          ]);
-
-        if (insertError) {
-          throw insertError;
-        }
-
-        showMessage("Artwork uploaded successfully.", "success");
-
-        uploadForm.reset();
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
-      } catch (error) {
-        console.error("Upload failed:", error);
-        showMessage("Upload failed: " + error.message, "error");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Upload Artwork";
+      if (uploadError) {
+        msg.textContent = uploadError.message;
+        return;
       }
+
+      const { data: publicData } = supabase.storage
+        .from("artworks")
+        .getPublicUrl(fileName);
+
+      const image_url = publicData.publicUrl;
+
+      const { error: insertError } = await supabase
+        .from("artworks")
+        .insert({
+          user_id: user.id,
+          title,
+          description,
+          image_url
+        });
+
+      msg.textContent = insertError ? insertError.message : "Artwork uploaded successfully.";
     });
   </script>
 </body>
