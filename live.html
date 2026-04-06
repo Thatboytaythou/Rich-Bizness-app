@@ -1,414 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Go Live | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #050505;
-      color: #ffffff;
-      min-height: 100vh;
-      padding: 24px;
+      color: white;
+
+      background:
+        linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png");
+
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 25px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo img {
+      width: 45px;
+      height: 45px;
+      border-radius: 10px;
+      animation: glow 2s infinite;
+    }
+
+    @keyframes glow {
+      0% { box-shadow: 0 0 10px #39ff14; }
+      50% { box-shadow: 0 0 25px #39ff14; }
+      100% { box-shadow: 0 0 10px #39ff14; }
+    }
+
+    .logo span {
+      color: #39ff14;
+      font-weight: bold;
+      font-size: 22px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 15px;
+      font-weight: bold;
+    }
+
+    .nav a:hover {
+      color: #39ff14;
     }
 
     .container {
-      max-width: 1280px;
-      margin: 0 auto;
-    }
-
-    .layout {
       display: grid;
-      grid-template-columns: 420px 1fr;
-      gap: 22px;
+      grid-template-columns: 1fr 2fr;
+      gap: 20px;
+      padding: 40px;
     }
 
-    .card {
-      background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+    .panel {
+      background: rgba(0,0,0,0.6);
+      padding: 20px;
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
     }
 
-    h1, h2 {
+    h1 {
       color: #39ff14;
-      margin-bottom: 14px;
-    }
-
-    .subtext {
-      color: #d6d6d6;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    .form-group { margin-bottom: 16px; }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #f2f2f2;
+      margin-bottom: 10px;
     }
 
     input {
       width: 100%;
-      background: #121212;
-      color: #ffffff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    button {
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
       border: none;
-      border-radius: 14px;
-      padding: 13px 18px;
-      font-size: 15px;
-      font-weight: 900;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
       cursor: pointer;
+      margin-right: 10px;
     }
 
-    .btn-green {
+    .start {
       background: #39ff14;
-      color: #000000;
+      color: black;
     }
 
-    .btn-dark {
-      background: #1c1c1c;
-      color: #ffffff;
-      border: 1px solid rgba(255,255,255,0.08);
+    .end {
+      background: #222;
+      color: white;
     }
 
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      line-height: 1.5;
-      word-break: break-word;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
+    .status {
+      margin-top: 10px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(57,255,20,0.2);
     }
 
-    .tips {
-      margin-top: 18px;
-      background: #111111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 16px;
-    }
-
-    .video-card {
-      min-height: 620px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .video-wrap {
-      flex: 1;
-      min-height: 520px;
-      border-radius: 22px;
-      overflow: hidden;
-      background: #000000;
-      border: 1px solid rgba(255,255,255,0.08);
+    .video-box {
+      height: 400px;
+      background: black;
+      border-radius: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-    }
-
-    .video-wrap video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: #000000;
-    }
-
-    .video-placeholder {
-      color: #bfbfbf;
-      text-align: center;
-      padding: 30px;
-      line-height: 1.6;
-    }
-
-    .live-badge {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: rgba(255,0,0,0.88);
-      color: #ffffff;
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-size: 12px;
-      font-weight: 900;
-      display: none;
-      z-index: 2;
-    }
-
-    .info-row {
-      margin-top: 16px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-    }
-
-    .info-box {
-      background: #111111;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 16px;
-      text-align: center;
-    }
-
-    .info-number {
-      font-size: 22px;
-      font-weight: 900;
-      color: #39ff14;
-      margin-bottom: 6px;
-      word-break: break-word;
-    }
-
-    .info-label {
-      font-size: 12px;
-      color: #c9c9c9;
-      text-transform: uppercase;
-    }
-
-    @media (max-width: 1024px) {
-      .layout { grid-template-columns: 1fr; }
-      .video-wrap { min-height: 420px; }
-    }
-
-    @media (max-width: 760px) {
-      body { padding: 16px; }
-      .button-row { flex-direction: column; }
-      button { width: 100%; }
-      .info-row { grid-template-columns: 1fr; }
+      color: gray;
     }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <div class="layout">
-      <div class="card">
-        <h1>Start Live Stream</h1>
-        <p class="subtext">
-          Enter a room name and your host name, then start your live stream.
-        </p>
 
-        <div class="form-group">
-          <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" value="richbizness-live-room" />
-        </div>
+  <!-- NAV -->
+  <div class="nav">
+    <div class="logo">
+      <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+      <span>Rich Bizness</span>
+    </div>
 
-        <div class="form-group">
-          <label for="participantNameInput">Host Name</label>
-          <input id="participantNameInput" type="text" value="richbizness-host" />
-        </div>
-
-        <div class="button-row">
-          <button id="startLiveBtn" class="btn-green" onclick="startLive()">Start Live</button>
-          <button id="endLiveBtn" class="btn-dark" type="button">End Live</button>
-        </div>
-
-        <div id="statusBox" class="status-box">Ready.</div>
-
-        <div class="tips">
-          <h2>Live Setup</h2>
-          <p>Backend route: <strong>/api/livekit-token</strong></p>
-          <p>Route method: <strong>POST</strong></p>
-          <p>Body keys: <strong>roomName, participantName, role</strong></p>
-        </div>
-      </div>
-
-      <div class="card video-card">
-        <h2>Host Preview</h2>
-
-        <div class="video-wrap" id="localVideoWrap">
-          <div id="liveBadge" class="live-badge">LIVE</div>
-          <div class="video-placeholder">
-            Your camera preview will show here when you start live.
-          </div>
-        </div>
-
-        <div class="info-row">
-          <div class="info-box">
-            <div id="streamState" class="info-number">OFF</div>
-            <div class="info-label">Stream State</div>
-          </div>
-          <div class="info-box">
-            <div id="roomLabel" class="info-number">-</div>
-            <div class="info-label">Room</div>
-          </div>
-          <div class="info-box">
-            <div id="hostLabel" class="info-number">-</div>
-            <div class="info-label">Host</div>
-          </div>
-        </div>
-      </div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="watch.html">Watch</a>
+      <a href="music.html">Music</a>
     </div>
   </div>
 
+  <!-- MAIN -->
+  <div class="container">
+
+    <!-- LEFT PANEL -->
+    <div class="panel">
+      <h1>Start Live Stream</h1>
+      <p>Enter your room + name</p>
+
+      <input id="room" placeholder="Room Name" value="richbizness-live-room">
+      <input id="name" placeholder="Host Name" value="richbizness-host">
+
+      <button class="btn start" onclick="startLive()">Start Live</button>
+      <button class="btn end" onclick="endLive()">End Live</button>
+
+      <div class="status" id="status">Ready</div>
+
+      <br>
+
+      <h3>Live Setup</h3>
+      <p style="font-size:12px;">
+        Route: /api/livekit-token<br>
+        Method: POST<br>
+        Body: roomName, participantName
+      </p>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel">
+      <h1>Host Preview</h1>
+
+      <div class="video-box" id="video">
+        Camera preview will appear here
+      </div>
+    </div>
+
+  </div>
+
   <script>
-    const roomNameInput = document.getElementById("roomNameInput");
-    const participantNameInput = document.getElementById("participantNameInput");
-    const statusBox = document.getElementById("statusBox");
-    const localVideoWrap = document.getElementById("localVideoWrap");
-    const liveBadge = document.getElementById("liveBadge");
-    const streamState = document.getElementById("streamState");
-    const roomLabel = document.getElementById("roomLabel");
-    const hostLabel = document.getElementById("hostLabel");
-    const endLiveBtn = document.getElementById("endLiveBtn");
-
-    let room = null;
-    let localVideoTrack = null;
-    let localAudioTrack = null;
-
-    function setStatus(message) {
-      statusBox.textContent = message;
-    }
-
-    function setLiveUI(isLive, roomName, hostName) {
-      streamState.textContent = isLive ? "ON" : "OFF";
-      roomLabel.textContent = isLive ? roomName : "-";
-      hostLabel.textContent = isLive ? hostName : "-";
-      liveBadge.style.display = isLive ? "block" : "none";
-    }
-
-    function resetPreview() {
-      localVideoWrap.innerHTML = `
-        <div id="liveBadge" class="live-badge" style="display:none;">LIVE</div>
-        <div class="video-placeholder">Your camera preview will show here when you start live.</div>
-      `;
-      setLiveUI(false);
-    }
-
     async function startLive() {
+      const room = document.getElementById("room").value;
+      const name = document.getElementById("name").value;
+
+      document.getElementById("status").innerText = "Connecting...";
+
       try {
-        setStatus("Checking LiveKit library...");
-
-        if (!window.LivekitClient) {
-          throw new Error("LiveKit library did not load");
-        }
-
-        const roomName = roomNameInput.value.trim();
-        const participantName = participantNameInput.value.trim();
-
-        if (!roomName || !participantName) {
-          throw new Error("Enter room name and host name");
-        }
-
-        setStatus("Requesting LiveKit token...");
-
-        const response = await fetch("/api/livekit-token", {
+        const res = await fetch("/api/livekit-token", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            roomName,
-            participantName,
-            role: "host"
+            roomName: room,
+            participantName: name
           })
         });
 
-        const data = await response.json();
+        const data = await res.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to create LiveKit token");
-        }
+        console.log("TOKEN:", data);
 
-        if (!data.token || !data.url) {
-          throw new Error("Token route did not return token or url");
-        }
+        document.getElementById("status").innerText = "LIVE 🔴";
 
-        setStatus("Connecting to LiveKit room...");
-
-        room = new window.LivekitClient.Room();
-
-        room.on(window.LivekitClient.RoomEvent.Disconnected, function () {
-          setStatus("Disconnected from live room.");
-          room = null;
-          localVideoTrack = null;
-          localAudioTrack = null;
-          resetPreview();
-        });
-
-        await room.connect(data.url, data.token);
-
-        setStatus("Turning on camera and mic...");
-
-        localVideoTrack = await window.LivekitClient.createLocalVideoTrack();
-        localAudioTrack = await window.LivekitClient.createLocalAudioTrack();
-
-        await room.localParticipant.publishTrack(localVideoTrack);
-        await room.localParticipant.publishTrack(localAudioTrack);
-
-        localVideoWrap.innerHTML = '<div id="liveBadge" class="live-badge" style="display:block;">LIVE</div>';
-
-        const videoElement = localVideoTrack.attach();
-        videoElement.muted = true;
-        videoElement.autoplay = true;
-        videoElement.playsInline = true;
-
-        localVideoWrap.appendChild(videoElement);
-
-        setLiveUI(true, roomName, participantName);
-        setStatus('You are live in room "' + roomName + '".');
-      } catch (error) {
-        console.error("Start live error:", error);
-        setStatus("ERROR: " + (error.message || "Could not start live stream."));
+      } catch (err) {
+        document.getElementById("status").innerText = "Error starting live";
       }
     }
 
-    async function endLive() {
-      try {
-        if (localVideoTrack) {
-          localVideoTrack.stop();
-          localVideoTrack.detach().forEach(function (el) { el.remove(); });
-          localVideoTrack = null;
-        }
-
-        if (localAudioTrack) {
-          localAudioTrack.stop();
-          localAudioTrack.detach().forEach(function (el) { el.remove(); });
-          localAudioTrack = null;
-        }
-
-        if (room) {
-          await room.disconnect();
-          room = null;
-        }
-
-        resetPreview();
-        setStatus("Live stream ended.");
-      } catch (error) {
-        setStatus("Error ending live stream.");
-      }
+    function endLive() {
+      document.getElementById("status").innerText = "Stream Ended";
     }
-
-    endLiveBtn.onclick = endLive;
-    window.startLive = startLive;
-
-    resetPreview();
   </script>
+
 </body>
 </html>
