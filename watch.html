@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Watch Live | Rich Bizness</title>
-
   <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
 
   <style>
@@ -351,17 +350,17 @@
       <div class="card">
         <h1>Join Stream</h1>
         <p class="subtext">
-          Enter the room name and your viewer name to watch a live stream.
+          Enter the room name and your viewer name to join a live stream.
         </p>
 
         <div class="form-group">
           <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" placeholder="richbizness-live-room" />
+          <input id="roomNameInput" type="text" placeholder="richbizness-live-room" value="richbizness-live-room" />
         </div>
 
         <div class="form-group">
           <label for="participantNameInput">Viewer Name</label>
-          <input id="participantNameInput" type="text" placeholder="Rich Bizness Viewer" />
+          <input id="participantNameInput" type="text" placeholder="Rich Bizness Viewer" value="Rich Bizness Viewer" />
         </div>
 
         <div class="button-row">
@@ -373,14 +372,14 @@
 
         <div class="tips">
           <h3>Viewer Setup</h3>
-          <p>This page connects to <strong>/api/livekit-token</strong> using viewer access.</p>
-          <p>The host should already be live in the same room name from <strong>live.html</strong>.</p>
-          <p>Video and audio tracks will attach automatically when the host publishes.</p>
+          <p>Backend route: <strong>/api/livekit-token</strong></p>
+          <p>Route method: <strong>POST</strong></p>
+          <p>Body keys: <strong>roomName</strong>, <strong>participantName</strong>, <strong>role</strong></p>
         </div>
       </div>
 
       <div class="card video-card">
-        <h2>Live Stream Viewer</h2>
+        <h2>Live Stream</h2>
 
         <div class="video-wrap">
           <div id="watchBadge" class="watch-badge">WATCHING</div>
@@ -422,7 +421,7 @@
     const viewerLabel = document.getElementById("viewerLabel");
 
     let room = null;
-    let currentVideoElements = [];
+    let attachedElements = [];
 
     function setStatus(message) {
       statusBox.textContent = message;
@@ -435,23 +434,23 @@
       watchBadge.style.display = isWatching ? "block" : "none";
     }
 
-    function clearRemoteElements() {
-      currentVideoElements.forEach((el) => {
+    function clearAttachedElements() {
+      attachedElements.forEach((el) => {
         try {
           el.remove();
         } catch (_) {}
       });
-      currentVideoElements = [];
+      attachedElements = [];
     }
 
     function resetViewer() {
-      clearRemoteElements();
+      clearAttachedElements();
       remoteVideoWrap.innerHTML = "Live video will show here after you join the room.";
       remoteVideoWrap.className = "video-placeholder";
       setWatchUI(false);
     }
 
-    function attachTrack(track, participantIdentity) {
+    function attachTrack(track) {
       if (remoteVideoWrap.className === "video-placeholder") {
         remoteVideoWrap.innerHTML = "";
         remoteVideoWrap.className = "";
@@ -463,12 +462,10 @@
 
       if (track.kind === Track.Kind.Audio) {
         element.style.display = "none";
-      } else {
-        element.setAttribute("data-participant", participantIdentity);
       }
 
       remoteVideoWrap.appendChild(element);
-      currentVideoElements.push(element);
+      attachedElements.push(element);
     }
 
     async function joinStream() {
@@ -482,7 +479,7 @@
         }
 
         if (room) {
-          setStatus("You are already connected. Leave first if you want to switch rooms.");
+          setStatus("Already connected. Leave the current stream first.");
           return;
         }
 
@@ -509,8 +506,8 @@
         setStatus("Connecting to live room...");
         room = new Room();
 
-        room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
-          attachTrack(track, participant.identity);
+        room.on(RoomEvent.TrackSubscribed, (track) => {
+          attachTrack(track);
         });
 
         room.on(RoomEvent.TrackUnsubscribed, (track) => {
@@ -530,7 +527,7 @@
         room.remoteParticipants.forEach((participant) => {
           participant.trackPublications.forEach((publication) => {
             if (publication.track) {
-              attachTrack(publication.track, participant.identity);
+              attachTrack(publication.track);
             }
           });
         });
@@ -545,7 +542,7 @@
 
     async function leaveStream() {
       try {
-        clearRemoteElements();
+        clearAttachedElements();
 
         if (room) {
           await room.disconnect();
