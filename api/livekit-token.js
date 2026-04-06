@@ -2,7 +2,9 @@ import { AccessToken } from "livekit-server-sdk";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({
+      error: "Method not allowed"
+    });
   }
 
   try {
@@ -22,21 +24,37 @@ export default async function handler(req, res) {
       role = "viewer"
     } = req.body || {};
 
-    if (!roomName || !participantName) {
+    const cleanRoomName = String(roomName || "").trim();
+    const cleanParticipantName = String(participantName || "").trim();
+    const cleanRole = String(role || "viewer").trim().toLowerCase();
+
+    if (!cleanRoomName) {
       return res.status(400).json({
-        error: "roomName and participantName are required"
+        error: "roomName is required"
       });
     }
 
-    const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
-      identity: participantName,
-      ttl: "2h"
-    });
+    if (!cleanParticipantName) {
+      return res.status(400).json({
+        error: "participantName is required"
+      });
+    }
+
+    const token = new AccessToken(
+      LIVEKIT_API_KEY,
+      LIVEKIT_API_SECRET,
+      {
+        identity: cleanParticipantName,
+        ttl: "2h"
+      }
+    );
+
+    token.name = cleanParticipantName;
 
     token.addGrant({
-      room: roomName,
+      room: cleanRoomName,
       roomJoin: true,
-      canPublish: role === "host",
+      canPublish: cleanRole === "host",
       canPublishData: true,
       canSubscribe: true
     });
@@ -46,14 +64,15 @@ export default async function handler(req, res) {
     return res.status(200).json({
       token: jwt,
       url: LIVEKIT_URL,
-      roomName,
-      participantName,
-      role
+      roomName: cleanRoomName,
+      participantName: cleanParticipantName,
+      role: cleanRole
     });
   } catch (error) {
     console.error("livekit-token error:", error);
+
     return res.status(500).json({
-      error: error.message || "Failed to create LiveKit token"
+      error: error.message || "Failed to generate LiveKit token"
     });
   }
 }
