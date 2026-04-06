@@ -355,12 +355,22 @@
 
         <div class="form-group">
           <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" placeholder="richbizness-live-room" value="richbizness-live-room" />
+          <input
+            id="roomNameInput"
+            type="text"
+            placeholder="richbizness-live-room"
+            value="richbizness-live-room"
+          />
         </div>
 
         <div class="form-group">
           <label for="participantNameInput">Host Name</label>
-          <input id="participantNameInput" type="text" placeholder="Rich Bizness Host" value="Rich Bizness Host" />
+          <input
+            id="participantNameInput"
+            type="text"
+            placeholder="Rich Bizness Host"
+            value="Rich Bizness Host"
+          />
         </div>
 
         <div class="button-row">
@@ -407,7 +417,7 @@
   </div>
 
   <script>
-    const { Room, RoomEvent, createLocalVideoTrack, createLocalAudioTrack } = LivekitClient;
+    const { Room, RoomEvent, LocalVideoTrack, LocalAudioTrack, createLocalVideoTrack, createLocalAudioTrack } = LivekitClient;
 
     const roomNameInput = document.getElementById("roomNameInput");
     const participantNameInput = document.getElementById("participantNameInput");
@@ -443,6 +453,8 @@
 
     async function startLive() {
       try {
+        console.log("START LIVE CLICKED");
+
         const roomName = roomNameInput.value.trim();
         const participantName = participantNameInput.value.trim();
 
@@ -456,7 +468,8 @@
           return;
         }
 
-        setStatus("Creating LiveKit host token...");
+        setStatus("Requesting LiveKit token...");
+        console.log("CALLING /api/livekit-token");
 
         const response = await fetch("/api/livekit-token", {
           method: "POST",
@@ -473,8 +486,10 @@
         let data = {};
         try {
           data = await response.json();
-        } catch (_) {
-          throw new Error("API did not return JSON.");
+          console.log("TOKEN API RESPONSE:", data);
+        } catch (jsonError) {
+          console.error("JSON parse error:", jsonError);
+          throw new Error("API did not return valid JSON.");
         }
 
         if (!response.ok) {
@@ -486,9 +501,11 @@
         }
 
         setStatus("Connecting to LiveKit room...");
+
         room = new Room();
 
         room.on(RoomEvent.Disconnected, () => {
+          console.log("Disconnected from room");
           setStatus("Disconnected from live room.");
           resetPreview();
           room = null;
@@ -497,6 +514,7 @@
         await room.connect(data.url, data.token);
 
         setStatus("Turning on camera and mic...");
+
         localVideoTrack = await createLocalVideoTrack();
         localAudioTrack = await createLocalAudioTrack();
 
@@ -508,8 +526,8 @@
 
         const videoElement = localVideoTrack.attach();
         videoElement.muted = true;
-        videoElement.playsInline = true;
         videoElement.autoplay = true;
+        videoElement.playsInline = true;
 
         localVideoWrap.appendChild(videoElement);
 
@@ -517,7 +535,7 @@
         setStatus(`You are live in room "${roomName}".`);
       } catch (error) {
         console.error("Start live error:", error);
-        setStatus(error.message || "Could not start live stream.");
+        setStatus("ERROR: " + (error.message || "Could not start live stream."));
       }
     }
 
