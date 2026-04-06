@@ -8,8 +8,12 @@
   <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
@@ -17,7 +21,7 @@
       font-family: Arial, sans-serif;
       color: white;
       background:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.62)),
         url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png");
       background-size: cover;
       background-position: center;
@@ -31,12 +35,12 @@
       justify-content: space-between;
       align-items: center;
       padding: 14px 24px;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.42);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
       gap: 16px;
       flex-wrap: wrap;
     }
@@ -55,8 +59,8 @@
       }
       50% {
         box-shadow:
-          0 0 20px rgba(57,255,20,0.9),
-          0 0 40px rgba(57,255,20,0.6),
+          0 0 20px rgba(57,255,20,0.95),
+          0 0 40px rgba(57,255,20,0.65),
           0 0 70px rgba(57,255,20,0.35);
       }
       100% {
@@ -85,59 +89,104 @@
         0 0 18px rgba(57,255,20,0.3);
     }
 
-    .nav-links {
+    .nav-right {
       display: flex;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .nav-links a {
+    .user-chip {
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.07);
+      color: #dcffd5;
+      font-size: 13px;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav-links a,
+    .nav-links button {
       color: white;
       text-decoration: none;
       font-size: 14px;
       font-weight: 700;
-      padding: 8px 12px;
+      padding: 9px 13px;
       border-radius: 10px;
       transition: 0.25s ease;
       background: rgba(0,0,0,0.18);
+      border: none;
+      cursor: pointer;
     }
 
-    .nav-links a:hover {
+    .nav-links a:hover,
+    .nav-links a.active,
+    .nav-links button:hover {
       color: #39ff14;
       background: rgba(57,255,20,0.10);
       box-shadow: 0 0 12px rgba(57,255,20,0.25);
     }
 
     .container {
-      text-align: center;
-      padding: 90px 20px 40px;
-      max-width: 1300px;
+      max-width: 1400px;
       margin: 0 auto;
+      padding: 80px 20px 40px;
     }
 
-    h1 {
-      font-size: 3.4rem;
+    .hero {
+      min-height: 68vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+
+    .hero-card {
+      width: 100%;
+      max-width: 1160px;
+      padding: 46px 28px;
+      border-radius: 24px;
+      background: rgba(0,0,0,0.34);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow:
+        0 0 24px rgba(0,0,0,0.26),
+        0 0 24px rgba(57,255,20,0.06);
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      margin: 0 0 16px;
       color: #7dff71;
-      margin-bottom: 12px;
       text-shadow:
         0 0 12px rgba(57,255,20,0.45),
         0 0 25px rgba(57,255,20,0.20);
     }
 
-    .hero-text {
-      max-width: 760px;
-      margin: 0 auto 30px;
-      opacity: 0.95;
-      font-size: 1.15rem;
-      line-height: 1.6;
+    .hero p {
+      font-size: 1.2rem;
+      max-width: 920px;
+      margin: 0 auto 26px;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.95);
     }
 
     .button-row {
       display: flex;
       justify-content: center;
+      gap: 16px;
       flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 40px;
+      margin-bottom: 26px;
     }
 
     .btn {
@@ -148,6 +197,8 @@
       border-radius: 12px;
       font-weight: 900;
       text-decoration: none;
+      border: none;
+      cursor: pointer;
       transition: 0.25s ease;
       box-shadow:
         0 0 12px rgba(57,255,20,0.35),
@@ -163,22 +214,26 @@
         0 0 60px rgba(57,255,20,0.20);
     }
 
-    .section-title {
-      margin: 10px 0 18px;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-align: left;
-      text-shadow: 0 0 10px rgba(57,255,20,0.2);
+    .session-bar {
+      max-width: 940px;
+      margin: 0 auto 30px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: rgba(57,255,20,0.09);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d9ffd2;
+      font-weight: 700;
+      line-height: 1.5;
     }
 
-    .cards {
+    .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 22px;
-      padding: 20px 0 30px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 24px;
     }
 
-    .card {
+    .feature-card {
       background: rgba(0,0,0,0.58);
       border: 1px solid rgba(57,255,20,0.16);
       padding: 24px 20px;
@@ -191,29 +246,31 @@
       transition: 0.25s ease;
     }
 
-    .card:hover {
+    .feature-card:hover {
       transform: translateY(-4px);
-      border-color: rgba(57,255,20,0.38);
+      border-color: rgba(57,255,20,0.36);
       box-shadow:
         0 0 20px rgba(57,255,20,0.14),
         0 0 40px rgba(57,255,20,0.10);
     }
 
-    .card h3 {
+    .feature-card h3 {
+      margin: 0 0 10px;
       color: #7dff71;
-      margin-bottom: 10px;
+      font-size: 1.3rem;
     }
 
-    .card p {
+    .feature-card p {
       margin: 0 0 14px;
-      color: rgba(255,255,255,0.88);
-      line-height: 1.5;
+      color: rgba(255,255,255,0.92);
       font-size: 14px;
+      line-height: 1.55;
+      min-height: 62px;
     }
 
-    .card a {
+    .feature-card a {
       display: inline-block;
-      padding: 10px 16px;
+      padding: 11px 16px;
       border-radius: 10px;
       background: #39ff14;
       color: #000;
@@ -221,16 +278,81 @@
       text-decoration: none;
     }
 
-    @media (max-width: 900px) {
-      h1 { font-size: 2.5rem; }
+    .section-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 20px;
+      margin-top: 24px;
     }
 
-    @media (max-width: 600px) {
-      .container { padding-top: 60px; }
-      .brand-name { font-size: 22px; }
-      h1 { font-size: 2rem; }
-      .hero-text { font-size: 1rem; }
-      .btn { width: 100%; max-width: 280px; }
+    .section-card {
+      background: rgba(0,0,0,0.58);
+      border: 1px solid rgba(57,255,20,0.16);
+      padding: 24px 20px;
+      border-radius: 18px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .section-card h3 {
+      margin: 0 0 10px;
+      color: #7dff71;
+      font-size: 1.25rem;
+    }
+
+    .section-card p {
+      margin: 0 0 14px;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.55;
+      font-size: 14px;
+      min-height: 62px;
+    }
+
+    .section-card a {
+      display: inline-block;
+      padding: 11px 16px;
+      border-radius: 10px;
+      background: #39ff14;
+      color: #000;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    @media (max-width: 1100px) {
+      .feature-grid,
+      .section-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .hero h1 {
+        font-size: 3rem;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .feature-grid,
+      .section-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .hero p {
+        font-size: 1rem;
+      }
+
+      .button-row {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 320px;
+        text-align: center;
+      }
     }
   </style>
 </head>
@@ -244,86 +366,172 @@
       <div class="brand-name">Rich Bizness</div>
     </div>
 
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html">Watch Live</a>
-      <a href="music.html">Music</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="sports.html">Sports</a>
-      <a href="artist.html">Artist</a>
-      <a href="profile.html">Profile</a>
-      <a href="messages.html">Messages</a>
+    <div class="nav-right">
+      <div id="userChip" class="user-chip">Checking session...</div>
+
+      <div class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="artist.html">Artist</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <a id="authLink" href="auth.html">Auth</a>
+        <button id="logoutBtn" type="button" style="display:none;">Log Out</button>
+      </div>
     </div>
   </div>
 
   <div class="container">
-    <h1>Build Your Artist Empire</h1>
-    <div class="hero-text">
-      Upload, stream, connect, and grow your fanbase with one platform built for creators, artists, music, sports, gaming, and live energy.
-    </div>
+    <div class="hero">
+      <div class="hero-card">
+        <h1>Build Your Artist Empire</h1>
+        <p>
+          Upload, stream, connect, and grow your fanbase with one platform built for creators,
+          artists, music, sports, gaming, visuals, and live energy.
+        </p>
 
-    <div class="button-row">
-      <a href="live.html" class="btn">Go Live</a>
-      <a href="watch.html" class="btn">Watch Live</a>
-      <a href="upload.html" class="btn">Upload Art</a>
-      <a href="upload-music.html" class="btn">Upload Music</a>
-      <a href="upload-gaming.html" class="btn">Upload Gaming</a>
-      <a href="upload-sports.html" class="btn">Upload Sports</a>
-    </div>
+        <div class="button-row">
+          <a href="live.html" class="btn">Go Live</a>
+          <a href="watch.html" class="btn">Watch Live</a>
+          <a href="upload-music.html" class="btn">Upload Music</a>
+          <a href="gallery.html" class="btn">View Gallery</a>
+        </div>
 
-    <div class="section-title">Platform Sections</div>
-    <div class="cards">
-      <div class="card">
-        <h3>🎨 Art</h3>
-        <p>Showcase visual work, branding, and creative projects.</p>
-        <a href="gallery.html">Open Gallery</a>
-      </div>
+        <div id="sessionBar" class="session-bar">
+          Checking your account...
+        </div>
 
-      <div class="card">
-        <h3>🎵 Music</h3>
-        <p>Upload and showcase your sound with a clean artist-first platform.</p>
-        <a href="music.html">Open Music</a>
-      </div>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>🎥 Live Streaming</h3>
+            <p>Stream to your audience in real time and build your presence live.</p>
+            <a href="live.html">Start Live</a>
+          </div>
 
-      <div class="card">
-        <h3>🎮 Gaming</h3>
-        <p>Post gaming content, clips, and streams for your audience.</p>
-        <a href="gaming.html">Open Gaming</a>
-      </div>
+          <div class="feature-card">
+            <h3>🎵 Music</h3>
+            <p>Upload and showcase your sound with a clean artist-first platform.</p>
+            <a href="music.html">Open Music</a>
+          </div>
 
-      <div class="card">
-        <h3>🏆 Sports</h3>
-        <p>Share sports highlights, updates, and creator content.</p>
-        <a href="sports.html">Open Sports</a>
-      </div>
+          <div class="feature-card">
+            <h3>💬 Messaging</h3>
+            <p>Connect with fans and artists through direct communication and updates.</p>
+            <a href="messages.html">Open Messages</a>
+          </div>
 
-      <div class="card">
-        <h3>🎥 Live Streaming</h3>
-        <p>Go live and build your presence with real-time streaming.</p>
-        <a href="live.html">Start Live</a>
-      </div>
+          <div class="feature-card">
+            <h3>📈 Growth</h3>
+            <p>Build your fanbase automatically with content, streams, and engagement.</p>
+            <a href="profile.html">Open Profile</a>
+          </div>
+        </div>
 
-      <div class="card">
-        <h3>📺 Watch Live</h3>
-        <p>Join live rooms and watch broadcasts as they happen.</p>
-        <a href="watch.html">Join Stream</a>
-      </div>
+        <div class="section-grid">
+          <div class="section-card">
+            <h3>🎨 Gallery</h3>
+            <p>Show your visual work, custom art, logos, and featured brand pieces.</p>
+            <a href="gallery.html">Open Gallery</a>
+          </div>
 
-      <div class="card">
-        <h3>👤 Artist</h3>
-        <p>Highlight creator identity, work, links, and personal brand.</p>
-        <a href="artist.html">Open Artist</a>
-      </div>
+          <div class="section-card">
+            <h3>🎮 Gaming</h3>
+            <p>Post gaming content, stream play sessions, and grow your game side.</p>
+            <a href="gaming.html">Open Gaming</a>
+          </div>
 
-      <div class="card">
-        <h3>💬 Messages</h3>
-        <p>Connect with fans and artists through direct communication.</p>
-        <a href="messages.html">Open Messages</a>
+          <div class="section-card">
+            <h3>🏆 Sports</h3>
+            <p>Showcase sports content, highlights, training, and athlete branding.</p>
+            <a href="sports.html">Open Sports</a>
+          </div>
+
+          <div class="section-card">
+            <h3>👤 Artist Hub</h3>
+            <p>Bring your whole identity together with your artist page and profile.</p>
+            <a href="artist.html">Open Artist</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_SAME_REAL_ANON_KEY_HERE";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const userChip = document.getElementById("userChip");
+    const sessionBar = document.getElementById("sessionBar");
+    const authLink = document.getElementById("authLink");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function setLoggedOutUI() {
+      userChip.textContent = "Not signed in";
+      sessionBar.textContent = "You are browsing as a guest. Sign in to unlock profile, real messages, uploads, and protected features.";
+      authLink.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+    }
+
+    function setLoggedInUI(user) {
+      const email = user?.email || "Signed in";
+      userChip.textContent = email;
+      sessionBar.textContent = `Logged in as ${email}. Your account is connected and ready for profile, messages, uploads, and live features.`;
+      authLink.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+    }
+
+    async function checkSession() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        const user = data.session?.user;
+
+        if (user) {
+          setLoggedInUI(user);
+        } else {
+          setLoggedOutUI();
+        }
+      } catch (error) {
+        console.error("Session error:", error);
+        userChip.textContent = "Session error";
+        sessionBar.textContent = "Could not check session: " + error.message;
+      }
+    }
+
+    async function logOut() {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        setLoggedOutUI();
+        window.location.href = "auth.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        sessionBar.textContent = "Logout failed: " + error.message;
+      }
+    }
+
+    logoutBtn.addEventListener("click", logOut);
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setLoggedInUI(session.user);
+      } else {
+        setLoggedOutUI();
+      }
+    });
+
+    checkSession();
+  </script>
 </body>
 </html>
