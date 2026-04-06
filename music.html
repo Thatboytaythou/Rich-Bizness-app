@@ -8,6 +8,8 @@
   <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -87,13 +89,34 @@
         0 0 18px rgba(57,255,20,0.3);
     }
 
-    .nav-links {
+    .nav-right {
       display: flex;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
 
-    .nav-links a {
+    .user-chip {
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.07);
+      color: #dcffd5;
+      font-size: 13px;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav-links a,
+    .nav-links button {
       color: white;
       text-decoration: none;
       font-size: 14px;
@@ -102,10 +125,13 @@
       border-radius: 10px;
       transition: 0.25s ease;
       background: rgba(0,0,0,0.18);
+      border: none;
+      cursor: pointer;
     }
 
     .nav-links a:hover,
-    .nav-links a.active {
+    .nav-links a.active,
+    .nav-links button:hover {
       color: #39ff14;
       background: rgba(57,255,20,0.10);
       box-shadow: 0 0 12px rgba(57,255,20,0.25);
@@ -133,10 +159,22 @@
 
     .hero p {
       max-width: 760px;
-      margin: 0 auto 28px;
+      margin: 0 auto 22px;
       font-size: 1.1rem;
       line-height: 1.6;
       color: rgba(255,255,255,0.94);
+    }
+
+    .session-bar {
+      max-width: 920px;
+      margin: 0 auto 28px;
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: rgba(57,255,20,0.09);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d9ffd2;
+      font-weight: 700;
+      line-height: 1.5;
     }
 
     .button-row {
@@ -350,17 +388,23 @@
       <div class="brand-name">Rich Bizness</div>
     </div>
 
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html">Watch Live</a>
-      <a href="music.html" class="active">Music</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="sports.html">Sports</a>
-      <a href="artist.html">Artist</a>
-      <a href="profile.html">Profile</a>
-      <a href="messages.html">Messages</a>
+    <div class="nav-right">
+      <div id="userChip" class="user-chip">Checking session...</div>
+
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html" class="active">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="artist.html">Artist</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <a id="authLink" href="auth.html">Auth</a>
+        <button id="logoutBtn" type="button" style="display:none;">Log Out</button>
+      </div>
     </div>
   </div>
 
@@ -370,6 +414,10 @@
       <p>
         Upload tracks, push your sound, stream live sessions, and build your music brand with one platform made for artists, producers, and creators.
       </p>
+
+      <div id="sessionBar" class="session-bar">
+        Checking your account...
+      </div>
 
       <div class="button-row">
         <a href="upload-music.html" class="btn">Upload Music</a>
@@ -449,5 +497,77 @@
 
   <div class="footer-space"></div>
 
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_SAME_REAL_ANON_KEY_HERE";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const userChip = document.getElementById("userChip");
+    const sessionBar = document.getElementById("sessionBar");
+    const authLink = document.getElementById("authLink");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function setLoggedOutUI() {
+      userChip.textContent = "Not signed in";
+      sessionBar.textContent = "You are viewing the music section as a guest. Sign in to unlock protected uploads, profile tools, real messages, and creator features.";
+      authLink.style.display = "inline-block";
+      logoutBtn.style.display = "none";
+    }
+
+    function setLoggedInUI(user) {
+      const email = user?.email || "Signed in";
+      userChip.textContent = email;
+      sessionBar.textContent = `Logged in as ${email}. Your music section is connected and ready with your account session.`;
+      authLink.style.display = "none";
+      logoutBtn.style.display = "inline-block";
+    }
+
+    async function checkSession() {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) {
+          throw error;
+        }
+
+        const user = data.session?.user;
+
+        if (user) {
+          setLoggedInUI(user);
+        } else {
+          setLoggedOutUI();
+        }
+      } catch (error) {
+        console.error("Session error:", error);
+        userChip.textContent = "Session error";
+        sessionBar.textContent = "Could not check session: " + error.message;
+      }
+    }
+
+    async function logOut() {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        setLoggedOutUI();
+        window.location.href = "auth.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        sessionBar.textContent = "Logout failed: " + error.message;
+      }
+    }
+
+    logoutBtn.addEventListener("click", logOut);
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setLoggedInUI(session.user);
+      } else {
+        setLoggedOutUI();
+      }
+    });
+
+    checkSession();
+  </script>
 </body>
 </html>
