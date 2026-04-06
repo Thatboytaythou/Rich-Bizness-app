@@ -47,7 +47,7 @@
       font-size: 32px;
       font-weight: 900;
       color: #39ff14;
-      text-shadow: 0 0 16px rgba(57,255,20,0.25);
+      text-shadow: 0 0 16px rgba(57, 255, 20, 0.25);
     }
 
     .brand img {
@@ -57,7 +57,7 @@
       border-radius: 18px;
       background: #111111;
       padding: 6px;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .top-links {
@@ -67,8 +67,8 @@
     }
 
     .top-links a {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.10);
       padding: 10px 16px;
       border-radius: 12px;
       font-weight: 700;
@@ -77,8 +77,8 @@
 
     .top-links a:hover {
       color: #39ff14;
-      border-color: rgba(57,255,20,0.45);
-      background: rgba(57,255,20,0.12);
+      border-color: rgba(57, 255, 20, 0.45);
+      background: rgba(57, 255, 20, 0.12);
     }
 
     .layout {
@@ -89,10 +89,10 @@
 
     .card {
       background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 24px;
       padding: 24px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
     }
 
     h1, h2 {
@@ -135,7 +135,7 @@
 
     input:focus {
       border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+      box-shadow: 0 0 0 3px rgba(57, 255, 20, 0.15);
     }
 
     .button-row {
@@ -163,7 +163,7 @@
     .btn-dark {
       background: #1c1c1c;
       color: #ffffff;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .btn-green:hover,
@@ -178,15 +178,15 @@
       font-weight: 700;
       line-height: 1.5;
       word-break: break-word;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
+      background: rgba(57, 255, 20, 0.08);
+      border: 1px solid rgba(57, 255, 20, 0.20);
       color: #d8ffd0;
     }
 
     .tips {
       margin-top: 18px;
       background: #111111;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 18px;
       padding: 16px;
     }
@@ -215,7 +215,7 @@
       border-radius: 22px;
       overflow: hidden;
       background: #000000;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -241,7 +241,7 @@
       position: absolute;
       top: 16px;
       left: 16px;
-      background: rgba(255,0,0,0.88);
+      background: rgba(255, 0, 0, 0.88);
       color: #ffffff;
       border-radius: 999px;
       padding: 8px 12px;
@@ -261,7 +261,7 @@
 
     .info-box {
       background: #111111;
-      border: 1px solid rgba(255,255,255,0.06);
+      border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 18px;
       padding: 16px;
       text-align: center;
@@ -368,13 +368,13 @@
           <input
             id="participantNameInput"
             type="text"
-            placeholder="Rich Bizness Host"
-            value="Rich Bizness Host"
+            placeholder="richbizness-host"
+            value="richbizness-host"
           />
         </div>
 
         <div class="button-row">
-          <button id="startLiveBtn" class="btn-green">Start Live</button>
+          <button id="startLiveBtn" class="btn-green" onclick="startLive()">Start Live</button>
           <button id="endLiveBtn" class="btn-dark" type="button">End Live</button>
         </div>
 
@@ -417,18 +417,15 @@
   </div>
 
   <script>
-    const { Room, RoomEvent, LocalVideoTrack, LocalAudioTrack, createLocalVideoTrack, createLocalAudioTrack } = LivekitClient;
-
     const roomNameInput = document.getElementById("roomNameInput");
     const participantNameInput = document.getElementById("participantNameInput");
-    const startLiveBtn = document.getElementById("startLiveBtn");
-    const endLiveBtn = document.getElementById("endLiveBtn");
     const statusBox = document.getElementById("statusBox");
     const localVideoWrap = document.getElementById("localVideoWrap");
     const liveBadge = document.getElementById("liveBadge");
     const streamState = document.getElementById("streamState");
     const roomLabel = document.getElementById("roomLabel");
     const hostLabel = document.getElementById("hostLabel");
+    const endLiveBtn = document.getElementById("endLiveBtn");
 
     let room = null;
     let localVideoTrack = null;
@@ -442,7 +439,9 @@
       streamState.textContent = isLive ? "ON" : "OFF";
       roomLabel.textContent = roomName || "-";
       hostLabel.textContent = hostName || "-";
-      liveBadge.style.display = isLive ? "block" : "none";
+      if (liveBadge) {
+        liveBadge.style.display = isLive ? "block" : "none";
+      }
     }
 
     function resetPreview() {
@@ -453,7 +452,7 @@
 
     async function startLive() {
       try {
-        console.log("START LIVE CLICKED");
+        setStatus("Button clicked...");
 
         const roomName = roomNameInput.value.trim();
         const participantName = participantNameInput.value.trim();
@@ -463,13 +462,7 @@
           return;
         }
 
-        if (room) {
-          setStatus("You are already live. End the current stream first.");
-          return;
-        }
-
         setStatus("Requesting LiveKit token...");
-        console.log("CALLING /api/livekit-token");
 
         const response = await fetch("/api/livekit-token", {
           method: "POST",
@@ -477,8 +470,8 @@
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            roomName,
-            participantName,
+            roomName: roomName,
+            participantName: participantName,
             role: "host"
           })
         });
@@ -486,9 +479,7 @@
         let data = {};
         try {
           data = await response.json();
-          console.log("TOKEN API RESPONSE:", data);
         } catch (jsonError) {
-          console.error("JSON parse error:", jsonError);
           throw new Error("API did not return valid JSON.");
         }
 
@@ -502,10 +493,9 @@
 
         setStatus("Connecting to LiveKit room...");
 
-        room = new Room();
+        room = new LivekitClient.Room();
 
-        room.on(RoomEvent.Disconnected, () => {
-          console.log("Disconnected from room");
+        room.on(LivekitClient.RoomEvent.Disconnected, function () {
           setStatus("Disconnected from live room.");
           resetPreview();
           room = null;
@@ -515,8 +505,8 @@
 
         setStatus("Turning on camera and mic...");
 
-        localVideoTrack = await createLocalVideoTrack();
-        localAudioTrack = await createLocalAudioTrack();
+        localVideoTrack = await LivekitClient.createLocalVideoTrack();
+        localAudioTrack = await LivekitClient.createLocalAudioTrack();
 
         await room.localParticipant.publishTrack(localVideoTrack);
         await room.localParticipant.publishTrack(localAudioTrack);
@@ -532,7 +522,7 @@
         localVideoWrap.appendChild(videoElement);
 
         setLiveUI(true, roomName, participantName);
-        setStatus(`You are live in room "${roomName}".`);
+        setStatus('You are live in room "' + roomName + '".');
       } catch (error) {
         console.error("Start live error:", error);
         setStatus("ERROR: " + (error.message || "Could not start live stream."));
@@ -543,13 +533,17 @@
       try {
         if (localVideoTrack) {
           localVideoTrack.stop();
-          localVideoTrack.detach().forEach((el) => el.remove());
+          localVideoTrack.detach().forEach(function (el) {
+            el.remove();
+          });
           localVideoTrack = null;
         }
 
         if (localAudioTrack) {
           localAudioTrack.stop();
-          localAudioTrack.detach().forEach((el) => el.remove());
+          localAudioTrack.detach().forEach(function (el) {
+            el.remove();
+          });
           localAudioTrack = null;
         }
 
@@ -566,8 +560,8 @@
       }
     }
 
-    startLiveBtn.addEventListener("click", startLive);
-    endLiveBtn.addEventListener("click", endLive);
+    endLiveBtn.onclick = endLive;
+    window.startLive = startLive;
 
     resetPreview();
   </script>
