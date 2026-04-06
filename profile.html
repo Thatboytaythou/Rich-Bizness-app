@@ -8,10 +8,10 @@
   <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -51,20 +51,13 @@
 
     @keyframes glowPulse {
       0% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
+        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
       }
       50% {
-        box-shadow:
-          0 0 20px rgba(57,255,20,0.9),
-          0 0 40px rgba(57,255,20,0.6),
-          0 0 70px rgba(57,255,20,0.35);
+        box-shadow: 0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.6), 0 0 70px rgba(57,255,20,0.35);
       }
       100% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
+        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
       }
     }
 
@@ -82,18 +75,17 @@
       font-size: 28px;
       font-weight: 900;
       color: #39ff14;
-      text-shadow:
-        0 0 8px rgba(57,255,20,0.5),
-        0 0 18px rgba(57,255,20,0.3);
+      text-shadow: 0 0 8px rgba(57,255,20,0.5), 0 0 18px rgba(57,255,20,0.3);
     }
 
     .nav-links {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
-    .nav-links a {
+    .nav-links a, .nav-links button {
       color: white;
       text-decoration: none;
       font-size: 14px;
@@ -102,19 +94,39 @@
       border-radius: 10px;
       transition: 0.25s ease;
       background: rgba(0,0,0,0.18);
+      border: none;
+      cursor: pointer;
     }
 
-    .nav-links a:hover,
-    .nav-links a.active {
+    .nav-links a:hover, .nav-links a.active, .nav-links button:hover {
       color: #39ff14;
       background: rgba(57,255,20,0.10);
       box-shadow: 0 0 12px rgba(57,255,20,0.25);
     }
 
+    .user-chip {
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      color: #dfffd8;
+      font-size: 13px;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     .container {
       max-width: 1360px;
       margin: 0 auto;
-      padding: 80px 20px 40px;
+      padding: 32px 20px 40px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
     }
 
     .glass-card {
@@ -123,16 +135,7 @@
       border-radius: 20px;
       padding: 22px;
       backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
-    }
-
-    .profile-hero {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 24px;
-      margin-bottom: 28px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.3), 0 0 18px rgba(57,255,20,0.08);
     }
 
     .profile-photo {
@@ -148,9 +151,7 @@
       font-size: 3rem;
       margin: 0 0 10px;
       color: #7dff71;
-      text-shadow:
-        0 0 12px rgba(57,255,20,0.45),
-        0 0 25px rgba(57,255,20,0.20);
+      text-shadow: 0 0 12px rgba(57,255,20,0.45), 0 0 25px rgba(57,255,20,0.20);
     }
 
     .profile-tag {
@@ -190,18 +191,15 @@
       font-weight: 900;
       text-decoration: none;
       transition: 0.25s ease;
-      box-shadow:
-        0 0 12px rgba(57,255,20,0.35),
-        0 0 24px rgba(57,255,20,0.18);
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(57,255,20,0.35), 0 0 24px rgba(57,255,20,0.18);
     }
 
     .btn:hover {
       transform: translateY(-2px) scale(1.03);
       background: #7dff71;
-      box-shadow:
-        0 0 18px rgba(57,255,20,0.65),
-        0 0 36px rgba(57,255,20,0.45),
-        0 0 60px rgba(57,255,20,0.20);
+      box-shadow: 0 0 18px rgba(57,255,20,0.65), 0 0 36px rgba(57,255,20,0.45), 0 0 60px rgba(57,255,20,0.20);
     }
 
     .btn-dark {
@@ -233,10 +231,11 @@
     }
 
     .stat-number {
-      font-size: 1.8rem;
+      font-size: 1.2rem;
       font-weight: 900;
       color: #39ff14;
       margin-bottom: 6px;
+      word-break: break-word;
     }
 
     .stat-label {
@@ -259,10 +258,51 @@
       gap: 22px;
     }
 
-    .bio-text {
-      line-height: 1.7;
-      color: rgba(255,255,255,0.92);
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: #f2f2f2;
+    }
+
+    input, textarea {
+      width: 100%;
+      background: rgba(10,10,10,0.82);
+      color: #ffffff;
+      border: 1px solid #2b2b2b;
+      border-radius: 14px;
+      padding: 14px 16px;
       font-size: 15px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 160px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #39ff14;
+      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
+    }
+
+    .status-box {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      line-height: 1.5;
+      background: rgba(57,255,20,0.08);
+      border: 1px solid rgba(57,255,20,0.20);
+      color: #d8ffd0;
+      min-height: 55px;
+      word-break: break-word;
     }
 
     .info-list {
@@ -287,60 +327,7 @@
       color: rgba(255,255,255,0.9);
       line-height: 1.5;
       font-size: 14px;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 22px;
-      margin-top: 12px;
-    }
-
-    .feature-card {
-      background: rgba(0,0,0,0.62);
-      border: 1px solid rgba(57,255,20,0.16);
-      padding: 24px 20px;
-      border-radius: 18px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
-      transition: 0.25s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(57,255,20,0.38);
-      box-shadow:
-        0 0 20px rgba(57,255,20,0.14),
-        0 0 40px rgba(57,255,20,0.10);
-    }
-
-    .feature-card h3 {
-      color: #7dff71;
-      margin: 0 0 10px;
-    }
-
-    .feature-card p {
-      margin: 0 0 14px;
-      color: rgba(255,255,255,0.9);
-      line-height: 1.5;
-      font-size: 14px;
-    }
-
-    .feature-card a {
-      display: inline-block;
-      padding: 10px 16px;
-      border-radius: 10px;
-      background: #39ff14;
-      color: #000;
-      font-weight: 800;
-      text-decoration: none;
-    }
-
-    .footer-space {
-      height: 30px;
+      word-break: break-word;
     }
 
     @media (max-width: 1024px) {
@@ -386,6 +373,7 @@
     </div>
 
     <div class="nav-links">
+      <div id="userChip" class="user-chip">Checking session...</div>
       <a href="index.html">Home</a>
       <a href="gallery.html">Gallery</a>
       <a href="live.html">Go Live</a>
@@ -396,23 +384,22 @@
       <a href="artist.html">Artist</a>
       <a href="profile.html" class="active">Profile</a>
       <a href="messages.html">Messages</a>
+      <button id="logoutBtnNav" type="button">Log Out</button>
     </div>
   </div>
 
   <div class="container">
     <div class="profile-hero">
       <div class="glass-card">
-        <img class="profile-photo" src="images/brand/IMG_0843.jpeg" alt="Profile Image">
+        <img id="profileImagePreview" class="profile-photo" src="images/brand/IMG_0843.jpeg" alt="Profile Image">
       </div>
 
       <div class="glass-card">
-        <h1 class="profile-name">Rich Bizness LLC</h1>
-        <div class="profile-tag">Creator Profile</div>
+        <h1 id="profileNameDisplay" class="profile-name">Loading profile...</h1>
+        <div class="profile-tag">Protected User Profile</div>
 
-        <div class="profile-bio">
-          This is your main profile page. It acts like your account hub where people can learn who you are,
-          what you create, and where to find your content across the platform. Use this space to build your identity,
-          highlight your movement, and connect your art, music, live streams, gaming, sports, and fanbase all in one place.
+        <div id="profileBioDisplay" class="profile-bio">
+          Loading your profile...
         </div>
 
         <div class="button-row">
@@ -425,112 +412,286 @@
 
         <div class="stats">
           <div class="stat-box">
-            <div class="stat-number">MULTI</div>
-            <div class="stat-label">Creator Type</div>
+            <div id="displayNameStat" class="stat-number">-</div>
+            <div class="stat-label">Display Name</div>
+          </div>
+          <div class="stat-box">
+            <div id="usernameStat" class="stat-number">-</div>
+            <div class="stat-label">Username</div>
+          </div>
+          <div class="stat-box">
+            <div id="emailStat" class="stat-number">-</div>
+            <div class="stat-label">Email</div>
           </div>
           <div class="stat-box">
             <div class="stat-number">LIVE</div>
-            <div class="stat-label">Stream Ready</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number">BRAND</div>
-            <div class="stat-label">Identity</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number">BOSS</div>
-            <div class="stat-label">Energy</div>
+            <div class="stat-label">Account Status</div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section-title">Profile Overview</div>
+    <div class="section-title">Edit Profile</div>
     <div class="profile-grid">
       <div class="glass-card">
-        <div class="bio-text">
-          Your profile is the center of your platform identity. This is where your audience, collaborators,
-          supporters, and potential business connections should be able to get a clear picture of who you are
-          and what you represent.
-
-          <br><br>
-
-          Use this page to share your creator story, what kind of content you focus on, and what your mission is.
-          It can also become the place where you feature your latest drops, brand moves, streaming schedule,
-          collaborations, and important updates.
-
-          <br><br>
-
-          As the platform grows, this page can become your public profile hub with follower counts, content stats,
-          featured releases, pinned links, and verified creator features.
+        <div class="form-group">
+          <label for="displayNameInput">Display Name</label>
+          <input id="displayNameInput" type="text" placeholder="Rich Bizness LLC">
         </div>
+
+        <div class="form-group">
+          <label for="usernameInput">Username</label>
+          <input id="usernameInput" type="text" placeholder="richbizness">
+        </div>
+
+        <div class="form-group">
+          <label for="avatarUrlInput">Avatar Image URL</label>
+          <input id="avatarUrlInput" type="text" placeholder="https://example.com/your-image.png">
+        </div>
+
+        <div class="form-group">
+          <label for="bioInput">Bio</label>
+          <textarea id="bioInput" placeholder="Tell people who you are, what you create, and what your brand stands for."></textarea>
+        </div>
+
+        <div class="button-row">
+          <button id="saveProfileBtn" class="btn" type="button">Save Profile</button>
+          <button id="refreshProfileBtn" class="btn btn-dark" type="button">Refresh</button>
+        </div>
+
+        <div id="statusBox" class="status-box">Checking account...</div>
       </div>
 
       <div class="glass-card">
         <div class="info-list">
           <div class="info-item">
-            <strong>Display Name</strong>
-            <span>Rich Bizness LLC</span>
+            <strong>User ID</strong>
+            <span id="userIdInfo">-</span>
           </div>
 
           <div class="info-item">
-            <strong>Username</strong>
-            <span>@richbizness</span>
+            <strong>Email</strong>
+            <span id="emailInfo">-</span>
           </div>
 
           <div class="info-item">
-            <strong>Focus</strong>
-            <span>Music, live streaming, art, branding, gaming, sports, and creator growth.</span>
+            <strong>Profile Table</strong>
+            <span>profiles</span>
           </div>
 
           <div class="info-item">
-            <strong>Profile Purpose</strong>
-            <span>Central hub for your content, story, and audience connection across the whole platform.</span>
+            <strong>Protection</strong>
+            <span>This page redirects to auth.html if no user session is found.</span>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="section-title">Quick Access</div>
-    <div class="feature-grid">
-      <div class="feature-card">
-        <h3>🎵 Music</h3>
-        <p>Open your music section and highlight your latest sound.</p>
-        <a href="music.html">Open Music</a>
-      </div>
-
-      <div class="feature-card">
-        <h3>🎨 Gallery</h3>
-        <p>Show your visual catalog, logos, and creative brand work.</p>
-        <a href="gallery.html">Open Gallery</a>
-      </div>
-
-      <div class="feature-card">
-        <h3>🎮 Gaming</h3>
-        <p>Step into gaming clips, streams, and content expansion.</p>
-        <a href="gaming.html">Open Gaming</a>
-      </div>
-
-      <div class="feature-card">
-        <h3>🏆 Sports</h3>
-        <p>Tap into sports content, highlights, and athlete energy.</p>
-        <a href="sports.html">Open Sports</a>
-      </div>
-
-      <div class="feature-card">
-        <h3>📡 Go Live</h3>
-        <p>Start a stream and connect directly with your audience.</p>
-        <a href="live.html">Start Live</a>
-      </div>
-
-      <div class="feature-card">
-        <h3>💬 Messages</h3>
-        <p>Stay connected with fans and creators through direct messaging.</p>
-        <a href="messages.html">Open Messages</a>
-      </div>
-    </div>
   </div>
 
-  <div class="footer-space"></div>
+  <script>
+    const SUPABASE_URL = "YOUR_SUPABASE_URL";
+    const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const userChip = document.getElementById("userChip");
+    const logoutBtnNav = document.getElementById("logoutBtnNav");
+    const profileNameDisplay = document.getElementById("profileNameDisplay");
+    const profileBioDisplay = document.getElementById("profileBioDisplay");
+    const profileImagePreview = document.getElementById("profileImagePreview");
+    const displayNameInput = document.getElementById("displayNameInput");
+    const usernameInput = document.getElementById("usernameInput");
+    const avatarUrlInput = document.getElementById("avatarUrlInput");
+    const bioInput = document.getElementById("bioInput");
+    const saveProfileBtn = document.getElementById("saveProfileBtn");
+    const refreshProfileBtn = document.getElementById("refreshProfileBtn");
+    const statusBox = document.getElementById("statusBox");
+    const displayNameStat = document.getElementById("displayNameStat");
+    const usernameStat = document.getElementById("usernameStat");
+    const emailStat = document.getElementById("emailStat");
+    const userIdInfo = document.getElementById("userIdInfo");
+    const emailInfo = document.getElementById("emailInfo");
+
+    let currentUser = null;
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+    }
+
+    function escapeUsername(username) {
+      return String(username || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace(/[^a-z0-9_]/g, "");
+    }
+
+    function renderProfile(profile, user) {
+      const displayName = profile?.display_name || user?.email?.split("@")[0] || "Unnamed User";
+      const username = profile?.username || "no-username";
+      const bio = profile?.bio || "No bio added yet.";
+      const avatar = profile?.avatar_url || "images/brand/IMG_0843.jpeg";
+
+      profileNameDisplay.textContent = displayName;
+      profileBioDisplay.textContent = bio;
+      profileImagePreview.src = avatar;
+
+      displayNameInput.value = profile?.display_name || "";
+      usernameInput.value = profile?.username || "";
+      avatarUrlInput.value = profile?.avatar_url || "";
+      bioInput.value = profile?.bio || "";
+
+      displayNameStat.textContent = displayName;
+      usernameStat.textContent = "@" + username;
+      emailStat.textContent = user?.email || "-";
+      userIdInfo.textContent = user?.id || "-";
+      emailInfo.textContent = user?.email || "-";
+      userChip.textContent = user?.email || "Signed in";
+    }
+
+    async function getCurrentUserOrRedirect() {
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        throw error;
+      }
+
+      const user = data.session?.user;
+
+      if (!user) {
+        window.location.href = "auth.html";
+        return null;
+      }
+
+      currentUser = user;
+      return user;
+    }
+
+    async function ensureProfileRow(user) {
+      const { data: existing, error: selectError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (selectError) {
+        throw selectError;
+      }
+
+      if (existing) {
+        return existing;
+      }
+
+      const starterProfile = {
+        id: user.id,
+        email: user.email,
+        display_name: user.email?.split("@")[0] || "New User",
+        username: escapeUsername(user.email?.split("@")[0] || "user"),
+        bio: "Welcome to Rich Bizness.",
+        avatar_url: "images/brand/IMG_0843.jpeg"
+      };
+
+      const { data: inserted, error: insertError } = await supabase
+        .from("profiles")
+        .insert(starterProfile)
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      return inserted;
+    }
+
+    async function loadProfile() {
+      try {
+        setStatus("Loading profile...");
+        const user = await getCurrentUserOrRedirect();
+        if (!user) return;
+
+        const profile = await ensureProfileRow(user);
+        renderProfile(profile, user);
+        setStatus("Profile loaded.");
+      } catch (error) {
+        console.error("Load profile error:", error);
+        setStatus("Failed to load profile: " + error.message);
+      }
+    }
+
+    async function saveProfile() {
+      try {
+        if (!currentUser) {
+          setStatus("No active user.");
+          return;
+        }
+
+        const displayName = displayNameInput.value.trim();
+        const username = escapeUsername(usernameInput.value);
+        const avatarUrl = avatarUrlInput.value.trim();
+        const bio = bioInput.value.trim();
+
+        if (!displayName) {
+          setStatus("Display name is required.");
+          return;
+        }
+
+        if (!username) {
+          setStatus("Username is required.");
+          return;
+        }
+
+        setStatus("Saving profile...");
+
+        const updates = {
+          id: currentUser.id,
+          email: currentUser.email,
+          display_name: displayName,
+          username: username,
+          avatar_url: avatarUrl || "images/brand/IMG_0843.jpeg",
+          bio: bio || "No bio added yet."
+        };
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .upsert(updates)
+          .select()
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        renderProfile(data, currentUser);
+        setStatus("Profile saved successfully.");
+      } catch (error) {
+        console.error("Save profile error:", error);
+        setStatus("Could not save profile: " + error.message);
+      }
+    }
+
+    async function logOut() {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        window.location.href = "auth.html";
+      } catch (error) {
+        console.error("Logout error:", error);
+        setStatus("Logout failed: " + error.message);
+      }
+    }
+
+    saveProfileBtn.addEventListener("click", saveProfile);
+    refreshProfileBtn.addEventListener("click", loadProfile);
+    logoutBtnNav.addEventListener("click", logOut);
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        window.location.href = "auth.html";
+      }
+    });
+
+    loadProfile();
+  </script>
 </body>
 </html>
