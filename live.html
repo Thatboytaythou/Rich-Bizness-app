@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watch Live | Rich Bizness</title>
+  <title>Go Live | Rich Bizness</title>
 
   <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
@@ -116,7 +116,7 @@
       box-shadow: 0 0 12px rgba(0,0,0,0.3), 0 0 18px rgba(57,255,20,0.08);
     }
 
-    .panel h1, .panel h2 {
+    .panel h1, .panel h2, .panel h3 {
       margin-top: 0;
       color: #7dff71;
       text-shadow: 0 0 10px rgba(57,255,20,0.2);
@@ -220,6 +220,7 @@
       object-fit: cover;
       display: block;
       background: #000;
+      transform: scaleX(-1);
     }
 
     .video-placeholder {
@@ -297,6 +298,10 @@
       flex-direction: column;
     }
 
+    .chat-input {
+      width: 100%;
+    }
+
     .small-note {
       font-size: 12px;
       color: #cfcfcf;
@@ -346,8 +351,8 @@
     <div class="nav-links">
       <a href="index.html">Home</a>
       <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html" class="active">Watch Live</a>
+      <a href="live.html" class="active">Go Live</a>
+      <a href="watch.html">Watch Live</a>
       <a href="music.html">Music</a>
       <a href="gaming.html">Gaming</a>
       <a href="sports.html">Sports</a>
@@ -358,8 +363,8 @@
   <div class="page">
     <div class="layout">
       <div class="panel">
-        <h1>Watch Live</h1>
-        <p>Enter the room and your viewer name, then join the live stream.</p>
+        <h1>Start Live Stream</h1>
+        <p>Enter a room name and your host name, then start your live stream.</p>
 
         <div class="form-group">
           <label for="roomNameInput">Room Name</label>
@@ -367,45 +372,45 @@
         </div>
 
         <div class="form-group">
-          <label for="participantNameInput">Viewer Name</label>
-          <input id="participantNameInput" type="text" value="viewer-001" />
+          <label for="participantNameInput">Host Name</label>
+          <input id="participantNameInput" type="text" value="richbizness-host" />
         </div>
 
         <div class="button-row">
-          <button id="joinBtn" class="btn btn-green" type="button">Join Live</button>
-          <button id="leaveBtn" class="btn btn-dark" type="button">Leave Live</button>
+          <button id="startLiveBtn" class="btn btn-green" type="button">Start Live</button>
+          <button id="endLiveBtn" class="btn btn-dark" type="button">End Live</button>
         </div>
 
-        <div id="statusBox" class="status-box">Ready to join.</div>
+        <div id="statusBox" class="status-box">Ready.</div>
 
         <div class="small-note">
           Route: <strong>/api/livekit-token</strong><br>
           Method: <strong>POST</strong><br>
-          Role: <strong>viewer</strong>
+          Body keys: <strong>roomName, participantName, role</strong>
         </div>
       </div>
 
       <div class="panel">
-        <h2>Live Viewer</h2>
+        <h2>Host Preview</h2>
 
         <div id="videoWrap" class="video-wrap">
           <div class="video-placeholder">
-            The live stream will appear here after you join the room.
+            Your camera preview will show here when you start live.
           </div>
         </div>
 
         <div class="stats">
           <div class="stat">
-            <div id="watchState" class="stat-number">OFF</div>
-            <div class="stat-label">Watch State</div>
+            <div id="streamState" class="stat-number">OFF</div>
+            <div class="stat-label">Stream State</div>
           </div>
           <div class="stat">
             <div id="roomLabel" class="stat-number">-</div>
             <div class="stat-label">Room</div>
           </div>
           <div class="stat">
-            <div id="viewerLabel" class="stat-number">-</div>
-            <div class="stat-label">Viewer</div>
+            <div id="hostLabel" class="stat-number">-</div>
+            <div class="stat-label">Host</div>
           </div>
           <div class="stat">
             <div id="mediaLabel" class="stat-number">-</div>
@@ -420,17 +425,17 @@
         <div id="chatMessages" class="chat-messages">
           <div class="chat-message">
             <span class="chat-name">System</span>
-            Join the room to chat with the stream.
+            Chat ready. Start live to send messages.
           </div>
         </div>
 
         <div class="chat-form">
-          <input id="chatInput" type="text" placeholder="Type a chat message..." maxlength="300" />
+          <input id="chatInput" class="chat-input" type="text" placeholder="Type a chat message..." maxlength="300" />
           <button id="sendChatBtn" class="btn btn-green" type="button">Send Chat</button>
         </div>
 
         <div class="small-note">
-          Chat works inside the same LiveKit room as the live stream.
+          Chat is room-based. Everyone in the same LiveKit room can see messages.
         </div>
       </div>
     </div>
@@ -439,30 +444,30 @@
   <script>
     const roomNameInput = document.getElementById("roomNameInput");
     const participantNameInput = document.getElementById("participantNameInput");
-    const joinBtn = document.getElementById("joinBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
+    const startLiveBtn = document.getElementById("startLiveBtn");
+    const endLiveBtn = document.getElementById("endLiveBtn");
     const statusBox = document.getElementById("statusBox");
     const videoWrap = document.getElementById("videoWrap");
-    const watchState = document.getElementById("watchState");
+    const streamState = document.getElementById("streamState");
     const roomLabel = document.getElementById("roomLabel");
-    const viewerLabel = document.getElementById("viewerLabel");
+    const hostLabel = document.getElementById("hostLabel");
     const mediaLabel = document.getElementById("mediaLabel");
     const chatMessages = document.getElementById("chatMessages");
     const chatInput = document.getElementById("chatInput");
     const sendChatBtn = document.getElementById("sendChatBtn");
 
     let room = null;
-    let attachedElements = [];
+    let previewTracks = [];
 
     function setStatus(message) {
       statusBox.textContent = message;
     }
 
-    function setViewerUI(isWatching, roomName = "-", viewerName = "-", mediaState = "-") {
-      watchState.textContent = isWatching ? "ON" : "OFF";
-      roomLabel.textContent = isWatching ? roomName : "-";
-      viewerLabel.textContent = isWatching ? viewerName : "-";
-      mediaLabel.textContent = isWatching ? mediaState : "-";
+    function setLiveUI(isLive, roomName = "-", hostName = "-", mediaState = "-") {
+      streamState.textContent = isLive ? "ON" : "OFF";
+      roomLabel.textContent = isLive ? roomName : "-";
+      hostLabel.textContent = isLive ? hostName : "-";
+      mediaLabel.textContent = isLive ? mediaState : "-";
     }
 
     function addChatMessage(name, message) {
@@ -475,67 +480,19 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    function clearAttachedElements() {
-      attachedElements.forEach((item) => {
-        try { item.track.detach(item.element); } catch (e) {}
-        try { item.element.remove(); } catch (e) {}
+    function resetPreview() {
+      previewTracks.forEach((track) => {
+        try { track.stop(); } catch (e) {}
+        try { track.detach().forEach((el) => el.remove()); } catch (e) {}
       });
-      attachedElements = [];
-    }
 
-    function resetVideoArea() {
-      clearAttachedElements();
+      previewTracks = [];
       videoWrap.innerHTML = `
         <div class="video-placeholder">
-          The live stream will appear here after you join the room.
+          Your camera preview will show here when you start live.
         </div>
       `;
-      setViewerUI(false);
-    }
-
-    function attachTrack(track) {
-      if (!track) return;
-
-      const element = track.attach();
-
-      if (track.kind === "video") {
-        const placeholder = videoWrap.querySelector(".video-placeholder");
-        if (placeholder) placeholder.remove();
-
-        const existingVideo = videoWrap.querySelector("video");
-        if (existingVideo) existingVideo.remove();
-
-        videoWrap.appendChild(element);
-      }
-
-      if (track.kind === "audio") {
-        element.style.display = "none";
-        videoWrap.appendChild(element);
-      }
-
-      attachedElements.push({ track, element });
-    }
-
-    function refreshParticipantTracks(participant) {
-      if (!participant) return;
-
-      let hasVideo = false;
-      let hasAudio = false;
-
-      participant.trackPublications.forEach((publication) => {
-        if (publication.track) {
-          attachTrack(publication.track);
-          if (publication.track.kind === "video") hasVideo = true;
-          if (publication.track.kind === "audio") hasAudio = true;
-        }
-      });
-
-      if (hasVideo || hasAudio) {
-        const mediaParts = [];
-        if (hasVideo) mediaParts.push("VIDEO");
-        if (hasAudio) mediaParts.push("AUDIO");
-        mediaLabel.textContent = mediaParts.join(" + ");
-      }
+      setLiveUI(false);
     }
 
     function handleIncomingChat(payload, participant) {
@@ -547,7 +504,7 @@
           const senderName =
             data.sender ||
             (participant && participant.identity) ||
-            "User";
+            "Viewer";
           addChatMessage(senderName, data.message);
         }
       } catch (err) {
@@ -555,7 +512,7 @@
       }
     }
 
-    async function joinLive() {
+    async function startLive() {
       try {
         if (!window.LivekitClient) {
           throw new Error("LiveKit library did not load");
@@ -565,34 +522,51 @@
         const participantName = participantNameInput.value.trim();
 
         if (!roomName || !participantName) {
-          throw new Error("Enter room name and viewer name");
+          throw new Error("Enter room name and host name");
         }
 
         if (room) {
-          await leaveLive();
+          await endLive();
         }
 
-        setStatus("Requesting viewer token...");
+        setStatus("Requesting host token...");
 
-        const response = await fetch("/api/livekit-token", {
+        const tokenResponse = await fetch("/api/livekit-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             roomName: roomName,
             participantName: participantName,
-            role: "viewer"
+            role: "host"
           })
         });
 
-        const data = await response.json();
+        const tokenData = await tokenResponse.json();
 
-        if (!response.ok) {
-          throw new Error(data.error || "Failed to create LiveKit token");
+        if (!tokenResponse.ok) {
+          throw new Error(tokenData.error || "Failed to create LiveKit token");
         }
 
-        if (!data.token || !data.url) {
+        if (!tokenData.token || !tokenData.url) {
           throw new Error("Token route did not return token or url");
         }
+
+        setStatus("Getting camera and mic...");
+
+        const localTracks = await window.LivekitClient.createLocalTracks({
+          audio: true,
+          video: true
+        });
+
+        const videoTrack = localTracks.find((track) => track.kind === "video");
+
+        videoWrap.innerHTML = "";
+        if (videoTrack) {
+          const videoElement = videoTrack.attach();
+          videoWrap.appendChild(videoElement);
+        }
+
+        previewTracks = localTracks;
 
         setStatus("Connecting to room...");
 
@@ -600,20 +574,6 @@
 
         room.on(window.LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
           handleIncomingChat(payload, participant);
-        });
-
-        room.on(window.LivekitClient.RoomEvent.TrackSubscribed, (track) => {
-          attachTrack(track);
-
-          const hasVideoNow = !!videoWrap.querySelector("video");
-          const hasAudioNow = attachedElements.some((item) => item.track.kind === "audio");
-          const mediaParts = [];
-
-          if (hasVideoNow) mediaParts.push("VIDEO");
-          if (hasAudioNow) mediaParts.push("AUDIO");
-
-          mediaLabel.textContent = mediaParts.length ? mediaParts.join(" + ") : "-";
-          setStatus(`Connected. Watching live room "${roomName}".`);
         });
 
         room.on(window.LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
@@ -626,65 +586,54 @@
 
         room.on(window.LivekitClient.RoomEvent.Disconnected, () => {
           room = null;
-          resetVideoArea();
-          setStatus("Disconnected from live room.");
+          resetPreview();
+          setStatus("Live stream ended.");
           addChatMessage("System", "Disconnected from room.");
         });
 
-        await room.connect(data.url, data.token);
+        await room.connect(tokenData.url, tokenData.token);
 
-        setViewerUI(true, roomName, participantName, "WAITING");
-        setStatus("Connected. Waiting for host video...");
-
-        room.remoteParticipants.forEach((participant) => {
-          refreshParticipantTracks(participant);
-        });
-
-        const hasVideo = !!videoWrap.querySelector("video");
-        const hasAudio = attachedElements.some((item) => item.track.kind === "audio");
-
-        if (hasVideo || hasAudio) {
-          const mediaParts = [];
-          if (hasVideo) mediaParts.push("VIDEO");
-          if (hasAudio) mediaParts.push("AUDIO");
-          mediaLabel.textContent = mediaParts.join(" + ");
-          setStatus(`Connected. Watching live room "${roomName}".`);
+        for (const track of localTracks) {
+          await room.localParticipant.publishTrack(track);
         }
 
-        addChatMessage("System", `${participantName} joined chat.`);
+        setLiveUI(true, roomName, participantName, "CAM + MIC");
+        setStatus(`You are live in room "${roomName}".`);
+        addChatMessage("System", `${participantName} is now live.`);
       } catch (error) {
-        console.error("Join live error:", error);
-        setStatus("ERROR: " + (error.message || "Could not join live stream."));
+        console.error("Start live error:", error);
+        setStatus("ERROR: " + (error.message || "Could not start live stream."));
+        if (!room) resetPreview();
       }
     }
 
-    async function leaveLive() {
+    async function endLive() {
       try {
         if (room) {
           room.disconnect();
           room = null;
         }
 
-        resetVideoArea();
-        setStatus("You left the live room.");
-        addChatMessage("System", "You left the room.");
+        resetPreview();
+        setStatus("Stream ended.");
+        addChatMessage("System", "Host ended the stream.");
       } catch (error) {
-        console.error("Leave live error:", error);
-        setStatus("Error leaving live room.");
+        console.error("End live error:", error);
+        setStatus("Error ending stream.");
       }
     }
 
     async function sendChat() {
       try {
         if (!room) {
-          addChatMessage("System", "Join live first before sending chat.");
+          addChatMessage("System", "Start live first before sending chat.");
           return;
         }
 
         const message = chatInput.value.trim();
         if (!message) return;
 
-        const sender = participantNameInput.value.trim() || "Viewer";
+        const sender = participantNameInput.value.trim() || "Host";
 
         const payload = JSON.stringify({
           type: "chat",
@@ -705,8 +654,8 @@
       }
     }
 
-    joinBtn.addEventListener("click", joinLive);
-    leaveBtn.addEventListener("click", leaveLive);
+    startLiveBtn.addEventListener("click", startLive);
+    endLiveBtn.addEventListener("click", endLive);
     sendChatBtn.addEventListener("click", sendChat);
 
     chatInput.addEventListener("keydown", (e) => {
@@ -716,7 +665,7 @@
       }
     });
 
-    resetVideoArea();
+    resetPreview();
   </script>
 </body>
 </html>
