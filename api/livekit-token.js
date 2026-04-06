@@ -3,7 +3,7 @@ import { AccessToken } from "livekit-server-sdk";
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({
-      error: "Method not allowed"
+      error: "Method not allowed. Use POST."
     });
   }
 
@@ -14,7 +14,7 @@ export default async function handler(req, res) {
 
     if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_URL) {
       return res.status(500).json({
-        error: "Missing LiveKit environment variables"
+        error: "Missing LiveKit environment variables."
       });
     }
 
@@ -30,31 +30,32 @@ export default async function handler(req, res) {
 
     if (!cleanRoomName) {
       return res.status(400).json({
-        error: "roomName is required"
+        error: "roomName is required."
       });
     }
 
     if (!cleanParticipantName) {
       return res.status(400).json({
-        error: "participantName is required"
+        error: "participantName is required."
       });
     }
+
+    const isHost = cleanRole === "host";
 
     const token = new AccessToken(
       LIVEKIT_API_KEY,
       LIVEKIT_API_SECRET,
       {
         identity: cleanParticipantName,
+        name: cleanParticipantName,
         ttl: "2h"
       }
     );
 
-    token.name = cleanParticipantName;
-
     token.addGrant({
-      room: cleanRoomName,
       roomJoin: true,
-      canPublish: cleanRole === "host",
+      room: cleanRoomName,
+      canPublish: isHost,
       canPublishData: true,
       canSubscribe: true
     });
@@ -72,7 +73,7 @@ export default async function handler(req, res) {
     console.error("livekit-token error:", error);
 
     return res.status(500).json({
-      error: error.message || "Failed to generate LiveKit token"
+      error: error.message || "Failed to generate LiveKit token."
     });
   }
 }
