@@ -19,7 +19,7 @@
       font-family: Arial, sans-serif;
       color: #fff;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.72)),
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.74)),
         url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png");
       background-size: cover;
       background-position: center;
@@ -34,7 +34,7 @@
       align-items: center;
       gap: 16px;
       padding: 14px 24px;
-      background: rgba(0,0,0,0.48);
+      background: rgba(0,0,0,0.5);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(255,255,255,0.08);
       position: sticky;
@@ -50,15 +50,9 @@
     }
 
     @keyframes glowPulse {
-      0% {
-        box-shadow: 0 0 10px rgba(57,255,20,0.45), 0 0 18px rgba(57,255,20,0.18);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(57,255,20,0.95), 0 0 44px rgba(57,255,20,0.45);
-      }
-      100% {
-        box-shadow: 0 0 10px rgba(57,255,20,0.45), 0 0 18px rgba(57,255,20,0.18);
-      }
+      0% { box-shadow: 0 0 10px rgba(57,255,20,0.45), 0 0 18px rgba(57,255,20,0.18); }
+      50% { box-shadow: 0 0 20px rgba(57,255,20,0.95), 0 0 44px rgba(57,255,20,0.45); }
+      100% { box-shadow: 0 0 10px rgba(57,255,20,0.45), 0 0 18px rgba(57,255,20,0.18); }
     }
 
     .logo img {
@@ -367,6 +361,7 @@
       .live-grid {
         grid-template-columns: 1fr;
       }
+
       .preview-box {
         min-height: 420px;
       }
@@ -376,9 +371,11 @@
       .hero h1 {
         font-size: 2.2rem;
       }
+
       .button-grid {
         grid-template-columns: 1fr;
       }
+
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
@@ -417,9 +414,8 @@
     <div class="hero">
       <h1>Start Live Stream</h1>
       <p>
-        Enter your room name and host name, then start your live stream. This page is locked to signed-in users and connects to your LiveKit token endpoint.
+        Enter your room name and host name, then start your live stream.
       </p>
-
       <div id="sessionBar" class="session-bar">Checking your account...</div>
     </div>
 
@@ -495,9 +491,15 @@
 
   <script>
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const SUPABASE_ANON_KEY = "YOUR_SB_PUBLISHABLE_KEY_HERE";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
 
     const userChip = document.getElementById("userChip");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -550,17 +552,18 @@
 
     async function requireUser() {
       try {
-        const { data, error } = await supabase.auth.getUser();
-
+        const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
-        const user = data?.user || null;
+        const session = data?.session || null;
+        const user = session?.user || null;
 
         if (!user) {
+          userChip.textContent = "Not signed in";
           setSessionMessage("No active session. Redirecting to login...");
           setTimeout(() => {
             window.location.href = "auth.html";
-          }, 800);
+          }, 900);
           return null;
         }
 
@@ -570,11 +573,20 @@
         return user;
       } catch (error) {
         console.error("AUTH ERROR:", error);
+        userChip.textContent = "Auth error";
         setSessionMessage("Auth failed: " + error.message);
         setStatus("Auth failed: " + error.message);
         return null;
       }
     }
+
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        currentUser = session.user;
+        userChip.textContent = session.user.email || "Signed in";
+        setSessionMessage(`Logged in as ${session.user.email}`);
+      }
+    });
 
     async function logOut() {
       try {
@@ -814,10 +826,11 @@
       setLiveOffUI();
       setStatus("Checking account...");
       await requireUser();
+      if (!currentUser) return;
       setStatus("Ready.");
     }
 
     init();
   </script>
 </body>
-</html>
+</html> 
