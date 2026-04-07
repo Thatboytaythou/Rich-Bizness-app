@@ -2,279 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Watch Live | Rich Bizness</title>
-
-  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-  <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
       color: white;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.72)),
-        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.78)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
       min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .nav {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 24px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      gap: 16px;
       flex-wrap: wrap;
-    }
-
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    @keyframes glowPulse {
-      0% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-      50% {
-        box-shadow:
-          0 0 20px rgba(57,255,20,0.95),
-          0 0 40px rgba(57,255,20,0.65),
-          0 0 70px rgba(57,255,20,0.35);
-      }
-      100% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-    }
-
-    .logo img {
-      height: 48px;
-      width: 48px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid rgba(57,255,20,0.35);
-      animation: glowPulse 2s infinite;
-      background: rgba(0,0,0,0.35);
-    }
-
-    .brand-name {
-      font-size: 28px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow:
-        0 0 8px rgba(57,255,20,0.5),
-        0 0 18px rgba(57,255,20,0.3);
-    }
-
-    .nav-right {
-      display: flex;
-      align-items: center;
       gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .user-chip {
-      padding: 8px 12px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.07);
-      color: #dcffd5;
-      font-size: 13px;
-      max-width: 260px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav-links a,
-    .nav-links button {
-      color: white;
+    .nav a, .nav button {
       text-decoration: none;
-      font-size: 14px;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
       font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 10px;
-      transition: 0.25s ease;
-      background: rgba(0,0,0,0.18);
-      border: none;
       cursor: pointer;
     }
 
-    .nav-links a:hover,
-    .nav-links a.active,
-    .nav-links button:hover {
-      color: #39ff14;
-      background: rgba(57,255,20,0.10);
-      box-shadow: 0 0 12px rgba(57,255,20,0.25);
-    }
-
-    .container {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 34px 20px 40px;
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
     }
 
     .hero {
-      text-align: center;
-      margin-bottom: 22px;
+      padding: 22px;
+      border-radius: 22px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
     }
 
     .hero h1 {
-      font-size: 3.1rem;
-      margin: 0 0 12px;
+      margin: 0 0 8px;
       color: #7dff71;
-      text-shadow:
-        0 0 12px rgba(57,255,20,0.45),
-        0 0 25px rgba(57,255,20,0.20);
+      font-size: 3rem;
+      text-align: center;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .hero p {
-      max-width: 860px;
-      margin: 0 auto 18px;
-      font-size: 1.06rem;
-      line-height: 1.6;
-      color: rgba(255,255,255,0.95);
+      margin: 0;
+      text-align: center;
+      font-size: 1.05rem;
+      color: #f3f3f3;
     }
 
-    .session-bar {
-      max-width: 980px;
-      margin: 0 auto 28px;
-      padding: 14px 18px;
-      border-radius: 16px;
-      background: rgba(57,255,20,0.09);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d9ffd2;
+    .session-bar, .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
       font-weight: 700;
-      line-height: 1.5;
     }
 
-    .watch-grid {
+    .grid {
       display: grid;
-      grid-template-columns: 390px 1fr;
-      gap: 22px;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
       align-items: start;
     }
 
-    .panel {
-      background: rgba(0,0,0,0.62);
-      border: 1px solid rgba(57,255,20,0.16);
-      border-radius: 20px;
-      padding: 22px;
+    .card {
+      background: rgba(0,0,0,0.46);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 22px;
+      padding: 18px;
       backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
     }
 
-    .panel h2 {
+    .card h2 {
       margin-top: 0;
       color: #7dff71;
-      text-shadow: 0 0 10px rgba(57,255,20,0.2);
-    }
-
-    .form-group {
-      margin-bottom: 16px;
+      font-size: 2rem;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #f2f2f2;
+      margin: 12px 0 8px;
+      font-weight: 700;
     }
 
     input {
       width: 100%;
-      background: rgba(10,10,10,0.82);
-      color: #ffffff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
       outline: none;
-    }
-
-    input:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
     }
 
     .button-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 8px;
+      gap: 10px;
+      margin-top: 14px;
     }
 
-    .btn {
-      display: inline-block;
-      padding: 14px 18px;
-      border-radius: 12px;
-      font-weight: 900;
-      text-decoration: none;
+    button {
+      width: 100%;
+      padding: 14px;
       border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
-      transition: 0.25s ease;
-      font-size: 15px;
-      text-align: center;
     }
 
     .btn-green {
-      background: #39ff14;
-      color: #000;
-      box-shadow:
-        0 0 12px rgba(57,255,20,0.35),
-        0 0 24px rgba(57,255,20,0.18);
-    }
-
-    .btn-green:hover {
-      transform: translateY(-2px) scale(1.03);
       background: #7dff71;
-      box-shadow:
-        0 0 18px rgba(57,255,20,0.65),
-        0 0 36px rgba(57,255,20,0.45),
-        0 0 60px rgba(57,255,20,0.20);
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
     }
 
     .btn-red {
-      background: #ff4d4d;
+      background: #ef5b55;
       color: white;
-    }
-
-    .btn-red:hover {
-      transform: translateY(-2px);
-      background: #ff6666;
     }
 
     .btn-dark {
@@ -283,145 +188,137 @@
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .btn-dark:hover {
-      background: rgba(255,255,255,0.14);
-      color: #39ff14;
-      transform: translateY(-2px);
-    }
-
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      line-height: 1.5;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
-      min-height: 58px;
-      word-break: break-word;
-    }
-
-    .setup-box {
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .setup-box h3 {
-      margin-top: 0;
-      color: #7dff71;
-    }
-
-    .setup-box p {
-      margin: 10px 0;
-      color: rgba(255,255,255,0.9);
-      line-height: 1.55;
-    }
-
-    .viewer-wrap {
+    .viewer-shell {
+      min-height: 520px;
       display: flex;
       flex-direction: column;
       gap: 18px;
     }
 
-    .viewer-box {
-      width: 100%;
-      min-height: 520px;
+    .video-box {
+      min-height: 420px;
       border-radius: 20px;
-      overflow: hidden;
+      border: 1px solid rgba(125,255,113,0.18);
       background: rgba(0,0,0,0.72);
-      border: 1px solid rgba(57,255,20,0.14);
+      overflow: hidden;
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
     }
 
-    .viewer-box video {
+    .video-box video {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      background: #000;
+      background: black;
     }
 
-    .viewer-placeholder {
-      padding: 20px;
+    .video-placeholder {
       text-align: center;
-      color: rgba(255,255,255,0.78);
-      font-size: 1.1rem;
+      padding: 24px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.86);
+    }
+
+    .live-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(239,91,85,0.92);
+      color: white;
+      font-weight: 900;
+      z-index: 5;
+      letter-spacing: 0.5px;
     }
 
     .stats-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
+      gap: 12px;
     }
 
     .stat {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
       border-radius: 16px;
-      padding: 18px 14px;
+      padding: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
       text-align: center;
     }
 
     .stat-value {
-      font-size: 1.8rem;
+      font-size: 2rem;
       font-weight: 900;
-      color: #39ff14;
-      margin-bottom: 6px;
+      color: #7dff71;
       word-break: break-word;
     }
 
     .stat-label {
-      font-size: 12px;
-      color: rgba(255,255,255,0.84);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      margin-top: 6px;
+      opacity: 0.92;
+      font-weight: 700;
     }
 
-    @media (max-width: 1100px) {
-      .watch-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .viewer-box {
-        min-height: 420px;
-      }
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
     }
 
-    @media (max-width: 700px) {
-      .hero h1 {
-        font-size: 2.2rem;
-      }
+    .note-box {
+      margin-top: 16px;
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(125,255,113,0.14);
+      line-height: 1.7;
+    }
 
-      .button-grid {
+    @media (max-width: 980px) {
+      .grid {
         grid-template-columns: 1fr;
       }
 
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .button-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .brand {
+        font-size: 1.45rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="nav">
-    <div class="logo-wrap">
-      <div class="logo">
-        <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness Logo">
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
       </div>
-      <div class="brand-name">Rich Bizness</div>
-    </div>
 
-    <div class="nav-right">
-      <div id="userChip" class="user-chip">Checking session...</div>
-
-      <div class="nav-links">
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="gallery.html">Gallery</a>
         <a href="live.html">Go Live</a>
@@ -432,85 +329,73 @@
         <a href="artist.html">Artist</a>
         <a href="profile.html">Profile</a>
         <a href="messages.html">Messages</a>
-        <a id="authLink" href="auth.html">Auth</a>
-        <button id="logoutBtn" type="button" style="display:none;">Log Out</button>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
-  </div>
 
-  <div class="container">
     <div class="hero">
       <h1>Watch Live</h1>
-      <p>
-        Join the room, watch the stream, and stay locked into the live action. You can watch as a guest or signed-in user.
-      </p>
+      <p>Join a Rich Bizness live room and watch the stream in real time.</p>
 
-      <div id="sessionBar" class="session-bar">
-        Checking your account...
-      </div>
+      <div id="sessionBar" class="session-bar">Checking session...</div>
     </div>
 
-    <div class="watch-grid">
-      <div class="panel">
+    <div class="grid">
+      <div class="card">
         <h2>Viewer Controls</h2>
 
-        <div class="form-group">
-          <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" value="richbizness-live-room" />
-        </div>
+        <label for="roomInput">Room Name</label>
+        <input id="roomInput" type="text" value="richbizness-live-room" />
 
-        <div class="form-group">
-          <label for="viewerNameInput">Viewer Name</label>
-          <input id="viewerNameInput" type="text" value="viewer-001" />
-        </div>
+        <label for="viewerNameInput">Viewer Name</label>
+        <input id="viewerNameInput" type="text" value="viewer-guest" />
 
         <div class="button-grid">
-          <button id="joinBtn" class="btn btn-green" type="button">Join Stream</button>
-          <button id="leaveBtn" class="btn btn-red" type="button">Leave Stream</button>
-          <button id="copyRoomBtn" class="btn btn-dark" type="button">Copy Room Name</button>
-          <button id="openHostBtn" class="btn btn-dark" type="button">Open Host Page</button>
+          <button id="joinBtn" class="btn-green" type="button">Join Live</button>
+          <button id="leaveBtn" class="btn-red" type="button">Leave Live</button>
+          <button id="copyBtn" class="btn-dark" type="button">Copy Room Name</button>
+          <button id="openHostBtn" class="btn-dark" type="button">Open Host Page</button>
         </div>
 
         <div id="statusBox" class="status-box">Ready.</div>
 
-        <div class="setup-box">
-          <h3>Viewer Setup</h3>
-          <p><strong>Backend route:</strong> /api/livekit-token</p>
-          <p><strong>Route method:</strong> POST</p>
-          <p><strong>Body keys:</strong> roomName, participantName, role</p>
-          <p><strong>Role:</strong> viewer</p>
+        <div class="note-box">
+          <strong style="color:#7dff71;">Viewer Setup</strong><br>
+          Backend route: <strong>/api/livekit-token</strong><br>
+          Route method: <strong>POST</strong><br>
+          Join role: <strong>viewer</strong><br>
+          This page connects viewers to the host room and plays remote video/audio.
         </div>
       </div>
 
-      <div class="viewer-wrap">
-        <div class="panel">
-          <h2>Live Viewer</h2>
+      <div class="card viewer-shell">
+        <h2>Live Viewer</h2>
 
-          <div id="viewerBox" class="viewer-box">
-            <div id="viewerPlaceholder" class="viewer-placeholder">
-              The live stream will appear here when you join a room.
-            </div>
+        <div id="videoBox" class="video-box">
+          <div id="liveBadge" class="live-badge" style="display:none;">LIVE</div>
+          <div id="videoPlaceholder" class="video-placeholder">
+            The host stream will show here when you join the live room.
           </div>
         </div>
 
         <div class="stats-row">
           <div class="stat">
-            <div id="watchState" class="stat-value">OFF</div>
-            <div class="stat-label">Watch State</div>
+            <div id="streamState" class="stat-value">OFF</div>
+            <div class="stat-label">Stream State</div>
           </div>
 
           <div class="stat">
-            <div id="roomState" class="stat-value">-</div>
+            <div id="roomState" class="stat-value">--</div>
             <div class="stat-label">Room</div>
           </div>
 
           <div class="stat">
-            <div id="viewerState" class="stat-value">-</div>
-            <div class="stat-label">Viewer</div>
+            <div id="hostState" class="stat-value">--</div>
+            <div class="stat-label">Host</div>
           </div>
 
           <div class="stat">
-            <div id="remoteState" class="stat-value">0</div>
+            <div id="viewerState" class="stat-value">0</div>
             <div class="stat-label">Participants</div>
           </div>
         </div>
@@ -519,312 +404,323 @@
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const userChip = document.getElementById("userChip");
-    const authLink = document.getElementById("authLink");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const sessionBar = document.getElementById("sessionBar");
-
-    const roomNameInput = document.getElementById("roomNameInput");
-    const viewerNameInput = document.getElementById("viewerNameInput");
-    const joinBtn = document.getElementById("joinBtn");
-    const leaveBtn = document.getElementById("leaveBtn");
-    const copyRoomBtn = document.getElementById("copyRoomBtn");
-    const openHostBtn = document.getElementById("openHostBtn");
-
-    const statusBox = document.getElementById("statusBox");
-    const viewerBox = document.getElementById("viewerBox");
-    const viewerPlaceholder = document.getElementById("viewerPlaceholder");
-
-    const watchState = document.getElementById("watchState");
-    const roomState = document.getElementById("roomState");
-    const viewerState = document.getElementById("viewerState");
-    const remoteState = document.getElementById("remoteState");
-
-    let currentUser = null;
-    let watchRoom = null;
-    let currentVideoEl = null;
-    let currentAudioEls = [];
-
-    function setStatus(message) {
-      statusBox.textContent = message;
-    }
-
-    function setSessionMessage(message) {
-      sessionBar.textContent = message;
-    }
-
-    function setLoggedOutUI() {
-      userChip.textContent = "Guest viewer";
-      authLink.style.display = "inline-block";
-      logoutBtn.style.display = "none";
-      setSessionMessage("You are watching as a guest. Sign in if you want your account connected while viewing live streams.");
-    }
-
-    function setLoggedInUI(user) {
-      userChip.textContent = user?.email || "Signed in";
-      authLink.style.display = "none";
-      logoutBtn.style.display = "inline-block";
-      setSessionMessage(`Logged in as ${user.email}. Your viewer session is connected.`);
-    }
-
-    function setWatchOffUI() {
-      watchState.textContent = "OFF";
-      roomState.textContent = "-";
-      viewerState.textContent = "-";
-      remoteState.textContent = "0";
-    }
-
-    function setWatchOnUI(roomName, viewerName) {
-      watchState.textContent = "ON";
-      roomState.textContent = roomName;
-      viewerState.textContent = viewerName;
-    }
-
-    function clearViewerMedia() {
-      if (currentVideoEl) {
-        currentVideoEl.remove();
-        currentVideoEl = null;
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
       }
 
-      currentAudioEls.forEach((el) => el.remove());
-      currentAudioEls = [];
+      if (!window.LivekitClient) {
+        throw new Error("LiveKit CDN did not load.");
+      }
 
-      viewerPlaceholder.style.display = "block";
-    }
-
-    function attachTrack(track) {
-      if (track.kind === "video") {
-        if (currentVideoEl) {
-          currentVideoEl.remove();
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
         }
-
-        currentVideoEl = track.attach();
-        currentVideoEl.autoplay = true;
-        currentVideoEl.playsInline = true;
-        viewerBox.appendChild(currentVideoEl);
-        viewerPlaceholder.style.display = "none";
-      }
-
-      if (track.kind === "audio") {
-        const audioEl = track.attach();
-        audioEl.autoplay = true;
-        currentAudioEls.push(audioEl);
-        viewerBox.appendChild(audioEl);
-      }
-    }
-
-    function attachExistingRemoteTracks() {
-      if (!watchRoom) return;
-
-      watchRoom.remoteParticipants.forEach((participant) => {
-        participant.trackPublications.forEach((publication) => {
-          if (publication.track) {
-            attachTrack(publication.track);
-          }
-        });
-      });
-    }
-
-    async function fetchViewerToken(roomName, participantName) {
-      const response = await fetch("/api/livekit-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          roomName,
-          participantName,
-          role: "viewer"
-        })
       });
 
-      const data = await response.json();
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const sessionBar = document.getElementById("sessionBar");
 
-      if (!response.ok) {
-        throw new Error(data.error || "Token request failed");
+      const roomInput = document.getElementById("roomInput");
+      const viewerNameInput = document.getElementById("viewerNameInput");
+      const joinBtn = document.getElementById("joinBtn");
+      const leaveBtn = document.getElementById("leaveBtn");
+      const copyBtn = document.getElementById("copyBtn");
+      const openHostBtn = document.getElementById("openHostBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const videoBox = document.getElementById("videoBox");
+      const videoPlaceholder = document.getElementById("videoPlaceholder");
+      const liveBadge = document.getElementById("liveBadge");
+
+      const streamState = document.getElementById("streamState");
+      const roomState = document.getElementById("roomState");
+      const hostState = document.getElementById("hostState");
+      const viewerState = document.getElementById("viewerState");
+
+      let currentUser = null;
+      let room = null;
+      let attachedElements = [];
+      let currentHostName = "--";
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
       }
 
-      if (!data.token) {
-        throw new Error("No token returned from /api/livekit-token");
+      function setSessionMessage(message) {
+        sessionBar.textContent = message;
       }
 
-      return data;
-    }
-
-    async function joinStream() {
-      try {
-        if (!window.LivekitClient) {
-          throw new Error("LiveKit client failed to load");
-        }
-
-        const roomName = roomNameInput.value.trim();
-        const viewerName = viewerNameInput.value.trim();
-
-        if (!roomName || !viewerName) {
-          setStatus("Room name and viewer name are required.");
-          return;
-        }
-
-        if (watchRoom) {
-          setStatus("Already connected. Leave stream first if you want to rejoin.");
-          return;
-        }
-
-        setStatus("Getting viewer token...");
-        const tokenData = await fetchViewerToken(roomName, viewerName);
-        const token = tokenData.token;
-        const serverUrl = tokenData.url || tokenData.serverUrl || tokenData.livekitUrl || "";
-
-        if (!serverUrl) {
-          throw new Error("No LiveKit URL returned from /api/livekit-token");
-        }
-
-        setStatus("Connecting to room...");
-        watchRoom = new window.LivekitClient.Room();
-
-        watchRoom.on(window.LivekitClient.RoomEvent.TrackSubscribed, (track) => {
-          attachTrack(track);
-        });
-
-        watchRoom.on(window.LivekitClient.RoomEvent.ParticipantConnected, () => {
-          remoteState.textContent = String(watchRoom.remoteParticipants.size);
-        });
-
-        watchRoom.on(window.LivekitClient.RoomEvent.ParticipantDisconnected, () => {
-          remoteState.textContent = String(watchRoom.remoteParticipants.size);
-        });
-
-        watchRoom.on(window.LivekitClient.RoomEvent.Disconnected, () => {
-          setStatus("Disconnected from room.");
-          clearViewerMedia();
-          setWatchOffUI();
-        });
-
-        await watchRoom.connect(serverUrl, token);
-
-        attachExistingRemoteTracks();
-
-        setWatchOnUI(roomName, viewerName);
-        remoteState.textContent = String(watchRoom.remoteParticipants.size);
-        setStatus("Connected. Waiting for host stream if it is not already live.");
-      } catch (error) {
-        console.error(error);
-        setStatus("ERROR: " + error.message);
-        if (watchRoom) {
-          try { watchRoom.disconnect(); } catch (_) {}
-          watchRoom = null;
-        }
-        clearViewerMedia();
-        setWatchOffUI();
+      function clearRemoteMedia() {
+        attachedElements.forEach((el) => el.remove());
+        attachedElements = [];
+        videoPlaceholder.style.display = "block";
       }
-    }
 
-    async function leaveStream() {
-      try {
-        if (watchRoom) {
-          watchRoom.disconnect();
-          watchRoom = null;
-        }
-
-        clearViewerMedia();
-        setWatchOffUI();
-        setStatus("Left stream.");
-      } catch (error) {
-        console.error(error);
-        setStatus("Leave failed: " + error.message);
+      function resetStats() {
+        streamState.textContent = "OFF";
+        roomState.textContent = "--";
+        hostState.textContent = "--";
+        viewerState.textContent = "0";
+        liveBadge.style.display = "none";
       }
-    }
 
-    async function copyRoomName() {
-      try {
-        await navigator.clipboard.writeText(roomNameInput.value.trim());
-        setStatus("Room name copied.");
-      } catch (error) {
-        console.error(error);
-        setStatus("Copy failed: " + error.message);
+      function setLiveUI(roomName) {
+        streamState.textContent = "LIVE";
+        roomState.textContent = roomName;
+        hostState.textContent = currentHostName || "--";
+        liveBadge.style.display = "block";
       }
-    }
 
-    function openHostPage() {
-      const room = encodeURIComponent(roomNameInput.value.trim());
-      window.open(`live.html?room=${room}`, "_blank");
-    }
-
-    async function checkSession() {
-      try {
+      async function requireUser() {
+        setSessionMessage("Checking session...");
         const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          throw error;
-        }
-
-        const user = data.session?.user;
-        currentUser = user || null;
-
-        if (user) {
-          setLoggedInUI(user);
-          if (viewerNameInput.value.trim() === "viewer-001") {
-            viewerNameInput.value = user.email.split("@")[0];
-          }
-        } else {
-          setLoggedOutUI();
-        }
-      } catch (error) {
-        console.error(error);
-        userChip.textContent = "Session error";
-        setSessionMessage("Could not check session: " + error.message);
-      }
-    }
-
-    async function logOut() {
-      try {
-        const { error } = await supabase.auth.signOut();
         if (error) throw error;
-        setLoggedOutUI();
-        window.location.href = "auth.html";
-      } catch (error) {
-        console.error(error);
-        setStatus("Logout failed: " + error.message);
+
+        const user = data?.session?.user || null;
+        if (!user) {
+          setSessionMessage("No active session. Redirecting to auth...");
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
+        }
+
+        currentUser = user;
+        userChip.textContent = user.email || "Signed in";
+        setSessionMessage("Session active.");
+        return user;
       }
-    }
 
-    function applyRoomFromUrl() {
-      const params = new URLSearchParams(window.location.search);
-      const room = params.get("room");
-      if (room) {
-        roomNameInput.value = room;
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
       }
-    }
 
-    joinBtn.addEventListener("click", joinStream);
-    leaveBtn.addEventListener("click", leaveStream);
-    copyRoomBtn.addEventListener("click", copyRoomName);
-    openHostBtn.addEventListener("click", openHostPage);
-    logoutBtn.addEventListener("click", logOut);
+      async function fetchViewerToken(roomName, participantName) {
+        const response = await fetch("/api/livekit-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roomName,
+            participantName,
+            role: "viewer"
+          })
+        });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        currentUser = session.user;
-        setLoggedInUI(session.user);
-      } else {
-        currentUser = null;
-        setLoggedOutUI();
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch viewer token.");
+        }
+
+        if (!data.token || !data.url) {
+          throw new Error("Token route did not return token/url.");
+        }
+
+        return data;
       }
-    });
 
-    async function init() {
-      applyRoomFromUrl();
-      setWatchOffUI();
-      await checkSession();
-      setStatus("Ready.");
+      function attachTrack(track, participant) {
+        const el = track.attach();
+        el.autoplay = true;
+        el.playsInline = true;
+
+        if (track.kind === "video") {
+          clearRemoteMedia();
+          videoPlaceholder.style.display = "none";
+          videoBox.appendChild(el);
+          attachedElements.push(el);
+          currentHostName = participant?.identity || participant?.name || "host";
+          hostState.textContent = currentHostName;
+        } else if (track.kind === "audio") {
+          el.style.display = "none";
+          videoBox.appendChild(el);
+          attachedElements.push(el);
+        }
+      }
+
+      function subscribeParticipantTracks(participant) {
+        participant.trackPublications.forEach((publication) => {
+          if (publication.isSubscribed && publication.track) {
+            attachTrack(publication.track, participant);
+          }
+        });
+
+        participant.on(window.LivekitClient.ParticipantEvent.TrackSubscribed, (track) => {
+          attachTrack(track, participant);
+        });
+
+        participant.on(window.LivekitClient.ParticipantEvent.TrackUnsubscribed, (track) => {
+          const els = track.detach();
+          els.forEach((el) => el.remove());
+        });
+      }
+
+      async function joinLive() {
+        try {
+          joinBtn.disabled = true;
+          setStatus("Joining live...");
+
+          const user = await requireUser();
+          if (!user) {
+            joinBtn.disabled = false;
+            return;
+          }
+
+          const roomName = roomInput.value.trim();
+          let viewerName = viewerNameInput.value.trim();
+
+          if (!roomName) {
+            throw new Error("Room name is required.");
+          }
+
+          if (!viewerName) {
+            viewerName = (user.email || "viewer").split("@")[0] + "-viewer";
+            viewerNameInput.value = viewerName;
+          }
+
+          if (room) {
+            await leaveLive(false);
+          }
+
+          const tokenData = await fetchViewerToken(roomName, viewerName);
+
+          room = new window.LivekitClient.Room({
+            adaptiveStream: true,
+            dynacast: true
+          });
+
+          room.on(window.LivekitClient.RoomEvent.Connected, () => {
+            setStatus("Connected to live room.");
+            viewerState.textContent = String(1 + (room.numParticipants || 0));
+            setLiveUI(roomName);
+          });
+
+          room.on(window.LivekitClient.RoomEvent.Disconnected, () => {
+            setStatus("Disconnected from live room.");
+            clearRemoteMedia();
+            resetStats();
+          });
+
+          room.on(window.LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
+            subscribeParticipantTracks(participant);
+            currentHostName = participant.identity || participant.name || "host";
+            hostState.textContent = currentHostName;
+            viewerState.textContent = String(1 + (room.numParticipants || 0));
+          });
+
+          room.on(window.LivekitClient.RoomEvent.ParticipantDisconnected, () => {
+            viewerState.textContent = String(1 + (room.numParticipants || 0));
+          });
+
+          room.on(window.LivekitClient.RoomEvent.TrackSubscribed, (track, _pub, participant) => {
+            attachTrack(track, participant);
+          });
+
+          await room.connect(tokenData.url, tokenData.token);
+
+          room.remoteParticipants.forEach((participant) => {
+            subscribeParticipantTracks(participant);
+            currentHostName = participant.identity || participant.name || "host";
+          });
+
+          setLiveUI(roomName);
+          viewerState.textContent = String(1 + (room.numParticipants || 0));
+          setStatus("Watching live.");
+        } catch (error) {
+          console.error(error);
+          setStatus("Join error: " + error.message);
+          clearRemoteMedia();
+          resetStats();
+        } finally {
+          joinBtn.disabled = false;
+        }
+      }
+
+      async function leaveLive(showMessage = true) {
+        try {
+          if (room) {
+            room.disconnect();
+            room = null;
+          }
+
+          clearRemoteMedia();
+          resetStats();
+          currentHostName = "--";
+          if (showMessage) setStatus("Left live room.");
+        } catch (error) {
+          setStatus("Leave error: " + error.message);
+        }
+      }
+
+      function copyRoomName() {
+        const roomName = roomInput.value.trim();
+        if (!roomName) {
+          setStatus("No room name to copy.");
+          return;
+        }
+
+        navigator.clipboard.writeText(roomName)
+          .then(() => setStatus("Room name copied."))
+          .catch(() => setStatus("Copy failed."));
+      }
+
+      function openHostPage() {
+        window.open("live.html", "_blank");
+      }
+
+      function loadRoomFromQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const roomParam = params.get("room");
+        if (roomParam) {
+          roomInput.value = roomParam;
+        }
+      }
+
+      logoutBtn.addEventListener("click", logOut);
+      joinBtn.addEventListener("click", joinLive);
+      leaveBtn.addEventListener("click", () => leaveLive(true));
+      copyBtn.addEventListener("click", copyRoomName);
+      openHostBtn.addEventListener("click", openHostPage);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        const user = session?.user || null;
+        currentUser = user;
+        userChip.textContent = user?.email || "No session";
+      });
+
+      loadRoomFromQuery();
+      resetStats();
+
+      requireUser().then((user) => {
+        if (user && !viewerNameInput.value.trim()) {
+          viewerNameInput.value = (user.email || "viewer").split("@")[0] + "-viewer";
+        }
+      }).catch((error) => {
+        setStatus("Startup error: " + error.message);
+      });
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Watch Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    init();
   </script>
 </body>
 </html>
