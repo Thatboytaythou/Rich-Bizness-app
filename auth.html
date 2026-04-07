@@ -2,547 +2,194 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Auth | Rich Bizness</title>
+  <title>Rich Bizness Auth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-  <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-
+  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
       margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
+      background: #0b0f0c;
       color: white;
-      background:
-        linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.68)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 24px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    @keyframes glowPulse {
-      0% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-      50% {
-        box-shadow:
-          0 0 20px rgba(57,255,20,0.9),
-          0 0 40px rgba(57,255,20,0.6),
-          0 0 70px rgba(57,255,20,0.35);
-      }
-      100% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-    }
-
-    .logo img {
-      height: 48px;
-      width: 48px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid rgba(57,255,20,0.35);
-      animation: glowPulse 2s infinite;
-      background: rgba(0,0,0,0.35);
-    }
-
-    .brand-name {
-      font-size: 28px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow:
-        0 0 8px rgba(57,255,20,0.5),
-        0 0 18px rgba(57,255,20,0.3);
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 10px;
-      transition: 0.25s ease;
-      background: rgba(0,0,0,0.18);
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: #39ff14;
-      background: rgba(57,255,20,0.10);
-      box-shadow: 0 0 12px rgba(57,255,20,0.25);
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 40px 20px;
-    }
-
-    .hero {
       text-align: center;
-      margin-bottom: 30px;
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
+    .container {
+      padding: 40px 20px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    h1 {
       color: #7dff71;
-      text-shadow:
-        0 0 12px rgba(57,255,20,0.45),
-        0 0 25px rgba(57,255,20,0.20);
-    }
-
-    .hero p {
-      margin: 0 auto;
-      max-width: 760px;
-      font-size: 1.05rem;
-      line-height: 1.6;
-      color: rgba(255,255,255,0.94);
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 22px;
-      align-items: start;
-    }
-
-    .card {
-      background: rgba(0,0,0,0.62);
-      border: 1px solid rgba(57,255,20,0.16);
-      border-radius: 20px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
-    }
-
-    .card h2 {
-      margin-top: 0;
-      color: #7dff71;
-      text-shadow: 0 0 10px rgba(57,255,20,0.2);
-    }
-
-    .card p {
-      color: rgba(255,255,255,0.9);
-      line-height: 1.55;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #f2f2f2;
     }
 
     input {
       width: 100%;
-      background: rgba(10,10,10,0.82);
-      color: #ffffff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-    }
-
-    input:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
-    }
-
-    .button-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 14px 22px;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 8px;
       border: none;
-      border-radius: 12px;
-      font-weight: 900;
+      outline: none;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
       cursor: pointer;
-      transition: 0.25s ease;
-      font-size: 15px;
     }
 
-    .btn-green {
-      background: #39ff14;
-      color: #000;
-      box-shadow:
-        0 0 12px rgba(57,255,20,0.35),
-        0 0 24px rgba(57,255,20,0.18);
-    }
-
-    .btn-green:hover {
-      transform: translateY(-2px) scale(1.03);
+    .green {
       background: #7dff71;
-      box-shadow:
-        0 0 18px rgba(57,255,20,0.65),
-        0 0 36px rgba(57,255,20,0.45),
-        0 0 60px rgba(57,255,20,0.20);
+      color: black;
     }
 
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
+    .red {
+      background: #ff4d4d;
       color: white;
-      border: 1px solid rgba(255,255,255,0.10);
     }
 
-    .btn-dark:hover {
-      background: rgba(255,255,255,0.14);
-      color: #39ff14;
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(125,255,113,0.1);
     }
 
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      line-height: 1.5;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
-      min-height: 55px;
-      word-break: break-word;
-    }
-
-    .user-box {
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .user-box strong {
-      color: #7dff71;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .user-box div {
-      color: rgba(255,255,255,0.9);
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .tip-list {
-      display: grid;
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .tip-item {
-      padding: 14px 16px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .tip-item strong {
-      color: #7dff71;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .tip-item span {
-      color: rgba(255,255,255,0.9);
-      line-height: 1.5;
-      font-size: 14px;
-    }
-
-    @media (max-width: 900px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.3rem;
-      }
+    .user-info {
+      margin-top: 20px;
+      padding: 10px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
 
-  <div class="nav">
-    <div class="logo-wrap">
-      <div class="logo">
-        <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness Logo">
-      </div>
-      <div class="brand-name">Rich Bizness</div>
-    </div>
+<div class="container">
+  <h1>Rich Bizness Login</h1>
 
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html">Watch Live</a>
-      <a href="music.html">Music</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="sports.html">Sports</a>
-      <a href="artist.html">Artist</a>
-      <a href="profile.html">Profile</a>
-      <a href="messages.html">Messages</a>
-      <a href="auth.html" class="active">Auth</a>
-    </div>
-  </div>
+  <input id="emailInput" type="email" placeholder="Email" />
+  <input id="passwordInput" type="password" placeholder="Password" />
 
-  <div class="page">
-    <div class="hero">
-      <h1>Account Access</h1>
-      <p>
-        Sign up, log in, stay signed in, and manage your session. This page is the account gateway for your full platform.
-      </p>
-    </div>
+  <button id="signUpBtn" class="green">Sign Up</button>
+  <button id="loginBtn" class="green">Login</button>
+  <button id="logoutBtn" class="red">Log Out</button>
 
-    <div class="layout">
-      <div class="card">
-        <h2>Sign Up / Log In</h2>
-        <p>Create an account or log back in with your email and password.</p>
+  <div id="statusBox" class="status">Ready.</div>
+  <div id="userInfo" class="user-info"></div>
+</div>
 
-        <div class="form-group">
-          <label for="emailInput">Email</label>
-          <input id="emailInput" type="email" placeholder="you@example.com">
-        </div>
+<script>
+  // 🔥 LOCKED SUPABASE CONFIG
+  const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+  const SUPABASE_ANON_KEY = "PUT_YOUR_sb_publishable_KEY_HERE";
 
-        <div class="form-group">
-          <label for="passwordInput">Password</label>
-          <input id="passwordInput" type="password" placeholder="Enter password">
-        </div>
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true
+    }
+  });
 
-        <div class="button-row">
-          <button id="signUpBtn" class="btn btn-green" type="button">Sign Up</button>
-          <button id="loginBtn" class="btn btn-green" type="button">Log In</button>
-          <button id="logoutBtn" class="btn btn-dark" type="button">Log Out</button>
-        </div>
+  const emailInput = document.getElementById("emailInput");
+  const passwordInput = document.getElementById("passwordInput");
+  const signUpBtn = document.getElementById("signUpBtn");
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const statusBox = document.getElementById("statusBox");
+  const userInfo = document.getElementById("userInfo");
 
-        <div id="statusBox" class="status-box">Ready.</div>
+  function setStatus(msg) {
+    statusBox.textContent = msg;
+  }
 
-        <div class="user-box">
-          <strong>Current Session</strong>
-          <div id="userInfo">No user signed in.</div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Auth Setup Notes</h2>
-        <p>This page uses Supabase Auth with email and password.</p>
-
-        <div class="tip-list">
-          <div class="tip-item">
-            <strong>Step 1</strong>
-            <span>Paste your real Supabase project URL and anon key into this file.</span>
-          </div>
-
-          <div class="tip-item">
-            <strong>Step 2</strong>
-            <span>Enable Email Auth in your Supabase dashboard.</span>
-          </div>
-
-          <div class="tip-item">
-            <strong>Step 3</strong>
-            <span>Use this auth page before protecting profile, uploads, and messages.</span>
-          </div>
-
-          <div class="tip-item">
-            <strong>Step 4</strong>
-            <span>Later, we can connect this to profiles, real messages, uploads, and follower systems.</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const emailInput = document.getElementById("emailInput");
-    const passwordInput = document.getElementById("passwordInput");
-    const signUpBtn = document.getElementById("signUpBtn");
-    const loginBtn = document.getElementById("loginBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const statusBox = document.getElementById("statusBox");
-    const userInfo = document.getElementById("userInfo");
-
-    function setStatus(message) {
-      statusBox.textContent = message;
+  function setUser(user) {
+    if (!user) {
+      userInfo.innerHTML = "No user signed in.";
+      return;
     }
 
-    function setUserInfo(user) {
-      if (!user) {
-        userInfo.textContent = "No user signed in.";
-        return;
-      }
+    userInfo.innerHTML = `
+      <div><strong>Email:</strong> ${user.email}</div>
+      <div><strong>ID:</strong> ${user.id}</div>
+    `;
+  }
 
-      userInfo.innerHTML = `
-        <div><strong style="display:inline;color:#7dff71;">Email:</strong> ${user.email || "No email"}</div>
-        <div><strong style="display:inline;color:#7dff71;">User ID:</strong> ${user.id || "No ID"}</div>
-      `;
-    }
+  // ✅ SIGN UP
+  signUpBtn.onclick = async () => {
+    setStatus("Creating account...");
 
-    async function refreshSession() {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-
-        if (error) {
-          throw error;
-        }
-
-        const session = data.session;
-        const user = session ? session.user : null;
-
-        setUserInfo(user);
-
-        if (user) {
-          setStatus("User is signed in.");
-        } else {
-          setStatus("No active session.");
-        }
-      } catch (error) {
-        console.error("Session error:", error);
-        setStatus("Session check failed: " + error.message);
-      }
-    }
-
-    async function signUp() {
-      try {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!email || !password) {
-          setStatus("Enter email and password.");
-          return;
-        }
-
-        setStatus("Creating account...");
-
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setUserInfo(data.user || null);
-        setStatus("Sign up successful. Check your email if confirmation is enabled.");
-      } catch (error) {
-        console.error("Sign up error:", error);
-        setStatus("Sign up failed: " + error.message);
-      }
-    }
-
-    async function logIn() {
-      try {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!email || !password) {
-          setStatus("Enter email and password.");
-          return;
-        }
-
-        setStatus("Logging in...");
-
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        setUserInfo(data.user || null);
-        setStatus("Login successful.");
-      } catch (error) {
-        console.error("Login error:", error);
-        setStatus("Login failed: " + error.message);
-      }
-    }
-
-    async function logOut() {
-      try {
-        setStatus("Logging out...");
-
-        const { error } = await supabase.auth.signOut();
-
-        if (error) {
-          throw error;
-        }
-
-        setUserInfo(null);
-        setStatus("Logged out successfully.");
-      } catch (error) {
-        console.error("Logout error:", error);
-        setStatus("Logout failed: " + error.message);
-      }
-    }
-
-    signUpBtn.addEventListener("click", signUp);
-    loginBtn.addEventListener("click", logIn);
-    logoutBtn.addEventListener("click", logOut);
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setUserInfo(session ? session.user : null);
+    const { data, error } = await supabase.auth.signUp({
+      email: emailInput.value,
+      password: passwordInput.value
     });
 
-    refreshSession();
-  </script>
+    if (error) {
+      setStatus("Error: " + error.message);
+    } else {
+      setStatus("Account created! Check email if confirmation is on.");
+      setUser(data.user);
+    }
+  };
+
+  // ✅ LOGIN
+  loginBtn.onclick = async () => {
+    setStatus("Logging in...");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: emailInput.value,
+      password: passwordInput.value
+    });
+
+    if (error) {
+      setStatus("Error: " + error.message);
+    } else {
+      setStatus("Logged in successfully.");
+      setUser(data.user);
+    }
+  };
+
+  // ✅ LOGOUT
+  logoutBtn.onclick = async () => {
+    await supabase.auth.signOut();
+    setStatus("Logged out.");
+    setUser(null);
+  };
+
+  // ✅ CHECK SESSION ON LOAD
+  async function checkSession() {
+    setStatus("Checking session...");
+
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error) {
+      setStatus("Error checking session.");
+      return;
+    }
+
+    const user = data?.session?.user || null;
+
+    if (user) {
+      setStatus("Session active.");
+      setUser(user);
+    } else {
+      setStatus("No active session.");
+      setUser(null);
+    }
+  }
+
+  checkSession();
+</script>
+
 </body>
 </html>
