@@ -2,48 +2,58 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Rich Bizness Auth</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <!-- Supabase -->
+  <title>Rich Bizness Login</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #0b0f0c;
       color: white;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
     }
 
-    .container {
-      padding: 40px 20px;
-      max-width: 400px;
-      margin: auto;
+    .box {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(125,255,113,0.2);
+      border-radius: 18px;
+      padding: 24px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.35);
     }
 
     h1 {
+      margin-top: 0;
+      text-align: center;
       color: #7dff71;
     }
 
     input {
       width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border-radius: 8px;
-      border: none;
-      outline: none;
+      box-sizing: border-box;
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 10px;
+      border: 1px solid #333;
+      background: #111;
+      color: white;
       font-size: 16px;
     }
 
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 10px;
       border: none;
+      border-radius: 10px;
       font-size: 16px;
+      font-weight: 700;
       cursor: pointer;
     }
 
@@ -53,143 +63,168 @@
     }
 
     .red {
-      background: #ff4d4d;
+      background: #ff5b5b;
       color: white;
     }
 
-    .status {
-      margin-top: 15px;
-      padding: 10px;
+    .status, .user {
+      margin-top: 10px;
+      padding: 12px;
       border-radius: 10px;
-      background: rgba(125,255,113,0.1);
-    }
-
-    .user-info {
-      margin-top: 20px;
-      padding: 10px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.15);
+      word-break: break-word;
     }
   </style>
 </head>
 <body>
+  <div class="box">
+    <h1>Rich Bizness Login</h1>
 
-<div class="container">
-  <h1>Rich Bizness Login</h1>
+    <input id="emailInput" type="email" placeholder="Email" />
+    <input id="passwordInput" type="password" placeholder="Password" />
 
-  <input id="emailInput" type="email" placeholder="Email" />
-  <input id="passwordInput" type="password" placeholder="Password" />
+    <button id="signUpBtn" class="green" type="button">Sign Up</button>
+    <button id="loginBtn" class="green" type="button">Login</button>
+    <button id="logoutBtn" class="red" type="button">Log Out</button>
 
-  <button id="signUpBtn" class="green">Sign Up</button>
-  <button id="loginBtn" class="green">Login</button>
-  <button id="logoutBtn" class="red">Log Out</button>
+    <div id="statusBox" class="status">Ready.</div>
+    <div id="userBox" class="user">No user signed in.</div>
+  </div>
 
-  <div id="statusBox" class="status">Ready.</div>
-  <div id="userInfo" class="user-info"></div>
-</div>
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-<script>
-  // 🔥 LOCKED SUPABASE CONFIG
-  const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
+      }
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const emailInput = document.getElementById("emailInput");
+      const passwordInput = document.getElementById("passwordInput");
+      const signUpBtn = document.getElementById("signUpBtn");
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+      const userBox = document.getElementById("userBox");
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
+      }
+
+      function setUser(user) {
+        if (!user) {
+          userBox.textContent = "No user signed in.";
+          return;
+        }
+
+        userBox.innerHTML = `
+          <div><strong>Email:</strong> ${user.email || "No email"}</div>
+          <div><strong>ID:</strong> ${user.id}</div>
+        `;
+      }
+
+      function getValues() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        if (!email) throw new Error("Email is required.");
+        if (!password) throw new Error("Password is required.");
+        if (password.length < 6) throw new Error("Password must be at least 6 characters.");
+
+        return { email, password };
+      }
+
+      async function refreshSession() {
+        setStatus("Checking session...");
+
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        const user = data?.session?.user || null;
+
+        if (user) {
+          setUser(user);
+          setStatus("Session active.");
+        } else {
+          setUser(null);
+          setStatus("No active session.");
+        }
+      }
+
+      signUpBtn.addEventListener("click", async () => {
+        try {
+          const { email, password } = getValues();
+          setStatus("Creating account...");
+
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password
+          });
+
+          if (error) throw error;
+
+          if (data?.user) setUser(data.user);
+
+          if (data?.session) {
+            setStatus("Account created and signed in.");
+          } else {
+            setStatus("Account created. You can login now.");
+          }
+        } catch (error) {
+          setStatus("Sign up error: " + error.message);
+        }
+      });
+
+      loginBtn.addEventListener("click", async () => {
+        try {
+          const { email, password } = getValues();
+          setStatus("Logging in...");
+
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) throw error;
+
+          setUser(data.user || null);
+          setStatus("Logged in successfully.");
+        } catch (error) {
+          setStatus("Login error: " + error.message);
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+
+          setUser(null);
+          setStatus("Logged out.");
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      });
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user || null);
+      });
+
+      refreshSession();
+    } catch (error) {
+      document.getElementById("statusBox").textContent = "Startup error: " + error.message;
     }
-  });
-
-  const emailInput = document.getElementById("emailInput");
-  const passwordInput = document.getElementById("passwordInput");
-  const signUpBtn = document.getElementById("signUpBtn");
-  const loginBtn = document.getElementById("loginBtn");
-  const logoutBtn = document.getElementById("logoutBtn");
-  const statusBox = document.getElementById("statusBox");
-  const userInfo = document.getElementById("userInfo");
-
-  function setStatus(msg) {
-    statusBox.textContent = msg;
-  }
-
-  function setUser(user) {
-    if (!user) {
-      userInfo.innerHTML = "No user signed in.";
-      return;
-    }
-
-    userInfo.innerHTML = `
-      <div><strong>Email:</strong> ${user.email}</div>
-      <div><strong>ID:</strong> ${user.id}</div>
-    `;
-  }
-
-  // ✅ SIGN UP
-  signUpBtn.onclick = async () => {
-    setStatus("Creating account...");
-
-    const { data, error } = await supabase.auth.signUp({
-      email: emailInput.value,
-      password: passwordInput.value
-    });
-
-    if (error) {
-      setStatus("Error: " + error.message);
-    } else {
-      setStatus("Account created! Check email if confirmation is on.");
-      setUser(data.user);
-    }
-  };
-
-  // ✅ LOGIN
-  loginBtn.onclick = async () => {
-    setStatus("Logging in...");
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: emailInput.value,
-      password: passwordInput.value
-    });
-
-    if (error) {
-      setStatus("Error: " + error.message);
-    } else {
-      setStatus("Logged in successfully.");
-      setUser(data.user);
-    }
-  };
-
-  // ✅ LOGOUT
-  logoutBtn.onclick = async () => {
-    await supabase.auth.signOut();
-    setStatus("Logged out.");
-    setUser(null);
-  };
-
-  // ✅ CHECK SESSION ON LOAD
-  async function checkSession() {
-    setStatus("Checking session...");
-
-    const { data, error } = await supabase.auth.getSession();
-
-    if (error) {
-      setStatus("Error checking session.");
-      return;
-    }
-
-    const user = data?.session?.user || null;
-
-    if (user) {
-      setStatus("Session active.");
-      setUser(user);
-    } else {
-      setStatus("No active session.");
-      setUser(null);
-    }
-  }
-
-  checkSession();
-</script>
-
+  </script>
 </body>
 </html>
