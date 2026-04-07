@@ -12,9 +12,7 @@
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -54,20 +52,13 @@
 
     @keyframes glowPulse {
       0% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
+        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
       }
       50% {
-        box-shadow:
-          0 0 20px rgba(57,255,20,0.95),
-          0 0 40px rgba(57,255,20,0.65),
-          0 0 70px rgba(57,255,20,0.35);
+        box-shadow: 0 0 20px rgba(57,255,20,0.95), 0 0 40px rgba(57,255,20,0.65), 0 0 70px rgba(57,255,20,0.35);
       }
       100% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
+        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
       }
     }
 
@@ -85,9 +76,7 @@
       font-size: 28px;
       font-weight: 900;
       color: #39ff14;
-      text-shadow:
-        0 0 8px rgba(57,255,20,0.5),
-        0 0 18px rgba(57,255,20,0.3);
+      text-shadow: 0 0 8px rgba(57,255,20,0.5), 0 0 18px rgba(57,255,20,0.3);
     }
 
     .nav-right {
@@ -153,9 +142,7 @@
       font-size: 3.1rem;
       margin: 0 0 12px;
       color: #7dff71;
-      text-shadow:
-        0 0 12px rgba(57,255,20,0.45),
-        0 0 25px rgba(57,255,20,0.20);
+      text-shadow: 0 0 12px rgba(57,255,20,0.45), 0 0 25px rgba(57,255,20,0.20);
     }
 
     .hero p {
@@ -191,9 +178,7 @@
       border-radius: 20px;
       padding: 22px;
       backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
+      box-shadow: 0 0 12px rgba(0,0,0,0.3), 0 0 18px rgba(57,255,20,0.08);
     }
 
     .panel h2 {
@@ -253,18 +238,13 @@
     .btn-green {
       background: #39ff14;
       color: #000;
-      box-shadow:
-        0 0 12px rgba(57,255,20,0.35),
-        0 0 24px rgba(57,255,20,0.18);
+      box-shadow: 0 0 12px rgba(57,255,20,0.35), 0 0 24px rgba(57,255,20,0.18);
     }
 
     .btn-green:hover {
       transform: translateY(-2px) scale(1.03);
       background: #7dff71;
-      box-shadow:
-        0 0 18px rgba(57,255,20,0.65),
-        0 0 36px rgba(57,255,20,0.45),
-        0 0 60px rgba(57,255,20,0.20);
+      box-shadow: 0 0 18px rgba(57,255,20,0.65), 0 0 36px rgba(57,255,20,0.45), 0 0 60px rgba(57,255,20,0.20);
     }
 
     .btn-red {
@@ -455,12 +435,12 @@
 
         <div class="form-group">
           <label for="roomNameInput">Room Name</label>
-          <input id="roomNameInput" type="text" value="richbizness-live-room" />
+          <input id="roomNameInput" type="text" value="richbizness-live-room">
         </div>
 
         <div class="form-group">
           <label for="hostNameInput">Host Name</label>
-          <input id="hostNameInput" type="text" value="richbizness-host" />
+          <input id="hostNameInput" type="text" value="richbizness-host">
         </div>
 
         <div class="button-grid">
@@ -521,7 +501,7 @@
 
   <script>
     const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    const SUPABASE_ANON_KEY = "PASTE_YOUR_SAME_REAL_ANON_KEY_HERE";
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -624,7 +604,7 @@
         throw new Error("No token returned from /api/livekit-token");
       }
 
-      return data.token;
+      return data;
     }
 
     function clearPreview() {
@@ -651,6 +631,9 @@
           throw new Error("LiveKit client failed to load");
         }
 
+        const user = await requireUser();
+        if (!user) return;
+
         const roomName = roomNameInput.value.trim();
         const hostName = hostNameInput.value.trim();
 
@@ -668,7 +651,13 @@
         await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
 
         setStatus("Getting LiveKit token...");
-        const token = await fetchToken(roomName, hostName);
+        const tokenData = await fetchToken(roomName, hostName);
+        const token = tokenData.token;
+        const serverUrl = tokenData.url || tokenData.serverUrl || tokenData.livekitUrl || "";
+
+        if (!serverUrl) {
+          throw new Error("No LiveKit URL returned from /api/livekit-token");
+        }
 
         setStatus("Creating local media...");
         localVideoTrack = await window.LivekitClient.createLocalVideoTrack();
@@ -696,101 +685,33 @@
           viewerState.textContent = String(liveRoom.remoteParticipants.size);
         });
 
-        await liveRoom.connect(token.serverUrl || token.url || "", token.token || token);
-      } catch (connectErr) {
-        try {
-          const roomName = roomNameInput.value.trim();
-          const hostName = hostNameInput.value.trim();
-
-          if (!roomName || !hostName) {
-            throw connectErr;
-          }
-
-          const response = await fetch("/api/livekit-token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              roomName,
-              participantName: hostName,
-              role: "host"
-            })
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || "Token request failed");
-          }
-
-          const token = data.token;
-          const serverUrl = data.url || data.serverUrl || data.livekitUrl || "";
-
-          if (!token) {
-            throw new Error("No token returned from /api/livekit-token");
-          }
-
-          if (!serverUrl) {
-            throw new Error("No LiveKit URL returned. Make sure your API returns serverUrl or url.");
-          }
-
-          if (!liveRoom) {
-            liveRoom = new window.LivekitClient.Room();
-
-            liveRoom.on(window.LivekitClient.RoomEvent.Connected, () => {
-              setStatus("Live stream started successfully.");
-            });
-
-            liveRoom.on(window.LivekitClient.RoomEvent.Disconnected, () => {
-              setStatus("Live stream disconnected.");
-              setLiveOffUI();
-            });
-
-            liveRoom.on(window.LivekitClient.RoomEvent.ParticipantConnected, () => {
-              viewerState.textContent = String(liveRoom.remoteParticipants.size);
-            });
-
-            liveRoom.on(window.LivekitClient.RoomEvent.ParticipantDisconnected, () => {
-              viewerState.textContent = String(liveRoom.remoteParticipants.size);
-            });
-          }
-
-          await liveRoom.connect(serverUrl, token);
-          await liveRoom.localParticipant.publishTrack(localVideoTrack);
-          await liveRoom.localParticipant.publishTrack(localAudioTrack);
-
-          setLiveOnUI(roomName, hostName);
-          viewerState.textContent = String(liveRoom.remoteParticipants.size);
-          return;
-        } catch (error) {
-          console.error(error);
-          if (localVideoTrack) {
-            localVideoTrack.stop();
-            localVideoTrack = null;
-          }
-          if (localAudioTrack) {
-            localAudioTrack.stop();
-            localAudioTrack = null;
-          }
-          if (liveRoom) {
-            try { liveRoom.disconnect(); } catch (_) {}
-            liveRoom = null;
-          }
-          clearPreview();
-          setLiveOffUI();
-          setStatus("ERROR: " + error.message);
-          return;
-        }
-      }
-
-      try {
+        await liveRoom.connect(serverUrl, token);
         await liveRoom.localParticipant.publishTrack(localVideoTrack);
         await liveRoom.localParticipant.publishTrack(localAudioTrack);
 
-        setLiveOnUI(roomNameInput.value.trim(), hostNameInput.value.trim());
+        setLiveOnUI(roomName, hostName);
         viewerState.textContent = String(liveRoom.remoteParticipants.size);
       } catch (error) {
         console.error(error);
-        setStatus("Publish error: " + error.message);
+
+        if (localVideoTrack) {
+          localVideoTrack.stop();
+          localVideoTrack = null;
+        }
+
+        if (localAudioTrack) {
+          localAudioTrack.stop();
+          localAudioTrack = null;
+        }
+
+        if (liveRoom) {
+          try { liveRoom.disconnect(); } catch (_) {}
+          liveRoom = null;
+        }
+
+        clearPreview();
+        setLiveOffUI();
+        setStatus("ERROR: " + error.message);
       }
     }
 
