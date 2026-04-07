@@ -2,557 +2,614 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Messages | Rich Bizness</title>
-
-  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
-      background:
-        linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png");
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
       min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.82)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .nav {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 24px;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      gap: 16px;
       flex-wrap: wrap;
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
       gap: 10px;
-    }
-
-    @keyframes glow {
-      0% { box-shadow: 0 0 10px #39ff14; }
-      50% { box-shadow: 0 0 25px #39ff14; }
-      100% { box-shadow: 0 0 10px #39ff14; }
-    }
-
-    .logo img {
-      width: 45px;
-      height: 45px;
-      object-fit: cover;
-      border-radius: 10px;
-      animation: glow 2s infinite;
-    }
-
-    .logo span {
-      color: #39ff14;
-      font-weight: bold;
-      font-size: 22px;
-    }
-
-    .nav-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
       align-items: center;
     }
 
     .nav a, .nav button {
-      color: white;
       text-decoration: none;
-      padding: 8px 12px;
-      border-radius: 10px;
+      color: white;
       background: rgba(255,255,255,0.06);
-      border: none;
-      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
       font-weight: 700;
+      cursor: pointer;
     }
 
-    .nav a:hover, .nav button:hover {
-      color: #39ff14;
-      background: rgba(57,255,20,0.1);
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
     }
 
     .user-chip {
-      padding: 8px 12px;
-      border-radius: 10px;
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
       background: rgba(255,255,255,0.06);
-      color: #dfffd8;
-      font-size: 13px;
-      max-width: 260px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      height: calc(100vh - 78px);
-    }
-
-    .sidebar {
-      background: rgba(0,0,0,0.68);
-      border-right: 1px solid #222;
-      overflow-y: auto;
-      padding: 12px;
-    }
-
-    .sidebar-title {
-      color: #39ff14;
-      font-weight: 900;
-      font-size: 20px;
-      margin: 6px 8px 14px;
-    }
-
-    .chat-item {
-      padding: 15px;
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 14px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      background: rgba(255,255,255,0.03);
-      transition: 0.2s ease;
-    }
-
-    .chat-item:hover {
-      background: rgba(57,255,20,0.1);
-    }
-
-    .chat-item.active {
-      background: rgba(57,255,20,0.18);
-      border-color: rgba(57,255,20,0.25);
-    }
-
-    .chat-name {
-      font-weight: bold;
-      color: #39ff14;
-      margin-bottom: 6px;
-    }
-
-    .chat-preview {
-      font-size: 12px;
-      color: #c8c8c8;
-      line-height: 1.45;
-    }
-
-    .chat-window {
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.35);
-    }
-
-    .chat-header {
-      padding: 18px;
-      border-bottom: 1px solid #222;
-      font-weight: bold;
-      color: #39ff14;
-      font-size: 20px;
-      background: rgba(0,0,0,0.45);
-    }
-
-    .messages {
-      flex: 1;
-      padding: 18px;
-      overflow-y: auto;
-    }
-
-    .msg {
-      margin-bottom: 12px;
-      max-width: 74%;
-      padding: 12px;
-      border-radius: 14px;
-      line-height: 1.45;
-      word-break: break-word;
-    }
-
-    .msg-meta {
-      display: block;
-      font-size: 12px;
-      opacity: 0.75;
-      margin-bottom: 6px;
+      border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
 
-    .sent {
-      background: #39ff14;
-      color: black;
-      margin-left: auto;
-    }
-
-    .received {
-      background: #222;
-      color: white;
-    }
-
-    .system {
-      background: rgba(255,255,255,0.06);
-      color: #d8ffd0;
-      margin: 0 auto 12px;
+    .hero {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
       text-align: center;
-      max-width: 90%;
     }
 
-    .input-box {
-      display: flex;
-      gap: 10px;
-      padding: 12px;
-      border-top: 1px solid #222;
-      background: rgba(0,0,0,0.45);
+    .hero h1 {
+      margin: 0 0 10px;
+      color: #7dff71;
+      font-size: 3rem;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
-    .input-box input {
-      flex: 1;
-      padding: 12px;
+    .hero p {
+      margin: 0 auto;
+      max-width: 900px;
+      font-size: 1.08rem;
+      color: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    .session-bar {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 22px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #7dff71;
+      font-size: 2rem;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px;
       border-radius: 12px;
-      border: none;
-      background: #111;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
       color: white;
+      font-size: 16px;
       outline: none;
     }
 
-    .input-box input:focus {
-      box-shadow: 0 0 0 2px rgba(57,255,20,0.18);
+    textarea {
+      min-height: 130px;
+      resize: vertical;
     }
 
-    .input-box button {
-      background: #39ff14;
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button, .link-btn {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
       border: none;
-      padding: 12px 16px;
       border-radius: 12px;
-      font-weight: bold;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
+      text-decoration: none;
+      text-align: center;
     }
 
-    .status-bar {
-      padding: 10px 16px;
-      font-size: 13px;
-      color: #d8ffd0;
-      border-top: 1px solid rgba(255,255,255,0.06);
-      background: rgba(57,255,20,0.08);
-      min-height: 40px;
+    .btn-green {
+      background: #7dff71;
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
     }
 
-    @media (max-width: 900px) {
-      .layout {
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
+    }
+
+    .room-meta {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.7;
+    }
+
+    .room-meta strong {
+      color: #7dff71;
+    }
+
+    .messages-shell {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 700px;
+    }
+
+    .messages-list {
+      flex: 1;
+      min-height: 580px;
+      max-height: 700px;
+      overflow-y: auto;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.58);
+      border: 1px solid rgba(125,255,113,0.14);
+    }
+
+    .message {
+      margin-bottom: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .message.own {
+      border-color: rgba(125,255,113,0.28);
+      background: rgba(125,255,113,0.08);
+    }
+
+    .message-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .message-sender {
+      font-weight: 800;
+      color: #7dff71;
+      word-break: break-word;
+    }
+
+    .message-time {
+      opacity: 0.82;
+      font-size: 0.9rem;
+    }
+
+    .message-body {
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #f5f5f5;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .grid {
         grid-template-columns: 1fr;
-        height: auto;
       }
 
-      .sidebar {
-        border-right: none;
-        border-bottom: 1px solid #222;
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .button-row {
+        grid-template-columns: 1fr;
       }
 
-      .chat-window {
-        min-height: 70vh;
+      .brand {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
-
 <body>
-  <div class="nav">
-    <div class="logo">
-      <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness">
-      <span>Rich Bizness</span>
-    </div>
-
-    <div class="nav-links">
-      <div id="userChip" class="user-chip">Checking session...</div>
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="music.html">Music</a>
-      <a href="live.html">Live</a>
-      <a href="messages.html">Messages</a>
-      <button id="logoutBtn" type="button">Log Out</button>
-    </div>
-  </div>
-
-  <div class="layout">
-    <div class="sidebar">
-      <div class="sidebar-title">Rooms</div>
-
-      <div class="chat-item active" data-room="General" onclick="selectChat('General', this)">
-        <div class="chat-name">General</div>
-        <div class="chat-preview">Main community room</div>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
       </div>
 
-      <div class="chat-item" data-room="Fans" onclick="selectChat('Fans', this)">
-        <div class="chat-name">Fans</div>
-        <div class="chat-preview">Fan support and updates</div>
-      </div>
-
-      <div class="chat-item" data-room="Artists" onclick="selectChat('Artists', this)">
-        <div class="chat-name">Artists</div>
-        <div class="chat-preview">Creator networking room</div>
-      </div>
-
-      <div class="chat-item" data-room="Music" onclick="selectChat('Music', this)">
-        <div class="chat-name">Music</div>
-        <div class="chat-preview">Music drops and feedback</div>
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="artist.html">Artist</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html" class="active">Messages</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
-    <div class="chat-window">
-      <div class="chat-header" id="chatTitle">General</div>
-      <div class="messages" id="messages"></div>
+    <div class="hero">
+      <h1>Messages</h1>
+      <p>
+        Connect with your audience, talk to other creators, and build your Rich Bizness
+        community in real time.
+      </p>
+      <div id="sessionBar" class="session-bar">Checking session...</div>
+    </div>
 
-      <div class="input-box">
-        <input id="msgInput" placeholder="Type message..." maxlength="500">
-        <button id="sendBtn" type="button">Send</button>
+    <div class="grid">
+      <div class="card">
+        <h2>Send Message</h2>
+
+        <label for="roomInput">Room / Chat Channel</label>
+        <input id="roomInput" type="text" value="main-room" />
+
+        <label for="messageInput">Message</label>
+        <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+
+        <div class="button-row">
+          <button id="sendBtn" class="btn-green" type="button">Send Message</button>
+          <button id="refreshBtn" class="btn-dark" type="button">Refresh Chat</button>
+          <a href="live.html" class="link-btn btn-dark">Go Live</a>
+          <a href="watch.html?room=richbizness-live-room" class="link-btn btn-dark">Watch Live</a>
+        </div>
+
+        <div id="statusBox" class="status-box">Messages page ready.</div>
+
+        <div class="room-meta">
+          <div><strong>Current Room:</strong> <span id="roomLabel">main-room</span></div>
+          <div><strong>Signed In:</strong> <span id="senderLabel">Checking...</span></div>
+          <div><strong>Mode:</strong> Open community chat</div>
+        </div>
       </div>
 
-      <div id="statusBar" class="status-bar">Checking account...</div>
+      <div class="card messages-shell">
+        <h2>Live Chat Feed</h2>
+        <div id="messagesList" class="messages-list">
+          <div class="empty-state">Loading messages...</div>
+        </div>
+      </div>
     </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "ksvdequymkceevocgpdj";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const userChip = document.getElementById("userChip");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const chatTitle = document.getElementById("chatTitle");
-    const messagesBox = document.getElementById("messages");
-    const msgInput = document.getElementById("msgInput");
-    const sendBtn = document.getElementById("sendBtn");
-    const statusBar = document.getElementById("statusBar");
-
-    let currentChat = "General";
-    let currentUser = null;
-    let currentProfile = null;
-    let channel = null;
-
-    function setStatus(message) {
-      statusBar.textContent = message;
-    }
-
-    function formatTime(ts) {
-      try {
-        return new Date(ts).toLocaleString();
-      } catch {
-        return "";
-      }
-    }
-
-    function renderMessage(message) {
-      const div = document.createElement("div");
-      const isMine = currentUser && message.sender_id === currentUser.id;
-
-      div.className = "msg " + (message.sender_name === "System" ? "system" : (isMine ? "sent" : "received"));
-
-      const sender = message.sender_name || message.sender_email || "User";
-      const time = message.created_at ? formatTime(message.created_at) : "";
-
-      div.innerHTML = `
-        <span class="msg-meta">${sender}${time ? " · " + time : ""}</span>
-        <span>${message.message}</span>
-      `;
-
-      messagesBox.appendChild(div);
-    }
-
-    function clearMessages() {
-      messagesBox.innerHTML = "";
-    }
-
-    async function ensureAuth() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-
-      const user = data.session?.user;
-      if (!user) {
-        window.location.href = "auth.html";
-        return null;
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
       }
 
-      currentUser = user;
-      userChip.textContent = user.email || "Signed in";
-      return user;
-    }
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
 
-    async function loadProfileName() {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("display_name, username")
-        .eq("id", currentUser.id)
-        .maybeSingle();
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const sessionBar = document.getElementById("sessionBar");
+      const roomInput = document.getElementById("roomInput");
+      const messageInput = document.getElementById("messageInput");
+      const sendBtn = document.getElementById("sendBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const statusBox = document.getElementById("statusBox");
+      const roomLabel = document.getElementById("roomLabel");
+      const senderLabel = document.getElementById("senderLabel");
+      const messagesList = document.getElementById("messagesList");
 
-      if (error) {
-        console.error(error);
-        currentProfile = null;
-        return;
+      let currentUser = null;
+      let realtimeChannel = null;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
       }
 
-      currentProfile = data || null;
-    }
+      function formatTime(value) {
+        if (!value) return "--";
+        const date = new Date(value);
+        return date.toLocaleString();
+      }
 
-    async function loadMessages() {
-      try {
-        clearMessages();
-        setStatus(`Loading ${currentChat} messages...`);
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("room", currentChat)
-          .order("created_at", { ascending: true });
+      function scrollMessagesToBottom() {
+        messagesList.scrollTop = messagesList.scrollHeight;
+      }
+
+      function setRoomLabel() {
+        const room = roomInput.value.trim() || "main-room";
+        roomLabel.textContent = room;
+      }
+
+      async function requireUser() {
+        sessionBar.textContent = "Checking session...";
+        const { data, error } = await supabase.auth.getSession();
 
         if (error) throw error;
 
-        if (!data || data.length === 0) {
-          renderMessage({
-            sender_name: "System",
-            message: `No messages yet in ${currentChat}. Be the first to send one.`,
-            created_at: new Date().toISOString()
-          });
-        } else {
-          data.forEach(renderMessage);
+        const user = data?.session?.user || null;
+        if (!user) {
+          userChip.textContent = "No session";
+          senderLabel.textContent = "No session";
+          sessionBar.textContent = "No active session. Redirecting to auth...";
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
         }
 
-        messagesBox.scrollTop = messagesBox.scrollHeight;
-        setStatus(`Connected to ${currentChat}.`);
-      } catch (error) {
-        console.error(error);
-        setStatus("Failed to load messages: " + error.message);
-      }
-    }
-
-    function subscribeToMessages() {
-      if (channel) {
-        supabase.removeChannel(channel);
-        channel = null;
+        currentUser = user;
+        userChip.textContent = user.email || "Signed in";
+        senderLabel.textContent = user.email || "Signed in";
+        sessionBar.textContent = "Session active. Messages unlocked.";
+        return user;
       }
 
-      channel = supabase
-        .channel(`messages-room-${currentChat}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "INSERT",
-            schema: "public",
-            table: "messages",
-            filter: `room=eq.${currentChat}`
-          },
-          (payload) => {
-            renderMessage(payload.new);
-            messagesBox.scrollTop = messagesBox.scrollHeight;
-          }
-        )
-        .subscribe((status) => {
-          if (status === "SUBSCRIBED") {
-            setStatus(`Realtime connected to ${currentChat}.`);
-          }
-        });
-    }
-
-    async function selectChat(name, el) {
-      currentChat = name;
-      chatTitle.textContent = name;
-
-      document.querySelectorAll(".chat-item").forEach((item) => {
-        item.classList.remove("active");
-      });
-      if (el) el.classList.add("active");
-
-      await loadMessages();
-      subscribeToMessages();
-    }
-
-    async function sendMsg() {
-      try {
-        const text = msgInput.value.trim();
-        if (!text) return;
-
-        if (!currentUser) {
-          setStatus("You must be logged in.");
+      function renderMessages(messages) {
+        if (!messages || messages.length === 0) {
+          messagesList.innerHTML = `<div class="empty-state">No messages yet in this room.</div>`;
           return;
         }
 
-        const senderName =
-          currentProfile?.display_name ||
-          currentProfile?.username ||
-          currentUser.email?.split("@")[0] ||
-          "User";
+        messagesList.innerHTML = messages.map((msg) => {
+          const own = currentUser && msg.sender_id === currentUser.id;
+          return `
+            <div class="message ${own ? "own" : ""}">
+              <div class="message-top">
+                <div class="message-sender">${escapeHtml(msg.sender_email || "Unknown user")}</div>
+                <div class="message-time">${escapeHtml(formatTime(msg.created_at))}</div>
+              </div>
+              <div class="message-body">${escapeHtml(msg.body || "")}</div>
+            </div>
+          `;
+        }).join("");
 
-        const { error } = await supabase
-          .from("messages")
-          .insert({
-            room: currentChat,
-            sender_id: currentUser.id,
-            sender_email: currentUser.email,
-            sender_name: senderName,
-            message: text
-          });
-
-        if (error) throw error;
-
-        msgInput.value = "";
-        setStatus(`Message sent to ${currentChat}.`);
-      } catch (error) {
-        console.error(error);
-        setStatus("Send failed: " + error.message);
+        scrollMessagesToBottom();
       }
+
+      async function loadMessages() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          setRoomLabel();
+          const room = roomInput.value.trim() || "main-room";
+          setStatus("Loading messages...");
+
+          const { data, error } = await supabase
+            .from("messages")
+            .select("*")
+            .eq("room", room)
+            .order("created_at", { ascending: true });
+
+          if (error) throw error;
+
+          renderMessages(data || []);
+          setStatus("Messages loaded.");
+        } catch (error) {
+          messagesList.innerHTML = `<div class="empty-state">Load error: ${escapeHtml(error.message)}</div>`;
+          setStatus("Load error: " + error.message);
+        }
+      }
+
+      async function sendMessage() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const room = roomInput.value.trim() || "main-room";
+          const body = messageInput.value.trim();
+
+          if (!body) {
+            throw new Error("Message cannot be empty.");
+          }
+
+          setStatus("Sending message...");
+
+          const { error } = await supabase
+            .from("messages")
+            .insert({
+              sender_id: user.id,
+              sender_email: user.email || "unknown@user",
+              room,
+              body
+            });
+
+          if (error) throw error;
+
+          messageInput.value = "";
+          setRoomLabel();
+          setStatus("Message sent.");
+        } catch (error) {
+          setStatus("Send error: " + error.message);
+        }
+      }
+
+      function subscribeToMessages() {
+        if (realtimeChannel) {
+          supabase.removeChannel(realtimeChannel);
+          realtimeChannel = null;
+        }
+
+        realtimeChannel = supabase
+          .channel("richbizness-messages-live")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "messages" },
+            () => {
+              loadMessages();
+            }
+          )
+          .subscribe();
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      sendBtn.addEventListener("click", sendMessage);
+      refreshBtn.addEventListener("click", loadMessages);
+      logoutBtn.addEventListener("click", logOut);
+
+      roomInput.addEventListener("input", () => {
+        setRoomLabel();
+      });
+
+      roomInput.addEventListener("change", () => {
+        loadMessages();
+      });
+
+      messageInput.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          sendMessage();
+        }
+      });
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        userChip.textContent = session?.user?.email || "No session";
+        senderLabel.textContent = session?.user?.email || "No session";
+      });
+
+      setRoomLabel();
+      requireUser()
+        .then(() => {
+          subscribeToMessages();
+          loadMessages();
+          setStatus("Messages page ready.");
+        })
+        .catch((error) => {
+          setStatus("Startup error: " + error.message);
+        });
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Messages Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    async function logOut() {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        window.location.href = "auth.html";
-      } catch (error) {
-        console.error(error);
-        setStatus("Logout failed: " + error.message);
-      }
-    }
-
-    window.selectChat = selectChat;
-
-    sendBtn.addEventListener("click", sendMsg);
-    logoutBtn.addEventListener("click", logOut);
-
-    msgInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        sendMsg();
-      }
-    });
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) {
-        window.location.href = "auth.html";
-      }
-    });
-
-    async function init() {
-      try {
-        setStatus("Checking account...");
-        await ensureAuth();
-        await loadProfileName();
-        await loadMessages();
-        subscribeToMessages();
-      } catch (error) {
-        console.error(error);
-        setStatus("Startup failed: " + error.message);
-      }
-    }
-
-    init();
   </script>
 </body>
 </html>
