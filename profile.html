@@ -2,696 +2,684 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile | Rich Bizness</title>
-
-  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-  <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
       color: white;
-      background:
-        linear-gradient(rgba(0,0,0,0.68), rgba(0,0,0,0.68)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
       min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.82)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .nav {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 24px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      gap: 16px;
       flex-wrap: wrap;
-    }
-
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    @keyframes glowPulse {
-      0% {
-        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
-      }
-      50% {
-        box-shadow: 0 0 20px rgba(57,255,20,0.9), 0 0 40px rgba(57,255,20,0.6), 0 0 70px rgba(57,255,20,0.35);
-      }
-      100% {
-        box-shadow: 0 0 10px rgba(57,255,20,0.5), 0 0 20px rgba(57,255,20,0.25);
-      }
-    }
-
-    .logo img {
-      height: 48px;
-      width: 48px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid rgba(57,255,20,0.35);
-      animation: glowPulse 2s infinite;
-      background: rgba(0,0,0,0.35);
-    }
-
-    .brand-name {
-      font-size: 28px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow: 0 0 8px rgba(57,255,20,0.5), 0 0 18px rgba(57,255,20,0.3);
-    }
-
-    .nav-links {
-      display: flex;
       gap: 10px;
-      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav-links a, .nav-links button {
-      color: white;
+    .nav a, .nav button {
       text-decoration: none;
-      font-size: 14px;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
       font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 10px;
-      transition: 0.25s ease;
-      background: rgba(0,0,0,0.18);
-      border: none;
       cursor: pointer;
     }
 
-    .nav-links a:hover, .nav-links a.active, .nav-links button:hover {
-      color: #39ff14;
-      background: rgba(57,255,20,0.10);
-      box-shadow: 0 0 12px rgba(57,255,20,0.25);
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
     }
 
     .user-chip {
-      padding: 8px 12px;
-      border-radius: 10px;
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
       background: rgba(255,255,255,0.06);
-      color: #dfffd8;
-      font-size: 13px;
-      max-width: 260px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .container {
-      max-width: 1360px;
-      margin: 0 auto;
-      padding: 32px 20px 40px;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
     }
 
     .hero {
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 24px;
-      margin-bottom: 28px;
-    }
-
-    .glass-card {
-      background: rgba(0,0,0,0.62);
-      border: 1px solid rgba(57,255,20,0.16);
-      border-radius: 20px;
-      padding: 22px;
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.18);
       backdrop-filter: blur(10px);
-      box-shadow: 0 0 12px rgba(0,0,0,0.3), 0 0 18px rgba(57,255,20,0.08);
+      margin-bottom: 18px;
+      text-align: center;
     }
 
-    .profile-photo {
-      width: 100%;
-      height: 360px;
+    .hero h1 {
+      margin: 0 0 10px;
+      color: #7dff71;
+      font-size: 3rem;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
+    }
+
+    .hero p {
+      margin: 0 auto;
+      max-width: 900px;
+      font-size: 1.08rem;
+      color: #f5f5f5;
+      line-height: 1.6;
+    }
+
+    .session-bar, .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 22px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      color: #7dff71;
+      font-size: 2rem;
+    }
+
+    .profile-side {
+      text-align: center;
+    }
+
+    .avatar {
+      width: 180px;
+      height: 180px;
+      border-radius: 22px;
       object-fit: cover;
-      border-radius: 18px;
-      border: 1px solid rgba(57,255,20,0.18);
-      background: #111;
+      border: 2px solid rgba(125,255,113,0.25);
+      background: rgba(255,255,255,0.05);
+      display: block;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 24px rgba(125,255,113,0.18);
+    }
+
+    .avatar-fallback {
+      width: 180px;
+      height: 180px;
+      border-radius: 22px;
+      margin: 0 auto 16px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 900;
+      color: #7dff71;
+      border: 2px solid rgba(125,255,113,0.25);
+      background: rgba(255,255,255,0.05);
+      box-shadow: 0 0 24px rgba(125,255,113,0.18);
     }
 
     .profile-name {
-      font-size: 3rem;
-      margin: 0 0 10px;
+      font-size: 1.7rem;
+      font-weight: 900;
       color: #7dff71;
-      text-shadow: 0 0 12px rgba(57,255,20,0.45), 0 0 25px rgba(57,255,20,0.20);
+      margin-bottom: 6px;
     }
 
-    .profile-tag {
-      display: inline-block;
-      margin-bottom: 16px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(57,255,20,0.12);
-      border: 1px solid rgba(57,255,20,0.24);
-      color: #aaff9b;
-      font-weight: 800;
-      font-size: 13px;
-      letter-spacing: 0.3px;
+    .profile-email {
+      color: #f3f3f3;
+      opacity: 0.92;
+      margin-bottom: 14px;
+      word-break: break-word;
     }
 
-    .profile-bio {
-      font-size: 1.05rem;
-      line-height: 1.7;
-      color: rgba(255,255,255,0.94);
-      margin-bottom: 20px;
-      max-width: 860px;
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border-radius: 16px;
+      padding: 14px 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #7dff71;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      opacity: 0.92;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
     }
 
     .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 18px;
     }
 
-    .btn {
+    button, .link-btn {
       display: inline-block;
-      padding: 15px 24px;
-      background: #39ff14;
-      color: black;
-      border-radius: 12px;
-      font-weight: 900;
-      text-decoration: none;
-      transition: 0.25s ease;
+      width: 100%;
+      padding: 14px;
       border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 0 12px rgba(57,255,20,0.35), 0 0 24px rgba(57,255,20,0.18);
+      text-decoration: none;
+      text-align: center;
     }
 
-    .btn:hover {
-      transform: translateY(-2px) scale(1.03);
+    .btn-green {
       background: #7dff71;
-      box-shadow: 0 0 18px rgba(57,255,20,0.65), 0 0 36px rgba(57,255,20,0.45), 0 0 60px rgba(57,255,20,0.20);
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
     }
 
     .btn-dark {
       background: rgba(255,255,255,0.08);
       color: white;
       border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: none;
     }
 
-    .btn-dark:hover {
-      background: rgba(255,255,255,0.14);
-      color: #39ff14;
-      transform: translateY(-2px);
-    }
-
-    .stats {
+    .info-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 14px;
-      margin-top: 8px;
     }
 
-    .stat-box {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
+    .meta-box {
+      margin-top: 18px;
+      padding: 14px;
       border-radius: 16px;
-      padding: 18px;
-      text-align: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.7;
     }
 
-    .stat-number {
-      font-size: 1.2rem;
-      font-weight: 900;
-      color: #39ff14;
-      margin-bottom: 6px;
-      word-break: break-word;
-    }
-
-    .stat-label {
-      font-size: 12px;
-      color: rgba(255,255,255,0.84);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .section-title {
-      font-size: 1.8rem;
+    .meta-box strong {
       color: #7dff71;
-      margin: 34px 0 18px;
-      text-shadow: 0 0 10px rgba(57,255,20,0.2);
     }
 
-    .profile-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 22px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      color: #f2f2f2;
-    }
-
-    input, textarea {
-      width: 100%;
-      background: rgba(10,10,10,0.82);
-      color: #ffffff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
-      outline: none;
-      font-family: inherit;
-    }
-
-    textarea {
-      min-height: 160px;
-      resize: vertical;
-    }
-
-    input:focus, textarea:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
-    }
-
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      line-height: 1.5;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
-      min-height: 55px;
-      word-break: break-word;
-    }
-
-    .info-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .info-item {
-      padding: 14px 16px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .info-item strong {
-      color: #7dff71;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .info-item span {
-      color: rgba(255,255,255,0.9);
-      line-height: 1.5;
-      font-size: 14px;
-      word-break: break-word;
-    }
-
-    @media (max-width: 1024px) {
-      .profile-hero,
-      .profile-grid {
+    @media (max-width: 980px) {
+      .grid {
         grid-template-columns: 1fr;
       }
 
-      .stats {
-        grid-template-columns: repeat(2, 1fr);
+      .info-grid {
+        grid-template-columns: 1fr;
       }
-    }
 
-    @media (max-width: 700px) {
-      .profile-name {
+      .hero h1 {
         font-size: 2.2rem;
       }
+    }
 
-      .button-row {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .btn,
-      .btn-dark {
-        text-align: center;
-      }
-
-      .stats {
+    @media (max-width: 560px) {
+      .button-row,
+      .stats-row {
         grid-template-columns: 1fr;
+      }
+
+      .brand {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
-
-  <div class="nav">
-    <div class="logo-wrap">
-      <div class="logo">
-        <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness Logo">
-      </div>
-      <div class="brand-name">Rich Bizness</div>
-    </div>
-
-    <div class="nav-links">
-      <div id="userChip" class="user-chip">Checking session...</div>
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html">Watch Live</a>
-      <a href="music.html">Music</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="sports.html">Sports</a>
-      <a href="artist.html">Artist</a>
-      <a href="profile.html" class="active">Profile</a>
-      <a href="messages.html">Messages</a>
-      <button id="logoutBtnNav" type="button">Log Out</button>
-    </div>
-  </div>
-
-  <div class="container">
-    <div class="profile-hero">
-      <div class="glass-card">
-        <img id="profileImagePreview" class="profile-photo" src="images/brand/IMG_0843.jpeg" alt="Profile Image">
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
       </div>
 
-      <div class="glass-card">
-        <h1 id="profileNameDisplay" class="profile-name">Loading profile...</h1>
-        <div class="profile-tag">Protected User Profile</div>
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="artist.html">Artist</a>
+        <a href="profile.html" class="active">Profile</a>
+        <a href="messages.html">Messages</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
 
-        <div id="profileBioDisplay" class="profile-bio">
-          Loading your profile...
+    <div class="hero">
+      <h1>Your Profile</h1>
+      <p>
+        Build your Rich Bizness identity, show your creator brand, and lock in
+        the profile fans will connect with across music, streams, messages, and content.
+      </p>
+      <div id="sessionBar" class="session-bar">Checking session...</div>
+    </div>
+
+    <div class="grid">
+      <div class="card profile-side">
+        <h2>Profile Card</h2>
+
+        <img id="avatarPreview" class="avatar" src="" alt="Avatar" style="display:none;" />
+        <div id="avatarFallback" class="avatar-fallback">RB</div>
+
+        <div id="cardName" class="profile-name">Rich Bizness User</div>
+        <div id="cardEmail" class="profile-email">No email loaded</div>
+
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-value">LIVE</div>
+            <div class="stat-label">Creator Mode</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">PRO</div>
+            <div class="stat-label">Energy</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">24/7</div>
+            <div class="stat-label">Presence</div>
+          </div>
         </div>
+
+        <div class="meta-box">
+          <div><strong>Username:</strong> <span id="cardUsername">--</span></div>
+          <div><strong>Genre:</strong> <span id="cardGenre">--</span></div>
+          <div><strong>City:</strong> <span id="cardCity">--</span></div>
+          <div><strong>Website:</strong> <span id="cardWebsite">--</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Edit Profile</h2>
+
+        <div id="statusBox" class="status-box">Profile page ready.</div>
+
+        <div class="info-grid">
+          <div>
+            <label for="emailInput">Email</label>
+            <input id="emailInput" type="email" readonly />
+          </div>
+
+          <div>
+            <label for="usernameInput">Username</label>
+            <input id="usernameInput" type="text" placeholder="richbizness" />
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div>
+            <label for="displayNameInput">Display Name</label>
+            <input id="displayNameInput" type="text" placeholder="Rich Bizness" />
+          </div>
+
+          <div>
+            <label for="favoriteGenreInput">Favorite Genre</label>
+            <input id="favoriteGenreInput" type="text" placeholder="Hip-Hop / R&B / Gaming / Multi" />
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div>
+            <label for="cityInput">City</label>
+            <input id="cityInput" type="text" placeholder="Charlotte" />
+          </div>
+
+          <div>
+            <label for="websiteInput">Website</label>
+            <input id="websiteInput" type="text" placeholder="https://rich-bizness-app.vercel.app" />
+          </div>
+        </div>
+
+        <label for="avatarUrlInput">Avatar Image URL</label>
+        <input id="avatarUrlInput" type="text" placeholder="https://..." />
+
+        <label for="bioInput">Bio</label>
+        <textarea id="bioInput" placeholder="Tell fans who you are, what you create, and what Rich Bizness stands for."></textarea>
 
         <div class="button-row">
-          <a href="artist.html" class="btn">Artist Page</a>
-          <a href="music.html" class="btn">Music</a>
-          <a href="gallery.html" class="btn">Gallery</a>
-          <a href="live.html" class="btn-dark">Go Live</a>
-          <a href="messages.html" class="btn-dark">Messages</a>
-        </div>
-
-        <div class="stats">
-          <div class="stat-box">
-            <div id="displayNameStat" class="stat-number">-</div>
-            <div class="stat-label">Display Name</div>
-          </div>
-          <div class="stat-box">
-            <div id="usernameStat" class="stat-number">-</div>
-            <div class="stat-label">Username</div>
-          </div>
-          <div class="stat-box">
-            <div id="emailStat" class="stat-number">-</div>
-            <div class="stat-label">Email</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number">LIVE</div>
-            <div class="stat-label">Account Status</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-title">Edit Profile</div>
-    <div class="profile-grid">
-      <div class="glass-card">
-        <div class="form-group">
-          <label for="displayNameInput">Display Name</label>
-          <input id="displayNameInput" type="text" placeholder="Rich Bizness LLC">
-        </div>
-
-        <div class="form-group">
-          <label for="usernameInput">Username</label>
-          <input id="usernameInput" type="text" placeholder="richbizness">
-        </div>
-
-        <div class="form-group">
-          <label for="avatarUrlInput">Avatar Image URL</label>
-          <input id="avatarUrlInput" type="text" placeholder="https://example.com/your-image.png">
-        </div>
-
-        <div class="form-group">
-          <label for="bioInput">Bio</label>
-          <textarea id="bioInput" placeholder="Tell people who you are, what you create, and what your brand stands for."></textarea>
-        </div>
-
-        <div class="button-row">
-          <button id="saveProfileBtn" class="btn" type="button">Save Profile</button>
-          <button id="refreshProfileBtn" class="btn btn-dark" type="button">Refresh</button>
-        </div>
-
-        <div id="statusBox" class="status-box">Checking account...</div>
-      </div>
-
-      <div class="glass-card">
-        <div class="info-list">
-          <div class="info-item">
-            <strong>User ID</strong>
-            <span id="userIdInfo">-</span>
-          </div>
-
-          <div class="info-item">
-            <strong>Email</strong>
-            <span id="emailInfo">-</span>
-          </div>
-
-          <div class="info-item">
-            <strong>Profile Table</strong>
-            <span>profiles</span>
-          </div>
-
-          <div class="info-item">
-            <strong>Protection</strong>
-            <span>This page redirects to auth.html if no user session is found.</span>
-          </div>
+          <button id="saveBtn" class="btn-green" type="button">Save Profile</button>
+          <button id="refreshBtn" class="btn-dark" type="button">Refresh Profile</button>
+          <a href="live.html" class="link-btn btn-dark">Go Live</a>
+          <a href="messages.html" class="link-btn btn-dark">Open Messages</a>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const userChip = document.getElementById("userChip");
-    const logoutBtnNav = document.getElementById("logoutBtnNav");
-    const profileNameDisplay = document.getElementById("profileNameDisplay");
-    const profileBioDisplay = document.getElementById("profileBioDisplay");
-    const profileImagePreview = document.getElementById("profileImagePreview");
-    const displayNameInput = document.getElementById("displayNameInput");
-    const usernameInput = document.getElementById("usernameInput");
-    const avatarUrlInput = document.getElementById("avatarUrlInput");
-    const bioInput = document.getElementById("bioInput");
-    const saveProfileBtn = document.getElementById("saveProfileBtn");
-    const refreshProfileBtn = document.getElementById("refreshProfileBtn");
-    const statusBox = document.getElementById("statusBox");
-    const displayNameStat = document.getElementById("displayNameStat");
-    const usernameStat = document.getElementById("usernameStat");
-    const emailStat = document.getElementById("emailStat");
-    const userIdInfo = document.getElementById("userIdInfo");
-    const emailInfo = document.getElementById("emailInfo");
-
-    let currentUser = null;
-
-    function setStatus(message) {
-      statusBox.textContent = message;
-    }
-
-    function escapeUsername(username) {
-      return String(username || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, "")
-        .replace(/[^a-z0-9_]/g, "");
-    }
-
-    function renderProfile(profile, user) {
-      const displayName = profile?.display_name || user?.email?.split("@")[0] || "Unnamed User";
-      const username = profile?.username || "no-username";
-      const bio = profile?.bio || "No bio added yet.";
-      const avatar = profile?.avatar_url || "images/brand/IMG_0843.jpeg";
-
-      profileNameDisplay.textContent = displayName;
-      profileBioDisplay.textContent = bio;
-      profileImagePreview.src = avatar;
-
-      displayNameInput.value = profile?.display_name || "";
-      usernameInput.value = profile?.username || "";
-      avatarUrlInput.value = profile?.avatar_url || "";
-      bioInput.value = profile?.bio || "";
-
-      displayNameStat.textContent = displayName;
-      usernameStat.textContent = "@" + username;
-      emailStat.textContent = user?.email || "-";
-      userIdInfo.textContent = user?.id || "-";
-      emailInfo.textContent = user?.email || "-";
-      userChip.textContent = user?.email || "Signed in";
-    }
-
-    async function getCurrentUserOrRedirect() {
-      const { data, error } = await supabase.auth.getSession();
-
-      if (error) {
-        throw error;
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
       }
 
-      const user = data.session?.user;
-
-      if (!user) {
-        window.location.href = "auth.html";
-        return null;
-      }
-
-      currentUser = user;
-      return user;
-    }
-
-    async function ensureProfileRow(user) {
-      const { data: existing, error: selectError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (selectError) {
-        throw selectError;
-      }
-
-      if (existing) {
-        return existing;
-      }
-
-      const starterProfile = {
-        id: user.id,
-        email: user.email,
-        display_name: user.email?.split("@")[0] || "New User",
-        username: escapeUsername(user.email?.split("@")[0] || "user"),
-        bio: "Welcome to Rich Bizness.",
-        avatar_url: "images/brand/IMG_0843.jpeg"
-      };
-
-      const { data: inserted, error: insertError } = await supabase
-        .from("profiles")
-        .insert(starterProfile)
-        .select()
-        .single();
-
-      if (insertError) {
-        throw insertError;
-      }
-
-      return inserted;
-    }
-
-    async function loadProfile() {
-      try {
-        setStatus("Loading profile...");
-        const user = await getCurrentUserOrRedirect();
-        if (!user) return;
-
-        const profile = await ensureProfileRow(user);
-        renderProfile(profile, user);
-        setStatus("Profile loaded.");
-      } catch (error) {
-        console.error("Load profile error:", error);
-        setStatus("Failed to load profile: " + error.message);
-      }
-    }
-
-    async function saveProfile() {
-      try {
-        if (!currentUser) {
-          setStatus("No active user.");
-          return;
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
         }
+      });
 
-        const displayName = displayNameInput.value.trim();
-        const username = escapeUsername(usernameInput.value);
-        const avatarUrl = avatarUrlInput.value.trim();
-        const bio = bioInput.value.trim();
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const sessionBar = document.getElementById("sessionBar");
+      const statusBox = document.getElementById("statusBox");
 
-        if (!displayName) {
-          setStatus("Display name is required.");
-          return;
-        }
+      const emailInput = document.getElementById("emailInput");
+      const usernameInput = document.getElementById("usernameInput");
+      const displayNameInput = document.getElementById("displayNameInput");
+      const favoriteGenreInput = document.getElementById("favoriteGenreInput");
+      const cityInput = document.getElementById("cityInput");
+      const websiteInput = document.getElementById("websiteInput");
+      const avatarUrlInput = document.getElementById("avatarUrlInput");
+      const bioInput = document.getElementById("bioInput");
+      const saveBtn = document.getElementById("saveBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
 
-        if (!username) {
-          setStatus("Username is required.");
-          return;
-        }
+      const avatarPreview = document.getElementById("avatarPreview");
+      const avatarFallback = document.getElementById("avatarFallback");
+      const cardName = document.getElementById("cardName");
+      const cardEmail = document.getElementById("cardEmail");
+      const cardUsername = document.getElementById("cardUsername");
+      const cardGenre = document.getElementById("cardGenre");
+      const cardCity = document.getElementById("cardCity");
+      const cardWebsite = document.getElementById("cardWebsite");
 
-        setStatus("Saving profile...");
+      let currentUser = null;
 
-        const updates = {
-          id: currentUser.id,
-          email: currentUser.email,
-          display_name: displayName,
-          username: username,
-          avatar_url: avatarUrl || "images/brand/IMG_0843.jpeg",
-          bio: bio || "No bio added yet."
-        };
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .upsert(updates)
-          .select()
-          .single();
-
-        if (error) {
-          throw error;
-        }
-
-        renderProfile(data, currentUser);
-        setStatus("Profile saved successfully.");
-      } catch (error) {
-        console.error("Save profile error:", error);
-        setStatus("Could not save profile: " + error.message);
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
       }
-    }
 
-    async function logOut() {
-      try {
-        const { error } = await supabase.auth.signOut();
+      function setCard(profile, user) {
+        const email = profile?.email || user?.email || "No email";
+        const username = profile?.username || "--";
+        const displayName = profile?.display_name || username || "Rich Bizness User";
+        const genre = profile?.favorite_genre || "--";
+        const city = profile?.city || "--";
+        const website = profile?.website || "--";
+        const avatarUrl = profile?.avatar_url || "";
+
+        cardName.textContent = displayName;
+        cardEmail.textContent = email;
+        cardUsername.textContent = username;
+        cardGenre.textContent = genre;
+        cardCity.textContent = city;
+        cardWebsite.textContent = website;
+
+        if (avatarUrl) {
+          avatarPreview.src = avatarUrl;
+          avatarPreview.style.display = "block";
+          avatarFallback.style.display = "none";
+
+          avatarPreview.onerror = () => {
+            avatarPreview.style.display = "none";
+            avatarFallback.style.display = "flex";
+            avatarFallback.textContent = (displayName || "RB").slice(0, 2).toUpperCase();
+          };
+        } else {
+          avatarPreview.style.display = "none";
+          avatarFallback.style.display = "flex";
+          avatarFallback.textContent = (displayName || "RB").slice(0, 2).toUpperCase();
+        }
+      }
+
+      function fillForm(profile, user) {
+        emailInput.value = profile?.email || user?.email || "";
+        usernameInput.value = profile?.username || "";
+        displayNameInput.value = profile?.display_name || "";
+        favoriteGenreInput.value = profile?.favorite_genre || "";
+        cityInput.value = profile?.city || "";
+        websiteInput.value = profile?.website || "";
+        avatarUrlInput.value = profile?.avatar_url || "";
+        bioInput.value = profile?.bio || "";
+      }
+
+      async function requireUser() {
+        sessionBar.textContent = "Checking session...";
+        const { data, error } = await supabase.auth.getSession();
+
         if (error) throw error;
-        window.location.href = "auth.html";
-      } catch (error) {
-        console.error("Logout error:", error);
-        setStatus("Logout failed: " + error.message);
+
+        const user = data?.session?.user || null;
+        if (!user) {
+          userChip.textContent = "No session";
+          sessionBar.textContent = "No active session. Redirecting to auth...";
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
+        }
+
+        currentUser = user;
+        userChip.textContent = user.email || "Signed in";
+        sessionBar.textContent = "Session active. Profile unlocked.";
+        return user;
       }
+
+      async function loadProfile() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          setStatus("Loading profile...");
+
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", user.id)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          const profile = data || {
+            id: user.id,
+            email: user.email || "",
+            username: "",
+            display_name: "",
+            bio: "",
+            avatar_url: "",
+            favorite_genre: "",
+            city: "",
+            website: ""
+          };
+
+          fillForm(profile, user);
+          setCard(profile, user);
+          setStatus("Profile loaded.");
+        } catch (error) {
+          setStatus("Load error: " + error.message);
+        }
+      }
+
+      async function saveProfile() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          setStatus("Saving profile...");
+
+          const payload = {
+            id: user.id,
+            email: user.email || "",
+            username: usernameInput.value.trim(),
+            display_name: displayNameInput.value.trim(),
+            bio: bioInput.value.trim(),
+            avatar_url: avatarUrlInput.value.trim(),
+            favorite_genre: favoriteGenreInput.value.trim(),
+            city: cityInput.value.trim(),
+            website: websiteInput.value.trim(),
+            updated_at: new Date().toISOString()
+          };
+
+          const { error } = await supabase
+            .from("profiles")
+            .upsert(payload, { onConflict: "id" });
+
+          if (error) throw error;
+
+          fillForm(payload, user);
+          setCard(payload, user);
+          setStatus("Profile saved.");
+        } catch (error) {
+          setStatus("Save error: " + error.message);
+        }
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      saveBtn.addEventListener("click", saveProfile);
+      refreshBtn.addEventListener("click", loadProfile);
+      logoutBtn.addEventListener("click", logOut);
+
+      avatarUrlInput.addEventListener("input", () => {
+        const liveProfile = {
+          email: emailInput.value.trim(),
+          username: usernameInput.value.trim(),
+          display_name: displayNameInput.value.trim(),
+          favorite_genre: favoriteGenreInput.value.trim(),
+          city: cityInput.value.trim(),
+          website: websiteInput.value.trim(),
+          avatar_url: avatarUrlInput.value.trim()
+        };
+        setCard(liveProfile, currentUser);
+      });
+
+      displayNameInput.addEventListener("input", () => {
+        const liveProfile = {
+          email: emailInput.value.trim(),
+          username: usernameInput.value.trim(),
+          display_name: displayNameInput.value.trim(),
+          favorite_genre: favoriteGenreInput.value.trim(),
+          city: cityInput.value.trim(),
+          website: websiteInput.value.trim(),
+          avatar_url: avatarUrlInput.value.trim()
+        };
+        setCard(liveProfile, currentUser);
+      });
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        userChip.textContent = session?.user?.email || "No session";
+      });
+
+      loadProfile();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Profile Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    saveProfileBtn.addEventListener("click", saveProfile);
-    refreshProfileBtn.addEventListener("click", loadProfile);
-    logoutBtnNav.addEventListener("click", logOut);
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session?.user) {
-        window.location.href = "auth.html";
-      }
-    });
-
-    loadProfile();
   </script>
 </body>
 </html>
