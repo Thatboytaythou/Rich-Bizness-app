@@ -4,646 +4,590 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upload Sports | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; }
 
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #050505;
-      color: #fff;
+      color: white;
       min-height: 100vh;
-      padding: 24px;
+      background:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.86)),
+        url("images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png") center center / cover no-repeat fixed;
     }
 
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .container {
-      max-width: 1250px;
+    .page {
+      max-width: 1480px;
       margin: 0 auto;
+      padding: 18px;
     }
 
     .topbar {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 24px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.46);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
-      font-size: 32px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow: 0 0 16px rgba(57,255,20,0.25);
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
     }
 
     .brand img {
-      width: 72px;
-      height: 72px;
-      object-fit: contain;
-      border-radius: 18px;
-      background: #111;
-      padding: 6px;
-      border: 1px solid rgba(255,255,255,0.08);
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
-    .top-links {
+    .nav {
       display: flex;
-      gap: 12px;
       flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
 
-    .top-links a {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.10);
-      padding: 10px 16px;
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
       border-radius: 12px;
       font-weight: 700;
-      transition: 0.2s ease;
+      cursor: pointer;
     }
 
-    .top-links a:hover {
-      color: #39ff14;
-      border-color: rgba(57,255,20,0.45);
-      background: rgba(57,255,20,0.12);
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .panel {
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 24px;
+      padding: 22px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
+    }
+
+    .hero h1, .panel h2 {
+      margin-top: 0;
+      color: #7dff71;
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
+    }
+
+    .hero p, .panel-sub {
+      color: #f1f1f1;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
+      line-height: 1.6;
+      word-break: break-word;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 1fr 430px;
-      gap: 22px;
-    }
-
-    .card {
-      background: #0d0d0d;
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 24px;
-      padding: 24px;
-      box-shadow: 0 14px 40px rgba(0,0,0,0.35);
-    }
-
-    h1, h2 {
-      color: #39ff14;
-      margin-bottom: 14px;
-    }
-
-    h1 {
-      font-size: 34px;
-    }
-
-    .subtext {
-      color: #d6d6d6;
-      margin-bottom: 20px;
-      line-height: 1.6;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
+      grid-template-columns: 1fr 0.9fr;
+      gap: 18px;
     }
 
     label {
       display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
+      margin: 12px 0 8px;
       font-weight: 800;
-      color: #f2f2f2;
+      color: #7dff71;
     }
 
-    input,
-    select,
-    textarea {
+    input, textarea, select {
       width: 100%;
-      background: #121212;
-      color: #fff;
-      border: 1px solid #2b2b2b;
-      border-radius: 14px;
-      padding: 14px 16px;
-      font-size: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
       outline: none;
     }
 
     textarea {
-      min-height: 130px;
+      min-height: 120px;
       resize: vertical;
     }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: #39ff14;
-      box-shadow: 0 0 0 3px rgba(57,255,20,0.15);
-    }
-
-    input[type="file"] {
-      padding: 12px;
-    }
-
-    .toggle-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
-    }
-
-    .toggle-row input[type="checkbox"] {
-      width: auto;
-      transform: scale(1.3);
-      accent-color: #39ff14;
-    }
-
     .button-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
     }
 
     button {
+      width: 100%;
+      padding: 14px;
       border: none;
-      border-radius: 14px;
-      padding: 13px 18px;
-      font-size: 15px;
+      border-radius: 12px;
+      font-size: 16px;
       font-weight: 900;
       cursor: pointer;
-      transition: 0.18s ease;
     }
 
     .btn-green {
-      background: #39ff14;
-      color: #000;
+      background: #7dff71;
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.22);
     }
 
     .btn-dark {
-      background: #1c1c1c;
-      color: #fff;
+      background: rgba(255,255,255,0.08);
+      color: white;
       border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-green:hover,
-    .btn-dark:hover {
-      transform: translateY(-1px);
-    }
-
-    .status-box {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      display: none;
-      line-height: 1.5;
-      word-break: break-word;
-    }
-
-    .status-box.success {
-      display: block;
-      background: rgba(57,255,20,0.12);
-      border: 1px solid rgba(57,255,20,0.35);
-      color: #98ff83;
-    }
-
-    .status-box.error {
-      display: block;
-      background: rgba(255,70,70,0.12);
-      border: 1px solid rgba(255,70,70,0.35);
-      color: #ff9b9b;
-    }
-
-    .status-box.info {
-      display: block;
-      background: rgba(57,255,20,0.08);
-      border: 1px solid rgba(57,255,20,0.20);
-      color: #d8ffd0;
     }
 
     .preview-box {
-      width: 100%;
-      min-height: 320px;
-      border-radius: 22px;
-      overflow: hidden;
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      margin-bottom: 16px;
-    }
-
-    .preview-box img,
-    .preview-box video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: none;
-      background: #000;
-    }
-
-    .preview-placeholder {
-      color: #bfbfbf;
-      text-align: center;
-      padding: 28px;
-      line-height: 1.5;
-    }
-
-    .info-list {
-      background: #111;
-      border: 1px solid rgba(255,255,255,0.06);
+      margin-top: 14px;
       border-radius: 18px;
-      padding: 16px;
+      padding: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .info-list h3 {
-      color: #39ff14;
-      margin-bottom: 10px;
+    .preview-media {
+      width: 100%;
+      max-height: 340px;
+      object-fit: cover;
+      border-radius: 14px;
+      background: black;
+      display: block;
+      margin-top: 12px;
     }
 
-    .info-list p {
-      color: #d8d8d8;
-      line-height: 1.5;
-      font-size: 14px;
-      margin-bottom: 8px;
+    .recent-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
     }
 
-    @media (max-width: 1000px) {
+    .recent-card {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .recent-title {
+      font-weight: 900;
+      color: #7dff71;
+      margin-bottom: 6px;
+    }
+
+    .recent-text {
+      color: #f2f2f2;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .recent-media {
+      width: 100%;
+      max-height: 220px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-top: 10px;
+      background: black;
+    }
+
+    .empty-box {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
       .layout {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 760px) {
-      body {
-        padding: 16px;
-      }
-
-      .brand {
-        font-size: 28px;
-      }
-
-      .grid-2 {
+    @media (max-width: 700px) {
+      .button-row {
         grid-template-columns: 1fr;
       }
 
-      .button-row {
-        flex-direction: column;
+      .hero h1 {
+        font-size: 2.2rem;
       }
 
-      button {
-        width: 100%;
+      .brand {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-fire.png" alt="Upload Sports Logo" />
-        <span>Upload Sports</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
       </div>
 
-      <div class="top-links">
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="auth.html">Auth</a>
+        <a href="feed.html">Feed</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload</a>
+        <a href="upload-sports.html" class="active">Upload Sports</a>
+        <a href="sports.html">Sports</a>
         <a href="profile.html">Profile</a>
         <a href="artist.html">Artist</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload Art</a>
-        <a href="music.html">Music</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="sports.html">Sports</a>
-        <a href="upload-sports.html">Upload Sports</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="upload-gaming.html">Upload Gaming</a>
-        <a href="live.html">Go Live</a>
-        <a href="watch.html">Watch Live</a>
-        <a href="messages.html">Messages</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
+    <div class="hero">
+      <h1>Upload Sports</h1>
+      <p>Drop sports highlights, moments, and athlete content into the Rich Bizness platform.</p>
+      <div id="statusBox" class="status-box">Checking session...</div>
+    </div>
+
     <div class="layout">
-      <div class="card">
-        <h1>Upload Sports Content</h1>
-        <p class="subtext">
-          Post clips, reactions, sports breakdowns, highlights, picks, and premium content for your audience.
-        </p>
+      <div class="panel">
+        <h2>New Sports Post</h2>
 
-        <div class="form-group">
-          <label for="titleInput">Post Title</label>
-          <input id="titleInput" type="text" placeholder="Big game reaction, pick of the day, highlight clip..." />
-        </div>
+        <label for="titleInput">Title</label>
+        <input id="titleInput" type="text" placeholder="Big game highlight" />
 
-        <div class="grid-2">
-          <div class="form-group">
-            <label for="categoryInput">Category</label>
-            <select id="categoryInput">
-              <option value="NBA">NBA</option>
-              <option value="NFL">NFL</option>
-              <option value="Boxing">Boxing</option>
-              <option value="Soccer">Soccer</option>
-              <option value="Street Ball">Street Ball</option>
-              <option value="Baseball">Baseball</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+        <label for="athleteInput">Athlete Name</label>
+        <input id="athleteInput" type="text" placeholder="Athlete name" />
 
-          <div class="form-group">
-            <label for="mediaTypeInput">Media Type</label>
-            <select id="mediaTypeInput">
-              <option value="video">Video</option>
-              <option value="image">Image</option>
-            </select>
-          </div>
-        </div>
+        <label for="teamInput">Team Name</label>
+        <input id="teamInput" type="text" placeholder="Team name" />
 
-        <div class="form-group">
-          <label for="descriptionInput">Description</label>
-          <textarea id="descriptionInput" placeholder="Tell people what this sports post is about..."></textarea>
-        </div>
+        <label for="sportInput">Sport Name</label>
+        <input id="sportInput" type="text" placeholder="Basketball / Football / Boxing" />
 
-        <div class="form-group">
-          <label for="mediaFileInput">Upload Media</label>
-          <input id="mediaFileInput" type="file" accept="video/*,image/*" />
-        </div>
+        <label for="captionInput">Caption</label>
+        <textarea id="captionInput" placeholder="Tell the story behind this sports drop..."></textarea>
 
-        <div class="form-group" id="thumbnailWrap">
-          <label for="thumbnailFileInput">Thumbnail Image (optional for video)</label>
-          <input id="thumbnailFileInput" type="file" accept="image/*" />
-        </div>
-
-        <div class="form-group">
-          <div class="toggle-row">
-            <input id="forSaleInput" type="checkbox" />
-            <label for="forSaleInput" style="margin:0;">Put this sports post up for sale</label>
-          </div>
-        </div>
-
-        <div class="form-group" id="priceWrap" style="display:none;">
-          <label for="priceInput">Price (USD)</label>
-          <input id="priceInput" type="number" min="0" step="0.01" placeholder="0.00" />
-        </div>
+        <label for="mediaInput">Media File</label>
+        <input id="mediaInput" type="file" accept="image/*,video/*" />
 
         <div class="button-row">
-          <button id="uploadBtn" class="btn-green">Upload Sports Post</button>
+          <button id="uploadBtn" class="btn-green" type="button">Upload Sports Post</button>
           <button id="clearBtn" class="btn-dark" type="button">Clear Form</button>
         </div>
 
-        <div id="statusBox" class="status-box info">Ready to upload.</div>
+        <div class="preview-box">
+          <strong style="color:#7dff71;">Preview</strong>
+          <div id="previewText" class="panel-sub" style="margin-top:10px;">No file selected yet.</div>
+          <div id="previewMediaWrap"></div>
+        </div>
       </div>
 
-      <div class="card">
-        <h2>Preview</h2>
-
-        <div class="preview-box">
-          <img id="previewImage" alt="Sports Preview" />
-          <video id="previewVideo" controls></video>
-          <div id="previewPlaceholder" class="preview-placeholder">
-            Your sports preview will show here.
-          </div>
-        </div>
-
-        <div class="info-list">
-          <h3>Upload Setup</h3>
-          <p>Storage bucket is matched to your real bucket: <strong>sports</strong>.</p>
-          <p>Uploaded content saves into the <strong>sports_posts</strong> table.</p>
-          <p>Video posts can use an optional custom thumbnail.</p>
-          <p>Paid sports content uses Stripe buy buttons from the sports feed and artist page.</p>
-        </div>
+      <div class="panel">
+        <h2>Recent Sports Uploads</h2>
+        <div class="panel-sub">Your latest sports posts will show here after upload.</div>
+        <div id="recentList" class="recent-list"></div>
       </div>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtzdmRlcXV5bWtjZWV2b2NncGRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NDY4ODIsImV4cCI6MjA5MDQyMjg4Mn0._tOoDMsaoe5ysxrSch2ednHdCtGwdwxVSN5uxoQZVpY";
-    const SPORTS_BUCKET = "sports";
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const titleInput = document.getElementById("titleInput");
-    const categoryInput = document.getElementById("categoryInput");
-    const mediaTypeInput = document.getElementById("mediaTypeInput");
-    const descriptionInput = document.getElementById("descriptionInput");
-    const mediaFileInput = document.getElementById("mediaFileInput");
-    const thumbnailFileInput = document.getElementById("thumbnailFileInput");
-    const thumbnailWrap = document.getElementById("thumbnailWrap");
-    const forSaleInput = document.getElementById("forSaleInput");
-    const priceInput = document.getElementById("priceInput");
-    const priceWrap = document.getElementById("priceWrap");
-    const uploadBtn = document.getElementById("uploadBtn");
-    const clearBtn = document.getElementById("clearBtn");
-    const statusBox = document.getElementById("statusBox");
-
-    const previewImage = document.getElementById("previewImage");
-    const previewVideo = document.getElementById("previewVideo");
-    const previewPlaceholder = document.getElementById("previewPlaceholder");
-
-    function showStatus(message, type = "info") {
-      statusBox.textContent = message;
-      statusBox.className = `status-box ${type}`;
-      statusBox.style.display = "block";
-    }
-
-    function safeFileName(name) {
-      return String(name || "").replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    }
-
-    function resetPreview() {
-      previewImage.src = "";
-      previewImage.style.display = "none";
-
-      previewVideo.pause();
-      previewVideo.src = "";
-      previewVideo.style.display = "none";
-
-      previewPlaceholder.style.display = "block";
-    }
-
-    function updateSaleUI() {
-      priceWrap.style.display = forSaleInput.checked ? "block" : "none";
-    }
-
-    function updateMediaUI() {
-      const mediaType = mediaTypeInput.value;
-      thumbnailWrap.style.display = mediaType === "video" ? "block" : "none";
-
-      const file = mediaFileInput.files[0];
-      if (!file) {
-        resetPreview();
-        return;
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
       }
 
-      previewPlaceholder.style.display = "none";
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
 
-      if (mediaType === "video") {
-        previewImage.style.display = "none";
-        previewVideo.src = URL.createObjectURL(file);
-        previewVideo.style.display = "block";
-      } else {
-        previewVideo.pause();
-        previewVideo.src = "";
-        previewVideo.style.display = "none";
-        previewImage.src = URL.createObjectURL(file);
-        previewImage.style.display = "block";
-      }
-    }
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
 
-    async function requireUser() {
-      const { data, error } = await supabaseClient.auth.getUser();
+      const titleInput = document.getElementById("titleInput");
+      const athleteInput = document.getElementById("athleteInput");
+      const teamInput = document.getElementById("teamInput");
+      const sportInput = document.getElementById("sportInput");
+      const captionInput = document.getElementById("captionInput");
+      const mediaInput = document.getElementById("mediaInput");
 
-      if (error || !data.user) {
-        window.location.href = "auth.html";
-        return null;
-      }
+      const uploadBtn = document.getElementById("uploadBtn");
+      const clearBtn = document.getElementById("clearBtn");
 
-      return data.user;
-    }
+      const previewText = document.getElementById("previewText");
+      const previewMediaWrap = document.getElementById("previewMediaWrap");
+      const recentList = document.getElementById("recentList");
 
-    async function uploadFileToBucket(path, file) {
-      const { error } = await supabaseClient.storage
-        .from(SPORTS_BUCKET)
-        .upload(path, file, {
-          cacheControl: "3600",
-          upsert: false
-        });
+      let currentUser = null;
 
-      if (error) throw error;
-
-      const { data } = supabaseClient.storage
-        .from(SPORTS_BUCKET)
-        .getPublicUrl(path);
-
-      return data.publicUrl;
-    }
-
-    async function uploadSportsPost() {
-      const user = await requireUser();
-      if (!user) return;
-
-      const title = titleInput.value.trim();
-      const category = categoryInput.value;
-      const mediaType = mediaTypeInput.value;
-      const description = descriptionInput.value.trim();
-      const mediaFile = mediaFileInput.files[0];
-      const thumbnailFile = thumbnailFileInput.files[0];
-      const isForSale = forSaleInput.checked;
-      const priceUsd = Number(priceInput.value || 0);
-
-      if (!title) {
-        showStatus("Please enter a post title.", "error");
-        return;
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
       }
 
-      if (!mediaFile) {
-        showStatus("Please choose a media file.", "error");
-        return;
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      if (isForSale && priceUsd <= 0) {
-        showStatus("Enter a valid price for content on sale.", "error");
-        return;
-      }
+      async function requireUser() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-      showStatus("Uploading sports post...", "info");
+        currentUser = data?.session?.user || null;
 
-      try {
-        const mediaName = safeFileName(mediaFile.name);
-        const mediaExt = mediaName.includes(".") ? mediaName.split(".").pop() : (mediaType === "video" ? "mp4" : "jpg");
-        const mediaPath = `${user.id}/sports-${Date.now()}-${Math.random().toString(36).slice(2)}.${mediaExt}`;
-        const mediaUrl = await uploadFileToBucket(mediaPath, mediaFile);
-
-        let thumbnailUrl = "";
-
-        if (mediaType === "video" && thumbnailFile) {
-          const thumbName = safeFileName(thumbnailFile.name);
-          const thumbExt = thumbName.includes(".") ? thumbName.split(".").pop() : "jpg";
-          const thumbPath = `${user.id}/sports-thumb-${Date.now()}-${Math.random().toString(36).slice(2)}.${thumbExt}`;
-          thumbnailUrl = await uploadFileToBucket(thumbPath, thumbnailFile);
+        if (!currentUser) {
+          userChip.textContent = "No session";
+          setStatus("No active session. Redirecting to auth...");
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
         }
 
-        const payload = {
-          user_id: user.id,
-          title,
-          description,
-          category,
-          media_type: mediaType,
-          media_url: mediaUrl,
-          thumbnail_url: thumbnailUrl,
-          views: 0,
-          is_for_sale: isForSale,
-          price_cents: isForSale ? Math.round(priceUsd * 100) : 0,
-          currency: "usd"
-        };
-
-        const { error: insertError } = await supabaseClient
-          .from("sports_posts")
-          .insert([payload]);
-
-        if (insertError) throw insertError;
-
-        showStatus("Sports post uploaded successfully.", "success");
-
-        setTimeout(() => {
-          window.location.href = "sports.html";
-        }, 1200);
-      } catch (error) {
-        console.error("Sports upload error:", error);
-        showStatus("Upload failed: " + error.message, "error");
+        userChip.textContent = currentUser.email || "Signed in";
+        setStatus("Session active.");
+        return currentUser;
       }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      function clearForm() {
+        titleInput.value = "";
+        athleteInput.value = "";
+        teamInput.value = "";
+        sportInput.value = "";
+        captionInput.value = "";
+        mediaInput.value = "";
+        previewText.textContent = "No file selected yet.";
+        previewMediaWrap.innerHTML = "";
+      }
+
+      function showPreview() {
+        const file = mediaInput.files?.[0];
+
+        if (!file) {
+          previewText.textContent = "No file selected yet.";
+          previewMediaWrap.innerHTML = "";
+          return;
+        }
+
+        previewText.textContent = `${file.name} • ${file.type || "unknown type"}`;
+        previewMediaWrap.innerHTML = "";
+
+        const url = URL.createObjectURL(file);
+
+        if (file.type.startsWith("video/")) {
+          previewMediaWrap.innerHTML = `<video class="preview-media" controls src="${url}"></video>`;
+        } else if (file.type.startsWith("image/")) {
+          previewMediaWrap.innerHTML = `<img class="preview-media" src="${url}" alt="preview" />`;
+        } else {
+          previewMediaWrap.innerHTML = `<div class="empty-box">Unsupported file preview.</div>`;
+        }
+      }
+
+      async function uploadMedia(file) {
+        if (!currentUser || !file) throw new Error("Missing file upload data.");
+
+        const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const filePath = `${currentUser.id}/${fileName}`;
+
+        const { error } = await supabase.storage
+          .from("sports-media")
+          .upload(filePath, file, { upsert: false });
+
+        if (error) throw error;
+
+        const { data } = supabase.storage.from("sports-media").getPublicUrl(filePath);
+        const publicUrl = data?.publicUrl || "";
+
+        if (!publicUrl) {
+          throw new Error("Could not get public media URL.");
+        }
+
+        return {
+          mediaUrl: publicUrl,
+          mediaType: file.type.startsWith("video/") ? "video" : "image"
+        };
+      }
+
+      async function uploadSportsPost() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const title = titleInput.value.trim();
+          const athleteName = athleteInput.value.trim();
+          const teamName = teamInput.value.trim();
+          const sportName = sportInput.value.trim();
+          const caption = captionInput.value.trim();
+          const file = mediaInput.files?.[0];
+
+          if (!title) throw new Error("Title is required.");
+          if (!athleteName) throw new Error("Athlete name is required.");
+          if (!sportName) throw new Error("Sport name is required.");
+          if (!file) throw new Error("Select an image or video file.");
+
+          setStatus("Uploading sports media...");
+
+          const { mediaUrl, mediaType } = await uploadMedia(file);
+
+          setStatus("Saving sports post...");
+
+          const { error } = await supabase
+            .from("sports_posts")
+            .insert({
+              user_id: user.id,
+              title,
+              athlete_name: athleteName,
+              team_name: teamName,
+              sport_name: sportName,
+              caption,
+              media_url: mediaUrl,
+              media_type: mediaType
+            });
+
+          if (error) throw error;
+
+          setStatus("Sports post uploaded.");
+          clearForm();
+          await loadRecentUploads();
+        } catch (error) {
+          setStatus("Upload error: " + error.message);
+        }
+      }
+
+      async function loadRecentUploads() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const { data, error } = await supabase
+            .from("sports_posts")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(6);
+
+          if (error) throw error;
+
+          const items = data || [];
+
+          if (!items.length) {
+            recentList.innerHTML = `<div class="empty-box">No sports uploads yet.</div>`;
+            return;
+          }
+
+          recentList.innerHTML = items.map(item => `
+            <div class="recent-card">
+              <div class="recent-title">${escapeHtml(item.title || "Untitled Sports Post")}</div>
+              <div class="recent-text">
+Athlete: ${escapeHtml(item.athlete_name || "--")}
+Team: ${escapeHtml(item.team_name || "--")}
+Sport: ${escapeHtml(item.sport_name || "--")}
+${escapeHtml(item.caption || "")}
+              </div>
+              ${
+                item.media_type === "video"
+                  ? `<video class="recent-media" controls src="${escapeHtml(item.media_url)}"></video>`
+                  : `<img class="recent-media" src="${escapeHtml(item.media_url)}" alt="sports media" />`
+              }
+            </div>
+          `).join("");
+        } catch (error) {
+          recentList.innerHTML = `<div class="empty-box">Could not load sports uploads.</div>`;
+          setStatus("Recent uploads error: " + error.message);
+        }
+      }
+
+      mediaInput.addEventListener("change", showPreview);
+      uploadBtn.addEventListener("click", uploadSportsPost);
+      clearBtn.addEventListener("click", clearForm);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        userChip.textContent = session?.user?.email || "No session";
+        currentUser = session?.user || null;
+      });
+
+      requireUser().then(loadRecentUploads);
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Upload Sports Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    function clearForm() {
-      titleInput.value = "";
-      categoryInput.value = "NBA";
-      mediaTypeInput.value = "video";
-      descriptionInput.value = "";
-      mediaFileInput.value = "";
-      thumbnailFileInput.value = "";
-      forSaleInput.checked = false;
-      priceInput.value = "";
-      updateSaleUI();
-      updateMediaUI();
-      resetPreview();
-      showStatus("Form cleared.", "info");
-    }
-
-    mediaTypeInput.addEventListener("change", updateMediaUI);
-    mediaFileInput.addEventListener("change", updateMediaUI);
-    forSaleInput.addEventListener("change", updateSaleUI);
-
-    uploadBtn.addEventListener("click", uploadSportsPost);
-    clearBtn.addEventListener("click", clearForm);
-
-    async function startPage() {
-      const user = await requireUser();
-      if (!user) return;
-
-      updateSaleUI();
-      updateMediaUI();
-    }
-
-    startPage();
   </script>
 </body>
 </html>
