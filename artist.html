@@ -1,123 +1,813 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Artists | Rich Bizness</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artist | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-body {
-  margin:0;
-  font-family:Arial;
-  color:white;
-  background:
-    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.85)),
-    url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
-}
+  <style>
+    * { box-sizing: border-box; }
 
-.page { max-width:1400px; margin:auto; padding:20px; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
 
-h1 {
-  text-align:center;
-  color:#7dff71;
-}
+    .page {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 18px;
+    }
 
-.grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:18px;
-}
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
+    }
 
-.card {
-  background:rgba(0,0,0,0.6);
-  border:1px solid rgba(125,255,113,0.2);
-  border-radius:18px;
-  padding:16px;
-  text-align:center;
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+    }
 
-.avatar {
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  object-fit:cover;
-  margin-bottom:10px;
-  border:2px solid #7dff71;
-}
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
+    }
 
-.name {
-  font-weight:900;
-  color:#7dff71;
-  font-size:1.2rem;
-}
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
 
-.meta {
-  font-size:0.9rem;
-  opacity:0.85;
-}
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-.bio {
-  margin-top:8px;
-  font-size:0.95rem;
-}
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
+    }
 
-.empty {
-  text-align:center;
-  margin-top:40px;
-}
-</style>
-</head>
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
 
-<body>
-<div class="page">
-<h1>Artists</h1>
-<div id="artistGrid" class="grid"></div>
-</div>
+    .hero {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
+    }
 
-<script>
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    .artist-head {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 20px;
+      align-items: center;
+    }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    .avatar {
+      width: 160px;
+      height: 160px;
+      border-radius: 24px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(125,255,113,0.3);
+      box-shadow: 0 0 22px rgba(125,255,113,0.2);
+    }
 
-const grid = document.getElementById("artistGrid");
+    .avatar-fallback {
+      width: 160px;
+      height: 160px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(125,255,113,0.08);
+      border: 2px solid rgba(125,255,113,0.3);
+      color: #7dff71;
+      font-weight: 900;
+      font-size: 2.2rem;
+      box-shadow: 0 0 22px rgba(125,255,113,0.2);
+    }
 
-function render(items){
-  if(!items.length){
-    grid.innerHTML = "<div class='empty'>No artists yet.</div>";
-    return;
-  }
+    .artist-title {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #7dff71;
+      margin: 0 0 10px;
+      text-shadow: 0 0 16px rgba(125,255,113,0.28);
+    }
 
-  grid.innerHTML = items.map(user=>`
-    <div class="card">
-      ${
-        user.avatar_url
-        ? `<img src="${user.avatar_url}" class="avatar">`
-        : `<div class="avatar" style="display:flex;align-items:center;justify-content:center;background:#111;">RB</div>`
+    .artist-meta {
+      line-height: 1.7;
+      color: #f2f2f2;
+      margin-bottom: 16px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, .link-btn {
+      display: inline-block;
+      padding: 14px 18px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn-green {
+      background: #7dff71;
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+    }
+
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #7dff71;
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      opacity: 0.92;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .tab-btn {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.06);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 800;
+    }
+
+    .tab-btn.active {
+      background: #7dff71;
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+    }
+
+    .panel {
+      display: none;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 22px;
+      padding: 18px;
+      backdrop-filter: blur(10px);
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    .panel h2 {
+      margin-top: 0;
+      color: #7dff71;
+      font-size: 2rem;
+    }
+
+    .grid-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .card {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .card-media {
+      width: 100%;
+      max-height: 280px;
+      border-radius: 14px;
+      object-fit: cover;
+      margin-bottom: 10px;
+      background: black;
+    }
+
+    .card-title {
+      font-weight: 900;
+      color: #7dff71;
+      margin-bottom: 6px;
+    }
+
+    .card-text {
+      line-height: 1.6;
+      color: #f4f4f4;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .empty-box {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
       }
-      <div class="name">${user.display_name || "Artist"}</div>
-      <div class="meta">${user.email}</div>
-      <div class="bio">${user.bio || ""}</div>
-      <div class="meta">${user.favorite_genre || ""}</div>
+    }
+
+    @media (max-width: 900px) {
+      .artist-head {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .artist-title {
+        font-size: 2.2rem;
+      }
+
+      .brand {
+        font-size: 1.4rem;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="artist.html" class="active">Artist</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
     </div>
-  `).join("");
-}
 
-async function load(){
-  const {data,error} = await supabase
-    .from("profiles")
-    .select("*");
+    <div class="hero">
+      <div class="artist-head">
+        <div id="avatarShell">
+          <div class="avatar-fallback">RB</div>
+        </div>
 
-  if(error){
-    grid.innerHTML="Error loading";
-    return;
-  }
+        <div>
+          <h1 id="artistTitle" class="artist-title">Loading artist...</h1>
+          <div id="artistMeta" class="artist-meta">Getting artist info...</div>
 
-  render(data || []);
-}
+          <div class="button-row">
+            <button id="followBtn" class="btn-green" type="button">Follow</button>
+            <button id="messageBtn" class="btn-dark" type="button">Message Artist</button>
+            <a id="profileBtn" href="profile.html" class="link-btn btn-dark">Open My Profile</a>
+          </div>
 
-load();
-</script>
+          <div id="statusBox" class="status-box">Artist page ready.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div id="followersCount" class="stat-value">0</div>
+        <div class="stat-label">Followers</div>
+      </div>
+      <div class="stat">
+        <div id="followingCount" class="stat-value">0</div>
+        <div class="stat-label">Following</div>
+      </div>
+      <div class="stat">
+        <div id="artCount" class="stat-value">0</div>
+        <div class="stat-label">Artwork</div>
+      </div>
+      <div class="stat">
+        <div id="musicCount" class="stat-value">0</div>
+        <div class="stat-label">Tracks</div>
+      </div>
+      <div class="stat">
+        <div id="gamingCount" class="stat-value">0</div>
+        <div class="stat-label">Gaming</div>
+      </div>
+      <div class="stat">
+        <div id="sportsCount" class="stat-value">0</div>
+        <div class="stat-label">Sports</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="artTab">Artwork</button>
+      <button class="tab-btn" data-tab="musicTab">Music</button>
+      <button class="tab-btn" data-tab="gamingTab">Gaming</button>
+      <button class="tab-btn" data-tab="sportsTab">Sports</button>
+    </div>
+
+    <div id="artTab" class="panel active">
+      <h2>Artwork</h2>
+      <div id="artGrid" class="grid-cards"></div>
+    </div>
+
+    <div id="musicTab" class="panel">
+      <h2>Music</h2>
+      <div id="musicGrid" class="grid-cards"></div>
+    </div>
+
+    <div id="gamingTab" class="panel">
+      <h2>Gaming</h2>
+      <div id="gamingGrid" class="grid-cards"></div>
+    </div>
+
+    <div id="sportsTab" class="panel">
+      <h2>Sports</h2>
+      <div id="sportsGrid" class="grid-cards"></div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const followBtn = document.getElementById("followBtn");
+      const messageBtn = document.getElementById("messageBtn");
+
+      const avatarShell = document.getElementById("avatarShell");
+      const artistTitle = document.getElementById("artistTitle");
+      const artistMeta = document.getElementById("artistMeta");
+      const statusBox = document.getElementById("statusBox");
+
+      const followersCount = document.getElementById("followersCount");
+      const followingCount = document.getElementById("followingCount");
+      const artCount = document.getElementById("artCount");
+      const musicCount = document.getElementById("musicCount");
+      const gamingCount = document.getElementById("gamingCount");
+      const sportsCount = document.getElementById("sportsCount");
+
+      const artGrid = document.getElementById("artGrid");
+      const musicGrid = document.getElementById("musicGrid");
+      const gamingGrid = document.getElementById("gamingGrid");
+      const sportsGrid = document.getElementById("sportsGrid");
+
+      let currentUser = null;
+      let artistUserId = null;
+      let artistProfile = null;
+      let isFollowing = false;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function setEmpty(gridEl, text) {
+        gridEl.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      }
+
+      function getArtistIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("id");
+      }
+
+      async function getCurrentUser() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        return data?.session?.user || null;
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      async function getCount(table, column, value) {
+        const { count, error } = await supabase
+          .from(table)
+          .select("*", { count: "exact", head: true })
+          .eq(column, value);
+
+        if (error) throw error;
+        return count || 0;
+      }
+
+      async function loadArtistProfile() {
+        const urlArtistId = getArtistIdFromUrl();
+        currentUser = await getCurrentUser();
+        userChip.textContent = currentUser?.email || "Guest";
+
+        artistUserId = urlArtistId || currentUser?.id || null;
+
+        if (!artistUserId) {
+          throw new Error("No artist id found and no signed-in user.");
+        }
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", artistUserId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        artistProfile = data || null;
+
+        const displayName = artistProfile?.display_name || artistProfile?.email || "Rich Bizness Artist";
+        artistTitle.textContent = displayName;
+        artistMeta.innerHTML = `
+          Email: ${escapeHtml(artistProfile?.email || "--")}<br>
+          Genre: ${escapeHtml(artistProfile?.favorite_genre || "--")}<br>
+          Bio: ${escapeHtml(artistProfile?.bio || "No artist bio yet.")}
+        `;
+
+        if (artistProfile?.avatar_url) {
+          avatarShell.innerHTML = `<img class="avatar" src="${escapeHtml(artistProfile.avatar_url)}" alt="artist avatar" />`;
+        } else {
+          avatarShell.innerHTML = `<div class="avatar-fallback">RB</div>`;
+        }
+      }
+
+      async function loadFollowState() {
+        if (!currentUser || !artistUserId || currentUser.id === artistUserId) {
+          followBtn.textContent = "My Artist Page";
+          followBtn.disabled = true;
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from("followers")
+          .select("id")
+          .eq("follower_id", currentUser.id)
+          .eq("following_id", artistUserId)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        isFollowing = !!data;
+        followBtn.textContent = isFollowing ? "Unfollow" : "Follow";
+      }
+
+      async function toggleFollow() {
+        try {
+          if (!currentUser) {
+            window.location.href = "auth.html";
+            return;
+          }
+
+          if (currentUser.id === artistUserId) {
+            return;
+          }
+
+          if (isFollowing) {
+            const { error } = await supabase
+              .from("followers")
+              .delete()
+              .eq("follower_id", currentUser.id)
+              .eq("following_id", artistUserId);
+
+            if (error) throw error;
+            setStatus("Artist unfollowed.");
+          } else {
+            const { error } = await supabase
+              .from("followers")
+              .insert({
+                follower_id: currentUser.id,
+                following_id: artistUserId
+              });
+
+            if (error) throw error;
+            setStatus("Artist followed.");
+          }
+
+          await loadFollowState();
+          await loadStats();
+        } catch (error) {
+          setStatus("Follow error: " + error.message);
+        }
+      }
+
+      function messageArtist() {
+        if (!artistProfile?.email) {
+          setStatus("Artist email not found.");
+          return;
+        }
+
+        window.location.href = `messages.html?email=${encodeURIComponent(artistProfile.email)}`;
+      }
+
+      async function loadStats() {
+        const [
+          followers,
+          following,
+          artPosts,
+          musicPosts,
+          gamingPosts,
+          sportsPosts
+        ] = await Promise.all([
+          getCount("followers", "following_id", artistUserId),
+          getCount("followers", "follower_id", artistUserId),
+          getCount("artworks", "user_id", artistUserId),
+          getCount("music_tracks", "user_id", artistUserId),
+          getCount("gaming_posts", "user_id", artistUserId),
+          getCount("sports_posts", "user_id", artistUserId)
+        ]);
+
+        followersCount.textContent = followers;
+        followingCount.textContent = following;
+        artCount.textContent = artPosts;
+        musicCount.textContent = musicPosts;
+        gamingCount.textContent = gamingPosts;
+        sportsCount.textContent = sportsPosts;
+      }
+
+      function renderArtwork(items) {
+        if (!items || !items.length) {
+          setEmpty(artGrid, "No artwork yet.");
+          return;
+        }
+
+        artGrid.innerHTML = items.map(item => `
+          <div class="card">
+            <img class="card-media" src="${escapeHtml(item.image_url)}" alt="artwork" />
+            <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+            <div class="card-text">${escapeHtml(item.description || "")}</div>
+          </div>
+        `).join("");
+      }
+
+      function renderMusic(items) {
+        if (!items || !items.length) {
+          setEmpty(musicGrid, "No music yet.");
+          return;
+        }
+
+        musicGrid.innerHTML = items.map(item => `
+          <div class="card">
+            ${item.cover_url ? `<img class="card-media" src="${escapeHtml(item.cover_url)}" alt="cover" />` : ""}
+            <div class="card-title">${escapeHtml(item.title || "Untitled Track")}</div>
+            <div class="card-text">
+              Artist: ${escapeHtml(item.artist_name || "--")}<br>
+              Genre: ${escapeHtml(item.genre || "--")}<br>
+              ${escapeHtml(item.description || "")}
+            </div>
+            ${item.audio_url ? `<audio controls style="width:100%;margin-top:10px;" src="${escapeHtml(item.audio_url)}"></audio>` : ""}
+          </div>
+        `).join("");
+      }
+
+      function renderGaming(items) {
+        if (!items || !items.length) {
+          setEmpty(gamingGrid, "No gaming posts yet.");
+          return;
+        }
+
+        gamingGrid.innerHTML = items.map(item => `
+          <div class="card">
+            ${
+              item.media_type === "video"
+                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
+                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="gaming" />`
+            }
+            <div class="card-title">${escapeHtml(item.title || "Untitled Gaming Post")}</div>
+            <div class="card-text">
+              Gamer Tag: ${escapeHtml(item.gamer_tag || "--")}<br>
+              Game: ${escapeHtml(item.game_name || "--")}<br>
+              ${escapeHtml(item.caption || "")}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function renderSports(items) {
+        if (!items || !items.length) {
+          setEmpty(sportsGrid, "No sports posts yet.");
+          return;
+        }
+
+        sportsGrid.innerHTML = items.map(item => `
+          <div class="card">
+            ${
+              item.media_type === "video"
+                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
+                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="sports" />`
+            }
+            <div class="card-title">${escapeHtml(item.title || "Untitled Sports Post")}</div>
+            <div class="card-text">
+              Athlete: ${escapeHtml(item.athlete_name || "--")}<br>
+              Team: ${escapeHtml(item.team_name || "--")}<br>
+              Sport: ${escapeHtml(item.sport_name || "--")}<br>
+              ${escapeHtml(item.caption || "")}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      async function loadPanels() {
+        const [artData, musicData, gamingData, sportsData] = await Promise.all([
+          supabase.from("artworks").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
+          supabase.from("music_tracks").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
+          supabase.from("gaming_posts").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
+          supabase.from("sports_posts").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false })
+        ]);
+
+        if (artData.error) throw artData.error;
+        if (musicData.error) throw musicData.error;
+        if (gamingData.error) throw gamingData.error;
+        if (sportsData.error) throw sportsData.error;
+
+        renderArtwork(artData.data || []);
+        renderMusic(musicData.data || []);
+        renderGaming(gamingData.data || []);
+        renderSports(sportsData.data || []);
+      }
+
+      function setupTabs() {
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const panels = document.querySelectorAll(".panel");
+
+        tabButtons.forEach(button => {
+          button.addEventListener("click", () => {
+            tabButtons.forEach(btn => btn.classList.remove("active"));
+            panels.forEach(panel => panel.classList.remove("active"));
+
+            button.classList.add("active");
+            document.getElementById(button.dataset.tab).classList.add("active");
+          });
+        });
+      }
+
+      async function initPage() {
+        try {
+          setStatus("Loading artist page...");
+          await loadArtistProfile();
+          await loadFollowState();
+          await loadStats();
+          await loadPanels();
+          setupTabs();
+          setStatus("Artist page loaded.");
+        } catch (error) {
+          setStatus("Artist page error: " + error.message);
+          setEmpty(artGrid, "Could not load artwork.");
+          setEmpty(musicGrid, "Could not load music.");
+          setEmpty(gamingGrid, "Could not load gaming.");
+          setEmpty(sportsGrid, "Could not load sports.");
+        }
+      }
+
+      followBtn.addEventListener("click", toggleFollow);
+      messageBtn.addEventListener("click", messageArtist);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        userChip.textContent = session?.user?.email || "Guest";
+      });
+
+      initPage();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Artist Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
