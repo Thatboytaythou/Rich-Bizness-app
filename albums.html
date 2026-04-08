@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Albums | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --green: #7dff71;
+      --bg: rgba(0,0,0,0.48);
+      --border: rgba(125,255,113,0.18);
+      --soft: rgba(255,255,255,0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar, .hero, .panel, .section {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 18px rgba(125,255,113,0.22);
+    }
+
+    .user-chip {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .panel, .section {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1, .panel h2, .section h2 {
+      margin-top: 0;
+      color: var(--green);
+    }
+
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .hero p, .subtle {
+      color: #f1f1f1;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.20);
+      font-weight: 700;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 8px;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button, .btn {
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: black;
+    }
+
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .album-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .album-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .album-cover {
+      width: 100%;
+      height: 240px;
+      border-radius: 14px;
+      object-fit: cover;
+      background: black;
+      margin-bottom: 12px;
+    }
+
+    .album-cover-fallback {
+      width: 100%;
+      height: 240px;
+      border-radius: 14px;
+      background: rgba(125,255,113,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-weight: 900;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .album-title {
+      color: var(--green);
+      font-weight: 900;
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+    }
+
+    .album-text {
+      color: #f2f2f2;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .album-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .empty-box {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 1200px) {
+      .album-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .album-grid, .row, .album-actions {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+      .brand {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="music.html">Music</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="albums.html" class="active">Albums</a>
+        <a href="upload-music.html">Upload Music</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Album System</h1>
+      <p>Build albums, EPs, mixtapes, and real music releases on Rich Bizness.</p>
+      <div id="statusBox" class="status-box">Loading album system...</div>
+    </div>
+
+    <div class="layout">
+      <div class="panel">
+        <h2>Create Album</h2>
+
+        <label for="titleInput">Album Title</label>
+        <input id="titleInput" type="text" placeholder="Midnight Season" />
+
+        <label for="artistNameInput">Artist Name</label>
+        <input id="artistNameInput" type="text" placeholder="Rich Bizness Artist" />
+
+        <label for="descriptionInput">Description</label>
+        <textarea id="descriptionInput" placeholder="Describe the release..."></textarea>
+
+        <label for="coverUrlInput">Cover URL</label>
+        <input id="coverUrlInput" type="text" placeholder="Optional cover image URL" />
+
+        <label for="releaseDateInput">Release Date</label>
+        <input id="releaseDateInput" type="date" />
+
+        <label for="releaseTypeInput">Release Type</label>
+        <select id="releaseTypeInput">
+          <option value="album">Album</option>
+          <option value="ep">EP</option>
+          <option value="mixtape">Mixtape</option>
+          <option value="single">Single</option>
+        </select>
+
+        <label for="publicInput">Visibility</label>
+        <select id="publicInput">
+          <option value="true">Public</option>
+          <option value="false">Private</option>
+        </select>
+
+        <div class="row">
+          <button id="createBtn" class="btn-green" type="button">Create Release</button>
+          <button id="refreshBtn" class="btn-dark" type="button">Refresh</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Your Album Stats</h2>
+        <div class="subtle" id="statsText">Loading...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Public Releases</h2>
+      <div id="albumGrid" class="album-grid"></div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const titleInput = document.getElementById("titleInput");
+      const artistNameInput = document.getElementById("artistNameInput");
+      const descriptionInput = document.getElementById("descriptionInput");
+      const coverUrlInput = document.getElementById("coverUrlInput");
+      const releaseDateInput = document.getElementById("releaseDateInput");
+      const releaseTypeInput = document.getElementById("releaseTypeInput");
+      const publicInput = document.getElementById("publicInput");
+
+      const createBtn = document.getElementById("createBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const statsText = document.getElementById("statsText");
+      const albumGrid = document.getElementById("albumGrid");
+
+      let currentUser = null;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function requireUser() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+        return currentUser;
+      }
+
+      async function logOut() {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          setStatus("Logout error: " + error.message);
+          return;
+        }
+        window.location.href = "auth.html";
+      }
+
+      async function createAlbum() {
+        try {
+          const user = await requireUser();
+          if (!user) {
+            window.location.href = "auth.html";
+            return;
+          }
+
+          const title = titleInput.value.trim();
+          const artistName = artistNameInput.value.trim();
+          const description = descriptionInput.value.trim();
+          const coverUrl = coverUrlInput.value.trim();
+          const releaseDate = releaseDateInput.value || null;
+          const releaseType = releaseTypeInput.value;
+          const isPublic = publicInput.value === "true";
+
+          if (!title) throw new Error("Album title is required.");
+
+          const { error } = await supabase
+            .from("albums")
+            .insert({
+              user_id: user.id,
+              artist_name: artistName || user.email || "Rich Bizness Artist",
+              title,
+              description,
+              cover_url: coverUrl,
+              release_date: releaseDate,
+              release_type: releaseType,
+              is_public: isPublic
+            });
+
+          if (error) throw error;
+
+          titleInput.value = "";
+          artistNameInput.value = "";
+          descriptionInput.value = "";
+          coverUrlInput.value = "";
+          releaseDateInput.value = "";
+          releaseTypeInput.value = "album";
+          publicInput.value = "true";
+
+          setStatus("Release created.");
+          await loadAlbums();
+        } catch (error) {
+          setStatus("Create album error: " + error.message);
+        }
+      }
+
+      async function loadAlbums() {
+        try {
+          setStatus("Loading albums...");
+          const user = await requireUser();
+
+          const { data, error } = await supabase
+            .from("albums")
+            .select("*")
+            .eq("is_public", true)
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          const albums = data || [];
+          const mine = user ? albums.filter(a => a.user_id === user.id).length : 0;
+          statsText.textContent = `Public releases: ${albums.length} • Yours: ${mine}`;
+
+          if (!albums.length) {
+            albumGrid.innerHTML = `<div class="empty-box">No releases yet.</div>`;
+            setStatus("No releases yet.");
+            return;
+          }
+
+          albumGrid.innerHTML = albums.map(item => `
+            <div class="album-card">
+              ${
+                item.cover_url
+                  ? `<img class="album-cover" src="${escapeHtml(item.cover_url)}" alt="album cover" />`
+                  : `<div class="album-cover-fallback">RB</div>`
+              }
+              <div class="album-title">${escapeHtml(item.title || "Untitled Release")}</div>
+              <div class="album-text">
+                Artist: ${escapeHtml(item.artist_name || "Unknown Artist")}<br>
+                Type: ${escapeHtml(item.release_type || "album")}<br>
+                Release Date: ${escapeHtml(item.release_date || "--")}<br>
+                ${escapeHtml(item.description || "")}
+              </div>
+              <div class="album-actions">
+                <a class="btn btn-green" href="album-view.html?id=${item.id}">Open Release</a>
+                <a class="btn btn-dark" href="music.html">Browse Music</a>
+              </div>
+            </div>
+          `).join("");
+
+          setStatus("Albums loaded.");
+        } catch (error) {
+          setStatus("Album load error: " + error.message);
+          albumGrid.innerHTML = `<div class="empty-box">Could not load releases.</div>`;
+        }
+      }
+
+      createBtn.addEventListener("click", createAlbum);
+      refreshBtn.addEventListener("click", loadAlbums);
+      logoutBtn.addEventListener("click", logOut);
+
+      loadAlbums();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;background:#111;color:white;min-height:100vh;">
+          <h1 style="color:#7dff71;">Album Hub Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
