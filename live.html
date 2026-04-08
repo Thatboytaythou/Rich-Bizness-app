@@ -15,10 +15,10 @@
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
+      min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.78)),
         url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
-      min-height: 100vh;
     }
 
     .page {
@@ -83,28 +83,38 @@
       border-color: rgba(125,255,113,0.28);
     }
 
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
     .hero {
-      padding: 22px;
-      border-radius: 22px;
+      padding: 24px;
+      border-radius: 24px;
       background: rgba(0,0,0,0.42);
       border: 1px solid rgba(125,255,113,0.18);
       backdrop-filter: blur(10px);
       margin-bottom: 18px;
+      text-align: center;
     }
 
     .hero h1 {
-      margin: 0 0 8px;
+      margin: 0 0 10px;
       color: #7dff71;
       font-size: 3rem;
-      text-align: center;
       text-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .hero p {
-      margin: 0;
-      text-align: center;
-      font-size: 1.1rem;
-      color: #f3f3f3;
+      margin: 0 auto;
+      max-width: 900px;
+      font-size: 1.08rem;
+      color: #f5f5f5;
+      line-height: 1.6;
     }
 
     .session-bar, .account-bar, .status-box {
@@ -118,7 +128,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 390px 1fr;
       gap: 18px;
       align-items: start;
     }
@@ -240,6 +250,7 @@
       font-size: 2rem;
       font-weight: 900;
       color: #7dff71;
+      word-break: break-word;
     }
 
     .stat-label {
@@ -255,15 +266,6 @@
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(125,255,113,0.14);
       line-height: 1.7;
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
     }
 
     @media (max-width: 980px) {
@@ -307,6 +309,7 @@
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload</a>
         <a href="live.html" class="active">Go Live</a>
         <a href="watch.html">Watch Live</a>
         <a href="music.html">Music</a>
@@ -315,13 +318,14 @@
         <a href="artist.html">Artist</a>
         <a href="profile.html">Profile</a>
         <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Start Live Stream</h1>
-      <p>Enter your room name and host name, then start your live stream.</p>
+      <h1>Go Live</h1>
+      <p>Enter your room name and host name, then go live on Rich Bizness.</p>
 
       <div id="sessionBar" class="session-bar">Checking session...</div>
       <div id="accountBar" class="account-bar">Checking your account...</div>
@@ -338,7 +342,7 @@
         <input id="hostNameInput" type="text" value="richbizness-host" />
 
         <div class="button-grid">
-          <button id="startBtn" class="btn-green" type="button">Start Live</button>
+          <button id="startBtn" class="btn-green" type="button">WE LIT 🔥</button>
           <button id="endBtn" class="btn-red" type="button">End Live</button>
           <button id="copyRoomBtn" class="btn-dark" type="button">Copy Room Name</button>
           <button id="viewerBtn" class="btn-dark" type="button">Open Viewer Page</button>
@@ -346,7 +350,7 @@
           <button id="micBtn" class="btn-dark" type="button">Toggle Mic</button>
         </div>
 
-        <div id="statusBox" class="status-box">Ready.</div>
+        <div id="statusBox" class="status-box">Ready to get lit.</div>
 
         <div class="setup-box">
           <strong style="color:#7dff71;">Live Setup</strong><br>
@@ -362,7 +366,7 @@
 
         <div id="previewBox" class="preview-box">
           <div id="previewPlaceholder" class="preview-placeholder">
-            Your camera preview will show here when you start live.
+            Your camera preview will show here when you go live.
           </div>
         </div>
 
@@ -462,7 +466,7 @@
       }
 
       function setLiveOnUI(roomName, hostName) {
-        streamState.textContent = "LIVE";
+        streamState.textContent = "WE LIT 🔥";
         roomState.textContent = roomName;
         hostState.textContent = hostName;
       }
@@ -541,10 +545,26 @@
         return data;
       }
 
+      async function createNotification(userId, type, title, body, link = "#") {
+        const { error } = await supabase
+          .from("notifications")
+          .insert({
+            user_id: userId,
+            type,
+            title,
+            body,
+            link
+          });
+
+        if (error) {
+          console.error("Notification error:", error.message);
+        }
+      }
+
       async function startLive() {
         try {
           startBtn.disabled = true;
-          setStatus("Starting live...");
+          setStatus("Getting lit...");
 
           const user = await requireUser();
           if (!user) {
@@ -582,7 +602,7 @@
               viewerState.textContent = String(Math.max(0, room.numParticipants || 0));
             })
             .on(window.LivekitClient.RoomEvent.Disconnected, () => {
-              setStatus("Disconnected from live room.");
+              setStatus("Live disconnected.");
               resetStats();
               clearPreview();
             })
@@ -604,7 +624,15 @@
           showPreview(currentVideoTrack);
           setLiveOnUI(roomName, hostName);
           viewerState.textContent = String(Math.max(0, room.numParticipants || 0));
-          setStatus("You are live.");
+          setStatus("WE LIT 🔥");
+
+          await createNotification(
+            user.id,
+            "live",
+            "WE LIT 🔥",
+            "Your live stream has started.",
+            "live.html"
+          );
         } catch (error) {
           console.error(error);
           setStatus("Start live error: " + error.message);
@@ -644,32 +672,26 @@
       async function toggleCamera() {
         try {
           if (!currentVideoTrack) {
-            setStatus("Start live first.");
+            setStatus("Go live first.");
             return;
           }
 
-          const nextState = !currentVideoTrack.isMuted;
-          await currentVideoTrack.mute();
-          if (nextState === false) {
-            setStatus("Camera off.");
-          } else {
+          if (currentVideoTrack.isMuted) {
             await currentVideoTrack.unmute();
             setStatus("Camera on.");
+          } else {
+            await currentVideoTrack.mute();
+            setStatus("Camera off.");
           }
         } catch (error) {
-          if (currentVideoTrack) {
-            const muted = currentVideoTrack.isMuted;
-            setStatus(muted ? "Camera off." : "Camera on.");
-          } else {
-            setStatus("Camera toggle error: " + error.message);
-          }
+          setStatus("Camera toggle error: " + error.message);
         }
       }
 
       async function toggleMic() {
         try {
           if (!currentAudioTrack) {
-            setStatus("Start live first.");
+            setStatus("Go live first.");
             return;
           }
 
