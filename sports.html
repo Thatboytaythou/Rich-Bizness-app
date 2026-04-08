@@ -2,452 +2,648 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sports | Rich Bizness</title>
-
-  <link rel="icon" type="image/png" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-  <link rel="apple-touch-icon" href="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
       color: white;
-      background:
-        linear-gradient(rgba(0,0,0,0.62), rgba(0,0,0,0.62)),
-        url("images/brand/CA8038B5-C5A3-4A4A-A9F1-E4C10218E586.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
       min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.52), rgba(0,0,0,0.86)),
+        url("images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.8rem;
+      color: #7dff71;
+      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+    }
+
+    .brand img {
+      width: 54px;
+      height: 54px;
+      border-radius: 14px;
+      object-fit: cover;
+      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .nav {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 14px 24px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      gap: 16px;
       flex-wrap: wrap;
-    }
-
-    .logo-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    @keyframes glowPulse {
-      0% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-      50% {
-        box-shadow:
-          0 0 20px rgba(57,255,20,0.9),
-          0 0 40px rgba(57,255,20,0.6),
-          0 0 70px rgba(57,255,20,0.35);
-      }
-      100% {
-        box-shadow:
-          0 0 10px rgba(57,255,20,0.5),
-          0 0 20px rgba(57,255,20,0.25);
-      }
-    }
-
-    .logo img {
-      height: 48px;
-      width: 48px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 1px solid rgba(57,255,20,0.35);
-      animation: glowPulse 2s infinite;
-      background: rgba(0,0,0,0.35);
-    }
-
-    .brand-name {
-      font-size: 28px;
-      font-weight: 900;
-      color: #39ff14;
-      text-shadow:
-        0 0 8px rgba(57,255,20,0.5),
-        0 0 18px rgba(57,255,20,0.3);
-    }
-
-    .nav-links {
-      display: flex;
       gap: 10px;
-      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .nav-links a {
-      color: white;
+    .nav a, .nav button {
       text-decoration: none;
-      font-size: 14px;
+      color: white;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
       font-weight: 700;
-      padding: 8px 12px;
-      border-radius: 10px;
-      transition: 0.25s ease;
-      background: rgba(0,0,0,0.18);
+      cursor: pointer;
     }
 
-    .nav-links a:hover,
-    .nav-links a.active {
-      color: #39ff14;
-      background: rgba(57,255,20,0.10);
-      box-shadow: 0 0 12px rgba(57,255,20,0.25);
+    .nav a.active {
+      color: #7dff71;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      border-color: rgba(125,255,113,0.28);
     }
 
-    .container {
-      max-width: 1320px;
-      margin: 0 auto;
-      padding: 80px 20px 40px;
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
     }
 
     .hero {
+      padding: 24px;
+      border-radius: 24px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.18);
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
       text-align: center;
-      margin-bottom: 36px;
     }
 
     .hero h1 {
-      font-size: 3.2rem;
-      margin: 0 0 14px;
+      margin: 0 0 10px;
       color: #7dff71;
-      text-shadow:
-        0 0 12px rgba(57,255,20,0.45),
-        0 0 25px rgba(57,255,20,0.20);
+      font-size: 3rem;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .hero p {
-      max-width: 760px;
-      margin: 0 auto 28px;
-      font-size: 1.1rem;
+      margin: 0 auto;
+      max-width: 900px;
+      font-size: 1.08rem;
+      color: #f5f5f5;
       line-height: 1.6;
-      color: rgba(255,255,255,0.92);
     }
 
-    .button-row {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 14px;
+    .session-bar, .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.2);
+      background: rgba(125,255,113,0.08);
+      font-weight: 700;
     }
 
-    .btn {
-      display: inline-block;
-      padding: 15px 26px;
-      background: #39ff14;
-      color: black;
-      border-radius: 12px;
-      font-weight: 900;
-      text-decoration: none;
-      transition: 0.25s ease;
-      box-shadow:
-        0 0 12px rgba(57,255,20,0.35),
-        0 0 24px rgba(57,255,20,0.18);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px) scale(1.03);
-      background: #7dff71;
-      box-shadow:
-        0 0 18px rgba(57,255,20,0.65),
-        0 0 36px rgba(57,255,20,0.45),
-        0 0 60px rgba(57,255,20,0.20);
-    }
-
-    .section-title {
-      font-size: 1.8rem;
-      color: #7dff71;
-      margin: 30px 0 18px;
-      text-shadow: 0 0 10px rgba(57,255,20,0.2);
-    }
-
-    .featured-grid {
+    .grid {
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 22px;
-      margin-bottom: 28px;
-    }
-
-    .glass-card {
-      background: rgba(0,0,0,0.58);
-      border: 1px solid rgba(57,255,20,0.16);
-      border-radius: 20px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
-    }
-
-    .hero-panel {
-      min-height: 320px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      background:
-        linear-gradient(rgba(0,0,0,0.20), rgba(0,0,0,0.72)),
-        url("images/brand/CA8038B5-C5A3-4A4A-A9F1-E4C10218E586.png");
-      background-size: cover;
-      background-position: center;
-    }
-
-    .hero-panel h2 {
-      margin: 0 0 10px;
-      color: #7dff71;
-      font-size: 2rem;
-    }
-
-    .hero-panel p {
-      margin: 0 0 14px;
-      line-height: 1.6;
-      color: rgba(255,255,255,0.9);
-      max-width: 520px;
-    }
-
-    .side-stats {
-      display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 390px 1fr;
       gap: 18px;
-    }
-
-    .stat-box {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 16px;
-      padding: 20px;
-      text-align: center;
-    }
-
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #39ff14;
-      margin-bottom: 6px;
-    }
-
-    .stat-label {
-      font-size: 13px;
-      color: rgba(255,255,255,0.84);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 22px;
-      margin-top: 12px;
+      align-items: start;
     }
 
     .card {
-      background: rgba(0,0,0,0.58);
-      border: 1px solid rgba(57,255,20,0.16);
-      padding: 24px 20px;
-      border-radius: 18px;
-      text-align: center;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 22px;
+      padding: 18px;
       backdrop-filter: blur(10px);
-      box-shadow:
-        0 0 12px rgba(0,0,0,0.3),
-        0 0 18px rgba(57,255,20,0.08);
-      transition: 0.25s ease;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(57,255,20,0.38);
-      box-shadow:
-        0 0 20px rgba(57,255,20,0.14),
-        0 0 40px rgba(57,255,20,0.10);
-    }
-
-    .card h3 {
+    .card h2 {
+      margin-top: 0;
       color: #7dff71;
+      font-size: 2rem;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      font-weight: 700;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input[type="file"] {
+      padding: 12px;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button, .link-btn {
+      display: inline-block;
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn-green {
+      background: #7dff71;
+      color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+    }
+
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .feed-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .feature-banner {
+      min-height: 260px;
+      border-radius: 24px;
+      padding: 24px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.82)),
+        url("images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png") center center / cover no-repeat;
+      border: 1px solid rgba(125,255,113,0.18);
+      display: flex;
+      align-items: end;
+    }
+
+    .feature-banner h2 {
+      margin: 0 0 10px;
+      font-size: 2.5rem;
+      color: #7dff71;
+      text-shadow: 0 0 18px rgba(125,255,113,0.35);
+    }
+
+    .feature-banner p {
+      margin: 0;
+      max-width: 760px;
+      line-height: 1.7;
+      color: #f3f3f3;
+    }
+
+    .posts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .post-card {
+      border-radius: 20px;
+      padding: 16px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.15);
+    }
+
+    .media-wrap {
+      width: 100%;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .media-wrap img,
+    .media-wrap video {
+      width: 100%;
+      max-height: 380px;
+      object-fit: cover;
+      display: block;
+      background: black;
+    }
+
+    .post-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #7dff71;
+      margin-bottom: 6px;
+    }
+
+    .post-meta {
+      font-size: 0.95rem;
+      color: #f1f1f1;
+      opacity: 0.92;
+      line-height: 1.6;
       margin-bottom: 10px;
     }
 
-    .card p {
-      margin: 0 0 14px;
-      color: rgba(255,255,255,0.88);
-      line-height: 1.5;
-      font-size: 14px;
+    .post-caption {
+      line-height: 1.7;
+      color: #f5f5f5;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .card a {
-      display: inline-block;
-      padding: 10px 16px;
-      border-radius: 10px;
-      background: #39ff14;
-      color: #000;
-      font-weight: 800;
-      text-decoration: none;
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .upload-panel {
-      margin-top: 30px;
-    }
-
-    .upload-panel h2 {
-      margin-top: 0;
-      color: #7dff71;
-    }
-
-    .upload-panel p {
-      color: rgba(255,255,255,0.9);
-      line-height: 1.6;
-      margin-bottom: 18px;
-    }
-
-    .footer-space {
-      height: 30px;
-    }
-
-    @media (max-width: 1024px) {
-      .featured-grid {
+    @media (max-width: 1080px) {
+      .grid {
         grid-template-columns: 1fr;
       }
-    }
 
-    @media (max-width: 700px) {
+      .posts-grid {
+        grid-template-columns: 1fr;
+      }
+
       .hero h1 {
         font-size: 2.2rem;
       }
 
+      .feature-banner h2 {
+        font-size: 2rem;
+      }
+    }
+
+    @media (max-width: 560px) {
       .button-row {
-        flex-direction: column;
-        align-items: center;
+        grid-template-columns: 1fr;
       }
 
-      .btn {
-        width: 100%;
-        max-width: 300px;
-        text-align: center;
+      .brand {
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
 <body>
-
-  <div class="nav">
-    <div class="logo-wrap">
-      <div class="logo">
-        <img src="images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness Logo">
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png" alt="Rich Bizness Sports">
+        <span>Rich Bizness</span>
       </div>
-      <div class="brand-name">Rich Bizness</div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload</a>
+        <a href="live.html">Go Live</a>
+        <a href="watch.html">Watch Live</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html" class="active">Sports</a>
+        <a href="artist.html">Artist</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
     </div>
 
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="live.html">Go Live</a>
-      <a href="watch.html">Watch Live</a>
-      <a href="music.html">Music</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="sports.html" class="active">Sports</a>
-      <a href="artist.html">Artist</a>
-      <a href="profile.html">Profile</a>
-      <a href="messages.html">Messages</a>
-    </div>
-  </div>
-
-  <div class="container">
     <div class="hero">
-      <h1>Sports Zone</h1>
+      <h1>Sports Hub</h1>
       <p>
-        Upload highlights, post training clips, stream live events, and build your sports brand with one platform made for creators and athletes.
+        Upload sports highlights, player moments, training clips, team content, and fan energy.
+        Turn Rich Bizness into a full sports content platform too.
       </p>
-
-      <div class="button-row">
-        <a href="upload-sports.html" class="btn">Upload Sports</a>
-        <a href="live.html" class="btn">Go Live</a>
-        <a href="watch.html" class="btn">Watch Live</a>
-      </div>
+      <div id="sessionBar" class="session-bar">Checking session...</div>
     </div>
 
-    <div class="featured-grid">
-      <div class="glass-card hero-panel">
-        <h2>Featured Sports Content</h2>
-        <p>
-          Showcase top highlights, training sessions, sports commentary, behind-the-scenes footage, and live event energy.
-        </p>
-        <a href="upload-sports.html" class="btn" style="width:max-content;">Post Highlight</a>
-      </div>
+    <div class="grid">
+      <div class="card">
+        <h2>Upload Sports Post</h2>
 
-      <div class="side-stats">
-        <div class="stat-box">
-          <div class="stat-number">GAME ON</div>
-          <div class="stat-label">Sports Energy</div>
+        <label for="titleInput">Post Title</label>
+        <input id="titleInput" type="text" placeholder="Game Winning Play" />
+
+        <label for="athleteInput">Athlete Name</label>
+        <input id="athleteInput" type="text" placeholder="Tayben Holmes" />
+
+        <label for="teamInput">Team Name</label>
+        <input id="teamInput" type="text" placeholder="Rich Bizness Squad" />
+
+        <label for="sportInput">Sport Name</label>
+        <input id="sportInput" type="text" placeholder="Football / Basketball / Boxing / Training" />
+
+        <label for="mediaFileInput">Sports Media File</label>
+        <input id="mediaFileInput" type="file" accept="image/*,video/*" />
+
+        <label for="captionInput">Caption</label>
+        <textarea id="captionInput" placeholder="Talk about the highlight, the game, or the moment."></textarea>
+
+        <div class="button-row">
+          <button id="saveBtn" class="btn-green" type="button">Upload Sports Post</button>
+          <button id="refreshBtn" class="btn-dark" type="button">Refresh Feed</button>
+          <a href="live.html" class="link-btn btn-dark">Go Live</a>
+          <a href="watch.html?room=richbizness-live-room" class="link-btn btn-dark">Watch Live</a>
         </div>
 
-        <div class="stat-box">
-          <div class="stat-number">LIVE</div>
-          <div class="stat-label">Event Ready</div>
+        <div id="statusBox" class="status-box">Sports page ready.</div>
+      </div>
+
+      <div class="feed-shell">
+        <div class="feature-banner">
+          <div>
+            <h2>Build The Sports Side</h2>
+            <p>
+              Post sports highlights, athlete content, team moments, and fan energy.
+              This gives Rich Bizness a real sports lane with the same strong brand feel.
+            </p>
+          </div>
         </div>
 
-        <div class="stat-box">
-          <div class="stat-number">PRO</div>
-          <div class="stat-label">Athlete Brand</div>
+        <div id="postsGrid" class="posts-grid">
+          <div class="empty-state">Loading sports posts...</div>
         </div>
-      </div>
-    </div>
-
-    <div class="section-title">Sports Features</div>
-    <div class="cards">
-      <div class="card">
-        <h3>🏀 Highlight Uploads</h3>
-        <p>Post top plays, workout clips, game footage, and sports moments.</p>
-        <a href="upload-sports.html">Upload Now</a>
-      </div>
-
-      <div class="card">
-        <h3>📡 Live Events</h3>
-        <p>Go live for games, training sessions, commentary, and event coverage.</p>
-        <a href="live.html">Start Live</a>
-      </div>
-
-      <div class="card">
-        <h3>👀 Watch Streams</h3>
-        <p>Let viewers tap in and watch your live sports broadcasts in real time.</p>
-        <a href="watch.html">Watch Now</a>
-      </div>
-
-      <div class="card">
-        <h3>💬 Fan Connection</h3>
-        <p>Build community and keep supporters engaged through updates and messages.</p>
-        <a href="messages.html">Open Messages</a>
-      </div>
-    </div>
-
-    <div class="glass-card upload-panel">
-      <h2>Build Your Sports Brand</h2>
-      <p>
-        This section is for athletes, trainers, teams, sports creators, and highlight channels.
-        Upload content, stream events, and connect your sports identity back to your main profile and artist page.
-      </p>
-
-      <div class="button-row" style="justify-content:flex-start;">
-        <a href="upload-sports.html" class="btn">Upload Sports</a>
-        <a href="profile.html" class="btn">Open Profile</a>
-        <a href="artist.html" class="btn">Open Artist Page</a>
       </div>
     </div>
   </div>
 
-  <div class="footer-space"></div>
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
+      if (!window.supabase) {
+        throw new Error("Supabase CDN did not load.");
+      }
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const sessionBar = document.getElementById("sessionBar");
+      const statusBox = document.getElementById("statusBox");
+
+      const titleInput = document.getElementById("titleInput");
+      const athleteInput = document.getElementById("athleteInput");
+      const teamInput = document.getElementById("teamInput");
+      const sportInput = document.getElementById("sportInput");
+      const mediaFileInput = document.getElementById("mediaFileInput");
+      const captionInput = document.getElementById("captionInput");
+      const saveBtn = document.getElementById("saveBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const postsGrid = document.getElementById("postsGrid");
+
+      let currentUser = null;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+        console.log(message);
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      async function requireUser() {
+        sessionBar.textContent = "Checking session...";
+        const { data, error } = await supabase.auth.getSession();
+
+        if (error) throw error;
+
+        const user = data?.session?.user || null;
+        if (!user) {
+          userChip.textContent = "No session";
+          sessionBar.textContent = "No active session. Redirecting to auth...";
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
+        }
+
+        currentUser = user;
+        userChip.textContent = user.email || "Signed in";
+        sessionBar.textContent = "Session active. Sports unlocked.";
+        return user;
+      }
+
+      function renderPosts(posts) {
+        if (!posts || posts.length === 0) {
+          postsGrid.innerHTML = `<div class="empty-state">No sports posts yet.</div>`;
+          return;
+        }
+
+        postsGrid.innerHTML = posts.map((post) => {
+          const mediaBlock = post.media_type === "video"
+            ? `<div class="media-wrap"><video controls preload="metadata" src="${escapeHtml(post.media_url)}"></video></div>`
+            : `<div class="media-wrap"><img src="${escapeHtml(post.media_url)}" alt="sports media" /></div>`;
+
+          return `
+            <div class="post-card">
+              ${mediaBlock}
+              <div class="post-title">${escapeHtml(post.title || "Untitled Post")}</div>
+              <div class="post-meta">
+                Athlete: ${escapeHtml(post.athlete_name || "--")}<br>
+                Team: ${escapeHtml(post.team_name || "--")}<br>
+                Sport: ${escapeHtml(post.sport_name || "--")}<br>
+                Posted by: ${escapeHtml(post.user_email || "--")}
+              </div>
+              <div class="post-caption">${escapeHtml(post.caption || "No caption yet.")}</div>
+            </div>
+          `;
+        }).join("");
+      }
+
+      async function loadPosts() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          setStatus("Loading sports posts...");
+
+          const { data, error } = await supabase
+            .from("sports_posts")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          renderPosts(data || []);
+          setStatus("Sports feed loaded.");
+        } catch (error) {
+          postsGrid.innerHTML = `<div class="empty-state">Load error: ${escapeHtml(error.message)}</div>`;
+          setStatus("Load error: " + error.message);
+        }
+      }
+
+      async function uploadSportsMedia(userId, file) {
+        const ext = (file.name.split(".").pop() || "").toLowerCase() || "bin";
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error } = await supabase.storage
+          .from("sports-media")
+          .upload(path, file, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        const { data } = supabase.storage
+          .from("sports-media")
+          .getPublicUrl(path);
+
+        return data?.publicUrl || "";
+      }
+
+      async function saveSportsPost() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const title = titleInput.value.trim();
+          const athleteName = athleteInput.value.trim();
+          const teamName = teamInput.value.trim();
+          const sportName = sportInput.value.trim();
+          const caption = captionInput.value.trim();
+          const file = mediaFileInput.files[0];
+
+          if (!title) {
+            throw new Error("Post title is required.");
+          }
+
+          if (!file) {
+            throw new Error("Choose a sports image or video first.");
+          }
+
+          const mediaType = file.type.startsWith("video/") ? "video" : "image";
+
+          setStatus("Uploading sports media...");
+          const mediaUrl = await uploadSportsMedia(user.id, file);
+
+          if (!mediaUrl) {
+            throw new Error("Media upload failed.");
+          }
+
+          setStatus("Saving sports post...");
+
+          const { error } = await supabase
+            .from("sports_posts")
+            .insert({
+              user_id: user.id,
+              user_email: user.email || "",
+              title,
+              athlete_name: athleteName,
+              team_name: teamName,
+              sport_name: sportName,
+              caption,
+              media_url: mediaUrl,
+              media_type: mediaType
+            });
+
+          if (error) throw error;
+
+          titleInput.value = "";
+          athleteInput.value = "";
+          teamInput.value = "";
+          sportInput.value = "";
+          mediaFileInput.value = "";
+          captionInput.value = "";
+
+          setStatus("Sports post uploaded.");
+          loadPosts();
+        } catch (error) {
+          setStatus("Upload error: " + error.message);
+        }
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      saveBtn.addEventListener("click", saveSportsPost);
+      refreshBtn.addEventListener("click", loadPosts);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        userChip.textContent = session?.user?.email || "No session";
+      });
+
+      requireUser()
+        .then(() => {
+          setStatus("Sports page ready.");
+          loadPosts();
+        })
+        .catch((error) => {
+          setStatus("Startup error: " + error.message);
+        });
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Sports Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
