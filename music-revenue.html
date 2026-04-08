@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Music Revenue | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.84)),
+        url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
+    }
+    .page { max-width: 1450px; margin: 0 auto; padding: 18px; }
+    .topbar, .hero, .panel {
+      background: rgba(0,0,0,.48);
+      border: 1px solid rgba(125,255,113,.18);
+      border-radius: 24px;
+      padding: 22px;
+      margin-bottom: 18px;
+      backdrop-filter: blur(10px);
+    }
+    .hero h1, .panel h2 { color: #7dff71; margin-top: 0; }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+    }
+    .stat-value { font-size: 2rem; font-weight: 900; color: #7dff71; }
+    .stat-label { margin-top: 6px; font-weight: 700; }
+    .list { display: grid; gap: 12px; }
+    .item {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .item-title { color: #7dff71; font-weight: 900; margin-bottom: 6px; }
+    .item-text { line-height: 1.6; color: #f1f1f1; }
+    .status {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(125,255,113,.08);
+      border: 1px solid rgba(125,255,113,.18);
+      font-weight: 700;
+    }
+    @media (max-width: 900px) { .stats { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a href="music.html" style="color:#7dff71;text-decoration:none;font-weight:900;">Music</a>
+      <a href="monetization.html" style="color:white;text-decoration:none;">Monetization</a>
+    </div>
+
+    <div class="hero">
+      <h1>Music Revenue Dashboard</h1>
+      <div id="statusBox" class="status">Loading revenue...</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div id="grossStat" class="stat-value">$0.00</div><div class="stat-label">Gross Music Revenue</div></div>
+      <div class="stat"><div id="streamsStat" class="stat-value">0</div><div class="stat-label">Qualified Streams</div></div>
+      <div class="stat"><div id="subsStat" class="stat-value">0</div><div class="stat-label">Active Subscribers</div></div>
+      <div class="stat"><div id="premiumSalesStat" class="stat-value">0</div><div class="stat-label">Premium Track Sales</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Earnings Ledger</h2>
+      <div id="earningsList" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    });
+
+    const statusBox = document.getElementById("statusBox");
+    const grossStat = document.getElementById("grossStat");
+    const streamsStat = document.getElementById("streamsStat");
+    const subsStat = document.getElementById("subsStat");
+    const premiumSalesStat = document.getElementById("premiumSalesStat");
+    const earningsList = document.getElementById("earningsList");
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+    }
+
+    function money(cents) {
+      return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+    }
+
+    function formatDate(value) {
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? "--" : d.toLocaleString();
+    }
+
+    async function loadDashboard() {
+      try {
+        setStatus("Loading revenue...");
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        const user = sessionData?.session?.user;
+        if (!user) {
+          window.location.href = "auth.html";
+          return;
+        }
+
+        const [earningsRes, streamsRes, subsRes, premiumSalesRes] = await Promise.all([
+          supabase.from("music_earnings").select("*").eq("artist_user_id", user.id).order("created_at", { ascending: false }),
+          supabase.from("music_streams").select("*", { count: "exact", head: true }).eq("artist_user_id", user.id).eq("is_paid_stream", true),
+          supabase.from("fan_subscriptions").select("*", { count: "exact", head: true }).eq("artist_user_id", user.id).eq("status", "active"),
+          supabase.from("premium_track_purchases").select("*", { count: "exact", head: true }).eq("artist_user_id", user.id).eq("status", "paid")
+        ]);
+
+        if (earningsRes.error) throw earningsRes.error;
+        if (streamsRes.error) throw streamsRes.error;
+        if (subsRes.error) throw subsRes.error;
+        if (premiumSalesRes.error) throw premiumSalesRes.error;
+
+        const earnings = earningsRes.data || [];
+        const gross = earnings.reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        grossStat.textContent = money(gross);
+        streamsStat.textContent = streamsRes.count || 0;
+        subsStat.textContent = subsRes.count || 0;
+        premiumSalesStat.textContent = premiumSalesRes.count || 0;
+
+        if (!earnings.length) {
+          earningsList.innerHTML = `<div class="item"><div class="item-text">No music earnings yet.</div></div>`;
+        } else {
+          earningsList.innerHTML = earnings.map(row => `
+            <div class="item">
+              <div class="item-title">${row.source_type || "earning"}</div>
+              <div class="item-text">
+                Gross: ${money(row.gross_cents)}<br>
+                Note: ${row.note || "--"}<br>
+                Created: ${formatDate(row.created_at)}
+              </div>
+            </div>
+          `).join("");
+        }
+
+        setStatus("Revenue dashboard loaded.");
+      } catch (error) {
+        setStatus("Dashboard error: " + error.message);
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
