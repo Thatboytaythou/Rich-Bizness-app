@@ -7,9 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -153,7 +151,7 @@
       font-weight: 700;
     }
 
-    input, textarea, select {
+    input, textarea {
       width: 100%;
       padding: 14px;
       border-radius: 12px;
@@ -162,6 +160,10 @@
       color: white;
       font-size: 16px;
       outline: none;
+    }
+
+    input[type="file"] {
+      padding: 12px;
     }
 
     textarea {
@@ -359,6 +361,7 @@
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="gallery.html">Gallery</a>
+        <a href="upload.html">Upload</a>
         <a href="live.html">Go Live</a>
         <a href="watch.html">Watch Live</a>
         <a href="music.html" class="active">Music</a>
@@ -374,8 +377,8 @@
     <div class="hero">
       <h1>Music Hub</h1>
       <p>
-        Upload your sound, showcase your catalog, and build an artist-first music section
-        inside Rich Bizness. This page gives your platform a real music home.
+        Upload your real audio files, add cover art, and build a real artist catalog
+        inside Rich Bizness.
       </p>
       <div id="sessionBar" class="session-bar">Checking session...</div>
     </div>
@@ -393,17 +396,17 @@
         <label for="genreInput">Genre</label>
         <input id="genreInput" type="text" placeholder="Hip-Hop / R&B / Drill / Multi" />
 
-        <label for="coverInput">Cover Image URL</label>
-        <input id="coverInput" type="text" placeholder="https://..." />
+        <label for="coverFileInput">Cover Image File</label>
+        <input id="coverFileInput" type="file" accept="image/*" />
 
-        <label for="audioInput">Audio File URL</label>
-        <input id="audioInput" type="text" placeholder="https://...mp3" />
+        <label for="audioFileInput">Audio File</label>
+        <input id="audioFileInput" type="file" accept="audio/*" />
 
         <label for="descriptionInput">Description</label>
         <textarea id="descriptionInput" placeholder="Say something about the song, the vibe, or the drop."></textarea>
 
         <div class="button-row">
-          <button id="saveBtn" class="btn-green" type="button">Save Track</button>
+          <button id="saveBtn" class="btn-green" type="button">Upload Track</button>
           <button id="refreshBtn" class="btn-dark" type="button">Refresh Music</button>
           <a href="profile.html" class="link-btn btn-dark">Open Profile</a>
           <a href="live.html" class="link-btn btn-dark">Go Live</a>
@@ -417,8 +420,8 @@
           <div>
             <h2>Turn The Platform Into A Label</h2>
             <p>
-              This section is where artists post songs, build catalogs, and connect their music to
-              live streams, fan growth, and creator identity across the whole Rich Bizness app.
+              Post official drops, previews, and music releases with real uploaded files,
+              then connect them back to your profile, live page, and fanbase.
             </p>
           </div>
         </div>
@@ -455,8 +458,8 @@
       const titleInput = document.getElementById("titleInput");
       const artistInput = document.getElementById("artistInput");
       const genreInput = document.getElementById("genreInput");
-      const coverInput = document.getElementById("coverInput");
-      const audioInput = document.getElementById("audioInput");
+      const coverFileInput = document.getElementById("coverFileInput");
+      const audioFileInput = document.getElementById("audioFileInput");
       const descriptionInput = document.getElementById("descriptionInput");
       const saveBtn = document.getElementById("saveBtn");
       const refreshBtn = document.getElementById("refreshBtn");
@@ -513,7 +516,7 @@
 
           const audio = track.audio_url
             ? `<audio controls preload="none" src="${escapeHtml(track.audio_url)}"></audio>`
-            : `<div class="track-meta" style="margin-top:10px;">No audio URL added yet.</div>`;
+            : `<div class="track-meta" style="margin-top:10px;">No audio file uploaded yet.</div>`;
 
           return `
             <div class="track-card">
@@ -558,6 +561,28 @@
         }
       }
 
+      async function uploadToBucket(bucketName, userId, file) {
+        if (!file) return "";
+
+        const ext = (file.name.split(".").pop() || "").toLowerCase() || "bin";
+        const path = `${userId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error } = await supabase.storage
+          .from(bucketName)
+          .upload(path, file, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        const { data } = supabase.storage
+          .from(bucketName)
+          .getPublicUrl(path);
+
+        return data?.publicUrl || "";
+      }
+
       async function saveTrack() {
         try {
           const user = await requireUser();
@@ -566,12 +591,26 @@
           const title = titleInput.value.trim();
           const artistName = artistInput.value.trim();
           const genre = genreInput.value.trim();
-          const coverUrl = coverInput.value.trim();
-          const audioUrl = audioInput.value.trim();
           const description = descriptionInput.value.trim();
+          const coverFile = coverFileInput.files[0];
+          const audioFile = audioFileInput.files[0];
 
           if (!title) {
             throw new Error("Track title is required.");
+          }
+
+          if (!audioFile) {
+            throw new Error("Choose an audio file first.");
+          }
+
+          setStatus("Uploading cover...");
+          const coverUrl = await uploadToBucket("music-covers", user.id, coverFile);
+
+          setStatus("Uploading audio...");
+          const audioUrl = await uploadToBucket("music-files", user.id, audioFile);
+
+          if (!audioUrl) {
+            throw new Error("Audio upload failed.");
           }
 
           setStatus("Saving track...");
@@ -594,14 +633,14 @@
           titleInput.value = "";
           artistInput.value = "";
           genreInput.value = "";
-          coverInput.value = "";
-          audioInput.value = "";
+          coverFileInput.value = "";
+          audioFileInput.value = "";
           descriptionInput.value = "";
 
-          setStatus("Track saved.");
+          setStatus("Track uploaded successfully.");
           loadTracks();
         } catch (error) {
-          setStatus("Save error: " + error.message);
+          setStatus("Upload error: " + error.message);
         }
       }
 
