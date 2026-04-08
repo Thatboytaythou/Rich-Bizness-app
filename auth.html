@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness Login</title>
+  <title>Auth | Rich Bizness</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -20,12 +20,12 @@
       padding: 24px;
       background:
         linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.88)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
-    .auth-shell {
+    .shell {
       width: 100%;
-      max-width: 760px;
+      max-width: 980px;
       background: rgba(0,0,0,0.55);
       border: 1px solid rgba(125,255,113,0.18);
       border-radius: 28px;
@@ -53,7 +53,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1.1fr 0.9fr;
       gap: 18px;
     }
 
@@ -89,9 +89,16 @@
 
     .button-row {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 16px;
+    }
+
+    .button-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
     }
 
     button {
@@ -121,7 +128,7 @@
       color: white;
     }
 
-    .status-box, .session-box {
+    .status-box, .session-box, .tip-box {
       margin-top: 16px;
       padding: 14px;
       border-radius: 14px;
@@ -150,6 +157,13 @@
       color: #7dff71;
     }
 
+    .small {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      opacity: 0.88;
+      line-height: 1.5;
+    }
+
     @media (max-width: 900px) {
       .grid {
         grid-template-columns: 1fr;
@@ -161,17 +175,18 @@
     }
 
     @media (max-width: 560px) {
-      .button-row {
+      .button-row,
+      .button-row-3 {
         grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="auth-shell">
-    <h1 class="title">Rich Bizness Login</h1>
+  <div class="shell">
+    <h1 class="title">Rich Bizness Auth</h1>
     <p class="subtitle">
-      Sign up, log in, stay signed in, and lock your account into the Rich Bizness platform.
+      Sign up, log in, reset your password, and lock your creator account into the Rich Bizness platform.
     </p>
 
     <div class="grid">
@@ -187,6 +202,11 @@
         <div class="button-row">
           <button id="signUpBtn" class="btn-green" type="button">Sign Up</button>
           <button id="loginBtn" class="btn-dark" type="button">Login</button>
+        </div>
+
+        <div class="button-row-3">
+          <button id="resetBtn" class="btn-dark" type="button">Reset Password</button>
+          <button id="goProfileBtn" class="btn-dark" type="button">Go Profile</button>
           <button id="logoutBtn" class="btn-red" type="button">Log Out</button>
         </div>
 
@@ -195,27 +215,34 @@
       </div>
 
       <div class="card">
-        <h2>Auth Setup Notes</h2>
+        <h2>Auth Notes</h2>
 
         <div class="tip-list">
           <div class="tip-item">
-            <strong>Step 1</strong><br>
-            Paste your real Supabase project URL and publishable anon key into this file.
+            <strong>Sign Up</strong><br>
+            Creates a Supabase auth user and upserts a profile row so your app pages can load your creator data.
           </div>
 
           <div class="tip-item">
-            <strong>Step 2</strong><br>
-            In Supabase, keep Email provider enabled under Authentication.
+            <strong>Login</strong><br>
+            Signs you in and redirects you to `profile.html` unless a `?next=` URL was provided.
           </div>
 
           <div class="tip-item">
-            <strong>Step 3</strong><br>
-            This page creates a profile row after signup or login so your profile, messages, followers, and artist page can work.
+            <strong>Reset Password</strong><br>
+            Sends a reset email using the current site origin as the redirect URL.
           </div>
 
           <div class="tip-item">
-            <strong>Step 4</strong><br>
-            After login, you can route users to profile, upload, live, watch, artist, or messages pages.
+            <strong>Email Confirm</strong><br>
+            If confirmations are enabled in Supabase, sign up may require checking your email before full login.
+          </div>
+        </div>
+
+        <div class="tip-box">
+          Recommended next pages:
+          <div class="small">
+            `profile.html` • `artist.html` • `feed.html` • `messages.html` • `live.html`
           </div>
         </div>
       </div>
@@ -243,6 +270,8 @@
       const passwordInput = document.getElementById("passwordInput");
       const signUpBtn = document.getElementById("signUpBtn");
       const loginBtn = document.getElementById("loginBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const goProfileBtn = document.getElementById("goProfileBtn");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
       const sessionBox = document.getElementById("sessionBox");
@@ -250,6 +279,15 @@
       function setStatus(message) {
         statusBox.textContent = message;
         console.log(message);
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
       function setSessionBox(user) {
@@ -264,13 +302,21 @@
         `;
       }
 
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+      function getNextPath() {
+        const params = new URLSearchParams(window.location.search);
+        const next = params.get("next");
+
+        if (!next) return "profile.html";
+
+        if (next.startsWith("http://") || next.startsWith("https://")) {
+          return "profile.html";
+        }
+
+        if (next.startsWith("/")) {
+          return next;
+        }
+
+        return next;
       }
 
       async function upsertProfile(user) {
@@ -290,10 +336,7 @@
           .from("profiles")
           .upsert(profilePayload, { onConflict: "id" });
 
-        if (error) {
-          console.error("Profile upsert error:", error.message);
-          throw error;
-        }
+        if (error) throw error;
       }
 
       async function refreshSession() {
@@ -332,9 +375,14 @@
 
           setStatus("Creating account...");
 
+          const redirectTo = `${window.location.origin}${window.location.pathname}`;
+
           const { data, error } = await supabase.auth.signUp({
             email,
-            password
+            password,
+            options: {
+              emailRedirectTo: redirectTo
+            }
           });
 
           if (error) throw error;
@@ -354,6 +402,7 @@
 
           if (session) {
             setStatus("Account created and signed in.");
+            window.location.href = getNextPath();
           } else {
             setStatus("Account created. Check your email if confirmation is required.");
           }
@@ -388,8 +437,33 @@
 
           setSessionBox(user);
           setStatus("Logged in.");
+          window.location.href = getNextPath();
         } catch (error) {
           setStatus("Login error: " + error.message);
+        }
+      }
+
+      async function resetPassword() {
+        try {
+          const email = emailInput.value.trim();
+
+          if (!email) {
+            throw new Error("Enter your email first.");
+          }
+
+          setStatus("Sending reset email...");
+
+          const redirectTo = `${window.location.origin}${window.location.pathname}`;
+
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo
+          });
+
+          if (error) throw error;
+
+          setStatus("Reset email sent. Check your inbox.");
+        } catch (error) {
+          setStatus("Reset error: " + error.message);
         }
       }
 
@@ -406,8 +480,19 @@
         }
       }
 
+      async function goProfile() {
+        const user = await refreshSession();
+        if (!user) {
+          setStatus("Log in first.");
+          return;
+        }
+        window.location.href = "profile.html";
+      }
+
       signUpBtn.addEventListener("click", signUp);
       loginBtn.addEventListener("click", login);
+      resetBtn.addEventListener("click", resetPassword);
+      goProfileBtn.addEventListener("click", goProfile);
       logoutBtn.addEventListener("click", logout);
 
       passwordInput.addEventListener("keydown", (event) => {
