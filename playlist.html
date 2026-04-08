@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Playlist View | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --green: #7dff71;
+      --bg: rgba(0,0,0,0.48);
+      --border: rgba(125,255,113,0.18);
+      --soft: rgba(255,255,255,0.08);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      padding-bottom: 120px;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar, .hero, .panel, .player-shell {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+    }
+
+    .brand {
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .hero, .panel {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .cover {
+      width: 100%;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 18px;
+      background: black;
+    }
+
+    .cover-fallback {
+      width: 100%;
+      height: 320px;
+      border-radius: 18px;
+      background: rgba(125,255,113,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-size: 2rem;
+      font-weight: 900;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 3rem;
+    }
+
+    .subtle {
+      color: #f1f1f1;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button, .btn {
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      display: inline-block;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: black;
+    }
+
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.20);
+      font-weight: 700;
+    }
+
+    .tracks {
+      display: grid;
+      gap: 12px;
+    }
+
+    .track {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .track-cover {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: black;
+    }
+
+    .track-fallback {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      background: rgba(125,255,113,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .track-title {
+      color: var(--green);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .track-text {
+      color: #f1f1f1;
+      line-height: 1.55;
+    }
+
+    .track-actions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .empty-box {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .player-shell {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 12px;
+      padding: 14px;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .player-cover {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      object-fit: cover;
+      background: black;
+    }
+
+    .player-cover-fallback {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      background: rgba(125,255,113,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .player-title {
+      color: var(--green);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .player-meta {
+      color: #f1f1f1;
+      margin-bottom: 8px;
+    }
+
+    .player-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .player-controls audio {
+      width: min(520px, 100%);
+    }
+
+    @media (max-width: 1000px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+      .track {
+        grid-template-columns: 1fr;
+      }
+      .player-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">Rich Bizness Playlist</div>
+      <div class="nav">
+        <a href="music.html">Music</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="upload-music.html">Upload Music</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-grid">
+        <div id="coverWrap">
+          <div class="cover-fallback">RB</div>
+        </div>
+
+        <div>
+          <h1 id="playlistTitle">Loading playlist...</h1>
+          <div id="playlistMeta" class="subtle">Loading playlist details...</div>
+
+          <div class="row">
+            <button id="playAllBtn" class="btn-green" type="button">Play All</button>
+            <button id="refreshBtn" class="btn-dark" type="button">Refresh Playlist</button>
+          </div>
+
+          <div id="ownerTools" class="panel" style="margin-top:16px; display:none;">
+            <h2 style="font-size:1.4rem;">Owner Tools</h2>
+
+            <label for="trackSelect">Add Track To Playlist</label>
+            <select id="trackSelect">
+              <option value="">Choose a track</option>
+            </select>
+
+            <div class="row">
+              <button id="addTrackBtn" class="btn-green" type="button">Add Track</button>
+              <button id="refreshTrackListBtn" class="btn-dark" type="button">Reload Track List</button>
+            </div>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading playlist...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Tracks</h2>
+      <div id="tracksWrap" class="tracks"></div>
+    </div>
+  </div>
+
+  <div class="player-shell">
+    <div class="player-grid">
+      <div id="playerCoverWrap">
+        <div class="player-cover-fallback">RB</div>
+      </div>
+
+      <div>
+        <div id="playerTitle" class="player-title">Nothing playing</div>
+        <div id="playerMeta" class="player-meta">Play a track from this playlist.</div>
+
+        <div class="player-controls">
+          <button id="prevBtn" class="btn-dark" type="button">Prev</button>
+          <button id="nextBtn" class="btn-dark" type="button">Next</button>
+          <audio id="globalAudio" controls preload="none"></audio>
+        </div>
+      </div>
+
+      <div>
+        <button id="queueCountBtn" class="btn-dark" type="button">Queue 0</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+
+      const playlistTitle = document.getElementById("playlistTitle");
+      const playlistMeta = document.getElementById("playlistMeta");
+      const coverWrap = document.getElementById("coverWrap");
+      const statusBox = document.getElementById("statusBox");
+      const tracksWrap = document.getElementById("tracksWrap");
+
+      const playAllBtn = document.getElementById("playAllBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
+
+      const ownerTools = document.getElementById("ownerTools");
+      const trackSelect = document.getElementById("trackSelect");
+      const addTrackBtn = document.getElementById("addTrackBtn");
+      const refreshTrackListBtn = document.getElementById("refreshTrackListBtn");
+
+      const playerCoverWrap = document.getElementById("playerCoverWrap");
+      const playerTitleBox = document.getElementById("playerTitle");
+      const playerMetaBox = document.getElementById("playerMeta");
+      const globalAudio = document.getElementById("globalAudio");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const queueCountBtn = document.getElementById("queueCountBtn");
+
+      let currentUser = null;
+      let currentPlaylist = null;
+      let currentTracks = [];
+      let currentIndex = -1;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function getPlaylistId() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("id");
+      }
+
+      async function loadSession() {
+        const { data } = await supabase.auth.getSession();
+        currentUser = data?.session?.user || null;
+      }
+
+      function renderPlayer(track) {
+        if (!track) {
+          playerCoverWrap.innerHTML = `<div class="player-cover-fallback">RB</div>`;
+          playerTitleBox.textContent = "Nothing playing";
+          playerMetaBox.textContent = "Play a track from this playlist.";
+          globalAudio.removeAttribute("src");
+          globalAudio.load();
+          return;
+        }
+
+        playerCoverWrap.innerHTML = track.cover_url
+          ? `<img class="player-cover" src="${escapeHtml(track.cover_url)}" alt="cover" />`
+          : `<div class="player-cover-fallback">RB</div>`;
+
+        playerTitleBox.textContent = track.title || "Untitled Track";
+        playerMetaBox.textContent = `${track.artist_name || "Unknown Artist"} • ${track.genre || "--"}`;
+        globalAudio.src = track.audio_url || "";
+        globalAudio.load();
+      }
+
+      async function playTrack(index) {
+        if (index < 0 || index >= currentTracks.length) return;
+        currentIndex = index;
+        const track = currentTracks[index];
+        renderPlayer(track);
+
+        try {
+          await globalAudio.play();
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function playNext() {
+        if (!currentTracks.length) return;
+        const next = (currentIndex + 1) % currentTracks.length;
+        playTrack(next);
+      }
+
+      function playPrev() {
+        if (!currentTracks.length) return;
+        const prev = (currentIndex - 1 + currentTracks.length) % currentTracks.length;
+        playTrack(prev);
+      }
+
+      async function loadTrackSelect() {
+        if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) return;
+
+        const { data, error } = await supabase
+          .from("music_tracks")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          console.error(error.message);
+          return;
+        }
+
+        const existingIds = new Set(currentTracks.map(track => Number(track.id)));
+
+        trackSelect.innerHTML = `<option value="">Choose a track</option>` + (data || [])
+          .filter(track => !existingIds.has(Number(track.id)))
+          .map(track => `<option value="${track.id}">${escapeHtml(track.title || "Untitled")} — ${escapeHtml(track.artist_name || "Unknown")}</option>`)
+          .join("");
+      }
+
+      async function addTrackToPlaylist() {
+        try {
+          if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) {
+            throw new Error("Only the playlist owner can add tracks.");
+          }
+
+          const trackId = Number(trackSelect.value);
+          if (!trackId) throw new Error("Choose a track first.");
+
+          const sortOrder = currentTracks.length + 1;
+
+          const { error } = await supabase
+            .from("playlist_tracks")
+            .insert({
+              playlist_id: currentPlaylist.id,
+              track_id: trackId,
+              sort_order: sortOrder
+            });
+
+          if (error) throw error;
+
+          setStatus("Track added to playlist.");
+          await loadPlaylist();
+        } catch (error) {
+          setStatus("Add track error: " + error.message);
+        }
+      }
+
+      async function removeTrackFromPlaylist(playlistTrackId) {
+        try {
+          if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) {
+            throw new Error("Only the playlist owner can remove tracks.");
+          }
+
+          const { error } = await supabase
+            .from("playlist_tracks")
+            .delete()
+            .eq("id", playlistTrackId);
+
+          if (error) throw error;
+
+          setStatus("Track removed.");
+          await loadPlaylist();
+        } catch (error) {
+          setStatus("Remove track error: " + error.message);
+        }
+      }
+
+      async function loadPlaylist() {
+        try {
+          setStatus("Loading playlist...");
+          await loadSession();
+
+          const playlistId = getPlaylistId();
+          if (!playlistId) throw new Error("Missing playlist id in URL.");
+
+          const { data: playlist, error: playlistError } = await supabase
+            .from("playlists")
+            .select("*")
+            .eq("id", playlistId)
+            .maybeSingle();
+
+          if (playlistError) throw playlistError;
+          if (!playlist) throw new Error("Playlist not found.");
+
+          currentPlaylist = playlist;
+
+          playlistTitle.textContent = playlist.title || "Untitled Playlist";
+          playlistMeta.textContent = `${playlist.description || "No description yet."} • ${playlist.is_public ? "Public" : "Private"}`;
+
+          coverWrap.innerHTML = playlist.cover_url
+            ? `<img class="cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
+            : `<div class="cover-fallback">RB</div>`;
+
+          ownerTools.style.display = currentUser && currentPlaylist.user_id === currentUser.id ? "block" : "none";
+
+          const { data: playlistTracks, error: playlistTracksError } = await supabase
+            .from("playlist_tracks")
+            .select("*")
+            .eq("playlist_id", playlist.id)
+            .order("sort_order", { ascending: true });
+
+          if (playlistTracksError) throw playlistTracksError;
+
+          const relationRows = playlistTracks || [];
+          const trackIds = relationRows.map(row => row.track_id);
+
+          if (!trackIds.length) {
+            currentTracks = [];
+            queueCountBtn.textContent = "Queue 0";
+            tracksWrap.innerHTML = `<div class="empty-box">No tracks in this playlist yet.</div>`;
+            await loadTrackSelect();
+            setStatus("Playlist loaded.");
+            return;
+          }
+
+          const { data: tracks, error: tracksError } = await supabase
+            .from("music_tracks")
+            .select("*")
+            .in("id", trackIds);
+
+          if (tracksError) throw tracksError;
+
+          const map = new Map((tracks || []).map(track => [Number(track.id), track]));
+          currentTracks = relationRows
+            .map(row => {
+              const track = map.get(Number(row.track_id));
+              return track ? { ...track, _playlistTrackId: row.id } : null;
+            })
+            .filter(Boolean);
+
+          queueCountBtn.textContent = `Queue ${currentTracks.length}`;
+
+          tracksWrap.innerHTML = currentTracks.map((track, index) => `
+            <div class="track">
+              <div>
+                ${
+                  track.cover_url
+                    ? `<img class="track-cover" src="${escapeHtml(track.cover_url)}" alt="cover" />`
+                    : `<div class="track-fallback">RB</div>`
+                }
+              </div>
+
+              <div>
+                <div class="track-title">${escapeHtml(track.title || "Untitled Track")}</div>
+                <div class="track-text">
+                  ${escapeHtml(track.artist_name || "Unknown Artist")} • ${escapeHtml(track.genre || "--")}<br>
+                  ${escapeHtml(track.description || "")}
+                </div>
+              </div>
+
+              <div class="track-actions">
+                <button class="btn-green" type="button" onclick="window.__playPlaylistTrack(${index})">Play</button>
+                <a class="btn btn-dark" href="artist.html?id=${encodeURIComponent(track.user_id || "")}">Artist</a>
+                ${
+                  currentUser && currentPlaylist.user_id === currentUser.id
+                    ? `<button class="btn-dark" type="button" onclick="window.__removeTrack(${track._playlistTrackId})">Remove</button>`
+                    : ``
+                }
+              </div>
+            </div>
+          `).join("");
+
+          await loadTrackSelect();
+          setStatus("Playlist loaded.");
+        } catch (error) {
+          setStatus("Playlist error: " + error.message);
+          tracksWrap.innerHTML = `<div class="empty-box">Could not load playlist.</div>`;
+        }
+      }
+
+      window.__playPlaylistTrack = (index) => playTrack(index);
+      window.__removeTrack = (playlistTrackId) => removeTrackFromPlaylist(playlistTrackId);
+
+      playAllBtn.addEventListener("click", () => {
+        if (!currentTracks.length) {
+          setStatus("No tracks in this playlist yet.");
+          return;
+        }
+        playTrack(0);
+      });
+
+      refreshBtn.addEventListener("click", loadPlaylist);
+      addTrackBtn.addEventListener("click", addTrackToPlaylist);
+      refreshTrackListBtn.addEventListener("click", loadTrackSelect);
+      prevBtn.addEventListener("click", playPrev);
+      nextBtn.addEventListener("click", playNext);
+      globalAudio.addEventListener("ended", playNext);
+
+      loadPlaylist();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;background:#111;color:white;min-height:100vh;">
+          <h1 style="color:#7dff71;">Playlist View Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
