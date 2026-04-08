@@ -5,91 +5,221 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness Login</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    * { box-sizing: border-box; }
+
     body {
       margin: 0;
+      min-height: 100vh;
       font-family: Arial, sans-serif;
-      background: #0b0f0c;
       color: white;
       display: flex;
-      justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      justify-content: center;
+      padding: 24px;
+      background:
+        linear-gradient(rgba(0,0,0,0.72), rgba(0,0,0,0.88)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .auth-shell {
+      width: 100%;
+      max-width: 760px;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(125,255,113,0.18);
+      border-radius: 28px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 0 30px rgba(0,0,0,0.35);
+    }
+
+    .title {
+      text-align: center;
+      font-size: 3rem;
+      font-weight: 900;
+      margin: 0 0 10px;
+      color: #7dff71;
+      text-shadow: 0 0 18px rgba(125,255,113,0.3);
+    }
+
+    .subtitle {
+      text-align: center;
+      margin: 0 0 24px;
+      color: #f2f2f2;
+      line-height: 1.6;
+      font-size: 1.05rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 22px;
       padding: 20px;
     }
 
-    .box {
-      width: 100%;
-      max-width: 430px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(125,255,113,0.2);
-      border-radius: 18px;
-      padding: 24px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.35);
+    .card h2 {
+      margin-top: 0;
+      color: #7dff71;
+      font-size: 1.8rem;
     }
 
-    h1 {
-      margin-top: 0;
-      text-align: center;
-      color: #7dff71;
+    label {
+      display: block;
+      margin: 14px 0 8px;
+      font-weight: 700;
     }
 
     input {
       width: 100%;
-      box-sizing: border-box;
       padding: 14px;
-      margin-bottom: 12px;
-      border-radius: 10px;
-      border: 1px solid #333;
-      background: #111;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.7);
       color: white;
       font-size: 16px;
+      outline: none;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 16px;
     }
 
     button {
       width: 100%;
       padding: 14px;
-      margin-bottom: 10px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       cursor: pointer;
     }
 
-    .green {
+    .btn-green {
       background: #7dff71;
       color: black;
+      box-shadow: 0 0 18px rgba(125,255,113,0.25);
     }
 
-    .red {
-      background: #ff5b5b;
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-red {
+      background: #ef5b55;
       color: white;
     }
 
-    .status, .user {
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 10px;
+    .status-box, .session-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(125,255,113,0.18);
       background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.15);
+      font-weight: 700;
+      line-height: 1.6;
       word-break: break-word;
+    }
+
+    .tip-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .tip-item {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.55;
+    }
+
+    .tip-item strong {
+      color: #7dff71;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .title {
+        font-size: 2.3rem;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .button-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Rich Bizness Login</h1>
+  <div class="auth-shell">
+    <h1 class="title">Rich Bizness Login</h1>
+    <p class="subtitle">
+      Sign up, log in, stay signed in, and lock your account into the Rich Bizness platform.
+    </p>
 
-    <input id="emailInput" type="email" placeholder="Email" />
-    <input id="passwordInput" type="password" placeholder="Password" />
+    <div class="grid">
+      <div class="card">
+        <h2>Account Access</h2>
 
-    <button id="signUpBtn" class="green" type="button">Sign Up</button>
-    <button id="loginBtn" class="green" type="button">Login</button>
-    <button id="logoutBtn" class="red" type="button">Log Out</button>
+        <label for="emailInput">Email</label>
+        <input id="emailInput" type="email" placeholder="you@email.com" />
 
-    <div id="statusBox" class="status">Ready.</div>
-    <div id="userBox" class="user">No user signed in.</div>
+        <label for="passwordInput">Password</label>
+        <input id="passwordInput" type="password" placeholder="Minimum 6 characters" />
+
+        <div class="button-row">
+          <button id="signUpBtn" class="btn-green" type="button">Sign Up</button>
+          <button id="loginBtn" class="btn-dark" type="button">Login</button>
+          <button id="logoutBtn" class="btn-red" type="button">Log Out</button>
+        </div>
+
+        <div id="statusBox" class="status-box">Ready.</div>
+        <div id="sessionBox" class="session-box">No user signed in.</div>
+      </div>
+
+      <div class="card">
+        <h2>Auth Setup Notes</h2>
+
+        <div class="tip-list">
+          <div class="tip-item">
+            <strong>Step 1</strong><br>
+            Paste your real Supabase project URL and publishable anon key into this file.
+          </div>
+
+          <div class="tip-item">
+            <strong>Step 2</strong><br>
+            In Supabase, keep Email provider enabled under Authentication.
+          </div>
+
+          <div class="tip-item">
+            <strong>Step 3</strong><br>
+            This page creates a profile row after signup or login so your profile, messages, followers, and artist page can work.
+          </div>
+
+          <div class="tip-item">
+            <strong>Step 4</strong><br>
+            After login, you can route users to profile, upload, live, watch, artist, or messages pages.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -115,56 +245,91 @@
       const loginBtn = document.getElementById("loginBtn");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
-      const userBox = document.getElementById("userBox");
+      const sessionBox = document.getElementById("sessionBox");
 
       function setStatus(message) {
         statusBox.textContent = message;
         console.log(message);
       }
 
-      function setUser(user) {
+      function setSessionBox(user) {
         if (!user) {
-          userBox.textContent = "No user signed in.";
+          sessionBox.textContent = "No user signed in.";
           return;
         }
 
-        userBox.innerHTML = `
-          <div><strong>Email:</strong> ${user.email || "No email"}</div>
-          <div><strong>ID:</strong> ${user.id}</div>
+        sessionBox.innerHTML = `
+          <strong>Email:</strong> ${escapeHtml(user.email || "--")}<br>
+          <strong>ID:</strong> ${escapeHtml(user.id || "--")}
         `;
       }
 
-      function getValues() {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-
-        if (!email) throw new Error("Email is required.");
-        if (!password) throw new Error("Password is required.");
-        if (password.length < 6) throw new Error("Password must be at least 6 characters.");
-
-        return { email, password };
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      async function refreshSession() {
-        setStatus("Checking session...");
+      async function upsertProfile(user) {
+        if (!user?.id) return;
 
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        const email = user.email || "";
+        const displayName = email ? email.split("@")[0] : "richbizness-user";
 
-        const user = data?.session?.user || null;
+        const profilePayload = {
+          id: user.id,
+          email,
+          display_name: displayName,
+          updated_at: new Date().toISOString()
+        };
 
-        if (user) {
-          setUser(user);
-          setStatus("Session active.");
-        } else {
-          setUser(null);
-          setStatus("No active session.");
+        const { error } = await supabase
+          .from("profiles")
+          .upsert(profilePayload, { onConflict: "id" });
+
+        if (error) {
+          console.error("Profile upsert error:", error.message);
+          throw error;
         }
       }
 
-      signUpBtn.addEventListener("click", async () => {
+      async function refreshSession() {
         try {
-          const { email, password } = getValues();
+          const { data, error } = await supabase.auth.getSession();
+          if (error) throw error;
+
+          const user = data?.session?.user || null;
+          setSessionBox(user);
+
+          if (user) {
+            setStatus("Session active.");
+          } else {
+            setStatus("Ready.");
+          }
+
+          return user;
+        } catch (error) {
+          setStatus("Session error: " + error.message);
+          return null;
+        }
+      }
+
+      async function signUp() {
+        try {
+          const email = emailInput.value.trim();
+          const password = passwordInput.value.trim();
+
+          if (!email || !password) {
+            throw new Error("Enter email and password.");
+          }
+
+          if (password.length < 6) {
+            throw new Error("Password must be at least 6 characters.");
+          }
+
           setStatus("Creating account...");
 
           const { data, error } = await supabase.auth.signUp({
@@ -174,21 +339,38 @@
 
           if (error) throw error;
 
-          if (data?.user) setUser(data.user);
+          const user = data?.user || null;
+          const session = data?.session || null;
 
-          if (data?.session) {
+          if (user) {
+            try {
+              await upsertProfile(user);
+            } catch (profileError) {
+              console.error(profileError);
+            }
+          }
+
+          setSessionBox(user);
+
+          if (session) {
             setStatus("Account created and signed in.");
           } else {
-            setStatus("Account created. You can login now.");
+            setStatus("Account created. Check your email if confirmation is required.");
           }
         } catch (error) {
           setStatus("Sign up error: " + error.message);
         }
-      });
+      }
 
-      loginBtn.addEventListener("click", async () => {
+      async function login() {
         try {
-          const { email, password } = getValues();
+          const email = emailInput.value.trim();
+          const password = passwordInput.value.trim();
+
+          if (!email || !password) {
+            throw new Error("Enter email and password.");
+          }
+
           setStatus("Logging in...");
 
           const { data, error } = await supabase.auth.signInWithPassword({
@@ -198,32 +380,63 @@
 
           if (error) throw error;
 
-          setUser(data.user || null);
-          setStatus("Logged in successfully.");
+          const user = data?.user || null;
+
+          if (user) {
+            await upsertProfile(user);
+          }
+
+          setSessionBox(user);
+          setStatus("Logged in.");
         } catch (error) {
           setStatus("Login error: " + error.message);
         }
-      });
+      }
 
-      logoutBtn.addEventListener("click", async () => {
+      async function logout() {
         try {
+          setStatus("Logging out...");
           const { error } = await supabase.auth.signOut();
           if (error) throw error;
 
-          setUser(null);
+          setSessionBox(null);
           setStatus("Logged out.");
         } catch (error) {
           setStatus("Logout error: " + error.message);
         }
+      }
+
+      signUpBtn.addEventListener("click", signUp);
+      loginBtn.addEventListener("click", login);
+      logoutBtn.addEventListener("click", logout);
+
+      passwordInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          login();
+        }
       });
 
-      supabase.auth.onAuthStateChange((_event, session) => {
-        setUser(session?.user || null);
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        const user = session?.user || null;
+        setSessionBox(user);
+
+        if (user) {
+          try {
+            await upsertProfile(user);
+          } catch (error) {
+            console.error(error);
+          }
+        }
       });
 
       refreshSession();
     } catch (error) {
-      document.getElementById("statusBox").textContent = "Startup error: " + error.message;
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Auth Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
   </script>
 </body>
