@@ -1,8 +1,6 @@
 import Stripe from "stripe";
-import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -11,92 +9,47 @@ export default async function handler(req, res) {
 
   try {
     const {
-      buyerUserId,
-      sellerUserId,
-      contentType,
-      contentId,
+      mode,
       title,
       amountCents,
-      currency = "usd"
+      metadata = {}
     } = req.body || {};
 
-    if (!buyerUserId || !sellerUserId || !contentType || !contentId || !title || !amountCents) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!mode || !title || !amountCents) {
+      return res.status(400).json({ error: "Missing required fields." });
     }
 
-    const { data: creatorAccount, error: creatorError } = await supabase
-      .from("creator_accounts")
-      .select("stripe_account_id")
-      .eq("user_id", sellerUserId)
-      .maybeSingle();
-
-    if (creatorError || !creatorAccount?.stripe_account_id) {
-      return res.status(400).json({ error: "Seller has no payout account yet" });
-    }
-
-    const feeBps = Number(process.env.STRIPE_PLATFORM_FEE_BPS || 1000);
-    const platformFeeCents = Math.round((Number(amountCents) * feeBps) / 10000);
-
-    const { data: purchase, error: purchaseError } = await supabase
-      .from("purchases")
-      .insert([{
-        buyer_user_id: buyerUserId,
-        seller_user_id: sellerUserId,
-        content_type: contentType,
-        content_id: Number(contentId),
-        title,
-        amount_cents: Number(amountCents),
-        currency,
-        platform_fee_cents: platformFeeCents,
-        payment_status: "pending"
-      }])
-      .select()
-      .single();
-
-    if (purchaseError) {
-      return res.status(500).json({ error: purchaseError.message });
+    const baseUrl = process.env.APP_URL;
+    if (!baseUrl) {
+      return res.status(500).json({ error: "APP_URL is missing." });
     }
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      success_url: `${process.env.SITE_URL}/success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.SITE_URL}/cancel.html`,
-      client_reference_id: String(purchase.id),
+      payment_method_types: ["card"],
       line_items: [
         {
-          quantity: 1,
           price_data: {
-            currency,
-            unit_amount: Number(amountCents),
-            product_data: { name: title }
-          }
+            currency: "usd",
+            product_data: {
+              name: title
+            },
+            unit_amount: Number(amountCents)
+          },
+          quantity: 1
         }
       ],
-      payment_intent_data: {
-        application_fee_amount: platformFeeCents,
-        transfer_data: {
-          destination: creatorAccount.stripe_account_id
-        },
-        metadata: {
-          purchase_id: String(purchase.id),
-          buyer_user_id: buyerUserId,
-          seller_user_id: sellerUserId,
-          content_type: contentType,
-          content_id: String(contentId)
-        }
-      },
+      success_url: `${baseUrl}/monetization-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/monetization-cancel.html`,
       metadata: {
-        purchase_id: String(purchase.id)
+        mode,
+        ...metadata
       }
     });
 
-    await supabase
-      .from("purchases")
-      .update({ stripe_checkout_session_id: session.id })
-      .eq("id", purchase.id);
-
-    return res.status(200).json({ url: session.url });
+    return res.status(200).json({ url: session.url, sessionId: session.id });
   } catch (error) {
-    return res.status(500).json({ error: error.message || "Failed to create checkout session" });
+    console.error("create-checkout-session error", error);
+    return res.status(500).json({ error: error.message || "Server error" });
   }
 }
