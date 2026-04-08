@@ -1,1 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monetization | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.84)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
+    }
+    .page { max-width: 1450px; margin: 0 auto; padding: 18px; }
+    .topbar, .hero, .panel {
+      background: rgba(0,0,0,.48);
+      border: 1px solid rgba(125,255,113,.18);
+      border-radius: 24px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      margin-bottom: 18px;
+    }
+    .topbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
+    .brand { color:#7dff71; font-weight:900; font-size:1.8rem; }
+    .nav { display:flex; flex-wrap:wrap; gap:10px; }
+    .nav a, .nav button {
+      text-decoration:none; color:white; background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08); padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+    }
+    .hero h1, .panel h2 { color:#7dff71; margin-top:0; }
+    .status-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(125,255,113,.08);
+      border: 1px solid rgba(125,255,113,.18);
+      font-weight: 700;
+    }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+    label { display:block; margin:12px 0 8px; font-weight:800; color:#7dff71; }
+    input, select, textarea {
+      width:100%; padding:14px; border-radius:12px; border:1px solid #2c2c2c;
+      background:rgba(0,0,0,.72); color:white; font-size:16px; outline:none;
+    }
+    textarea { min-height:100px; resize:vertical; }
+    .button-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    button {
+      width:100%; padding:14px; border:none; border-radius:12px;
+      font-size:16px; font-weight:900; cursor:pointer;
+    }
+    .btn-green { background:#7dff71; color:black; box-shadow:0 0 18px rgba(125,255,113,.22); }
+    .btn-dark { background:rgba(255,255,255,.08); color:white; border:1px solid rgba(255,255,255,.08); }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+    .stat {
+      border-radius:18px; padding:18px; background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08); text-align:center;
+    }
+    .stat-value { font-size:2rem; font-weight:900; color:#7dff71; }
+    .list { display:grid; gap:12px; }
+    .item {
+      border-radius:16px; padding:14px; background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .item-title { color:#7dff71; font-weight:900; margin-bottom:6px; }
+    .item-text { color:#f2f2f2; line-height:1.6; }
+    .empty-box {
+      padding:18px; border-radius:14px; background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.78); font-weight:700; text-align:center;
+    }
+    @media (max-width: 900px) {
+      .grid, .stats, .button-row { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">Rich Bizness Monetization</div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="analytics.html">Analytics</a>
+        <a href="monetization.html">Monetization</a>
+        <button id="logoutBtn" type="button">Log Out</button>
+      </div>
+    </div>
 
+    <div class="hero">
+      <h1>Get This Money</h1>
+      <p>Launch paid drops, unlock premium content, and accept tips from your supporters.</p>
+      <div id="statusBox" class="status-box">Loading monetization dashboard...</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <div id="grossStat" class="stat-value">$0</div>
+        <div>Total Gross</div>
+      </div>
+      <div class="stat">
+        <div id="tipsStat" class="stat-value">$0</div>
+        <div>Tips</div>
+      </div>
+      <div class="stat">
+        <div id="premiumStat" class="stat-value">$0</div>
+        <div>Premium Unlocks</div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>Create Premium Drop</h2>
+
+        <label for="contentTypeInput">Content Type</label>
+        <select id="contentTypeInput">
+          <option value="art">Art</option>
+          <option value="music">Music</option>
+          <option value="gaming">Gaming</option>
+          <option value="sports">Sports</option>
+        </select>
+
+        <label for="contentIdInput">Content ID</label>
+        <input id="contentIdInput" type="number" placeholder="Enter content id" />
+
+        <label for="titleInput">Title</label>
+        <input id="titleInput" type="text" placeholder="Exclusive Drop" />
+
+        <label for="descriptionInput">Description</label>
+        <textarea id="descriptionInput" placeholder="Describe what unlock buyers get."></textarea>
+
+        <label for="priceInput">Price (USD)</label>
+        <input id="priceInput" type="number" min="1" step="1" value="5" />
+
+        <div class="button-row">
+          <button id="createPremiumBtn" class="btn-green" type="button">Create Premium Drop</button>
+          <button id="refreshBtn" class="btn-dark" type="button">Refresh Dashboard</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Send Test Tip</h2>
+
+        <label for="tipCreatorIdInput">Creator ID</label>
+        <input id="tipCreatorIdInput" type="text" placeholder="Paste creator user id" />
+
+        <label for="tipAmountInput">Tip Amount (USD)</label>
+        <input id="tipAmountInput" type="number" min="1" step="1" value="5" />
+
+        <div class="button-row">
+          <button id="tipBtn" class="btn-green" type="button">Send Tip</button>
+          <button id="openProfileBtn" class="btn-dark" type="button">Open Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>Your Premium Drops</h2>
+        <div id="premiumList" class="list"></div>
+      </div>
+
+      <div class="panel">
+        <h2>Earnings Activity</h2>
+        <div id="earningsList" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const statusBox = document.getElementById("statusBox");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const createPremiumBtn = document.getElementById("createPremiumBtn");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const tipBtn = document.getElementById("tipBtn");
+      const openProfileBtn = document.getElementById("openProfileBtn");
+
+      const contentTypeInput = document.getElementById("contentTypeInput");
+      const contentIdInput = document.getElementById("contentIdInput");
+      const titleInput = document.getElementById("titleInput");
+      const descriptionInput = document.getElementById("descriptionInput");
+      const priceInput = document.getElementById("priceInput");
+
+      const tipCreatorIdInput = document.getElementById("tipCreatorIdInput");
+      const tipAmountInput = document.getElementById("tipAmountInput");
+
+      const grossStat = document.getElementById("grossStat");
+      const tipsStat = document.getElementById("tipsStat");
+      const premiumStat = document.getElementById("premiumStat");
+
+      const premiumList = document.getElementById("premiumList");
+      const earningsList = document.getElementById("earningsList");
+
+      let currentUser = null;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function toMoney(cents) {
+        return `$${((Number(cents || 0)) / 100).toFixed(2)}`;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      async function requireUser() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data?.session?.user || null;
+        if (!currentUser) {
+          setStatus("No active session. Redirecting...");
+          setTimeout(() => {
+            window.location.href = "auth.html";
+          }, 900);
+          return null;
+        }
+
+        return currentUser;
+      }
+
+      async function createPremiumContent() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const contentType = contentTypeInput.value;
+          const contentId = Number(contentIdInput.value);
+          const title = titleInput.value.trim();
+          const description = descriptionInput.value.trim();
+          const priceUsd = Number(priceInput.value);
+
+          if (!contentType || !contentId || !title || !priceUsd) {
+            throw new Error("Fill out all premium drop fields.");
+          }
+
+          const { error } = await supabase
+            .from("premium_content")
+            .insert({
+              creator_id: user.id,
+              creator_email: user.email || "",
+              content_type: contentType,
+              content_id: contentId,
+              title,
+              description,
+              price_cents: priceUsd * 100,
+              is_active: true
+            });
+
+          if (error) throw error;
+
+          titleInput.value = "";
+          descriptionInput.value = "";
+          contentIdInput.value = "";
+          priceInput.value = "5";
+
+          setStatus("Premium drop created.");
+          await loadDashboard();
+        } catch (error) {
+          setStatus("Create premium error: " + error.message);
+        }
+      }
+
+      async function sendTip() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const creatorId = tipCreatorIdInput.value.trim();
+          const amountUsd = Number(tipAmountInput.value);
+
+          if (!creatorId || !amountUsd) {
+            throw new Error("Enter creator id and tip amount.");
+          }
+
+          const { data: tipRow, error: tipInsertError } = await supabase
+            .from("tips")
+            .insert({
+              sender_id: user.id,
+              sender_email: user.email || "",
+              creator_id: creatorId,
+              amount_cents: amountUsd * 100,
+              status: "pending"
+            })
+            .select()
+            .single();
+
+          if (tipInsertError) throw tipInsertError;
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "tip",
+              title: `Tip on Rich Bizness`,
+              amountCents: amountUsd * 100,
+              metadata: {
+                tip_id: String(tipRow.id),
+                creator_id: creatorId
+              }
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || "Could not create tip checkout.");
+          }
+
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Tip checkout error: " + error.message);
+        }
+      }
+
+      async function buyPremiumDrop(premiumContentId) {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          const { data: premiumRow, error: premiumError } = await supabase
+            .from("premium_content")
+            .select("*")
+            .eq("id", premiumContentId)
+            .maybeSingle();
+
+          if (premiumError) throw premiumError;
+          if (!premiumRow) throw new Error("Premium drop not found.");
+
+          const { data: purchaseRow, error: purchaseInsertError } = await supabase
+            .from("purchases")
+            .insert({
+              buyer_id: user.id,
+              buyer_email: user.email || "",
+              creator_id: premiumRow.creator_id,
+              premium_content_id: premiumRow.id,
+              amount_cents: premiumRow.price_cents,
+              status: "pending"
+            })
+            .select()
+            .single();
+
+          if (purchaseInsertError) throw purchaseInsertError;
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "premium_unlock",
+              title: premiumRow.title || "Premium Unlock",
+              amountCents: premiumRow.price_cents,
+              metadata: {
+                purchase_id: String(purchaseRow.id),
+                creator_id: premiumRow.creator_id
+              }
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || "Could not create premium checkout.");
+          }
+
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Premium checkout error: " + error.message);
+        }
+      }
+
+      async function loadDashboard() {
+        try {
+          const user = await requireUser();
+          if (!user) return;
+
+          setStatus("Loading monetization dashboard...");
+
+          const [premiumRes, earningsRes] = await Promise.all([
+            supabase.from("premium_content").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
+            supabase.from("creator_earnings").select("*").eq("creator_id", user.id).order("created_at", { ascending: false })
+          ]);
+
+          if (premiumRes.error) throw premiumRes.error;
+          if (earningsRes.error) throw earningsRes.error;
+
+          const premiumRows = premiumRes.data || [];
+          const earningsRows = earningsRes.data || [];
+
+          let gross = 0;
+          let tipsOnly = 0;
+          let premiumOnly = 0;
+
+          earningsRows.forEach(row => {
+            gross += Number(row.gross_cents || 0);
+            if (row.source_type === "tip") tipsOnly += Number(row.gross_cents || 0);
+            if (row.source_type === "premium_unlock") premiumOnly += Number(row.gross_cents || 0);
+          });
+
+          grossStat.textContent = toMoney(gross);
+          tipsStat.textContent = toMoney(tipsOnly);
+          premiumStat.textContent = toMoney(premiumOnly);
+
+          if (!premiumRows.length) {
+            premiumList.innerHTML = `<div class="empty-box">No premium drops yet.</div>`;
+          } else {
+            premiumList.innerHTML = premiumRows.map(row => `
+              <div class="item">
+                <div class="item-title">${escapeHtml(row.title || "Premium Drop")}</div>
+                <div class="item-text">
+                  Type: ${escapeHtml(row.content_type)}<br>
+                  Content ID: ${escapeHtml(row.content_id)}<br>
+                  Price: ${escapeHtml(toMoney(row.price_cents))}<br>
+                  ${escapeHtml(row.description || "")}
+                </div>
+                <div class="button-row">
+                  <button class="btn-green" onclick="window.__buyPremium(${row.id})">Test Buy</button>
+                  <button class="btn-dark" type="button">${row.is_active ? "Active" : "Inactive"}</button>
+                </div>
+              </div>
+            `).join("");
+          }
+
+          if (!earningsRows.length) {
+            earningsList.innerHTML = `<div class="empty-box">No earnings activity yet.</div>`;
+          } else {
+            earningsList.innerHTML = earningsRows.map(row => `
+              <div class="item">
+                <div class="item-title">${escapeHtml(row.source_type || "earning")}</div>
+                <div class="item-text">
+                  Gross: ${escapeHtml(toMoney(row.gross_cents))}<br>
+                  Status: ${escapeHtml(row.status || "--")}<br>
+                  Created: ${escapeHtml(formatDate(row.created_at))}
+                </div>
+              </div>
+            `).join("");
+          }
+
+          setStatus("Monetization dashboard loaded.");
+        } catch (error) {
+          setStatus("Dashboard error: " + error.message);
+        }
+      }
+
+      async function logOut() {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          setStatus("Logout error: " + error.message);
+          return;
+        }
+        window.location.href = "auth.html";
+      }
+
+      window.__buyPremium = buyPremiumDrop;
+
+      createPremiumBtn.addEventListener("click", createPremiumContent);
+      refreshBtn.addEventListener("click", loadDashboard);
+      tipBtn.addEventListener("click", sendTip);
+      logoutBtn.addEventListener("click", logOut);
+      openProfileBtn.addEventListener("click", () => {
+        window.location.href = "profile.html";
+      });
+
+      loadDashboard();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Monetization Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
