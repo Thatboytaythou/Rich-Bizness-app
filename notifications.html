@@ -1,1 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notifications | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
+    }
+    .page {
+      max-width: 1200px;
+      margin: auto;
+      padding: 18px;
+    }
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-bottom:18px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.45);
+      border:1px solid rgba(125,255,113,0.18);
+    }
+    .brand {
+      font-size:1.8rem;
+      font-weight:900;
+      color:#7dff71;
+    }
+    .nav {
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    .nav a, .nav button {
+      text-decoration:none;
+      color:white;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+      padding:10px 14px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .nav a.active {
+      color:#7dff71;
+      box-shadow:0 0 18px rgba(125,255,113,0.28);
+    }
+    .hero, .card {
+      background:rgba(0,0,0,0.45);
+      border:1px solid rgba(125,255,113,0.18);
+      border-radius:22px;
+      padding:20px;
+      margin-bottom:18px;
+    }
+    .hero h1, .card h2 {
+      color:#7dff71;
+      margin-top:0;
+    }
+    .status {
+      margin-top:12px;
+      padding:12px;
+      border-radius:12px;
+      background:rgba(125,255,113,0.08);
+      border:1px solid rgba(125,255,113,0.18);
+      font-weight:700;
+    }
+    .button-row {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+    button {
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .btn-green {
+      background:#7dff71;
+      color:black;
+    }
+    .btn-dark {
+      background:rgba(255,255,255,0.08);
+      color:white;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .list {
+      display:grid;
+      gap:12px;
+    }
+    .note {
+      padding:16px;
+      border-radius:16px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .note.unread {
+      border-color:rgba(125,255,113,0.35);
+      box-shadow:0 0 16px rgba(125,255,113,0.12);
+    }
+    .note-title {
+      font-weight:900;
+      color:#7dff71;
+      margin-bottom:6px;
+    }
+    .note-meta {
+      font-size:0.9rem;
+      opacity:0.8;
+      margin-top:8px;
+    }
+    .note a {
+      color:#7dff71;
+      font-weight:700;
+      text-decoration:none;
+    }
+    .empty {
+      text-align:center;
+      padding:24px;
+      border-radius:14px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      font-weight:700;
+    }
+    @media (max-width: 700px) {
+      .button-row { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">Rich Bizness</div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html" class="active">Notifications</a>
+      </div>
+    </div>
 
+    <div class="hero">
+      <h1>Notifications</h1>
+      <p>See new followers, messages, and live activity.</p>
+      <div id="status" class="status">Checking session...</div>
+    </div>
+
+    <div class="card">
+      <h2>Your Alerts</h2>
+      <div class="button-row">
+        <button id="refreshBtn" class="btn-dark" type="button">Refresh</button>
+        <button id="markAllBtn" class="btn-green" type="button">Mark All Read</button>
+      </div>
+    </div>
+
+    <div id="list" class="list"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const statusBox = document.getElementById("status");
+    const list = document.getElementById("list");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const markAllBtn = document.getElementById("markAllBtn");
+
+    let currentUser = null;
+
+    function setStatus(message) {
+      statusBox.textContent = message;
+      console.log(message);
+    }
+
+    function escapeHtml(text) {
+      return String(text || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+    }
+
+    function formatDate(value) {
+      if (!value) return "--";
+      const d = new Date(value);
+      return d.toLocaleString();
+    }
+
+    async function requireUser() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+
+      const user = data?.session?.user || null;
+      if (!user) {
+        setStatus("No active session. Redirecting...");
+        setTimeout(() => {
+          window.location.href = "auth.html";
+        }, 900);
+        return null;
+      }
+
+      currentUser = user;
+      setStatus("Session active.");
+      return user;
+    }
+
+    function renderNotifications(items) {
+      if (!items || !items.length) {
+        list.innerHTML = `<div class="empty">No notifications yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = items.map(item => `
+        <div class="note ${item.is_read ? "" : "unread"}">
+          <div class="note-title">${escapeHtml(item.title || "Notification")}</div>
+          <div>${escapeHtml(item.body || "")}</div>
+          <div class="note-meta">
+            ${escapeHtml(item.type || "--")} • ${escapeHtml(formatDate(item.created_at))}
+          </div>
+          <div class="note-meta" style="margin-top:10px;">
+            <a href="${escapeHtml(item.link || "#")}">Open</a>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function loadNotifications() {
+      try {
+        const user = await requireUser();
+        if (!user) return;
+
+        setStatus("Loading notifications...");
+
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        renderNotifications(data || []);
+        setStatus("Notifications loaded.");
+      } catch (error) {
+        setStatus("Load error: " + error.message);
+        list.innerHTML = `<div class="empty">Error loading notifications.</div>`;
+      }
+    }
+
+    async function markAllRead() {
+      try {
+        const user = await requireUser();
+        if (!user) return;
+
+        const { error } = await supabase
+          .from("notifications")
+          .update({ is_read: true })
+          .eq("user_id", user.id)
+          .eq("is_read", false);
+
+        if (error) throw error;
+
+        setStatus("All notifications marked read.");
+        loadNotifications();
+      } catch (error) {
+        setStatus("Mark read error: " + error.message);
+      }
+    }
+
+    refreshBtn.addEventListener("click", loadNotifications);
+    markAllBtn.addEventListener("click", markAllRead);
+
+    requireUser().then(loadNotifications);
+  </script>
+</body>
+</html>
