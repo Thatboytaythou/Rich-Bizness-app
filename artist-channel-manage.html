@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artist Channel | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; }
+    :root{
+      --green:#7dff71;
+      --bg:rgba(0,0,0,0.48);
+      --border:rgba(125,255,113,0.18);
+      --soft:rgba(255,255,255,0.08);
+    }
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      color:white;
+      min-height:100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
+    }
+    .page{max-width:1520px;margin:0 auto;padding:18px;}
+    .topbar,.hero,.section{
+      background:var(--bg);
+      border:1px solid var(--border);
+      border-radius:24px;
+      backdrop-filter:blur(10px);
+    }
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+      margin-bottom:18px;padding:14px 16px;
+    }
+    .brand{color:var(--green);font-size:1.8rem;font-weight:800;}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .nav a{
+      text-decoration:none;color:white;background:var(--soft);border:1px solid rgba(255,255,255,0.08);
+      padding:10px 14px;border-radius:12px;font-weight:700;
+    }
+    .hero,.section{margin-bottom:18px;overflow:hidden;}
+    .banner{
+      width:100%;height:280px;object-fit:cover;background:black;display:block;
+    }
+    .banner-fallback{
+      width:100%;height:280px;background:rgba(125,255,113,0.08);
+      display:flex;align-items:center;justify-content:center;color:var(--green);font-size:2rem;font-weight:900;
+    }
+    .hero-content{padding:22px;}
+    .hero-grid{
+      display:grid;grid-template-columns:160px 1fr auto;gap:20px;align-items:start;
+    }
+    .avatar{
+      width:160px;height:160px;border-radius:24px;object-fit:cover;background:black;border:2px solid rgba(125,255,113,0.24);
+    }
+    .avatar-fallback{
+      width:160px;height:160px;border-radius:24px;background:rgba(125,255,113,0.08);
+      display:flex;align-items:center;justify-content:center;color:var(--green);font-size:2rem;font-weight:900;
+      border:2px solid rgba(125,255,113,0.24);
+    }
+    .title-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .hero h1{margin:0;color:var(--green);font-size:3rem;}
+    .badge{
+      padding:8px 12px;border-radius:999px;background:rgba(125,255,113,0.14);
+      border:1px solid rgba(125,255,113,0.22);color:var(--green);font-weight:900;
+    }
+    .subtle{color:#f1f1f1;line-height:1.7;margin-top:10px;}
+    .links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+    .links a,.actions a,.actions button,.card-actions a,.card-actions button{
+      text-decoration:none;text-align:center;padding:12px 14px;border-radius:12px;font-weight:900;border:none;cursor:pointer;display:inline-block;
+    }
+    .btn-green{background:var(--green);color:black;}
+    .btn-dark{background:var(--soft);color:white;border:1px solid rgba(255,255,255,0.08);}
+    .actions{display:grid;gap:10px;min-width:180px;}
+    .stats{
+      display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:22px;
+    }
+    .stat{
+      padding:18px;border-radius:18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);text-align:center;
+    }
+    .stat-value{font-size:2rem;font-weight:900;color:var(--green);}
+    .stat-label{margin-top:6px;color:#f2f2f2;font-weight:700;}
+    .section{padding:22px;}
+    .section h2{margin-top:0;color:var(--green);font-size:2rem;}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    .card{
+      padding:14px;border-radius:18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+    }
+    .cover{
+      width:100%;height:220px;object-fit:cover;border-radius:14px;background:black;margin-bottom:12px;
+    }
+    .cover-fallback{
+      width:100%;height:220px;border-radius:14px;background:rgba(125,255,113,0.08);
+      display:flex;align-items:center;justify-content:center;color:var(--green);font-size:2rem;font-weight:900;margin-bottom:12px;
+    }
+    .card-title{color:var(--green);font-weight:900;font-size:1.1rem;margin-bottom:8px;}
+    .card-text{color:#f2f2f2;line-height:1.6;white-space:pre-wrap;word-break:break-word;margin-bottom:12px;}
+    .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .tracks{display:grid;gap:12px;}
+    .track{
+      padding:14px;border-radius:16px;background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);display:grid;grid-template-columns:80px 1fr auto;gap:14px;align-items:center;
+    }
+    .track-num{
+      width:80px;height:80px;border-radius:12px;background:rgba(125,255,113,0.08);
+      display:flex;align-items:center;justify-content:center;color:var(--green);font-weight:900;font-size:1.3rem;
+    }
+    .track-title{color:var(--green);font-weight:900;margin-bottom:6px;}
+    .track-text{color:#f2f2f2;line-height:1.55;}
+    .track-actions{display:grid;gap:8px;}
+    .empty-box{
+      padding:18px;border-radius:14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+      color:rgba(255,255,255,0.78);font-weight:700;text-align:center;
+    }
+    @media (max-width: 1200px){
+      .grid3{grid-template-columns:repeat(2,1fr);}
+      .stats{grid-template-columns:repeat(3,1fr);}
+      .hero-grid{grid-template-columns:160px 1fr;}
+      .actions{grid-column:1 / -1;grid-template-columns:repeat(3,1fr);display:grid;}
+    }
+    @media (max-width: 760px){
+      .grid3,.stats,.card-actions,.actions{grid-template-columns:1fr;}
+      .track,.hero-grid{grid-template-columns:1fr;}
+      .hero h1{font-size:2.2rem;}
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">Rich Bizness Artist Channel</div>
+      <div class="nav">
+        <a href="music.html">Music</a>
+        <a href="playlists.html">Playlists</a>
+        <a href="albums.html">Albums</a>
+        <a href="artist-channel-manage.html">Manage Channel</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div id="bannerWrap"><div class="banner-fallback">RB</div></div>
+      <div class="hero-content">
+        <div class="hero-grid">
+          <div id="avatarWrap"><div class="avatar-fallback">RB</div></div>
+
+          <div>
+            <div class="title-row">
+              <h1 id="channelTitle">Loading channel...</h1>
+              <span id="verifiedBadge" class="badge" style="display:none;">Verified</span>
+            </div>
+            <div id="channelBio" class="subtle">Loading channel bio...</div>
+            <div id="socialLinks" class="links"></div>
+          </div>
+
+          <div class="actions">
+            <a id="messageBtn" class="btn-green" href="messages.html">Message</a>
+            <a id="artistPageBtn" class="btn-dark" href="artist.html">Artist Page</a>
+            <a id="profileBtn" class="btn-dark" href="profile.html">Profile</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div id="tracksStat" class="stat-value">0</div><div class="stat-label">Tracks</div></div>
+      <div class="stat"><div id="albumsStat" class="stat-value">0</div><div class="stat-label">Albums</div></div>
+      <div class="stat"><div id="playlistsStat" class="stat-value">0</div><div class="stat-label">Playlists</div></div>
+      <div class="stat"><div id="followersStat" class="stat-value">0</div><div class="stat-label">Followers</div></div>
+      <div class="stat"><div id="playsStat" class="stat-value">0</div><div class="stat-label">Total Plays</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Pinned Release</h2>
+      <div id="pinnedAlbumWrap" class="grid3"></div>
+    </div>
+
+    <div class="section">
+      <h2>Pinned Playlist</h2>
+      <div id="pinnedPlaylistWrap" class="grid3"></div>
+    </div>
+
+    <div class="section">
+      <h2>Featured Track</h2>
+      <div id="pinnedTrackWrap" class="grid3"></div>
+    </div>
+
+    <div class="section">
+      <h2>Latest Releases</h2>
+      <div id="albumsWrap" class="grid3"></div>
+    </div>
+
+    <div class="section">
+      <h2>Latest Tracks</h2>
+      <div id="tracksWrap" class="tracks"></div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+
+      const bannerWrap = document.getElementById("bannerWrap");
+      const avatarWrap = document.getElementById("avatarWrap");
+      const channelTitle = document.getElementById("channelTitle");
+      const verifiedBadge = document.getElementById("verifiedBadge");
+      const channelBio = document.getElementById("channelBio");
+      const socialLinks = document.getElementById("socialLinks");
+      const messageBtn = document.getElementById("messageBtn");
+      const artistPageBtn = document.getElementById("artistPageBtn");
+      const profileBtn = document.getElementById("profileBtn");
+
+      const tracksStat = document.getElementById("tracksStat");
+      const albumsStat = document.getElementById("albumsStat");
+      const playlistsStat = document.getElementById("playlistsStat");
+      const followersStat = document.getElementById("followersStat");
+      const playsStat = document.getElementById("playsStat");
+
+      const pinnedAlbumWrap = document.getElementById("pinnedAlbumWrap");
+      const pinnedPlaylistWrap = document.getElementById("pinnedPlaylistWrap");
+      const pinnedTrackWrap = document.getElementById("pinnedTrackWrap");
+      const albumsWrap = document.getElementById("albumsWrap");
+      const tracksWrap = document.getElementById("tracksWrap");
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function getSlugFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("slug");
+      }
+
+      function renderCard(item, type) {
+        if (!item) return `<div class="empty-box">Nothing pinned yet.</div>`;
+
+        const title = item.title || "Untitled";
+        const cover = item.cover_url;
+        let actions = "";
+        if (type === "album") {
+          actions = `<div class="card-actions"><a class="btn-green" href="album-view.html?id=${item.id}">Open Release</a><a class="btn-dark" href="music.html">Browse Music</a></div>`;
+        } else if (type === "playlist") {
+          actions = `<div class="card-actions"><a class="btn-green" href="playlist-view.html?id=${item.id}">Open Playlist</a><a class="btn-dark" href="music.html">Browse Music</a></div>`;
+        } else {
+          actions = `<div class="card-actions"><a class="btn-green" href="music.html?track=${item.id}">Open Track</a><a class="btn-dark" href="artist.html?id=${encodeURIComponent(item.user_id || "")}">Artist</a></div>`;
+        }
+
+        return `
+          <div class="card">
+            ${
+              cover
+                ? `<img class="cover" src="${escapeHtml(cover)}" alt="cover" />`
+                : `<div class="cover-fallback">RB</div>`
+            }
+            <div class="card-title">${escapeHtml(title)}</div>
+            <div class="card-text">${escapeHtml(item.description || item.bio || "")}</div>
+            ${actions}
+          </div>
+        `;
+      }
+
+      async function loadChannel() {
+        const slug = getSlugFromUrl();
+
+        if (!slug) {
+          channelTitle.textContent = "No channel selected";
+          channelBio.textContent = "Add ?slug=your-channel-slug to the URL or create your channel first.";
+          return;
+        }
+
+        const { data: channel, error } = await supabase
+          .from("artist_channels")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+
+        if (error || !channel) {
+          channelTitle.textContent = "Channel not found";
+          channelBio.textContent = "This artist channel does not exist yet.";
+          return;
+        }
+
+        channelTitle.textContent = channel.channel_name || "Artist Channel";
+        channelBio.textContent = channel.bio || "No bio yet.";
+
+        if (channel.is_verified) {
+          verifiedBadge.style.display = "inline-flex";
+        }
+
+        bannerWrap.innerHTML = channel.banner_url
+          ? `<img class="banner" src="${escapeHtml(channel.banner_url)}" alt="banner" />`
+          : `<div class="banner-fallback">RB</div>`;
+
+        avatarWrap.innerHTML = channel.avatar_url
+          ? `<img class="avatar" src="${escapeHtml(channel.avatar_url)}" alt="avatar" />`
+          : `<div class="avatar-fallback">RB</div>`;
+
+        socialLinks.innerHTML = `
+          ${channel.instagram_url ? `<a class="btn-dark" href="${escapeHtml(channel.instagram_url)}" target="_blank" rel="noopener noreferrer">Instagram</a>` : ""}
+          ${channel.youtube_url ? `<a class="btn-dark" href="${escapeHtml(channel.youtube_url)}" target="_blank" rel="noopener noreferrer">YouTube</a>` : ""}
+          ${channel.website_url ? `<a class="btn-dark" href="${escapeHtml(channel.website_url)}" target="_blank" rel="noopener noreferrer">Website</a>` : ""}
+        ` || "";
+
+        const userId = channel.user_id;
+        messageBtn.href = "messages.html";
+        artistPageBtn.href = `artist.html?id=${encodeURIComponent(userId)}`;
+        profileBtn.href = `artist.html?id=${encodeURIComponent(userId)}`;
+
+        const [
+          tracksRes,
+          albumsRes,
+          playlistsRes,
+          followersRes,
+          pinnedTrackRes,
+          pinnedPlaylistRes,
+          pinnedAlbumRes
+        ] = await Promise.all([
+          supabase.from("music_tracks").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+          supabase.from("albums").select("*").eq("user_id", userId).eq("is_public", true).order("created_at", { ascending: false }),
+          supabase.from("playlists").select("*").eq("user_id", userId).eq("is_public", true).order("created_at", { ascending: false }),
+          supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", userId),
+          channel.pinned_track_id ? supabase.from("music_tracks").select("*").eq("id", channel.pinned_track_id).maybeSingle() : Promise.resolve({ data:null }),
+          channel.pinned_playlist_id ? supabase.from("playlists").select("*").eq("id", channel.pinned_playlist_id).maybeSingle() : Promise.resolve({ data:null }),
+          channel.pinned_album_id ? supabase.from("albums").select("*").eq("id", channel.pinned_album_id).maybeSingle() : Promise.resolve({ data:null })
+        ]);
+
+        const tracks = tracksRes.data || [];
+        const albums = albumsRes.data || [];
+        const playlists = playlistsRes.data || [];
+        const totalPlays = tracks.reduce((sum, track) => sum + Number(track.plays || 0), 0);
+
+        tracksStat.textContent = tracks.length;
+        albumsStat.textContent = albums.length;
+        playlistsStat.textContent = playlists.length;
+        followersStat.textContent = followersRes.count || 0;
+        playsStat.textContent = totalPlays;
+
+        pinnedAlbumWrap.innerHTML = renderCard(pinnedAlbumRes.data, "album");
+        pinnedPlaylistWrap.innerHTML = renderCard(pinnedPlaylistRes.data, "playlist");
+        pinnedTrackWrap.innerHTML = renderCard(pinnedTrackRes.data, "track");
+
+        albumsWrap.innerHTML = albums.length
+          ? albums.slice(0, 6).map(item => renderCard(item, "album")).join("")
+          : `<div class="empty-box">No public releases yet.</div>`;
+
+        tracksWrap.innerHTML = tracks.length
+          ? tracks.slice(0, 8).map((track, index) => `
+            <div class="track">
+              <div class="track-num">${index + 1}</div>
+              <div>
+                <div class="track-title">${escapeHtml(track.title || "Untitled Track")}</div>
+                <div class="track-text">
+                  ${escapeHtml(track.artist_name || "Unknown Artist")} • ${escapeHtml(track.genre || "--")}<br>
+                  Plays: ${escapeHtml(track.plays || 0)} • Likes: ${escapeHtml(track.likes || 0)} • Reposts: ${escapeHtml(track.reposts || 0)}
+                </div>
+              </div>
+              <div class="track-actions">
+                <a class="btn-green" href="music.html?track=${track.id}">Play</a>
+                <a class="btn-dark" href="messages.html">Message</a>
+              </div>
+            </div>
+          `).join("")
+          : `<div class="empty-box">No tracks yet.</div>`;
+      }
+
+      loadChannel();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;background:#111;color:white;min-height:100vh;">
+          <h1 style="color:#7dff71;">Artist Channel Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
