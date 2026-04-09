@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artist | Rich Bizness</title>
+  <title>Artist Channel | Rich Bizness</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #a8ff8f;
+      --bg: rgba(0,0,0,0.50);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+    }
 
     body {
       margin: 0;
@@ -15,46 +28,51 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1500px;
+      max-width: 1550px;
       margin: 0 auto;
       padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
     }
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
       padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
+      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
+      color: var(--green);
       font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+      font-weight: 900;
     }
 
     .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
       object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
     }
 
     .nav {
@@ -64,10 +82,11 @@
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 10px 14px;
       border-radius: 12px;
@@ -76,34 +95,56 @@
     }
 
     .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      color: var(--green);
       border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.16);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
 
-    .hero {
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
+    .hero,
+    .section {
       padding: 22px;
-      backdrop-filter: blur(10px);
       margin-bottom: 18px;
     }
 
-    .artist-head {
+    .banner {
+      width: 100%;
+      height: 320px;
+      border-radius: 22px;
+      object-fit: cover;
+      display: block;
+      background: black;
+      margin-bottom: 18px;
+    }
+
+    .banner-fallback {
+      width: 100%;
+      height: 320px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.16);
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
       display: grid;
       grid-template-columns: 180px 1fr;
       gap: 20px;
-      align-items: center;
+      align-items: start;
     }
 
     .avatar {
@@ -111,9 +152,8 @@
       height: 180px;
       border-radius: 26px;
       object-fit: cover;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(125,255,113,0.30);
-      box-shadow: 0 0 22px rgba(125,255,113,0.2);
+      display: block;
+      background: black;
     }
 
     .avatar-fallback {
@@ -123,181 +163,25 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
       background: rgba(125,255,113,0.08);
-      border: 2px solid rgba(125,255,113,0.30);
-      color: #7dff71;
-      font-size: 2.2rem;
-      font-weight: 900;
-      box-shadow: 0 0 22px rgba(125,255,113,0.2);
-    }
-
-    .artist-title {
-      font-size: 3rem;
-      font-weight: 900;
-      color: #7dff71;
-      margin: 0 0 10px;
-      line-height: 1.05;
-      text-shadow: 0 0 16px rgba(125,255,113,0.28);
-    }
-
-    .artist-meta {
-      line-height: 1.7;
-      color: #f2f2f2;
-      margin-bottom: 16px;
-      white-space: pre-wrap;
-    }
-
-    .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    button, .link-btn {
-      display: inline-block;
-      padding: 14px 18px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-    }
-
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-    }
-
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-red {
-      background: #ef5b55;
-      color: white;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
-      font-weight: 700;
-      line-height: 1.6;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      border-radius: 18px;
-      padding: 18px;
-      background: rgba(0,0,0,0.48);
       border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-      backdrop-filter: blur(10px);
     }
 
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #7dff71;
-      word-break: break-word;
+    h1 {
+      margin: 0 0 10px;
+      font-size: 3rem;
+      line-height: 1.02;
+      color: var(--green);
     }
 
-    .stat-label {
-      margin-top: 6px;
-      font-weight: 700;
-      color: #f2f2f2;
-      font-size: 0.95rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .tab-btn {
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .tab-btn.active {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-    }
-
-    .panel {
-      display: none;
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
-      padding: 18px;
-      backdrop-filter: blur(10px);
-      margin-bottom: 18px;
-    }
-
-    .panel.active {
-      display: block;
-    }
-
-    .panel h2 {
-      margin-top: 0;
-      color: #7dff71;
-      font-size: 2rem;
-    }
-
-    .panel-sub {
-      color: #ededed;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-
-    .card {
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .card-media {
-      width: 100%;
-      max-height: 280px;
-      border-radius: 14px;
-      object-fit: cover;
-      margin-bottom: 10px;
-      background: black;
-    }
-
-    .card-title {
-      font-weight: 900;
-      color: #7dff71;
-      margin-bottom: 6px;
-      font-size: 1.1rem;
+    .subtle,
+    .bio,
+    .meta-text {
+      color: var(--text);
+      line-height: 1.75;
     }
 
     .pill {
@@ -307,14 +191,173 @@
       border-radius: 999px;
       background: rgba(125,255,113,0.12);
       border: 1px solid rgba(125,255,113,0.18);
-      color: #7dff71;
+      color: var(--green);
       font-weight: 900;
       font-size: 0.84rem;
     }
 
-    .card-text {
+    .hero-actions,
+    .social-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: black;
+    }
+
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: black;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
       line-height: 1.6;
-      color: #f4f4f4;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .feature-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .feature-title {
+      color: var(--gold);
+      font-weight: 900;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .feature-text {
+      color: var(--text);
+      line-height: 1.6;
+      margin-bottom: 12px;
+      white-space: pre-wrap;
+    }
+
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .music-card {
+      padding: 14px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .cover {
+      width: 100%;
+      height: 240px;
+      border-radius: 16px;
+      object-fit: cover;
+      background: black;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .cover-fallback {
+      width: 100%;
+      height: 240px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: var(--green);
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.16);
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: var(--green);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .card-text {
+      color: var(--text);
+      line-height: 1.65;
       white-space: pre-wrap;
       word-break: break-word;
       margin-bottom: 12px;
@@ -348,48 +391,41 @@
       text-align: center;
     }
 
-    @media (max-width: 1320px) {
-      .stats-row {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    @media (max-width: 920px) {
-      .artist-head {
-        grid-template-columns: 1fr;
-      }
-
-      .grid-cards {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 700px) {
+    @media (max-width: 1200px) {
+      .feature-grid,
+      .music-grid,
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
+    }
 
-      .artist-title {
-        font-size: 2.2rem;
-      }
-
-      .brand {
-        font-size: 1.4rem;
-      }
-
-      .card-actions {
+    @media (max-width: 980px) {
+      .hero-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 520px) {
-      .stats-row {
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 2.3rem;
+      }
+
+      .feature-grid,
+      .music-grid,
+      .stats-row,
+      .card-actions {
         grid-template-columns: 1fr;
       }
 
-      .tabs {
-        display: grid;
-        grid-template-columns: 1fr;
+      .banner,
+      .banner-fallback {
+        height: 220px;
+      }
+
+      .avatar,
+      .avatar-fallback {
+        width: 140px;
+        height: 140px;
       }
     }
   </style>
@@ -399,21 +435,20 @@
     <div class="topbar">
       <div class="brand">
         <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
+        <span>Artist Channel</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="gallery.html">Gallery</a>
         <a href="music.html">Music</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="sports.html">Sports</a>
+        <a href="albums.html">Albums</a>
+        <a href="playlist.html">Playlists</a>
         <a href="artist.html" class="active">Artist</a>
+        <a href="artist-channel-manage.html">Manage Channel</a>
+        <a href="music-revenue.html">Revenue</a>
+        <a href="monetization.html">Monetize</a>
         <a href="profile.html">Profile</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="monetization.html">Monetization</a>
         <a href="messages.html">Messages</a>
         <a href="notifications.html">Notifications</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
@@ -421,95 +456,68 @@
     </div>
 
     <div class="hero">
-      <div class="artist-head">
-        <div id="avatarShell">
+      <div id="bannerWrap">
+        <div class="banner-fallback">RICH BIZNESS</div>
+      </div>
+
+      <div class="hero-grid">
+        <div id="avatarWrap">
           <div class="avatar-fallback">RB</div>
         </div>
 
         <div>
-          <h1 id="artistTitle" class="artist-title">Loading artist...</h1>
-          <div id="artistMeta" class="artist-meta">Loading artist profile...</div>
+          <div id="publicPill" class="pill">ARTIST CHANNEL</div>
+          <h1 id="channelName">Loading artist...</h1>
+          <div id="channelBio" class="bio">Loading channel bio...</div>
 
-          <div class="button-row">
-            <button id="followBtn" class="btn-green" type="button">Follow Artist</button>
-            <button id="messageBtn" class="btn-dark" type="button">Message Artist</button>
-            <button id="tipBtn" class="btn-dark" type="button">Tip Artist</button>
-            <a id="analyticsBtn" href="analytics.html" class="link-btn btn-dark">Analytics</a>
-            <button id="shareBtn" class="btn-dark" type="button">Copy Artist Link</button>
+          <div class="hero-actions">
+            <button id="followBtn" class="btn-green" type="button">Follow</button>
+            <a id="messageBtn" class="btn-dark" href="messages.html">Message</a>
+            <a id="manageBtn" class="btn-gold" href="artist-channel-manage.html" style="display:none;">Manage Channel</a>
           </div>
 
-          <div id="statusBox" class="status-box">Artist page ready.</div>
+          <div class="social-row">
+            <a id="instagramBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
+            <a id="youtubeBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">YouTube</a>
+            <a id="websiteBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">Website</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading artist channel...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="followersStat" class="stat-value">0</div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat">
+              <div id="tracksStat" class="stat-value">0</div>
+              <div class="stat-label">Tracks</div>
+            </div>
+            <div class="stat">
+              <div id="albumsStat" class="stat-value">0</div>
+              <div class="stat-label">Albums</div>
+            </div>
+            <div class="stat">
+              <div id="playlistsStat" class="stat-value">0</div>
+              <div class="stat-label">Playlists</div>
+            </div>
+            <div class="stat">
+              <div id="liveStat" class="stat-value">READY</div>
+              <div class="stat-label">Live Layer</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat">
-        <div id="followersCount" class="stat-value">0</div>
-        <div class="stat-label">Followers</div>
-      </div>
-      <div class="stat">
-        <div id="followingCount" class="stat-value">0</div>
-        <div class="stat-label">Following</div>
-      </div>
-      <div class="stat">
-        <div id="likesCount" class="stat-value">0</div>
-        <div class="stat-label">Likes</div>
-      </div>
-      <div class="stat">
-        <div id="commentsCount" class="stat-value">0</div>
-        <div class="stat-label">Comments</div>
-      </div>
-      <div class="stat">
-        <div id="repostsCount" class="stat-value">0</div>
-        <div class="stat-label">Reposts</div>
-      </div>
-      <div class="stat">
-        <div id="premiumCount" class="stat-value">0</div>
-        <div class="stat-label">Premium Drops</div>
-      </div>
-      <div class="stat">
-        <div id="creatorScore" class="stat-value">0</div>
-        <div class="stat-label">Creator Score</div>
-      </div>
+    <div class="section">
+      <h2>Pinned Content</h2>
+      <div id="pinnedGrid" class="feature-grid"></div>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="artTab">Artwork</button>
-      <button class="tab-btn" data-tab="musicTab">Music</button>
-      <button class="tab-btn" data-tab="gamingTab">Gaming</button>
-      <button class="tab-btn" data-tab="sportsTab">Sports</button>
-      <button class="tab-btn" data-tab="premiumTab">Premium</button>
-    </div>
-
-    <div id="artTab" class="panel active">
-      <h2>Artwork</h2>
-      <div class="panel-sub">Visual drops and creative work from this artist.</div>
-      <div id="artGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="musicTab" class="panel">
-      <h2>Music</h2>
-      <div class="panel-sub">Tracks, covers, and audio drops.</div>
-      <div id="musicGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="gamingTab" class="panel">
-      <h2>Gaming</h2>
-      <div class="panel-sub">Gaming clips, posts, and highlights.</div>
-      <div id="gamingGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="sportsTab" class="panel">
-      <h2>Sports</h2>
-      <div class="panel-sub">Sports content, moments, and performance drops.</div>
-      <div id="sportsGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="premiumTab" class="panel">
-      <h2>Premium Drops</h2>
-      <div class="panel-sub">Paid unlocks and premium content from this artist.</div>
-      <div id="premiumGrid" class="grid-cards"></div>
+    <div class="section">
+      <h2>Latest Music</h2>
+      <div id="latestMusicGrid" class="music-grid"></div>
     </div>
   </div>
 
@@ -517,10 +525,6 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -532,38 +536,38 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
+      const bannerWrap = document.getElementById("bannerWrap");
+      const avatarWrap = document.getElementById("avatarWrap");
+      const channelName = document.getElementById("channelName");
+      const channelBio = document.getElementById("channelBio");
+      const publicPill = document.getElementById("publicPill");
       const followBtn = document.getElementById("followBtn");
       const messageBtn = document.getElementById("messageBtn");
-      const tipBtn = document.getElementById("tipBtn");
-      const shareBtn = document.getElementById("shareBtn");
-
-      const avatarShell = document.getElementById("avatarShell");
-      const artistTitle = document.getElementById("artistTitle");
-      const artistMeta = document.getElementById("artistMeta");
+      const manageBtn = document.getElementById("manageBtn");
+      const instagramBtn = document.getElementById("instagramBtn");
+      const youtubeBtn = document.getElementById("youtubeBtn");
+      const websiteBtn = document.getElementById("websiteBtn");
       const statusBox = document.getElementById("statusBox");
 
-      const followersCount = document.getElementById("followersCount");
-      const followingCount = document.getElementById("followingCount");
-      const likesCount = document.getElementById("likesCount");
-      const commentsCount = document.getElementById("commentsCount");
-      const repostsCount = document.getElementById("repostsCount");
-      const premiumCount = document.getElementById("premiumCount");
-      const creatorScore = document.getElementById("creatorScore");
+      const followersStat = document.getElementById("followersStat");
+      const tracksStat = document.getElementById("tracksStat");
+      const albumsStat = document.getElementById("albumsStat");
+      const playlistsStat = document.getElementById("playlistsStat");
 
-      const artGrid = document.getElementById("artGrid");
-      const musicGrid = document.getElementById("musicGrid");
-      const gamingGrid = document.getElementById("gamingGrid");
-      const sportsGrid = document.getElementById("sportsGrid");
-      const premiumGrid = document.getElementById("premiumGrid");
+      const pinnedGrid = document.getElementById("pinnedGrid");
+      const latestMusicGrid = document.getElementById("latestMusicGrid");
 
       let currentUser = null;
       let artistUserId = null;
-      let artistProfile = null;
+      let channelRow = null;
       let isFollowing = false;
+
+      function getArtistUserId() {
+        return new URLSearchParams(window.location.search).get("id");
+      }
 
       function setStatus(message) {
         statusBox.textContent = message;
-        console.log(message);
       }
 
       function escapeHtml(text) {
@@ -579,15 +583,11 @@
         el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
       }
 
-      function getArtistIdFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get("id");
-      }
-
-      async function getCurrentUser() {
+      async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-        return data?.session?.user || null;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       }
 
       async function logOut() {
@@ -600,121 +600,54 @@
         }
       }
 
-      async function getCount(table, column, value) {
-        const { count, error } = await supabase
-          .from(table)
-          .select("*", { count: "exact", head: true })
-          .eq(column, value);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getReactionCount(contentType, contentId, reactionType) {
-        const { count, error } = await supabase
-          .from("reactions")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId)
-          .eq("reaction_type", reactionType);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getCommentCount(contentType, contentId) {
-        const { count, error } = await supabase
-          .from("comments")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getRepostCount(contentType, contentId) {
-        const { count, error } = await supabase
-          .from("reposts")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getTrendingScore(contentType, contentId) {
-        const [likes, saves, comments, reposts] = await Promise.all([
-          getReactionCount(contentType, contentId, "like"),
-          getReactionCount(contentType, contentId, "save"),
-          getCommentCount(contentType, contentId),
-          getRepostCount(contentType, contentId)
-        ]);
-
-        return {
-          likes,
-          saves,
-          comments,
-          reposts,
-          score: (likes * 1) + (saves * 2) + (comments * 3) + (reposts * 4)
-        };
-      }
-
-      async function loadArtistProfile() {
-        const urlArtistId = getArtistIdFromUrl();
-        currentUser = await getCurrentUser();
-        userChip.textContent = currentUser?.email || "Guest";
-
-        artistUserId = urlArtistId || currentUser?.id || null;
-
-        if (!artistUserId) {
-          throw new Error("No artist id found and no signed-in user.");
-        }
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", artistUserId)
-          .maybeSingle();
-
-        if (error) throw error;
-
-        artistProfile = data || null;
-
-        const displayName = artistProfile?.display_name || artistProfile?.email || "Rich Bizness Artist";
-        artistTitle.textContent = displayName;
-        artistMeta.innerHTML = `
-Email: ${escapeHtml(artistProfile?.email || "--")}
-Genre: ${escapeHtml(artistProfile?.favorite_genre || "--")}
-Bio: ${escapeHtml(artistProfile?.bio || "No artist bio yet.")}
-        `;
-
-        if (artistProfile?.avatar_url) {
-          avatarShell.innerHTML = `<img class="avatar" src="${escapeHtml(artistProfile.avatar_url)}" alt="artist avatar" />`;
+      function setLinkButton(btn, url) {
+        if (url) {
+          btn.href = url;
+          btn.style.display = "inline-block";
         } else {
-          avatarShell.innerHTML = `<div class="avatar-fallback">RB</div>`;
+          btn.style.display = "none";
         }
       }
 
-      async function loadFollowState() {
+      async function checkFollowing() {
         if (!currentUser || !artistUserId || currentUser.id === artistUserId) {
-          followBtn.textContent = "My Artist Page";
-          followBtn.disabled = true;
+          isFollowing = false;
+          updateFollowButton();
           return;
         }
 
-        const { data, error } = await supabase
-          .from("followers")
-          .select("id")
-          .eq("follower_id", currentUser.id)
-          .eq("following_id", artistUserId)
-          .maybeSingle();
+        try {
+          const { data, error } = await supabase
+            .from("followers")
+            .select("id")
+            .eq("follower_id", currentUser.id)
+            .eq("following_id", artistUserId)
+            .maybeSingle();
 
-        if (error) throw error;
+          if (error) throw error;
+          isFollowing = !!data;
+        } catch {
+          isFollowing = false;
+        }
 
-        isFollowing = !!data;
-        followBtn.textContent = isFollowing ? "Unfollow Artist" : "Follow Artist";
+        updateFollowButton();
+      }
+
+      function updateFollowButton() {
+        if (!currentUser) {
+          followBtn.textContent = "Login To Follow";
+          return;
+        }
+
+        if (currentUser.id === artistUserId) {
+          followBtn.textContent = "This Is You";
+          followBtn.disabled = true;
+          manageBtn.style.display = "inline-block";
+          return;
+        }
+
+        followBtn.disabled = false;
+        followBtn.textContent = isFollowing ? "Unfollow" : "Follow";
       }
 
       async function toggleFollow() {
@@ -734,7 +667,8 @@ Bio: ${escapeHtml(artistProfile?.bio || "No artist bio yet.")}
               .eq("following_id", artistUserId);
 
             if (error) throw error;
-            setStatus("Artist unfollowed.");
+            isFollowing = false;
+            setStatus("Unfollowed artist.");
           } else {
             const { error } = await supabase
               .from("followers")
@@ -744,299 +678,233 @@ Bio: ${escapeHtml(artistProfile?.bio || "No artist bio yet.")}
               });
 
             if (error) throw error;
-            setStatus("Artist followed.");
+            isFollowing = true;
+            setStatus("Followed artist.");
           }
 
-          await loadFollowState();
+          updateFollowButton();
           await loadStats();
         } catch (error) {
           setStatus("Follow error: " + error.message);
         }
       }
 
-      function messageArtist() {
-        if (!artistProfile?.email) {
-          setStatus("Artist email not found.");
-          return;
-        }
-
-        window.location.href = `messages.html?email=${encodeURIComponent(artistProfile.email)}`;
-      }
-
-      function tipArtist() {
-        if (!artistUserId) {
-          setStatus("Artist not loaded.");
-          return;
-        }
-
-        window.location.href = `monetization.html?creator_id=${encodeURIComponent(artistUserId)}`;
-      }
-
-      function copyArtistLink() {
-        const url = `${window.location.origin}${window.location.pathname}?id=${encodeURIComponent(artistUserId)}`;
-        navigator.clipboard.writeText(url)
-          .then(() => setStatus("Artist link copied."))
-          .catch(() => setStatus("Could not copy link."));
-      }
-
       async function loadStats() {
-        const [
-          followers,
-          following,
-          artPosts,
-          musicPosts,
-          gamingPosts,
-          sportsPosts,
-          premiumPosts
-        ] = await Promise.all([
-          getCount("followers", "following_id", artistUserId),
-          getCount("followers", "follower_id", artistUserId),
-          getCount("artworks", "user_id", artistUserId),
-          getCount("music_tracks", "user_id", artistUserId),
-          getCount("gaming_posts", "user_id", artistUserId),
-          getCount("sports_posts", "user_id", artistUserId),
-          getCount("premium_content", "creator_id", artistUserId)
-        ]);
-
-        followersCount.textContent = followers;
-        followingCount.textContent = following;
-        premiumCount.textContent = premiumPosts;
-
-        const [artData, musicData, gamingData, sportsData] = await Promise.all([
-          supabase.from("artworks").select("*").eq("user_id", artistUserId),
-          supabase.from("music_tracks").select("*").eq("user_id", artistUserId),
-          supabase.from("gaming_posts").select("*").eq("user_id", artistUserId),
-          supabase.from("sports_posts").select("*").eq("user_id", artistUserId)
-        ]);
-
-        if (artData.error) throw artData.error;
-        if (musicData.error) throw musicData.error;
-        if (gamingData.error) throw gamingData.error;
-        if (sportsData.error) throw sportsData.error;
-
-        const contentItems = [
-          ...(artData.data || []).map(item => ({ id: item.id, type: "art" })),
-          ...(musicData.data || []).map(item => ({ id: item.id, type: "music" })),
-          ...(gamingData.data || []).map(item => ({ id: item.id, type: "gaming" })),
-          ...(sportsData.data || []).map(item => ({ id: item.id, type: "sports" }))
-        ];
-
-        let totalLikes = 0;
-        let totalComments = 0;
-        let totalReposts = 0;
-        let totalScore = followers * 5;
-
-        for (const item of contentItems) {
-          const engagement = await getTrendingScore(item.type, item.id);
-          totalLikes += engagement.likes;
-          totalComments += engagement.comments;
-          totalReposts += engagement.reposts;
-          totalScore += engagement.score;
-        }
-
-        likesCount.textContent = totalLikes;
-        commentsCount.textContent = totalComments;
-        repostsCount.textContent = totalReposts;
-        creatorScore.textContent = totalScore;
-      }
-
-      function renderArtwork(items) {
-        if (!items || !items.length) {
-          emptyState(artGrid, "No artwork yet.");
-          return;
-        }
-
-        artGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">ART</div>
-            <img class="card-media" src="${escapeHtml(item.image_url || item.media_url || "")}" alt="artwork" />
-            <div class="card-title">${escapeHtml(item.title || "Untitled Artwork")}</div>
-            <div class="card-text">${escapeHtml(item.description || "")}</div>
-            <div class="card-actions">
-              <a class="btn-green" href="gallery.html">Open Gallery</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderMusic(items) {
-        if (!items || !items.length) {
-          emptyState(musicGrid, "No music yet.");
-          return;
-        }
-
-        musicGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">MUSIC</div>
-            ${item.cover_url ? `<img class="card-media" src="${escapeHtml(item.cover_url)}" alt="cover" />` : ""}
-            <div class="card-title">${escapeHtml(item.title || "Untitled Track")}</div>
-            <div class="card-text">
-Artist: ${escapeHtml(item.artist_name || "--")}
-Genre: ${escapeHtml(item.genre || "--")}
-${escapeHtml(item.description || "")}
-            </div>
-            ${item.audio_url ? `<audio controls style="width:100%;margin-top:10px;" src="${escapeHtml(item.audio_url)}"></audio>` : ""}
-            <div class="card-actions">
-              <a class="btn-green" href="music.html">Open Music</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderGaming(items) {
-        if (!items || !items.length) {
-          emptyState(gamingGrid, "No gaming posts yet.");
-          return;
-        }
-
-        gamingGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">GAMING</div>
-            ${
-              item.media_type === "video"
-                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
-                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="gaming media" />`
-            }
-            <div class="card-title">${escapeHtml(item.title || "Untitled Gaming Post")}</div>
-            <div class="card-text">
-Gamer Tag: ${escapeHtml(item.gamer_tag || "--")}
-Game: ${escapeHtml(item.game_name || "--")}
-${escapeHtml(item.caption || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="gaming.html">Open Gaming</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderSports(items) {
-        if (!items || !items.length) {
-          emptyState(sportsGrid, "No sports posts yet.");
-          return;
-        }
-
-        sportsGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">SPORTS</div>
-            ${
-              item.media_type === "video"
-                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
-                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="sports media" />`
-            }
-            <div class="card-title">${escapeHtml(item.title || "Untitled Sports Post")}</div>
-            <div class="card-text">
-Athlete: ${escapeHtml(item.athlete_name || "--")}
-Team: ${escapeHtml(item.team_name || "--")}
-Sport: ${escapeHtml(item.sport_name || "--")}
-${escapeHtml(item.caption || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="sports.html">Open Sports</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderPremium(items) {
-        if (!items || !items.length) {
-          emptyState(premiumGrid, "No premium drops yet.");
-          return;
-        }
-
-        premiumGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">PREMIUM</div>
-            <div class="card-title">${escapeHtml(item.title || "Premium Drop")}</div>
-            <div class="card-text">
-Type: ${escapeHtml(item.content_type || "--")}
-Content ID: ${escapeHtml(item.content_id || "--")}
-Price: $${((Number(item.price_cents || 0)) / 100).toFixed(2)}
-${escapeHtml(item.description || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="monetization.html">Unlock / Buy</a>
-              <a class="btn-dark" href="messages.html?email=${encodeURIComponent(artistProfile?.email || "")}">Ask Artist</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      async function loadPanels() {
-        const [artData, musicData, gamingData, sportsData, premiumData] = await Promise.all([
-          supabase.from("artworks").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
-          supabase.from("music_tracks").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
-          supabase.from("gaming_posts").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
-          supabase.from("sports_posts").select("*").eq("user_id", artistUserId).order("created_at", { ascending: false }),
-          supabase.from("premium_content").select("*").eq("creator_id", artistUserId).eq("is_active", true).order("created_at", { ascending: false })
-        ]);
-
-        if (artData.error) throw artData.error;
-        if (musicData.error) throw musicData.error;
-        if (gamingData.error) throw gamingData.error;
-        if (sportsData.error) throw sportsData.error;
-        if (premiumData.error) throw premiumData.error;
-
-        renderArtwork(artData.data || []);
-        renderMusic(musicData.data || []);
-        renderGaming(gamingData.data || []);
-        renderSports(sportsData.data || []);
-        renderPremium(premiumData.data || []);
-      }
-
-      function setupTabs() {
-        const tabButtons = document.querySelectorAll(".tab-btn");
-        const panels = document.querySelectorAll(".panel");
-
-        tabButtons.forEach(button => {
-          button.addEventListener("click", () => {
-            tabButtons.forEach(btn => btn.classList.remove("active"));
-            panels.forEach(panel => panel.classList.remove("active"));
-
-            button.classList.add("active");
-            document.getElementById(button.dataset.tab).classList.add("active");
-          });
-        });
-      }
-
-      async function initPage() {
         try {
-          setStatus("Loading artist page...");
-          await loadArtistProfile();
-          await loadFollowState();
+          const [
+            followersRes,
+            tracksRes,
+            albumsRes,
+            playlistsRes
+          ] = await Promise.all([
+            supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", artistUserId),
+            supabase.from("music_tracks").select("*", { count: "exact", head: true }).eq("user_id", artistUserId),
+            supabase.from("albums").select("*", { count: "exact", head: true }).eq("user_id", artistUserId),
+            supabase.from("playlists").select("*", { count: "exact", head: true }).eq("user_id", artistUserId)
+          ]);
+
+          followersStat.textContent = followersRes.count || 0;
+          tracksStat.textContent = tracksRes.count || 0;
+          albumsStat.textContent = albumsRes.count || 0;
+          playlistsStat.textContent = playlistsRes.count || 0;
+        } catch {}
+      }
+
+      async function loadPinnedContent() {
+        if (!channelRow) {
+          emptyState(pinnedGrid, "No pinned content yet.");
+          return;
+        }
+
+        const tasks = [];
+
+        if (channelRow.pinned_track_id) {
+          tasks.push(
+            supabase.from("music_tracks").select("*").eq("id", channelRow.pinned_track_id).maybeSingle()
+              .then(({ data }) => ({ type: "track", data }))
+          );
+        }
+
+        if (channelRow.pinned_album_id) {
+          tasks.push(
+            supabase.from("albums").select("*").eq("id", channelRow.pinned_album_id).maybeSingle()
+              .then(({ data }) => ({ type: "album", data }))
+          );
+        }
+
+        if (channelRow.pinned_playlist_id) {
+          tasks.push(
+            supabase.from("playlists").select("*").eq("id", channelRow.pinned_playlist_id).maybeSingle()
+              .then(({ data }) => ({ type: "playlist", data }))
+          );
+        }
+
+        const results = await Promise.all(tasks);
+        const valid = results.filter(item => item.data);
+
+        if (!valid.length) {
+          emptyState(pinnedGrid, "No pinned content yet.");
+          return;
+        }
+
+        pinnedGrid.innerHTML = valid.map(item => {
+          if (item.type === "track") {
+            return `
+              <div class="feature-card">
+                <div class="feature-title">Pinned Track</div>
+                <div class="feature-text">
+${escapeHtml(item.data.title || "Untitled Track")}
+${escapeHtml(item.data.artist_name || "Unknown Artist")}
+                </div>
+                <a class="btn-green" href="music.html?track=${item.data.id}">Open Track</a>
+              </div>
+            `;
+          }
+
+          if (item.type === "album") {
+            return `
+              <div class="feature-card">
+                <div class="feature-title">Pinned Album</div>
+                <div class="feature-text">
+${escapeHtml(item.data.title || "Untitled Album")}
+${escapeHtml(item.data.release_type || "album")}
+                </div>
+                <a class="btn-green" href="album-view.html?id=${item.data.id}">Open Album</a>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="feature-card">
+              <div class="feature-title">Pinned Playlist</div>
+              <div class="feature-text">
+${escapeHtml(item.data.title || "Untitled Playlist")}
+${item.data.is_public ? "Public" : "Private"}
+              </div>
+              <a class="btn-green" href="playlist-views.html?id=${item.data.id}">Open Playlist</a>
+            </div>
+          `;
+        }).join("");
+      }
+
+      async function loadLatestMusic() {
+        const { data, error } = await supabase
+          .from("music_tracks")
+          .select("*")
+          .eq("user_id", artistUserId)
+          .order("created_at", { ascending: false })
+          .limit(6);
+
+        if (error) {
+          emptyState(latestMusicGrid, "Could not load artist music.");
+          return;
+        }
+
+        const tracks = data || [];
+        if (!tracks.length) {
+          emptyState(latestMusicGrid, "No music uploaded yet.");
+          return;
+        }
+
+        latestMusicGrid.innerHTML = tracks.map(track => `
+          <div class="music-card">
+            ${
+              track.cover_url
+                ? `<img class="cover" src="${escapeHtml(track.cover_url)}" alt="cover art" />`
+                : `<div class="cover-fallback">RB</div>`
+            }
+
+            <div class="card-title">${escapeHtml(track.title || "Untitled Track")}</div>
+            <div class="card-text">
+${escapeHtml(track.artist_name || "Unknown Artist")}
+Genre: ${escapeHtml(track.genre || "--")}
+Plays: ${escapeHtml(track.plays || 0)}
+            </div>
+
+            <div class="card-actions">
+              <a class="btn-green" href="music.html?track=${track.id}">Open Track</a>
+              <a class="btn-dark" href="messages.html">Message</a>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      async function loadArtistChannel() {
+        try {
+          setStatus("Loading artist channel...");
+          await loadSession();
+
+          artistUserId = getArtistUserId() || currentUser?.id || null;
+          if (!artistUserId) {
+            throw new Error("Missing artist id.");
+          }
+
+          const { data, error } = await supabase
+            .from("artist_channels")
+            .select("*")
+            .eq("user_id", artistUserId)
+            .maybeSingle();
+
+          if (error) throw error;
+
+          channelRow = data || null;
+
+          if (channelRow) {
+            channelName.textContent = channelRow.channel_name || "Rich Bizness Artist";
+            channelBio.textContent = channelRow.bio || "No bio added yet.";
+            publicPill.textContent = channelRow.is_public ? "PUBLIC ARTIST CHANNEL" : "PRIVATE ARTIST CHANNEL";
+
+            bannerWrap.innerHTML = channelRow.banner_url
+              ? `<img class="banner" src="${escapeHtml(channelRow.banner_url)}" alt="banner" />`
+              : `<div class="banner-fallback">RICH BIZNESS</div>`;
+
+            avatarWrap.innerHTML = channelRow.avatar_url
+              ? `<img class="avatar" src="${escapeHtml(channelRow.avatar_url)}" alt="avatar" />`
+              : `<div class="avatar-fallback">RB</div>`;
+
+            setLinkButton(instagramBtn, channelRow.instagram_url);
+            setLinkButton(youtubeBtn, channelRow.youtube_url);
+            setLinkButton(websiteBtn, channelRow.website_url);
+          } else {
+            channelName.textContent = "Artist Channel";
+            channelBio.textContent = "No channel profile has been set up yet.";
+            bannerWrap.innerHTML = `<div class="banner-fallback">RICH BIZNESS</div>`;
+            avatarWrap.innerHTML = `<div class="avatar-fallback">RB</div>`;
+            instagramBtn.style.display = "none";
+            youtubeBtn.style.display = "none";
+            websiteBtn.style.display = "none";
+          }
+
+          if (artistUserId) {
+            messageBtn.href = `messages.html`;
+          }
+
+          await checkFollowing();
           await loadStats();
-          await loadPanels();
-          setupTabs();
-          setStatus("Artist page loaded.");
+          await loadPinnedContent();
+          await loadLatestMusic();
+
+          setStatus("Artist channel loaded.");
         } catch (error) {
-          setStatus("Artist page error: " + error.message);
-          emptyState(artGrid, "Could not load artwork.");
-          emptyState(musicGrid, "Could not load music.");
-          emptyState(gamingGrid, "Could not load gaming.");
-          emptyState(sportsGrid, "Could not load sports.");
-          emptyState(premiumGrid, "Could not load premium drops.");
+          setStatus("Artist channel error: " + error.message);
+          emptyState(pinnedGrid, "Could not load pinned content.");
+          emptyState(latestMusicGrid, "Could not load latest music.");
         }
       }
 
       followBtn.addEventListener("click", toggleFollow);
-      messageBtn.addEventListener("click", messageArtist);
-      tipBtn.addEventListener("click", tipArtist);
-      shareBtn.addEventListener("click", copyArtistLink);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "Guest";
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      initPage();
+      loadArtistChannel();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Artist Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Artist Channel Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
