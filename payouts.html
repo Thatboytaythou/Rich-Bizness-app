@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payouts | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #a8ff8f;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.50);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1450px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar, .hero, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .section {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 1.02;
+      color: var(--green);
+    }
+
+    .subtle, .card-text {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-actions, .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green, .btn-dark, .btn-gold, .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark { background: var(--soft); color: white; border: 1px solid rgba(255,255,255,0.08); }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+      font-weight: 900;
+      font-size: 0.84rem;
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input, .control textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .item {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .item-title {
+      color: var(--gold);
+      font-weight: 900;
+      margin-bottom: 8px;
+      font-size: 1.05rem;
+    }
+
+    .item-text {
+      color: var(--text);
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .empty-box {
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    @media (max-width: 1100px) {
+      .stats-row, .grid-2, .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Payout Flow</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="music.html">Music</a>
+        <a href="artist.html">Artist</a>
+        <a href="artist-channel-manage.html">Manage Channel</a>
+        <a href="monetization.html">Monetize</a>
+        <a href="music-revenue.html">Revenue</a>
+        <a href="payouts.html" class="active">Payouts</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <h1>Creator Payout Flow</h1>
+      <div class="subtle">
+        Connect your Stripe payout account, check your available balance, and request payouts from your music earnings.
+      </div>
+
+      <div class="hero-actions">
+        <button id="createConnectBtn" class="btn-green" type="button">Create Connect Account</button>
+        <button id="accountLinkBtn" class="btn-dark" type="button">Open Stripe Onboarding</button>
+        <a class="btn-gold" href="music-revenue.html">Back To Revenue</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading payout flow...</div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="availableStat" class="stat-value">$0.00</div>
+          <div class="stat-label">Available Balance</div>
+        </div>
+        <div class="stat">
+          <div id="requestedStat" class="stat-value">$0.00</div>
+          <div class="stat-label">Requested Total</div>
+        </div>
+        <div class="stat">
+          <div id="paidStat" class="stat-value">$0.00</div>
+          <div class="stat-label">Paid Out</div>
+        </div>
+        <div class="stat">
+          <div id="accountStat" class="stat-value">NO</div>
+          <div class="stat-label">Payout Ready</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="section">
+        <h2>Request Payout</h2>
+        <div class="card">
+          <div class="pill">WITHDRAW</div>
+          <div class="card-title">Submit A Payout Request</div>
+          <div class="form-grid">
+            <div class="control">
+              <label for="amountInput">Amount (USD)</label>
+              <input id="amountInput" type="number" min="1" step="0.01" placeholder="25.00" />
+            </div>
+
+            <div class="control">
+              <label for="currencyInput">Currency</label>
+              <input id="currencyInput" type="text" value="usd" />
+            </div>
+
+            <div class="control full">
+              <label for="noteInput">Note</label>
+              <textarea id="noteInput" placeholder="Optional payout note..."></textarea>
+            </div>
+          </div>
+
+          <div class="card-actions">
+            <button id="requestPayoutBtn" class="btn-green" type="button">Request Payout</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>Payout Account</h2>
+        <div id="accountBox" class="list"></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Payout Request History</h2>
+      <div id="payoutHistory" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const availableStat = document.getElementById("availableStat");
+      const requestedStat = document.getElementById("requestedStat");
+      const paidStat = document.getElementById("paidStat");
+      const accountStat = document.getElementById("accountStat");
+
+      const amountInput = document.getElementById("amountInput");
+      const currencyInput = document.getElementById("currencyInput");
+      const noteInput = document.getElementById("noteInput");
+
+      const createConnectBtn = document.getElementById("createConnectBtn");
+      const accountLinkBtn = document.getElementById("accountLinkBtn");
+      const requestPayoutBtn = document.getElementById("requestPayoutBtn");
+
+      const accountBox = document.getElementById("accountBox");
+      const payoutHistory = document.getElementById("payoutHistory");
+
+      let currentUser = null;
+      let payoutAccount = null;
+      let availableCents = 0;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function money(cents) {
+        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function emptyState(el, text) {
+        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          window.location.href = "auth.html";
+          return false;
+        }
+
+        return true;
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      function renderAccountBox(account) {
+        if (!account) {
+          accountBox.innerHTML = `
+            <div class="item">
+              <div class="item-title">No payout account yet</div>
+              <div class="item-text">
+                Create your Stripe Connect account first, then finish onboarding so payouts can be enabled.
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        accountBox.innerHTML = `
+          <div class="item">
+            <div class="item-title">Stripe Account</div>
+            <div class="item-text">
+              Stripe Account ID: ${escapeHtml(account.stripe_account_id || "--")}<br>
+              Onboarding Complete: ${account.onboarding_complete ? "Yes" : "No"}<br>
+              Details Submitted: ${account.details_submitted ? "Yes" : "No"}<br>
+              Charges Enabled: ${account.charges_enabled ? "Yes" : "No"}<br>
+              Payouts Enabled: ${account.payouts_enabled ? "Yes" : "No"}<br>
+              Country: ${escapeHtml(account.country || "--")}<br>
+              Currency: ${escapeHtml((account.default_currency || "usd").toUpperCase())}
+            </div>
+          </div>
+        `;
+      }
+
+      function renderPayoutHistory(rows) {
+        if (!rows.length) {
+          emptyState(payoutHistory, "No payout requests yet.");
+          return;
+        }
+
+        payoutHistory.innerHTML = rows.map(row => `
+          <div class="item">
+            <div class="pill">${escapeHtml((row.status || "pending").toUpperCase())}</div>
+            <div class="item-title">${money(row.amount_cents)}</div>
+            <div class="item-text">
+              Currency: ${escapeHtml((row.currency || "usd").toUpperCase())}<br>
+              Note: ${escapeHtml(row.note || "--")}<br>
+              Stripe Transfer ID: ${escapeHtml(row.stripe_transfer_id || "--")}<br>
+              Created: ${escapeHtml(formatDate(row.created_at))}<br>
+              Processed: ${escapeHtml(formatDate(row.processed_at))}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      async function loadPayoutFlow() {
+        try {
+          setStatus("Loading payout flow...");
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const [
+            payoutAccountRes,
+            payoutRequestsRes,
+            balanceRes
+          ] = await Promise.all([
+            supabase
+              .from("artist_payout_accounts")
+              .select("*")
+              .eq("user_id", currentUser.id)
+              .maybeSingle(),
+            supabase
+              .from("payout_requests")
+              .select("*")
+              .eq("artist_user_id", currentUser.id)
+              .order("created_at", { ascending: false }),
+            supabase
+              .from("creator_available_balances")
+              .select("*")
+              .eq("artist_user_id", currentUser.id)
+              .maybeSingle()
+          ]);
+
+          if (payoutAccountRes.error) throw payoutAccountRes.error;
+          if (payoutRequestsRes.error) throw payoutRequestsRes.error;
+
+          payoutAccount = payoutAccountRes.data || null;
+
+          const payoutRequests = payoutRequestsRes.data || [];
+          const balance = balanceRes.data || null;
+
+          const requestedCents = payoutRequests
+            .filter(row => ["pending", "submitted"].includes((row.status || "").toLowerCase()))
+            .reduce((sum, row) => sum + Number(row.amount_cents || 0), 0);
+
+          const paidCents = payoutRequests
+            .filter(row => ["paid"].includes((row.status || "").toLowerCase()))
+            .reduce((sum, row) => sum + Number(row.amount_cents || 0), 0);
+
+          availableCents = Number(balance?.available_cents || 0);
+
+          availableStat.textContent = money(availableCents);
+          requestedStat.textContent = money(requestedCents);
+          paidStat.textContent = money(paidCents);
+          accountStat.textContent = payoutAccount?.payouts_enabled ? "YES" : "NO";
+
+          renderAccountBox(payoutAccount);
+          renderPayoutHistory(payoutRequests);
+
+          setStatus("Payout flow loaded.");
+        } catch (error) {
+          setStatus("Payout flow error: " + error.message);
+          emptyState(accountBox, "Could not load payout account.");
+          emptyState(payoutHistory, "Could not load payout history.");
+        }
+      }
+
+      async function createConnectAccount() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const response = await fetch("/api/create-connect-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              email: currentUser.email
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create connect account.");
+
+          setStatus("Connect account created or found.");
+          await loadPayoutFlow();
+        } catch (error) {
+          setStatus("Create connect account error: " + error.message);
+        }
+      }
+
+      async function openAccountLink() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const response = await fetch("/api/create-account-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              email: currentUser.email
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create account link.");
+
+          if (!payload.url) throw new Error("No onboarding URL returned.");
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Open account link error: " + error.message);
+        }
+      }
+
+      async function requestPayout() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          if (!payoutAccount) throw new Error("Create a payout account first.");
+          if (!payoutAccount.payouts_enabled) throw new Error("Finish Stripe onboarding first.");
+          
+          const amountDollars = Number(amountInput.value);
+          if (!amountDollars || amountDollars <= 0) throw new Error("Enter a valid payout amount.");
+
+          const amountCents = Math.round(amountDollars * 100);
+          if (amountCents > availableCents) {
+            throw new Error("Requested amount is higher than available balance.");
+          }
+
+          const currency = (currencyInput.value || "usd").trim().toLowerCase();
+          const note = noteInput.value.trim();
+
+          const { error } = await supabase
+            .from("payout_requests")
+            .insert({
+              artist_user_id: currentUser.id,
+              amount_cents: amountCents,
+              currency,
+              status: "pending",
+              stripe_destination_account_id: payoutAccount.stripe_account_id,
+              note
+            });
+
+          if (error) throw error;
+
+          amountInput.value = "";
+          noteInput.value = "";
+
+          setStatus("Payout request submitted.");
+          await loadPayoutFlow();
+        } catch (error) {
+          setStatus("Payout request error: " + error.message);
+        }
+      }
+
+      createConnectBtn.addEventListener("click", createConnectAccount);
+      accountLinkBtn.addEventListener("click", openAccountLink);
+      requestPayoutBtn.addEventListener("click", requestPayout);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadPayoutFlow();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Payout Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
