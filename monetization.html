@@ -5,167 +5,496 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Monetization | Rich Bizness</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #a8ff8f;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.50);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.84)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
     }
-    .page { max-width: 1450px; margin: 0 auto; padding: 18px; }
-    .topbar, .hero, .panel {
-      background: rgba(0,0,0,.48);
-      border: 1px solid rgba(125,255,113,.18);
+
+    .page {
+      max-width: 1550px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 20px;
       backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
       margin-bottom: 18px;
     }
-    .topbar { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
-    .brand { color:#7dff71; font-weight:900; font-size:1.8rem; }
-    .nav { display:flex; flex-wrap:wrap; gap:10px; }
-    .nav a, .nav button {
-      text-decoration:none; color:white; background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08); padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
     }
-    .hero h1, .panel h2 { color:#7dff71; margin-top:0; }
-    .status-box {
-      margin-top: 14px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(125,255,113,.08);
-      border: 1px solid rgba(125,255,113,.18);
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
-    label { display:block; margin:12px 0 8px; font-weight:800; color:#7dff71; }
-    input, select, textarea {
-      width:100%; padding:14px; border-radius:12px; border:1px solid #2c2c2c;
-      background:rgba(0,0,0,.72); color:white; font-size:16px; outline:none;
+
+    .hero,
+    .section {
+      padding: 22px;
+      margin-bottom: 18px;
     }
-    textarea { min-height:100px; resize:vertical; }
-    .button-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
-    button {
-      width:100%; padding:14px; border:none; border-radius:12px;
-      font-size:16px; font-weight:900; cursor:pointer;
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 1.02;
+      color: var(--green);
     }
-    .btn-green { background:#7dff71; color:black; box-shadow:0 0 18px rgba(125,255,113,.22); }
-    .btn-dark { background:rgba(255,255,255,.08); color:white; border:1px solid rgba(255,255,255,.08); }
-    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:18px; }
+
+    .subtle,
+    .card-text {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: black;
+    }
+
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .btn-gold {
+      background: var(--gold);
+      color: black;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
     .stat {
-      border-radius:18px; padding:18px; background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08); text-align:center;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
     }
-    .stat-value { font-size:2rem; font-weight:900; color:#7dff71; }
-    .list { display:grid; gap:12px; }
-    .item {
-      border-radius:16px; padding:14px; background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08);
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
     }
-    .item-title { color:#7dff71; font-weight:900; margin-bottom:6px; }
-    .item-text { color:#f2f2f2; line-height:1.6; }
+
+    .stat-label {
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+      font-weight: 900;
+      font-size: 0.84rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control textarea,
+    .control select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
     .empty-box {
-      padding:18px; border-radius:14px; background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.08); color:rgba(255,255,255,.78); font-weight:700; text-align:center;
+      padding: 18px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.78);
+      font-weight: 700;
+      text-align: center;
     }
-    @media (max-width: 900px) {
-      .grid, .stats, .button-row { grid-template-columns:1fr; }
+
+    @media (max-width: 1180px) {
+      .grid,
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .grid,
+      .stats-row,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.25rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="topbar">
-      <div class="brand">Rich Bizness Monetization</div>
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Monetization Hub</span>
+      </div>
+
       <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
+        <a href="music.html">Music</a>
+        <a href="albums.html">Albums</a>
+        <a href="playlist.html">Playlists</a>
+        <a href="artist.html">Artist</a>
+        <a href="artist-channel-manage.html">Manage Channel</a>
+        <a href="music-revenue.html">Revenue</a>
+        <a href="monetization.html" class="active">Monetize</a>
         <a href="profile.html">Profile</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="monetization.html">Monetization</a>
-        <button id="logoutBtn" type="button">Log Out</button>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Get This Money</h1>
-      <p>Launch paid drops, unlock premium content, and accept tips from your supporters.</p>
-      <div id="statusBox" class="status-box">Loading monetization dashboard...</div>
-    </div>
-
-    <div class="stats">
-      <div class="stat">
-        <div id="grossStat" class="stat-value">$0</div>
-        <div>Total Gross</div>
+      <h1>Full Synced Monetization</h1>
+      <div class="subtle">
+        Premium tracks, supporter subscriptions, direct unlocks, and Stripe creator onboarding — all connected to the files you already have.
       </div>
-      <div class="stat">
-        <div id="tipsStat" class="stat-value">$0</div>
-        <div>Tips</div>
+
+      <div class="hero-actions">
+        <a class="btn-gold" href="music-revenue.html">Open Revenue Dashboard</a>
+        <a class="btn-dark" href="music.html">Back To Music</a>
+        <a class="btn-dark" href="artist-channel-manage.html">Manage Artist Channel</a>
       </div>
-      <div class="stat">
-        <div id="premiumStat" class="stat-value">$0</div>
-        <div>Premium Unlocks</div>
-      </div>
-    </div>
 
-    <div class="grid">
-      <div class="panel">
-        <h2>Create Premium Drop</h2>
+      <div id="statusBox" class="status-box">Loading monetization hub...</div>
 
-        <label for="contentTypeInput">Content Type</label>
-        <select id="contentTypeInput">
-          <option value="art">Art</option>
-          <option value="music">Music</option>
-          <option value="gaming">Gaming</option>
-          <option value="sports">Sports</option>
-        </select>
-
-        <label for="contentIdInput">Content ID</label>
-        <input id="contentIdInput" type="number" placeholder="Enter content id" />
-
-        <label for="titleInput">Title</label>
-        <input id="titleInput" type="text" placeholder="Exclusive Drop" />
-
-        <label for="descriptionInput">Description</label>
-        <textarea id="descriptionInput" placeholder="Describe what unlock buyers get."></textarea>
-
-        <label for="priceInput">Price (USD)</label>
-        <input id="priceInput" type="number" min="1" step="1" value="5" />
-
-        <div class="button-row">
-          <button id="createPremiumBtn" class="btn-green" type="button">Create Premium Drop</button>
-          <button id="refreshBtn" class="btn-dark" type="button">Refresh Dashboard</button>
+      <div class="stats-row">
+        <div class="stat">
+          <div id="trackCountStat" class="stat-value">0</div>
+          <div class="stat-label">My Tracks</div>
         </div>
-      </div>
-
-      <div class="panel">
-        <h2>Send Test Tip</h2>
-
-        <label for="tipCreatorIdInput">Creator ID</label>
-        <input id="tipCreatorIdInput" type="text" placeholder="Paste creator user id" />
-
-        <label for="tipAmountInput">Tip Amount (USD)</label>
-        <input id="tipAmountInput" type="number" min="1" step="1" value="5" />
-
-        <div class="button-row">
-          <button id="tipBtn" class="btn-green" type="button">Send Tip</button>
-          <button id="openProfileBtn" class="btn-dark" type="button">Open Profile</button>
+        <div class="stat">
+          <div id="premiumCountStat" class="stat-value">0</div>
+          <div class="stat-label">Premium Tracks</div>
+        </div>
+        <div class="stat">
+          <div id="subscriptionCountStat" class="stat-value">0</div>
+          <div class="stat-label">Subscribers</div>
+        </div>
+        <div class="stat">
+          <div id="purchaseCountStat" class="stat-value">0</div>
+          <div class="stat-label">Unlock Sales</div>
         </div>
       </div>
     </div>
 
-    <div class="grid">
-      <div class="panel">
-        <h2>Your Premium Drops</h2>
-        <div id="premiumList" class="list"></div>
+    <div class="section">
+      <h2>Stripe Creator Setup</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="pill">CONNECT</div>
+          <div class="card-title">Create Creator Payout Account</div>
+          <div class="card-text">
+            Start your creator payout setup using your existing connect route.
+          </div>
+          <div class="card-actions">
+            <button id="createConnectBtn" class="btn-green" type="button">Create Connect Account</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pill">ONBOARDING</div>
+          <div class="card-title">Open Stripe Account Link</div>
+          <div class="card-text">
+            Continue setup for payouts, verification, and creator account details.
+          </div>
+          <div class="card-actions">
+            <button id="accountLinkBtn" class="btn-dark" type="button">Open Account Link</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pill">RESULTS</div>
+          <div class="card-title">Success + Cancel Routes</div>
+          <div class="card-text">
+            Your checkout flow already has success and cancel pages ready.
+          </div>
+          <div class="card-actions">
+            <a class="btn-green" href="monetization-success.html">Success Page</a>
+            <a class="btn-danger" href="monetization-cancel.html">Cancel Page</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Premium Track Unlock</h2>
+      <div class="form-grid">
+        <div class="control">
+          <label for="premiumTrackSelect">Choose Track</label>
+          <select id="premiumTrackSelect">
+            <option value="">Select a track</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="unlockPrice">Unlock Price (USD)</label>
+          <input id="unlockPrice" type="number" step="0.01" min="0.50" value="5.00" />
+        </div>
+
+        <div class="control">
+          <label for="subscriberOnly">Access Mode</label>
+          <select id="subscriberOnly">
+            <option value="false">Direct Unlock</option>
+            <option value="true">Subscriber Only</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="savePremiumBtn" class="btn-green" type="button">Save Premium Setup</button>
+        </div>
+      </div>
+      <div class="small">
+        This writes to your `premium_tracks` table so `music.html` and `music-unlock.html` can use it.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Fan Subscription Checkout</h2>
+      <div class="form-grid">
+        <div class="control">
+          <label for="subscriptionTitle">Supporter Plan Name</label>
+          <input id="subscriptionTitle" type="text" value="Artist Supporter Plan" />
+        </div>
+
+        <div class="control">
+          <label for="subscriptionAmount">Monthly Price (USD)</label>
+          <input id="subscriptionAmount" type="number" step="0.01" min="1.00" value="5.00" />
+        </div>
+
+        <div class="control full">
+          <label for="subscriptionNote">Supporter Message</label>
+          <textarea id="subscriptionNote" placeholder="Describe what fans get with this support tier...">Support the artist and unlock premium creator access.</textarea>
+        </div>
       </div>
 
-      <div class="panel">
-        <h2>Earnings Activity</h2>
-        <div id="earningsList" class="list"></div>
+      <div class="card-actions">
+        <button id="createSubscriptionBtn" class="btn-gold" type="button">Create Fan Subscription Checkout</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Direct Support / Tip Checkout</h2>
+      <div class="form-grid">
+        <div class="control">
+          <label for="tipTitle">Checkout Title</label>
+          <input id="tipTitle" type="text" value="Support Rich Bizness Artist" />
+        </div>
+
+        <div class="control">
+          <label for="tipAmount">Amount (USD)</label>
+          <input id="tipAmount" type="number" step="0.01" min="1.00" value="10.00" />
+        </div>
+
+        <div class="control full">
+          <label for="tipDescription">Checkout Note</label>
+          <textarea id="tipDescription" placeholder="Optional note...">Direct artist support checkout.</textarea>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button id="createTipBtn" class="btn-green" type="button">Create Support Checkout</button>
       </div>
     </div>
   </div>
@@ -183,315 +512,265 @@
         }
       });
 
-      const statusBox = document.getElementById("statusBox");
+      const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const createPremiumBtn = document.getElementById("createPremiumBtn");
-      const refreshBtn = document.getElementById("refreshBtn");
-      const tipBtn = document.getElementById("tipBtn");
-      const openProfileBtn = document.getElementById("openProfileBtn");
+      const statusBox = document.getElementById("statusBox");
 
-      const contentTypeInput = document.getElementById("contentTypeInput");
-      const contentIdInput = document.getElementById("contentIdInput");
-      const titleInput = document.getElementById("titleInput");
-      const descriptionInput = document.getElementById("descriptionInput");
-      const priceInput = document.getElementById("priceInput");
+      const trackCountStat = document.getElementById("trackCountStat");
+      const premiumCountStat = document.getElementById("premiumCountStat");
+      const subscriptionCountStat = document.getElementById("subscriptionCountStat");
+      const purchaseCountStat = document.getElementById("purchaseCountStat");
 
-      const tipCreatorIdInput = document.getElementById("tipCreatorIdInput");
-      const tipAmountInput = document.getElementById("tipAmountInput");
+      const createConnectBtn = document.getElementById("createConnectBtn");
+      const accountLinkBtn = document.getElementById("accountLinkBtn");
 
-      const grossStat = document.getElementById("grossStat");
-      const tipsStat = document.getElementById("tipsStat");
-      const premiumStat = document.getElementById("premiumStat");
+      const premiumTrackSelect = document.getElementById("premiumTrackSelect");
+      const unlockPrice = document.getElementById("unlockPrice");
+      const subscriberOnly = document.getElementById("subscriberOnly");
+      const savePremiumBtn = document.getElementById("savePremiumBtn");
 
-      const premiumList = document.getElementById("premiumList");
-      const earningsList = document.getElementById("earningsList");
+      const subscriptionTitle = document.getElementById("subscriptionTitle");
+      const subscriptionAmount = document.getElementById("subscriptionAmount");
+      const subscriptionNote = document.getElementById("subscriptionNote");
+      const createSubscriptionBtn = document.getElementById("createSubscriptionBtn");
+
+      const tipTitle = document.getElementById("tipTitle");
+      const tipAmount = document.getElementById("tipAmount");
+      const tipDescription = document.getElementById("tipDescription");
+      const createTipBtn = document.getElementById("createTipBtn");
 
       let currentUser = null;
+      let myTracks = [];
 
       function setStatus(message) {
         statusBox.textContent = message;
       }
 
-      function toMoney(cents) {
-        return `$${((Number(cents || 0)) / 100).toFixed(2)}`;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      async function requireUser() {
+      async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
         currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
         if (!currentUser) {
-          setStatus("No active session. Redirecting...");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
-          return null;
+          window.location.href = "auth.html";
+          return false;
         }
 
-        return currentUser;
-      }
-
-      async function createPremiumContent() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const contentType = contentTypeInput.value;
-          const contentId = Number(contentIdInput.value);
-          const title = titleInput.value.trim();
-          const description = descriptionInput.value.trim();
-          const priceUsd = Number(priceInput.value);
-
-          if (!contentType || !contentId || !title || !priceUsd) {
-            throw new Error("Fill out all premium drop fields.");
-          }
-
-          const { error } = await supabase
-            .from("premium_content")
-            .insert({
-              creator_id: user.id,
-              creator_email: user.email || "",
-              content_type: contentType,
-              content_id: contentId,
-              title,
-              description,
-              price_cents: priceUsd * 100,
-              is_active: true
-            });
-
-          if (error) throw error;
-
-          titleInput.value = "";
-          descriptionInput.value = "";
-          contentIdInput.value = "";
-          priceInput.value = "5";
-
-          setStatus("Premium drop created.");
-          await loadDashboard();
-        } catch (error) {
-          setStatus("Create premium error: " + error.message);
-        }
-      }
-
-      async function sendTip() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const creatorId = tipCreatorIdInput.value.trim();
-          const amountUsd = Number(tipAmountInput.value);
-
-          if (!creatorId || !amountUsd) {
-            throw new Error("Enter creator id and tip amount.");
-          }
-
-          const { data: tipRow, error: tipInsertError } = await supabase
-            .from("tips")
-            .insert({
-              sender_id: user.id,
-              sender_email: user.email || "",
-              creator_id: creatorId,
-              amount_cents: amountUsd * 100,
-              status: "pending"
-            })
-            .select()
-            .single();
-
-          if (tipInsertError) throw tipInsertError;
-
-          const response = await fetch("/api/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "tip",
-              title: `Tip on Rich Bizness`,
-              amountCents: amountUsd * 100,
-              metadata: {
-                tip_id: String(tipRow.id),
-                creator_id: creatorId
-              }
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || "Could not create tip checkout.");
-          }
-
-          window.location.href = payload.url;
-        } catch (error) {
-          setStatus("Tip checkout error: " + error.message);
-        }
-      }
-
-      async function buyPremiumDrop(premiumContentId) {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const { data: premiumRow, error: premiumError } = await supabase
-            .from("premium_content")
-            .select("*")
-            .eq("id", premiumContentId)
-            .maybeSingle();
-
-          if (premiumError) throw premiumError;
-          if (!premiumRow) throw new Error("Premium drop not found.");
-
-          const { data: purchaseRow, error: purchaseInsertError } = await supabase
-            .from("purchases")
-            .insert({
-              buyer_id: user.id,
-              buyer_email: user.email || "",
-              creator_id: premiumRow.creator_id,
-              premium_content_id: premiumRow.id,
-              amount_cents: premiumRow.price_cents,
-              status: "pending"
-            })
-            .select()
-            .single();
-
-          if (purchaseInsertError) throw purchaseInsertError;
-
-          const response = await fetch("/api/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "premium_unlock",
-              title: premiumRow.title || "Premium Unlock",
-              amountCents: premiumRow.price_cents,
-              metadata: {
-                purchase_id: String(purchaseRow.id),
-                creator_id: premiumRow.creator_id
-              }
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) {
-            throw new Error(payload.error || "Could not create premium checkout.");
-          }
-
-          window.location.href = payload.url;
-        } catch (error) {
-          setStatus("Premium checkout error: " + error.message);
-        }
-      }
-
-      async function loadDashboard() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          setStatus("Loading monetization dashboard...");
-
-          const [premiumRes, earningsRes] = await Promise.all([
-            supabase.from("premium_content").select("*").eq("creator_id", user.id).order("created_at", { ascending: false }),
-            supabase.from("creator_earnings").select("*").eq("creator_id", user.id).order("created_at", { ascending: false })
-          ]);
-
-          if (premiumRes.error) throw premiumRes.error;
-          if (earningsRes.error) throw earningsRes.error;
-
-          const premiumRows = premiumRes.data || [];
-          const earningsRows = earningsRes.data || [];
-
-          let gross = 0;
-          let tipsOnly = 0;
-          let premiumOnly = 0;
-
-          earningsRows.forEach(row => {
-            gross += Number(row.gross_cents || 0);
-            if (row.source_type === "tip") tipsOnly += Number(row.gross_cents || 0);
-            if (row.source_type === "premium_unlock") premiumOnly += Number(row.gross_cents || 0);
-          });
-
-          grossStat.textContent = toMoney(gross);
-          tipsStat.textContent = toMoney(tipsOnly);
-          premiumStat.textContent = toMoney(premiumOnly);
-
-          if (!premiumRows.length) {
-            premiumList.innerHTML = `<div class="empty-box">No premium drops yet.</div>`;
-          } else {
-            premiumList.innerHTML = premiumRows.map(row => `
-              <div class="item">
-                <div class="item-title">${escapeHtml(row.title || "Premium Drop")}</div>
-                <div class="item-text">
-                  Type: ${escapeHtml(row.content_type)}<br>
-                  Content ID: ${escapeHtml(row.content_id)}<br>
-                  Price: ${escapeHtml(toMoney(row.price_cents))}<br>
-                  ${escapeHtml(row.description || "")}
-                </div>
-                <div class="button-row">
-                  <button class="btn-green" onclick="window.__buyPremium(${row.id})">Test Buy</button>
-                  <button class="btn-dark" type="button">${row.is_active ? "Active" : "Inactive"}</button>
-                </div>
-              </div>
-            `).join("");
-          }
-
-          if (!earningsRows.length) {
-            earningsList.innerHTML = `<div class="empty-box">No earnings activity yet.</div>`;
-          } else {
-            earningsList.innerHTML = earningsRows.map(row => `
-              <div class="item">
-                <div class="item-title">${escapeHtml(row.source_type || "earning")}</div>
-                <div class="item-text">
-                  Gross: ${escapeHtml(toMoney(row.gross_cents))}<br>
-                  Status: ${escapeHtml(row.status || "--")}<br>
-                  Created: ${escapeHtml(formatDate(row.created_at))}
-                </div>
-              </div>
-            `).join("");
-          }
-
-          setStatus("Monetization dashboard loaded.");
-        } catch (error) {
-          setStatus("Dashboard error: " + error.message);
-        }
+        return true;
       }
 
       async function logOut() {
-        const { error } = await supabase.auth.signOut();
-        if (error) {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
           setStatus("Logout error: " + error.message);
-          return;
         }
-        window.location.href = "auth.html";
       }
 
-      window.__buyPremium = buyPremiumDrop;
+      async function loadStatsAndTracks() {
+        const ok = await loadSession();
+        if (!ok) return;
 
-      createPremiumBtn.addEventListener("click", createPremiumContent);
-      refreshBtn.addEventListener("click", loadDashboard);
-      tipBtn.addEventListener("click", sendTip);
+        const [tracksRes, premiumRes, subRes, purchaseRes] = await Promise.all([
+          supabase.from("music_tracks").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
+          supabase.from("premium_tracks").select("*").eq("artist_user_id", currentUser.id),
+          supabase.from("fan_subscriptions").select("*", { count: "exact", head: true }).eq("artist_user_id", currentUser.id).eq("status", "active"),
+          supabase.from("premium_track_purchases").select("*", { count: "exact", head: true }).eq("artist_user_id", currentUser.id).eq("status", "paid")
+        ]);
+
+        if (tracksRes.error) throw tracksRes.error;
+        if (premiumRes.error) throw premiumRes.error;
+        if (subRes.error) throw subRes.error;
+        if (purchaseRes.error) throw purchaseRes.error;
+
+        myTracks = tracksRes.data || [];
+
+        trackCountStat.textContent = myTracks.length;
+        premiumCountStat.textContent = (premiumRes.data || []).length;
+        subscriptionCountStat.textContent = subRes.count || 0;
+        purchaseCountStat.textContent = purchaseRes.count || 0;
+
+        premiumTrackSelect.innerHTML = `<option value="">Select a track</option>` + myTracks.map(track =>
+          `<option value="${track.id}">${String(track.title || "Untitled Track")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")}</option>`
+        ).join("");
+      }
+
+      async function createConnectAccount() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const response = await fetch("/api/create-connect-account", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              email: currentUser.email
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create connect account.");
+
+          setStatus("Connect account created or found.");
+        } catch (error) {
+          setStatus("Connect account error: " + error.message);
+        }
+      }
+
+      async function openAccountLink() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const response = await fetch("/api/create-account-link", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUser.id,
+              email: currentUser.email
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create account link.");
+
+          if (!payload.url) throw new Error("No Stripe account link returned.");
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Account link error: " + error.message);
+        }
+      }
+
+      async function savePremiumSetup() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const trackId = Number(premiumTrackSelect.value);
+          if (!trackId) throw new Error("Choose a track first.");
+
+          const price = Number(unlockPrice.value);
+          if (!price || price <= 0) throw new Error("Enter a valid unlock price.");
+
+          const amountCents = Math.round(price * 100);
+          const isSubscriberOnly = subscriberOnly.value === "true";
+
+          const { error } = await supabase
+            .from("premium_tracks")
+            .upsert({
+              track_id: trackId,
+              artist_user_id: currentUser.id,
+              unlock_price_cents: amountCents,
+              is_subscriber_only: isSubscriberOnly
+            }, { onConflict: "track_id" });
+
+          if (error) throw error;
+
+          setStatus("Premium track setup saved.");
+          await loadStatsAndTracks();
+        } catch (error) {
+          setStatus("Premium setup error: " + error.message);
+        }
+      }
+
+      async function createSubscriptionCheckout() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const title = subscriptionTitle.value.trim() || "Artist Supporter Plan";
+          const price = Number(subscriptionAmount.value);
+          if (!price || price <= 0) throw new Error("Enter a valid subscription amount.");
+
+          const amountCents = Math.round(price * 100);
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "fan_subscription",
+              title,
+              amountCents,
+              description: subscriptionNote.value.trim(),
+              artistUserId: currentUser.id,
+              successUrl: `${window.location.origin}/monetization-success.html`,
+              cancelUrl: `${window.location.origin}/monetization-cancel.html`
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create subscription checkout.");
+
+          if (!payload.url) throw new Error("No checkout URL returned.");
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Subscription checkout error: " + error.message);
+        }
+      }
+
+      async function createTipCheckout() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const title = tipTitle.value.trim() || "Support Rich Bizness Artist";
+          const price = Number(tipAmount.value);
+          if (!price || price <= 0) throw new Error("Enter a valid support amount.");
+
+          const amountCents = Math.round(price * 100);
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "direct_support",
+              title,
+              amountCents,
+              description: tipDescription.value.trim(),
+              artistUserId: currentUser.id,
+              successUrl: `${window.location.origin}/monetization-success.html`,
+              cancelUrl: `${window.location.origin}/monetization-cancel.html`
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create support checkout.");
+
+          if (!payload.url) throw new Error("No checkout URL returned.");
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Support checkout error: " + error.message);
+        }
+      }
+
+      createConnectBtn.addEventListener("click", createConnectAccount);
+      accountLinkBtn.addEventListener("click", openAccountLink);
+      savePremiumBtn.addEventListener("click", savePremiumSetup);
+      createSubscriptionBtn.addEventListener("click", createSubscriptionCheckout);
+      createTipBtn.addEventListener("click", createTipCheckout);
       logoutBtn.addEventListener("click", logOut);
-      openProfileBtn.addEventListener("click", () => {
-        window.location.href = "profile.html";
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadDashboard();
+      loadStatsAndTracks()
+        .then(() => setStatus("Monetization hub loaded."))
+        .catch((error) => setStatus("Monetization load error: " + error.message));
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Monetization Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Monetization Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
