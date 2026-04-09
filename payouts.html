@@ -364,6 +364,7 @@
         <div class="card">
           <div class="pill">WITHDRAW</div>
           <div class="card-title">Submit A Payout Request</div>
+
           <div class="form-grid">
             <div class="control">
               <label for="amountInput">Amount (USD)</label>
@@ -656,30 +657,33 @@
 
           if (!payoutAccount) throw new Error("Create a payout account first.");
           if (!payoutAccount.payouts_enabled) throw new Error("Finish Stripe onboarding first.");
-          
-          const amountDollars = Number(amountInput.value);
-          if (!amountDollars || amountDollars <= 0) throw new Error("Enter a valid payout amount.");
 
-          const amountCents = Math.round(amountDollars * 100);
-          if (amountCents > availableCents) {
-            throw new Error("Requested amount is higher than available balance.");
+          const amountDollars = Number(amountInput.value);
+          if (!amountDollars || amountDollars <= 0) {
+            throw new Error("Enter a valid payout amount.");
           }
 
+          const amountCents = Math.round(amountDollars * 100);
           const currency = (currencyInput.value || "usd").trim().toLowerCase();
           const note = noteInput.value.trim();
 
-          const { error } = await supabase
-            .from("payout_requests")
-            .insert({
-              artist_user_id: currentUser.id,
-              amount_cents: amountCents,
+          const response = await fetch("/api/request-payout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              artistUserId: currentUser.id,
+              amountCents,
               currency,
-              status: "pending",
-              stripe_destination_account_id: payoutAccount.stripe_account_id,
               note
-            });
+            })
+          });
 
-          if (error) throw error;
+          const payload = await response.json();
+          if (!response.ok) {
+            throw new Error(payload.error || "Could not submit payout request.");
+          }
 
           amountInput.value = "";
           noteInput.value = "";
