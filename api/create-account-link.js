@@ -1,28 +1,717 @@
-import Stripe from "stripe";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  <script type="module">
+    import {
+      Room,
+      RoomEvent,
+      Track
+    } from "https://cdn.skypack.dev/livekit-client";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
+    window.LivekitModules = { Room, RoomEvent, Track };
+    window.dispatchEvent(new Event("livekit-ready"));
+  </script>
 
-  try {
-    const { stripeAccountId } = req.body || {};
+  <style>
+    * { box-sizing: border-box; }
 
-    if (!stripeAccountId) {
-      return res.status(400).json({ error: "Missing stripeAccountId" });
+    :root {
+      --green: #7dff71;
+      --green-2: #a8ff8f;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.50);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
     }
 
-    const accountLink = await stripe.accountLinks.create({
-      account: stripeAccountId,
-      refresh_url: `${process.env.SITE_URL}/profile.html`,
-      return_url: `${process.env.SITE_URL}/profile.html`,
-      type: "account_onboarding"
-    });
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.86)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
 
-    return res.status(200).json({ url: accountLink.url });
-  } catch (error) {
-    return res.status(500).json({ error: error.message || "Failed to create account link" });
-  }
-}
+    .page {
+      max-width: 1550px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar, .hero, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .section {
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 1.02;
+      color: var(--green);
+    }
+
+    .subtle {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-actions, .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green, .btn-dark, .btn-gold, .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark { background: var(--soft); color: white; border: 1px solid rgba(255,255,255,0.08); }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      color: var(--green);
+      font-size: 1.4rem;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .mini-box {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      line-height: 1.6;
+      word-break: break-word;
+      margin-top: 14px;
+    }
+
+    .video-shell {
+      min-height: 520px;
+      width: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    #videoStage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .video-empty {
+      color: rgba(255,255,255,0.78);
+      text-align: center;
+      font-weight: 700;
+      padding: 24px;
+    }
+
+    .live-pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(239,91,85,0.16);
+      border: 1px solid rgba(239,91,85,0.30);
+      color: #ff9f9b;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 1100px) {
+      .grid-2, .stats-row, .button-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+
+      .video-shell {
+        min-height: 320px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness Live</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="music.html">Music</a>
+        <a href="artist.html">Artist</a>
+        <a href="live.html" class="active">Live</a>
+        <a href="watch.html">Watch</a>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="live-pill">HOST CONTROL ROOM</div>
+      <h1>Maximized Live System</h1>
+      <div class="subtle">
+        Start your stream, preview your camera, control mic and camera, copy the viewer link, and run the full host side from one synced page.
+      </div>
+
+      <div class="hero-actions">
+        <button id="startBtn" class="btn-green" type="button">WE LIT 🔥</button>
+        <button id="endBtn" class="btn-danger" type="button">End Live</button>
+        <a class="btn-dark" href="watch.html">Open Watch Page</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading live control room...</div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="liveStateStat" class="stat-value">OFF</div>
+          <div class="stat-label">Live State</div>
+        </div>
+        <div class="stat">
+          <div id="roomStat" class="stat-value">--</div>
+          <div class="stat-label">Room</div>
+        </div>
+        <div class="stat">
+          <div id="hostStat" class="stat-value">--</div>
+          <div class="stat-label">Host</div>
+        </div>
+        <div class="stat">
+          <div id="viewerStat" class="stat-value">1</div>
+          <div class="stat-label">Viewer Link Ready</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="section">
+        <div class="panel">
+          <h2>Live Controls</h2>
+
+          <div class="control">
+            <label for="roomNameInput">Room Name</label>
+            <input id="roomNameInput" type="text" value="" />
+          </div>
+
+          <div class="control">
+            <label for="hostNameInput">Host Name</label>
+            <input id="hostNameInput" type="text" value="" />
+          </div>
+
+          <div class="button-grid">
+            <button id="copyRoomBtn" class="btn-dark" type="button">Copy Viewer Link</button>
+            <button id="openViewerBtn" class="btn-dark" type="button">Open Viewer</button>
+          </div>
+
+          <div class="button-grid">
+            <button id="camBtn" class="btn-dark" type="button">Toggle Camera</button>
+            <button id="micBtn" class="btn-dark" type="button">Toggle Mic</button>
+          </div>
+
+          <div class="mini-box" id="viewerLinkBox">Viewer link will show here.</div>
+          <div class="mini-box">
+            Token route: <strong>/api/livekit-token</strong><br>
+            Method: <strong>POST</strong><br>
+            Body: <strong>roomName, participantName, role</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="panel">
+          <h2>Host Preview</h2>
+          <div class="video-shell" id="videoStage">
+            <div class="video-empty">Your live preview will show here.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const LIVEKIT_URL = "wss://YOUR-LIVEKIT-CLOUD-URL.livekit.cloud";
+      const TOKEN_API_URL = "/api/livekit-token";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const roomNameInput = document.getElementById("roomNameInput");
+      const hostNameInput = document.getElementById("hostNameInput");
+
+      const startBtn = document.getElementById("startBtn");
+      const endBtn = document.getElementById("endBtn");
+      const copyRoomBtn = document.getElementById("copyRoomBtn");
+      const openViewerBtn = document.getElementById("openViewerBtn");
+      const camBtn = document.getElementById("camBtn");
+      const micBtn = document.getElementById("micBtn");
+
+      const liveStateStat = document.getElementById("liveStateStat");
+      const roomStat = document.getElementById("roomStat");
+      const hostStat = document.getElementById("hostStat");
+      const viewerStat = document.getElementById("viewerStat");
+
+      const viewerLinkBox = document.getElementById("viewerLinkBox");
+      const videoStage = document.getElementById("videoStage");
+
+      let currentUser = null;
+      let room = null;
+      let liveStarted = false;
+      let cameraEnabled = true;
+      let micEnabled = true;
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function clearVideoStage() {
+        videoStage.innerHTML = `<div class="video-empty">Your live preview will show here.</div>`;
+      }
+
+      function makeDefaultRoomName(user) {
+        const idPart = (user?.id || "rb").slice(0, 8);
+        return `richbizness-live-${idPart}`;
+      }
+
+      function makeDefaultHostName(user) {
+        if (user?.email) return user.email.split("@")[0];
+        return "richbizness-host";
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          window.location.href = "auth.html";
+          return false;
+        }
+
+        if (!roomNameInput.value.trim()) {
+          roomNameInput.value = makeDefaultRoomName(currentUser);
+        }
+
+        if (!hostNameInput.value.trim()) {
+          hostNameInput.value = makeDefaultHostName(currentUser);
+        }
+
+        renderViewerLink();
+        return true;
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      function renderViewerLink() {
+        const roomName = roomNameInput.value.trim();
+        const viewerUrl = `${window.location.origin}/watch.html?room=${encodeURIComponent(roomName)}`;
+        viewerLinkBox.textContent = viewerUrl;
+        return viewerUrl;
+      }
+
+      async function fetchLiveToken(roomName, participantName) {
+        const response = await fetch(TOKEN_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            roomName,
+            participantName,
+            role: "host"
+          })
+        });
+
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Token request failed.");
+        if (!payload.token) throw new Error("No LiveKit token returned.");
+        return payload.token;
+      }
+
+      function attachLocalVideo(track) {
+        videoStage.innerHTML = "";
+        const element = track.attach();
+        element.muted = true;
+        element.autoplay = true;
+        element.playsInline = true;
+        videoStage.appendChild(element);
+      }
+
+      async function startLive() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          if (!window.LivekitModules) {
+            setStatus("LiveKit still loading...");
+            return;
+          }
+
+          if (liveStarted && room) {
+            setStatus("You are already live.");
+            return;
+          }
+
+          const roomName = roomNameInput.value.trim();
+          const participantName = hostNameInput.value.trim();
+
+          if (!roomName) throw new Error("Room name is required.");
+          if (!participantName) throw new Error("Host name is required.");
+
+          setStatus("Getting live token...");
+
+          const token = await fetchLiveToken(roomName, participantName);
+          const { Room, RoomEvent } = window.LivekitModules;
+
+          room = new Room();
+
+          room.on(RoomEvent.Disconnected, () => {
+            liveStarted = false;
+            liveStateStat.textContent = "OFF";
+            roomStat.textContent = "--";
+            hostStat.textContent = "--";
+            clearVideoStage();
+            setStatus("Live ended.");
+          });
+
+          setStatus("Connecting to LiveKit...");
+          await room.connect(LIVEKIT_URL, token);
+
+          await room.localParticipant.enableCameraAndMicrophone();
+
+          const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
+          const pub = pubs.find(Boolean);
+
+          if (pub?.videoTrack) {
+            attachLocalVideo(pub.videoTrack);
+          } else {
+            clearVideoStage();
+          }
+
+          liveStarted = true;
+          cameraEnabled = true;
+          micEnabled = true;
+
+          liveStateStat.textContent = "LIVE";
+          roomStat.textContent = roomName;
+          hostStat.textContent = participantName;
+          viewerStat.textContent = "READY";
+
+          renderViewerLink();
+          setStatus("WE LIT 🔥 Live started.");
+        } catch (error) {
+          setStatus("Live start error: " + error.message);
+        }
+      }
+
+      async function endLive() {
+        try {
+          if (room) {
+            room.disconnect();
+            room = null;
+          }
+
+          liveStarted = false;
+          liveStateStat.textContent = "OFF";
+          roomStat.textContent = "--";
+          hostStat.textContent = "--";
+          clearVideoStage();
+          setStatus("Live ended.");
+        } catch (error) {
+          setStatus("End live error: " + error.message);
+        }
+      }
+
+      async function toggleCamera() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          cameraEnabled = !cameraEnabled;
+          await room.localParticipant.setCameraEnabled(cameraEnabled);
+
+          if (cameraEnabled) {
+            const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
+            const pub = pubs.find(Boolean);
+            if (pub?.videoTrack) {
+              attachLocalVideo(pub.videoTrack);
+            }
+          } else {
+            clearVideoStage();
+          }
+
+          setStatus(cameraEnabled ? "Camera on." : "Camera off.");
+        } catch (error) {
+          setStatus("Camera error: " + error.message);
+        }
+      }
+
+      async function toggleMic() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          micEnabled = !micEnabled;
+          await room.localParticipant.setMicrophoneEnabled(micEnabled);
+          setStatus(micEnabled ? "Mic on." : "Mic off.");
+        } catch (error) {
+          setStatus("Mic error: " + error.message);
+        }
+      }
+
+      async function copyViewerLink() {
+        try {
+          const viewerUrl = renderViewerLink();
+          await navigator.clipboard.writeText(viewerUrl);
+          setStatus("Viewer link copied.");
+        } catch {
+          setStatus("Could not copy viewer link.");
+        }
+      }
+
+      function openViewerPage() {
+        const viewerUrl = renderViewerLink();
+        window.open(viewerUrl, "_blank");
+      }
+
+      startBtn.addEventListener("click", startLive);
+      endBtn.addEventListener("click", endLive);
+      camBtn.addEventListener("click", toggleCamera);
+      micBtn.addEventListener("click", toggleMic);
+      copyRoomBtn.addEventListener("click", copyViewerLink);
+      openViewerBtn.addEventListener("click", openViewerPage);
+      logoutBtn.addEventListener("click", logOut);
+
+      roomNameInput.addEventListener("input", renderViewerLink);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      window.addEventListener("livekit-ready", async () => {
+        const ok = await loadSession();
+        if (ok) setStatus("Live control room ready.");
+      });
+
+      if (window.LivekitModules) {
+        loadSession().then((ok) => {
+          if (ok) setStatus("Live control room ready.");
+        });
+      }
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Live Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
