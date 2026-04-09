@@ -9,11 +9,10 @@
   <script type="module">
     import {
       Room,
-      RoomEvent,
-      Track
+      RoomEvent
     } from "https://cdn.skypack.dev/livekit-client";
 
-    window.LivekitModules = { Room, RoomEvent, Track };
+    window.LivekitModules = { Room, RoomEvent };
     window.dispatchEvent(new Event("livekit-ready"));
   </script>
 
@@ -44,7 +43,7 @@
     }
 
     .page {
-      max-width: 1550px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 18px;
       padding-bottom: 40px;
@@ -166,7 +165,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -192,9 +191,9 @@
       color: var(--muted);
     }
 
-    .grid-2 {
+    .layout {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 18px;
     }
 
@@ -240,19 +239,8 @@
       margin-top: 10px;
     }
 
-    .mini-box {
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text);
-      line-height: 1.6;
-      word-break: break-word;
-      margin-top: 14px;
-    }
-
     .video-shell {
-      min-height: 520px;
+      min-height: 560px;
       width: 100%;
       border-radius: 22px;
       overflow: hidden;
@@ -288,8 +276,66 @@
       margin-bottom: 10px;
     }
 
-    @media (max-width: 1100px) {
-      .grid-2, .stats-row, .button-grid {
+    .mini-box {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      line-height: 1.6;
+      word-break: break-word;
+      margin-top: 14px;
+    }
+
+    .chat-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .chat-item {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .chat-name {
+      color: var(--green);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .chat-text {
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .chat-form {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .chat-form input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    @media (max-width: 1150px) {
+      .layout, .stats-row, .button-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -301,6 +347,10 @@
 
       .video-shell {
         min-height: 320px;
+      }
+
+      .chat-form {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -331,7 +381,7 @@
       <div class="live-pill">HOST CONTROL ROOM</div>
       <h1>Maximized Live System</h1>
       <div class="subtle">
-        Start your stream, preview your camera, control mic and camera, copy the viewer link, and run the full host side from one synced page.
+        Start your stream, preview your camera, control mic and camera, copy the viewer link, and chat live with your viewers.
       </div>
 
       <div class="hero-actions">
@@ -356,13 +406,26 @@
           <div class="stat-label">Host</div>
         </div>
         <div class="stat">
-          <div id="viewerStat" class="stat-value">1</div>
-          <div class="stat-label">Viewer Link Ready</div>
+          <div id="viewerStat" class="stat-value">0</div>
+          <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat">
+          <div id="chatStat" class="stat-value">0</div>
+          <div class="stat-label">Chat Messages</div>
         </div>
       </div>
     </div>
 
-    <div class="grid-2">
+    <div class="layout">
+      <div class="section">
+        <div class="panel">
+          <h2>Host Preview</h2>
+          <div class="video-shell" id="videoStage">
+            <div class="video-empty">Your live preview will show here.</div>
+          </div>
+        </div>
+      </div>
+
       <div class="section">
         <div class="panel">
           <h2>Live Controls</h2>
@@ -388,19 +451,20 @@
           </div>
 
           <div class="mini-box" id="viewerLinkBox">Viewer link will show here.</div>
-          <div class="mini-box">
-            Token route: <strong>/api/livekit-token</strong><br>
-            Method: <strong>POST</strong><br>
-            Body: <strong>roomName, participantName, role</strong>
-          </div>
         </div>
-      </div>
 
-      <div class="section">
-        <div class="panel">
-          <h2>Host Preview</h2>
-          <div class="video-shell" id="videoStage">
-            <div class="video-empty">Your live preview will show here.</div>
+        <div class="panel" style="margin-top:18px;">
+          <h2>Live Chat</h2>
+          <div id="chatList" class="chat-list">
+            <div class="chat-item">
+              <div class="chat-name">System</div>
+              <div class="chat-text">Start live to open chat.</div>
+            </div>
+          </div>
+
+          <div class="chat-form">
+            <input id="chatInput" type="text" placeholder="Talk to your viewers..." />
+            <button id="sendChatBtn" class="btn-green" type="button">Send</button>
           </div>
         </div>
       </div>
@@ -436,20 +500,25 @@
       const openViewerBtn = document.getElementById("openViewerBtn");
       const camBtn = document.getElementById("camBtn");
       const micBtn = document.getElementById("micBtn");
+      const sendChatBtn = document.getElementById("sendChatBtn");
 
       const liveStateStat = document.getElementById("liveStateStat");
       const roomStat = document.getElementById("roomStat");
       const hostStat = document.getElementById("hostStat");
       const viewerStat = document.getElementById("viewerStat");
+      const chatStat = document.getElementById("chatStat");
 
       const viewerLinkBox = document.getElementById("viewerLinkBox");
       const videoStage = document.getElementById("videoStage");
+      const chatList = document.getElementById("chatList");
+      const chatInput = document.getElementById("chatInput");
 
       let currentUser = null;
       let room = null;
       let liveStarted = false;
       let cameraEnabled = true;
       let micEnabled = true;
+      let chatMessages = [];
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -457,6 +526,34 @@
 
       function clearVideoStage() {
         videoStage.innerHTML = `<div class="video-empty">Your live preview will show here.</div>`;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function appendChat(name, text) {
+        chatMessages.push({ name, text });
+
+        if (chatMessages.length > 60) {
+          chatMessages = chatMessages.slice(-60);
+        }
+
+        chatStat.textContent = String(chatMessages.length);
+
+        chatList.innerHTML = chatMessages.map(msg => `
+          <div class="chat-item">
+            <div class="chat-name">${escapeHtml(msg.name)}</div>
+            <div class="chat-text">${escapeHtml(msg.text)}</div>
+          </div>
+        `).join("");
+
+        chatList.scrollTop = chatList.scrollHeight;
       }
 
       function makeDefaultRoomName(user) {
@@ -529,6 +626,14 @@
         return payload.token;
       }
 
+      function updateParticipantCount() {
+        if (!room) {
+          viewerStat.textContent = "0";
+          return;
+        }
+        viewerStat.textContent = String(room.remoteParticipants.size + 1);
+      }
+
       function attachLocalVideo(track) {
         videoStage.innerHTML = "";
         const element = track.attach();
@@ -560,18 +665,43 @@
           if (!participantName) throw new Error("Host name is required.");
 
           setStatus("Getting live token...");
-
           const token = await fetchLiveToken(roomName, participantName);
-          const { Room, RoomEvent } = window.LivekitModules;
 
+          const { Room, RoomEvent } = window.LivekitModules;
           room = new Room();
+
+          room.on(RoomEvent.TrackSubscribed, () => {
+            updateParticipantCount();
+          });
+
+          room.on(RoomEvent.ParticipantConnected, (participant) => {
+            updateParticipantCount();
+            appendChat("System", `${participant.identity} joined the live room.`);
+          });
+
+          room.on(RoomEvent.ParticipantDisconnected, (participant) => {
+            updateParticipantCount();
+            appendChat("System", `${participant.identity} left the live room.`);
+          });
+
+          room.on(RoomEvent.DataReceived, (payload, participant) => {
+            try {
+              const text = new TextDecoder().decode(payload);
+              const parsed = JSON.parse(text);
+              if (parsed?.type === "chat") {
+                appendChat(parsed.name || participant?.identity || "Viewer", parsed.message || "");
+              }
+            } catch {}
+          });
 
           room.on(RoomEvent.Disconnected, () => {
             liveStarted = false;
             liveStateStat.textContent = "OFF";
             roomStat.textContent = "--";
             hostStat.textContent = "--";
+            viewerStat.textContent = "0";
             clearVideoStage();
+            appendChat("System", "Live ended.");
             setStatus("Live ended.");
           });
 
@@ -596,9 +726,10 @@
           liveStateStat.textContent = "LIVE";
           roomStat.textContent = roomName;
           hostStat.textContent = participantName;
-          viewerStat.textContent = "READY";
+          updateParticipantCount();
 
           renderViewerLink();
+          appendChat("System", `Live started in room: ${roomName}`);
           setStatus("WE LIT 🔥 Live started.");
         } catch (error) {
           setStatus("Live start error: " + error.message);
@@ -616,7 +747,9 @@
           liveStateStat.textContent = "OFF";
           roomStat.textContent = "--";
           hostStat.textContent = "--";
+          viewerStat.textContent = "0";
           clearVideoStage();
+          appendChat("System", "Host ended the live.");
           setStatus("Live ended.");
         } catch (error) {
           setStatus("End live error: " + error.message);
@@ -679,15 +812,50 @@
         window.open(viewerUrl, "_blank");
       }
 
+      async function sendChat() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          const message = chatInput.value.trim();
+          if (!message) return;
+
+          const hostName = hostNameInput.value.trim() || "Host";
+          const payload = JSON.stringify({
+            type: "chat",
+            name: hostName,
+            message
+          });
+
+          const bytes = new TextEncoder().encode(payload);
+          await room.localParticipant.publishData(bytes, { reliable: true });
+
+          appendChat(hostName, message);
+          chatInput.value = "";
+        } catch (error) {
+          setStatus("Chat send error: " + error.message);
+        }
+      }
+
       startBtn.addEventListener("click", startLive);
       endBtn.addEventListener("click", endLive);
       camBtn.addEventListener("click", toggleCamera);
       micBtn.addEventListener("click", toggleMic);
       copyRoomBtn.addEventListener("click", copyViewerLink);
       openViewerBtn.addEventListener("click", openViewerPage);
+      sendChatBtn.addEventListener("click", sendChat);
       logoutBtn.addEventListener("click", logOut);
 
       roomNameInput.addEventListener("input", renderViewerLink);
+
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendChat();
+        }
+      });
 
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
