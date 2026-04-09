@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playlist View | Rich Bizness</title>
+  <title>Playlists | Rich Bizness</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
+
     :root {
       --green: #7dff71;
-      --bg: rgba(0,0,0,0.48);
-      --border: rgba(125,255,113,0.18);
+      --green-2: #a8ff8f;
+      --bg: rgba(0,0,0,0.50);
       --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
     }
 
     body {
@@ -19,19 +27,22 @@
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
-      padding-bottom: 120px;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
+        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
         url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1500px;
+      max-width: 1550px;
       margin: 0 auto;
       padding: 18px;
     }
 
-    .topbar, .hero, .panel, .player-shell {
+    .topbar,
+    .hero,
+    .controls,
+    .section,
+    .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 24px;
@@ -44,14 +55,24 @@
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
       padding: 14px 16px;
+      margin-bottom: 18px;
     }
 
     .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       color: var(--green);
       font-size: 1.8rem;
-      font-weight: 800;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
     }
 
     .nav {
@@ -61,7 +82,8 @@
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
       background: var(--soft);
@@ -72,85 +94,65 @@
       cursor: pointer;
     }
 
-    .hero, .panel {
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .controls, .section {
       padding: 22px;
       margin-bottom: 18px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 1.1fr 0.9fr;
       gap: 20px;
-      align-items: start;
-    }
-
-    .cover {
-      width: 100%;
-      height: 320px;
-      object-fit: cover;
-      border-radius: 18px;
-      background: black;
-    }
-
-    .cover-fallback {
-      width: 100%;
-      height: 320px;
-      border-radius: 18px;
-      background: rgba(125,255,113,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--green);
-      font-size: 2rem;
-      font-weight: 900;
+      align-items: stretch;
     }
 
     .hero h1 {
-      margin: 0 0 10px;
-      color: var(--green);
+      margin: 0 0 12px;
       font-size: 3rem;
-    }
-
-    .subtle {
-      color: #f1f1f1;
-      line-height: 1.7;
-      margin-bottom: 14px;
-    }
-
-    label {
-      display: block;
-      margin: 12px 0 8px;
+      line-height: 1.02;
       color: var(--green);
-      font-weight: 800;
     }
 
-    select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
+    .hero p, .subtle {
+      margin: 0;
+      color: var(--text);
+      line-height: 1.75;
     }
 
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
     }
 
-    button, .btn {
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-weight: 900;
-      cursor: pointer;
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
       text-decoration: none;
       text-align: center;
-      display: inline-block;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
     }
 
     .btn-green {
@@ -164,65 +166,278 @@
       border: 1px solid rgba(255,255,255,0.08);
     }
 
+    .btn-gold {
+      background: var(--gold);
+      color: black;
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: white;
+    }
+
     .status-box {
       margin-top: 16px;
       padding: 14px;
-      border-radius: 14px;
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.20);
       font-weight: 700;
+      line-height: 1.6;
     }
 
-    .tracks {
-      display: grid;
-      gap: 12px;
-    }
-
-    .track {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
+    .featured-card {
+      padding: 18px;
+      border-radius: 22px;
+      background: var(--soft2);
       border: 1px solid rgba(255,255,255,0.08);
-      display: grid;
-      grid-template-columns: 80px 1fr auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       gap: 14px;
-      align-items: center;
     }
 
-    .track-cover {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
+    .featured-cover {
+      width: 100%;
+      height: 260px;
       object-fit: cover;
+      border-radius: 16px;
       background: black;
     }
 
-    .track-fallback {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      background: rgba(125,255,113,0.08);
+    .featured-fallback,
+    .cover-fallback,
+    .mini-fallback {
       display: flex;
       align-items: center;
       justify-content: center;
       color: var(--green);
       font-weight: 900;
+      background: rgba(125,255,113,0.08);
+      border: 1px solid rgba(125,255,113,0.16);
     }
 
-    .track-title {
+    .featured-fallback {
+      width: 100%;
+      height: 260px;
+      border-radius: 16px;
+      font-size: 2rem;
+    }
+
+    .featured-title {
       color: var(--green);
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .featured-text {
+      color: var(--text);
+      line-height: 1.65;
+      white-space: pre-wrap;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr 1fr 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control textarea,
+    .control select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .control button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      background: var(--green);
+      color: black;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1.2fr;
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .section h2 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .trending-rail {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .mini-playlist {
+      padding: 12px;
+      border-radius: 18px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mini-cover {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: black;
+      margin-bottom: 10px;
+    }
+
+    .mini-fallback {
+      width: 100%;
+      height: 170px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      font-size: 1.5rem;
+    }
+
+    .mini-title {
+      color: var(--green-2);
       font-weight: 900;
       margin-bottom: 6px;
+      line-height: 1.35;
     }
 
-    .track-text {
-      color: #f1f1f1;
+    .mini-text {
+      color: var(--text);
       line-height: 1.55;
+      font-size: 0.95rem;
     }
 
-    .track-actions {
+    .playlist-grid {
       display: grid;
-      gap: 8px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+
+    .playlist-card {
+      padding: 14px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .cover {
+      width: 100%;
+      height: 260px;
+      border-radius: 16px;
+      object-fit: cover;
+      background: black;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .cover-fallback {
+      width: 100%;
+      height: 260px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+      font-size: 2rem;
+    }
+
+    .pill {
+      display: inline-block;
+      margin-bottom: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+      font-weight: 900;
+      font-size: 0.84rem;
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: var(--green);
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .card-text {
+      color: var(--text);
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-bottom: 12px;
+    }
+
+    .card-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .card-actions a,
+    .card-actions button {
+      text-decoration: none;
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
     }
 
     .empty-box {
@@ -235,81 +450,39 @@
       text-align: center;
     }
 
-    .player-shell {
-      position: fixed;
-      left: 16px;
-      right: 16px;
-      bottom: 12px;
-      padding: 14px;
-    }
-
-    .player-grid {
-      display: grid;
-      grid-template-columns: 80px 1fr auto;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .player-cover {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      object-fit: cover;
-      background: black;
-    }
-
-    .player-cover-fallback {
-      width: 80px;
-      height: 80px;
-      border-radius: 12px;
-      background: rgba(125,255,113,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--green);
-      font-weight: 900;
-    }
-
-    .player-title {
-      color: var(--green);
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .player-meta {
-      color: #f1f1f1;
-      margin-bottom: 8px;
-    }
-
-    .player-controls {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .player-controls audio {
-      width: min(520px, 100%);
-    }
-
-    @media (max-width: 1000px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
+    @media (max-width: 1320px) {
+      .playlist-grid,
+      .trending-rail,
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
       }
-      .track {
-        grid-template-columns: 1fr;
-      }
-      .player-grid {
+    }
+
+    @media (max-width: 1020px) {
+      .hero-grid,
+      .controls-grid,
+      .form-grid {
         grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 760px) {
-      .row {
+      .hero h1 {
+        font-size: 2.35rem;
+      }
+
+      .playlist-grid,
+      .trending-rail,
+      .stats-row,
+      .card-actions {
         grid-template-columns: 1fr;
       }
-      .hero h1 {
-        font-size: 2.2rem;
+
+      .cover,
+      .cover-fallback,
+      .featured-cover,
+      .featured-fallback {
+        height: 220px;
       }
     }
   </style>
@@ -317,74 +490,148 @@
 <body>
   <div class="page">
     <div class="topbar">
-      <div class="brand">Rich Bizness Playlist</div>
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
+        <span>Rich Bizness Playlists</span>
+      </div>
+
       <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
         <a href="music.html">Music</a>
-        <a href="playlists.html">Playlists</a>
+        <a href="albums.html">Albums</a>
+        <a href="playlist.html" class="active">Playlists</a>
+        <a href="artist.html">Artist</a>
+        <a href="artist-channel-manage.html">Channel</a>
         <a href="upload-music.html">Upload Music</a>
+        <a href="music-revenue.html">Revenue</a>
+        <a href="monetization.html">Monetize</a>
+        <a href="profile.html">Profile</a>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-grid">
-        <div id="coverWrap">
-          <div class="cover-fallback">RB</div>
-        </div>
-
         <div>
-          <h1 id="playlistTitle">Loading playlist...</h1>
-          <div id="playlistMeta" class="subtle">Loading playlist details...</div>
+          <h1>Fully Synced Playlists</h1>
+          <p>
+            Create playlists, manage public or private drops, open playlist detail pages, and connect the playlist system directly to your music empire.
+          </p>
 
-          <div class="row">
-            <button id="playAllBtn" class="btn-green" type="button">Play All</button>
-            <button id="refreshBtn" class="btn-dark" type="button">Refresh Playlist</button>
+          <div class="hero-actions">
+            <a class="btn-green" href="music.html">Open Music</a>
+            <a class="btn-dark" href="albums.html">Open Albums</a>
+            <a class="btn-dark" href="upload-music.html">Upload Music</a>
+            <a class="btn-gold" href="music-revenue.html">Revenue</a>
           </div>
 
-          <div id="ownerTools" class="panel" style="margin-top:16px; display:none;">
-            <h2 style="font-size:1.4rem;">Owner Tools</h2>
+          <div id="statusBox" class="status-box">Loading playlist system...</div>
+        </div>
 
-            <label for="trackSelect">Add Track To Playlist</label>
-            <select id="trackSelect">
-              <option value="">Choose a track</option>
-            </select>
-
-            <div class="row">
-              <button id="addTrackBtn" class="btn-green" type="button">Add Track</button>
-              <button id="refreshTrackListBtn" class="btn-dark" type="button">Reload Track List</button>
-            </div>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading playlist...</div>
+        <div class="featured-card" id="featuredPlaylistBox">
+          <div class="featured-fallback">RB</div>
+          <div class="featured-title">Featured Playlist</div>
+          <div class="featured-text">Loading featured playlist...</div>
         </div>
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Tracks</h2>
-      <div id="tracksWrap" class="tracks"></div>
-    </div>
-  </div>
+    <div class="controls">
+      <h2>Create Playlist</h2>
+      <div class="form-grid">
+        <div class="control">
+          <label for="playlistTitle">Playlist Title</label>
+          <input id="playlistTitle" type="text" placeholder="Late Night Rotation" />
 
-  <div class="player-shell">
-    <div class="player-grid">
-      <div id="playerCoverWrap">
-        <div class="player-cover-fallback">RB</div>
-      </div>
+          <label for="playlistDescription">Description</label>
+          <textarea id="playlistDescription" placeholder="Tell people what this playlist is about..."></textarea>
+        </div>
 
-      <div>
-        <div id="playerTitle" class="player-title">Nothing playing</div>
-        <div id="playerMeta" class="player-meta">Play a track from this playlist.</div>
+        <div class="control">
+          <label for="playlistCover">Cover URL</label>
+          <input id="playlistCover" type="text" placeholder="https://..." />
 
-        <div class="player-controls">
-          <button id="prevBtn" class="btn-dark" type="button">Prev</button>
-          <button id="nextBtn" class="btn-dark" type="button">Next</button>
-          <audio id="globalAudio" controls preload="none"></audio>
+          <label for="playlistVisibility">Visibility</label>
+          <select id="playlistVisibility">
+            <option value="true">Public</option>
+            <option value="false">Private</option>
+          </select>
+
+          <div style="margin-top:14px;">
+            <button id="createPlaylistBtn" type="button">Create Playlist</button>
+          </div>
         </div>
       </div>
+    </div>
 
-      <div>
-        <button id="queueCountBtn" class="btn-dark" type="button">Queue 0</button>
+    <div class="controls">
+      <div class="controls-grid">
+        <div class="control">
+          <label for="searchInput">Search playlist title / description</label>
+          <input id="searchInput" type="text" placeholder="Search playlists..." />
+        </div>
+
+        <div class="control">
+          <label for="visibilityFilter">Visibility</label>
+          <select id="visibilityFilter">
+            <option value="all">All</option>
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="sortFilter">Sort</label>
+          <select id="sortFilter">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="title">Title A-Z</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label>&nbsp;</label>
+          <button id="refreshBtn" type="button">Refresh Playlists</button>
+        </div>
       </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div id="playlistsStat" class="stat-value">0</div>
+        <div class="stat-label">Playlists</div>
+      </div>
+      <div class="stat">
+        <div id="publicStat" class="stat-value">0</div>
+        <div class="stat-label">Public</div>
+      </div>
+      <div class="stat">
+        <div id="privateStat" class="stat-value">0</div>
+        <div class="stat-label">Private</div>
+      </div>
+      <div class="stat">
+        <div id="myStat" class="stat-value">0</div>
+        <div class="stat-label">Mine</div>
+      </div>
+      <div class="stat">
+        <div id="filteredStat" class="stat-value">0</div>
+        <div class="stat-label">Showing</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Latest Playlist Drops</h2>
+      <div class="subtle">Newest playlists in your platform.</div>
+      <div id="trendingRail" class="trending-rail"></div>
+    </div>
+
+    <div class="section">
+      <h2>Playlist Catalog</h2>
+      <div class="subtle">Full catalog synced to your `playlists` table.</div>
+      <div id="playlistGrid" class="playlist-grid"></div>
     </div>
   </div>
 
@@ -394,35 +641,40 @@
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
       });
 
-      const playlistTitle = document.getElementById("playlistTitle");
-      const playlistMeta = document.getElementById("playlistMeta");
-      const coverWrap = document.getElementById("coverWrap");
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
-      const tracksWrap = document.getElementById("tracksWrap");
 
-      const playAllBtn = document.getElementById("playAllBtn");
+      const playlistTitle = document.getElementById("playlistTitle");
+      const playlistDescription = document.getElementById("playlistDescription");
+      const playlistCover = document.getElementById("playlistCover");
+      const playlistVisibility = document.getElementById("playlistVisibility");
+      const createPlaylistBtn = document.getElementById("createPlaylistBtn");
+
+      const searchInput = document.getElementById("searchInput");
+      const visibilityFilter = document.getElementById("visibilityFilter");
+      const sortFilter = document.getElementById("sortFilter");
       const refreshBtn = document.getElementById("refreshBtn");
 
-      const ownerTools = document.getElementById("ownerTools");
-      const trackSelect = document.getElementById("trackSelect");
-      const addTrackBtn = document.getElementById("addTrackBtn");
-      const refreshTrackListBtn = document.getElementById("refreshTrackListBtn");
+      const playlistsStat = document.getElementById("playlistsStat");
+      const publicStat = document.getElementById("publicStat");
+      const privateStat = document.getElementById("privateStat");
+      const myStat = document.getElementById("myStat");
+      const filteredStat = document.getElementById("filteredStat");
 
-      const playerCoverWrap = document.getElementById("playerCoverWrap");
-      const playerTitleBox = document.getElementById("playerTitle");
-      const playerMetaBox = document.getElementById("playerMeta");
-      const globalAudio = document.getElementById("globalAudio");
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      const queueCountBtn = document.getElementById("queueCountBtn");
+      const featuredPlaylistBox = document.getElementById("featuredPlaylistBox");
+      const trendingRail = document.getElementById("trendingRail");
+      const playlistGrid = document.getElementById("playlistGrid");
 
+      let allPlaylists = [];
       let currentUser = null;
-      let currentPlaylist = null;
-      let currentTracks = [];
-      let currentIndex = -1;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -437,257 +689,277 @@
           .replace(/'/g, "&#039;");
       }
 
-      function getPlaylistId() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get("id");
+      function emptyState(el, text) {
+        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
       }
 
       async function loadSession() {
-        const { data } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
         currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       }
 
-      function renderPlayer(track) {
-        if (!track) {
-          playerCoverWrap.innerHTML = `<div class="player-cover-fallback">RB</div>`;
-          playerTitleBox.textContent = "Nothing playing";
-          playerMetaBox.textContent = "Play a track from this playlist.";
-          globalAudio.removeAttribute("src");
-          globalAudio.load();
-          return;
-        }
-
-        playerCoverWrap.innerHTML = track.cover_url
-          ? `<img class="player-cover" src="${escapeHtml(track.cover_url)}" alt="cover" />`
-          : `<div class="player-cover-fallback">RB</div>`;
-
-        playerTitleBox.textContent = track.title || "Untitled Track";
-        playerMetaBox.textContent = `${track.artist_name || "Unknown Artist"} • ${track.genre || "--"}`;
-        globalAudio.src = track.audio_url || "";
-        globalAudio.load();
-      }
-
-      async function playTrack(index) {
-        if (index < 0 || index >= currentTracks.length) return;
-        currentIndex = index;
-        const track = currentTracks[index];
-        renderPlayer(track);
-
+      async function logOut() {
         try {
-          await globalAudio.play();
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
         } catch (error) {
-          console.error(error);
+          setStatus("Logout error: " + error.message);
         }
       }
 
-      function playNext() {
-        if (!currentTracks.length) return;
-        const next = (currentIndex + 1) % currentTracks.length;
-        playTrack(next);
-      }
-
-      function playPrev() {
-        if (!currentTracks.length) return;
-        const prev = (currentIndex - 1 + currentTracks.length) % currentTracks.length;
-        playTrack(prev);
-      }
-
-      async function loadTrackSelect() {
-        if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) return;
-
-        const { data, error } = await supabase
-          .from("music_tracks")
-          .select("*")
-          .eq("user_id", currentUser.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error(error.message);
-          return;
-        }
-
-        const existingIds = new Set(currentTracks.map(track => Number(track.id)));
-
-        trackSelect.innerHTML = `<option value="">Choose a track</option>` + (data || [])
-          .filter(track => !existingIds.has(Number(track.id)))
-          .map(track => `<option value="${track.id}">${escapeHtml(track.title || "Untitled")} — ${escapeHtml(track.artist_name || "Unknown")}</option>`)
-          .join("");
-      }
-
-      async function addTrackToPlaylist() {
+      async function createPlaylist() {
         try {
-          if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) {
-            throw new Error("Only the playlist owner can add tracks.");
+          if (!currentUser) {
+            window.location.href = "auth.html";
+            return;
           }
 
-          const trackId = Number(trackSelect.value);
-          if (!trackId) throw new Error("Choose a track first.");
+          const title = playlistTitle.value.trim();
+          const description = playlistDescription.value.trim();
+          const cover = playlistCover.value.trim();
+          const isPublic = playlistVisibility.value === "true";
 
-          const sortOrder = currentTracks.length + 1;
+          if (!title) {
+            throw new Error("Playlist title is required.");
+          }
 
           const { error } = await supabase
-            .from("playlist_tracks")
+            .from("playlists")
             .insert({
-              playlist_id: currentPlaylist.id,
-              track_id: trackId,
-              sort_order: sortOrder
+              user_id: currentUser.id,
+              title,
+              description,
+              cover_url: cover,
+              is_public: isPublic
             });
 
           if (error) throw error;
 
-          setStatus("Track added to playlist.");
-          await loadPlaylist();
+          playlistTitle.value = "";
+          playlistDescription.value = "";
+          playlistCover.value = "";
+          playlistVisibility.value = "true";
+
+          setStatus("Playlist created.");
+          await loadPlaylists();
         } catch (error) {
-          setStatus("Add track error: " + error.message);
+          setStatus("Create playlist error: " + error.message);
         }
       }
 
-      async function removeTrackFromPlaylist(playlistTrackId) {
+      function sortPlaylists(items, mode) {
+        const cloned = [...items];
+
+        if (mode === "oldest") {
+          cloned.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
+        } else if (mode === "title") {
+          cloned.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+        } else {
+          cloned.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+        }
+
+        return cloned;
+      }
+
+      function updateStats(filteredItems) {
+        const publicCount = allPlaylists.filter(item => item.is_public === true).length;
+        const privateCount = allPlaylists.filter(item => item.is_public === false).length;
+        const mineCount = currentUser ? allPlaylists.filter(item => item.user_id === currentUser.id).length : 0;
+
+        playlistsStat.textContent = allPlaylists.length;
+        publicStat.textContent = publicCount;
+        privateStat.textContent = privateCount;
+        myStat.textContent = mineCount;
+        filteredStat.textContent = filteredItems.length;
+      }
+
+      function renderFeaturedPlaylist(playlist) {
+        if (!playlist) {
+          featuredPlaylistBox.innerHTML = `
+            <div class="featured-fallback">RB</div>
+            <div class="featured-title">Featured Playlist</div>
+            <div class="featured-text">No featured playlist right now.</div>
+          `;
+          return;
+        }
+
+        featuredPlaylistBox.innerHTML = `
+          ${
+            playlist.cover_url
+              ? `<img class="featured-cover" src="${escapeHtml(playlist.cover_url)}" alt="featured cover" />`
+              : `<div class="featured-fallback">RB</div>`
+          }
+          <div class="featured-title">${escapeHtml(playlist.title || "Featured Playlist")}</div>
+          <div class="featured-text">
+Visibility: ${playlist.is_public ? "Public" : "Private"}
+Created: ${new Date(playlist.created_at).toLocaleDateString()}
+${escapeHtml(playlist.description || "")}
+          </div>
+          <div class="hero-actions">
+            <a class="btn-green" href="playlist-views.html?id=${playlist.id}">Open Playlist</a>
+            <a class="btn-dark" href="music.html">Open Music</a>
+          </div>
+        `;
+      }
+
+      function renderTrendingRail(items) {
+        if (!items.length) {
+          emptyState(trendingRail, "No playlists yet.");
+          return;
+        }
+
+        trendingRail.innerHTML = items.map(playlist => `
+          <div class="mini-playlist">
+            ${
+              playlist.cover_url
+                ? `<img class="mini-cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
+                : `<div class="mini-fallback">RB</div>`
+            }
+            <div class="mini-title">${escapeHtml(playlist.title || "Untitled")}</div>
+            <div class="mini-text">
+              ${playlist.is_public ? "Public" : "Private"}<br>
+              ${new Date(playlist.created_at).toLocaleDateString()}
+            </div>
+          </div>
+        `).join("");
+      }
+
+      async function deletePlaylist(id) {
         try {
-          if (!currentPlaylist || !currentUser || currentPlaylist.user_id !== currentUser.id) {
-            throw new Error("Only the playlist owner can remove tracks.");
+          if (!currentUser) return;
+
+          const playlist = allPlaylists.find(item => Number(item.id) === Number(id));
+          if (!playlist || playlist.user_id !== currentUser.id) {
+            throw new Error("You can only delete your own playlists.");
           }
 
           const { error } = await supabase
-            .from("playlist_tracks")
+            .from("playlists")
             .delete()
-            .eq("id", playlistTrackId);
+            .eq("id", id);
 
           if (error) throw error;
 
-          setStatus("Track removed.");
-          await loadPlaylist();
+          setStatus("Playlist deleted.");
+          await loadPlaylists();
         } catch (error) {
-          setStatus("Remove track error: " + error.message);
+          setStatus("Delete playlist error: " + error.message);
         }
       }
 
-      async function loadPlaylist() {
-        try {
-          setStatus("Loading playlist...");
-          await loadSession();
-
-          const playlistId = getPlaylistId();
-          if (!playlistId) throw new Error("Missing playlist id in URL.");
-
-          const { data: playlist, error: playlistError } = await supabase
-            .from("playlists")
-            .select("*")
-            .eq("id", playlistId)
-            .maybeSingle();
-
-          if (playlistError) throw playlistError;
-          if (!playlist) throw new Error("Playlist not found.");
-
-          currentPlaylist = playlist;
-
-          playlistTitle.textContent = playlist.title || "Untitled Playlist";
-          playlistMeta.textContent = `${playlist.description || "No description yet."} • ${playlist.is_public ? "Public" : "Private"}`;
-
-          coverWrap.innerHTML = playlist.cover_url
-            ? `<img class="cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
-            : `<div class="cover-fallback">RB</div>`;
-
-          ownerTools.style.display = currentUser && currentPlaylist.user_id === currentUser.id ? "block" : "none";
-
-          const { data: playlistTracks, error: playlistTracksError } = await supabase
-            .from("playlist_tracks")
-            .select("*")
-            .eq("playlist_id", playlist.id)
-            .order("sort_order", { ascending: true });
-
-          if (playlistTracksError) throw playlistTracksError;
-
-          const relationRows = playlistTracks || [];
-          const trackIds = relationRows.map(row => row.track_id);
-
-          if (!trackIds.length) {
-            currentTracks = [];
-            queueCountBtn.textContent = "Queue 0";
-            tracksWrap.innerHTML = `<div class="empty-box">No tracks in this playlist yet.</div>`;
-            await loadTrackSelect();
-            setStatus("Playlist loaded.");
-            return;
-          }
-
-          const { data: tracks, error: tracksError } = await supabase
-            .from("music_tracks")
-            .select("*")
-            .in("id", trackIds);
-
-          if (tracksError) throw tracksError;
-
-          const map = new Map((tracks || []).map(track => [Number(track.id), track]));
-          currentTracks = relationRows
-            .map(row => {
-              const track = map.get(Number(row.track_id));
-              return track ? { ...track, _playlistTrackId: row.id } : null;
-            })
-            .filter(Boolean);
-
-          queueCountBtn.textContent = `Queue ${currentTracks.length}`;
-
-          tracksWrap.innerHTML = currentTracks.map((track, index) => `
-            <div class="track">
-              <div>
-                ${
-                  track.cover_url
-                    ? `<img class="track-cover" src="${escapeHtml(track.cover_url)}" alt="cover" />`
-                    : `<div class="track-fallback">RB</div>`
-                }
-              </div>
-
-              <div>
-                <div class="track-title">${escapeHtml(track.title || "Untitled Track")}</div>
-                <div class="track-text">
-                  ${escapeHtml(track.artist_name || "Unknown Artist")} • ${escapeHtml(track.genre || "--")}<br>
-                  ${escapeHtml(track.description || "")}
-                </div>
-              </div>
-
-              <div class="track-actions">
-                <button class="btn-green" type="button" onclick="window.__playPlaylistTrack(${index})">Play</button>
-                <a class="btn btn-dark" href="artist.html?id=${encodeURIComponent(track.user_id || "")}">Artist</a>
-                ${
-                  currentUser && currentPlaylist.user_id === currentUser.id
-                    ? `<button class="btn-dark" type="button" onclick="window.__removeTrack(${track._playlistTrackId})">Remove</button>`
-                    : ``
-                }
-              </div>
-            </div>
-          `).join("");
-
-          await loadTrackSelect();
-          setStatus("Playlist loaded.");
-        } catch (error) {
-          setStatus("Playlist error: " + error.message);
-          tracksWrap.innerHTML = `<div class="empty-box">Could not load playlist.</div>`;
-        }
-      }
-
-      window.__playPlaylistTrack = (index) => playTrack(index);
-      window.__removeTrack = (playlistTrackId) => removeTrackFromPlaylist(playlistTrackId);
-
-      playAllBtn.addEventListener("click", () => {
-        if (!currentTracks.length) {
-          setStatus("No tracks in this playlist yet.");
+      function renderPlaylists(items) {
+        if (!items.length) {
+          emptyState(playlistGrid, "No playlists match your search.");
           return;
         }
-        playTrack(0);
+
+        playlistGrid.innerHTML = items.map(playlist => `
+          <div class="playlist-card">
+            <div class="pill">${playlist.is_public ? "PUBLIC" : "PRIVATE"}</div>
+
+            ${
+              playlist.cover_url
+                ? `<img class="cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
+                : `<div class="cover-fallback">RB</div>`
+            }
+
+            <div class="card-title">${escapeHtml(playlist.title || "Untitled Playlist")}</div>
+
+            <div class="card-text">
+Created: ${new Date(playlist.created_at).toLocaleDateString()}
+${escapeHtml(playlist.description || "")}
+            </div>
+
+            <div class="card-actions">
+              <a class="btn-green" href="playlist-views.html?id=${playlist.id}">Open Playlist</a>
+              ${
+                currentUser && playlist.user_id === currentUser.id
+                  ? `<button class="btn-danger" onclick="window.__deletePlaylist(${playlist.id})">Delete</button>`
+                  : `<a class="btn-dark" href="music.html">Open Music</a>`
+              }
+            </div>
+          </div>
+        `).join("");
+      }
+
+      function applyFilters() {
+        const search = searchInput.value.trim().toLowerCase();
+        const visibility = visibilityFilter.value;
+        const sort = sortFilter.value;
+
+        let filtered = [...allPlaylists];
+
+        if (search) {
+          filtered = filtered.filter(playlist => {
+            const haystack = [
+              playlist.title || "",
+              playlist.description || ""
+            ].join(" ").toLowerCase();
+
+            return haystack.includes(search);
+          });
+        }
+
+        if (visibility === "public") {
+          filtered = filtered.filter(item => item.is_public === true);
+        } else if (visibility === "private") {
+          filtered = filtered.filter(item => item.is_public === false);
+        }
+
+        filtered = sortPlaylists(filtered, sort);
+
+        updateStats(filtered);
+        renderPlaylists(filtered);
+
+        const latest = sortPlaylists([...allPlaylists], "newest").slice(0, 4);
+        renderTrendingRail(latest);
+        renderFeaturedPlaylist(latest[0] || allPlaylists[0] || null);
+      }
+
+      async function loadPlaylists() {
+        try {
+          setStatus("Loading playlist system...");
+          await loadSession();
+
+          const { data, error } = await supabase
+            .from("playlists")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error) throw error;
+
+          allPlaylists = data || [];
+          applyFilters();
+          setStatus("Playlists loaded.");
+        } catch (error) {
+          setStatus("Playlist load error: " + error.message);
+          emptyState(playlistGrid, "Could not load playlists.");
+          emptyState(trendingRail, "Could not load latest playlists.");
+        }
+      }
+
+      window.__deletePlaylist = deletePlaylist;
+
+      createPlaylistBtn.addEventListener("click", createPlaylist);
+      searchInput.addEventListener("input", applyFilters);
+      visibilityFilter.addEventListener("change", applyFilters);
+      sortFilter.addEventListener("change", applyFilters);
+      refreshBtn.addEventListener("click", loadPlaylists);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      refreshBtn.addEventListener("click", loadPlaylist);
-      addTrackBtn.addEventListener("click", addTrackToPlaylist);
-      refreshTrackListBtn.addEventListener("click", loadTrackSelect);
-      prevBtn.addEventListener("click", playPrev);
-      nextBtn.addEventListener("click", playNext);
-      globalAudio.addEventListener("ended", playNext);
-
-      loadPlaylist();
+      loadPlaylists();
     } catch (error) {
       document.body.innerHTML = `
-        <div style="padding:30px;background:#111;color:white;min-height:100vh;">
-          <h1 style="color:#7dff71;">Playlist View Startup Error</h1>
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Playlist Page Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
