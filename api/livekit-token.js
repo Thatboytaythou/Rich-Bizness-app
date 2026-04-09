@@ -1,79 +1,80 @@
 import { AccessToken } from "livekit-server-sdk";
 
+function getBaseUrl(req) {
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, "");
+  }
+
+  const proto = req.headers["x-forwarded-proto"] || "https";
+  const host = req.headers.host;
+  return `${proto}://${host}`;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({
-      error: "Method not allowed. Use POST."
-    });
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
-    const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
-    const LIVEKIT_URL = process.env.LIVEKIT_URL;
-
-    if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET || !LIVEKIT_URL) {
-      return res.status(500).json({
-        error: "Missing LiveKit environment variables."
-      });
-    }
-
     const {
       roomName,
       participantName,
       role = "viewer"
     } = req.body || {};
 
-    const cleanRoomName = String(roomName || "").trim();
-    const cleanParticipantName = String(participantName || "").trim();
-    const cleanRole = String(role || "viewer").trim().toLowerCase();
-
-    if (!cleanRoomName) {
-      return res.status(400).json({
-        error: "roomName is required."
+    // 🔐 ENV CHECK
+    if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
+      return res.status(500).json({
+        error: "Missing LIVEKIT_API_KEY or LIVEKIT_API_SECRET"
       });
     }
 
-    if (!cleanParticipantName) {
-      return res.status(400).json({
-        error: "participantName is required."
-      });
+    if (!roomName) {
+      return res.status(400).json({ error: "Missing roomName" });
     }
 
-    const isHost = cleanRole === "host";
+    if (!participantName) {
+      return res.status(400).json({ error: "Missing participantName" });
+    }
+
+    const safeRoom = String(roomName).trim();
+    const safeName = String(participantName).trim();
+
+    // 🎯 ROLE PERMISSIONS
+    const isHost = role === "host";
 
     const token = new AccessToken(
-      LIVEKIT_API_KEY,
-      LIVEKIT_API_SECRET,
+      process.env.LIVEKIT_API_KEY,
+      process.env.LIVEKIT_API_SECRET,
       {
-        identity: cleanParticipantName,
-        name: cleanParticipantName,
-        ttl: "2h"
+        identity: safeName,
+        ttl: "6h"
       }
     );
 
     token.addGrant({
+      room: safeRoom,
       roomJoin: true,
-      room: cleanRoomName,
       canPublish: isHost,
-      canPublishData: true,
-      canSubscribe: true
+      canSubscribe: true,
+      canPublishData: true
     });
 
     const jwt = await token.toJwt();
 
     return res.status(200).json({
+      ok: true,
       token: jwt,
-      url: LIVEKIT_URL,
-      roomName: cleanRoomName,
-      participantName: cleanParticipantName,
-      role: cleanRole
+      room: safeRoom,
+      identity: safeName,
+      role: isHost ? "host" : "viewer"
     });
+
   } catch (error) {
-    console.error("livekit-token error:", error);
+    console.error("livekit-token error", error);
 
     return res.status(500).json({
-      error: error.message || "Failed to generate LiveKit token."
+      error: error?.message || "Failed to generate LiveKit token"
     });
   }
 }
