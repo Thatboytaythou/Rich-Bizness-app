@@ -1,250 +1,618 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Upload Hub | Rich Bizness</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<style>
-body {
-  margin:0;
-  font-family:Arial;
-  color:white;
-  background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.9)),
-  url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
-}
+  <style>
+    * { box-sizing: border-box; }
 
-.page { max-width:1400px; margin:auto; padding:20px; }
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.55);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+    }
 
-h1 { color:#7dff71; font-size:3rem; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.90)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
 
-.tabs { display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; }
-.tab {
-  padding:12px 18px;
-  border-radius:12px;
-  cursor:pointer;
-  background:#111;
-  border:1px solid #333;
-}
-.tab.active { background:#7dff71; color:black; }
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
 
-.panel {
-  background:#111;
-  padding:20px;
-  border-radius:20px;
-  margin-bottom:20px;
-}
+    .topbar, .hero, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
 
-input, textarea {
-  width:100%;
-  padding:12px;
-  margin-top:8px;
-  border-radius:10px;
-  border:1px solid #333;
-  background:black;
-  color:white;
-}
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
 
-button {
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  font-weight:bold;
-  cursor:pointer;
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
 
-.btn-green { background:#7dff71; color:black; }
-.btn-dark { background:#222; color:white; }
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
 
-.dropzone {
-  border:2px dashed #7dff71;
-  padding:30px;
-  text-align:center;
-  border-radius:16px;
-  margin-top:10px;
-}
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
 
-.preview img, .preview video {
-  width:100%;
-  margin-top:10px;
-  border-radius:10px;
-}
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
 
-.status { margin-top:10px; }
-</style>
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .hero, .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 2.9rem;
+      line-height: 1;
+      color: var(--green);
+    }
+
+    .subtle {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .actions, .quick-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green, .btn-dark, .btn-gold {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 420px;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      color: var(--green);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .control {
+      margin-bottom: 6px;
+    }
+
+    .control.full {
+      grid-column: 1 / -1;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control select,
+    .control textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .checkbox-row input {
+      width: auto;
+      transform: scale(1.2);
+    }
+
+    .preview-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .preview-card h3 {
+      margin-top: 0;
+      color: var(--gold);
+    }
+
+    .preview-box {
+      min-height: 220px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 12px;
+    }
+
+    .preview-box img,
+    .preview-box video {
+      max-width: 100%;
+      max-height: 360px;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .mini-box {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
 </head>
-
 <body>
-<div class="page">
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Upload Hub</span>
+      </div>
 
-<h1>Upload Hub 🚀</h1>
-<div id="status" class="status">Loading...</div>
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="upload.html" class="active">Upload</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
 
-<div class="tabs">
-  <div class="tab active" data-type="art">Artwork</div>
-  <div class="tab" data-type="music">Music</div>
-  <div class="tab" data-type="gaming">Gaming</div>
-  <div class="tab" data-type="sports">Sports</div>
-</div>
+    <div class="hero">
+      <h1>Full Creator Upload Hub</h1>
+      <div class="subtle">
+        Upload artwork, images, creator videos, and featured posts from one main station. Music, gaming, and sports get their own specialized upload lanes too.
+      </div>
 
-<div class="panel">
+      <div class="quick-links">
+        <a class="btn-dark" href="upload-music.html">Upload Music</a>
+        <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
+        <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
+        <a class="btn-gold" href="live.html">Go Live</a>
+      </div>
 
-<input id="title" placeholder="Title">
+      <div id="statusBox" class="status-box">Ready to upload.</div>
+    </div>
 
-<input id="extra1" placeholder="Extra Field 1">
-<input id="extra2" placeholder="Extra Field 2">
+    <div class="layout">
+      <div class="section">
+        <div class="panel">
+          <h2>Main Upload Form</h2>
 
-<textarea id="desc" placeholder="Description"></textarea>
+          <div class="form-grid">
+            <div class="control">
+              <label for="titleInput">Title</label>
+              <input id="titleInput" type="text" placeholder="Rich Bizness visual drop" />
+            </div>
 
-<div class="dropzone" id="dropzone">
-  Drop file here or click
-  <input type="file" id="file" style="display:none;">
-</div>
+            <div class="control">
+              <label for="contentTypeInput">Content Type</label>
+              <select id="contentTypeInput">
+                <option value="artwork">Artwork</option>
+                <option value="creator_post">Creator Post</option>
+                <option value="image_drop">Image Drop</option>
+                <option value="video_drop">Video Drop</option>
+              </select>
+            </div>
 
-<div class="preview" id="preview"></div>
+            <div class="control">
+              <label for="mediaTypeInput">Media Type</label>
+              <select id="mediaTypeInput">
+                <option value="image">Image</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
 
-<button class="btn-green" id="uploadBtn">UPLOAD 🚀</button>
-<button class="btn-dark" id="clearBtn">CLEAR</button>
+            <div class="control">
+              <label for="thumbModeInput">Thumbnail</label>
+              <select id="thumbModeInput">
+                <option value="same">Use main file</option>
+                <option value="separate">Upload separate thumbnail</option>
+              </select>
+            </div>
 
-</div>
+            <div class="control full">
+              <label for="captionInput">Caption</label>
+              <textarea id="captionInput" placeholder="Tell people what this upload is about..."></textarea>
+            </div>
 
-<div class="panel">
-<h2>Recent Uploads</h2>
-<div id="recent"></div>
-</div>
+            <div class="control full">
+              <label for="mainFileInput">Main File</label>
+              <input id="mainFileInput" type="file" accept="image/*,video/*" />
+            </div>
 
-</div>
+            <div class="control full" id="thumbControl" style="display:none;">
+              <label for="thumbFileInput">Separate Thumbnail</label>
+              <input id="thumbFileInput" type="file" accept="image/*" />
+            </div>
 
-<script>
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+            <div class="control full">
+              <label>Featured Upload</label>
+              <div class="checkbox-row">
+                <input id="featuredToggle" type="checkbox" />
+                <span>Mark this upload as featured</span>
+              </div>
+            </div>
+          </div>
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+          <div class="actions">
+            <button id="uploadBtn" class="btn-green" type="button">Upload Now</button>
+            <a class="btn-dark" href="gallery.html">Open Gallery</a>
+            <a class="btn-dark" href="profile.html">Open Profile</a>
+          </div>
 
-let currentType = "art";
-let file = null;
-let user = null;
+          <div id="uploadInfoBox" class="mini-box">Main uploads from this page save into the `artworks` table.</div>
+        </div>
+      </div>
 
-const statusBox = document.getElementById("status");
+      <div class="section">
+        <div class="preview-card">
+          <h3>Main Preview</h3>
+          <div id="mainPreview" class="preview-box">Your main file preview will show here.</div>
+        </div>
 
-function setStatus(msg){ statusBox.textContent = msg; }
+        <div class="preview-card">
+          <h3>Thumbnail Preview</h3>
+          <div id="thumbPreview" class="preview-box">Your thumbnail preview will show here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-async function checkUser(){
-  const { data } = await supabase.auth.getSession();
-  user = data.session?.user;
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const UPLOAD_BUCKET = "creator-uploads";
 
-  if(!user){
-    setStatus("Redirecting...");
-    location.href="auth.html";
-  } else {
-    setStatus("Ready");
-  }
-}
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
 
-document.querySelectorAll(".tab").forEach(t=>{
-  t.onclick=()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
-    t.classList.add("active");
-    currentType=t.dataset.type;
-  }
-});
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
 
-const dropzone = document.getElementById("dropzone");
-const fileInput = document.getElementById("file");
+      const titleInput = document.getElementById("titleInput");
+      const contentTypeInput = document.getElementById("contentTypeInput");
+      const mediaTypeInput = document.getElementById("mediaTypeInput");
+      const thumbModeInput = document.getElementById("thumbModeInput");
+      const captionInput = document.getElementById("captionInput");
+      const mainFileInput = document.getElementById("mainFileInput");
+      const thumbFileInput = document.getElementById("thumbFileInput");
+      const featuredToggle = document.getElementById("featuredToggle");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const thumbControl = document.getElementById("thumbControl");
 
-dropzone.onclick=()=>fileInput.click();
+      const mainPreview = document.getElementById("mainPreview");
+      const thumbPreview = document.getElementById("thumbPreview");
 
-fileInput.onchange=(e)=>{
-  file = e.target.files[0];
-  showPreview();
-};
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
 
-dropzone.ondrop=(e)=>{
-  e.preventDefault();
-  file = e.dataTransfer.files[0];
-  showPreview();
-};
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-dropzone.ondragover=(e)=>e.preventDefault();
+        const user = data?.session?.user || null;
+        userChip.textContent = user?.email || "Guest mode";
 
-function showPreview(){
-  const preview=document.getElementById("preview");
-  preview.innerHTML="";
-  if(!file) return;
+        if (!user) {
+          window.location.href = "auth.html";
+          return null;
+        }
 
-  const url=URL.createObjectURL(file);
+        return user;
+      }
 
-  if(file.type.includes("video")){
-    preview.innerHTML=`<video controls src="${url}"></video>`;
-  } else {
-    preview.innerHTML=`<img src="${url}">`;
-  }
-}
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
 
-async function upload(){
-  try{
-    if(!file) throw "No file";
+      function renderFilePreview(file, targetEl) {
+        if (!file) {
+          targetEl.innerHTML = "No file selected.";
+          return;
+        }
 
-    setStatus("Uploading...");
+        const url = URL.createObjectURL(file);
 
-    const path = `${user.id}/${Date.now()}-${file.name}`;
+        if (file.type.startsWith("image/")) {
+          targetEl.innerHTML = `<img src="${url}" alt="Preview" />`;
+          return;
+        }
 
-    let bucket = {
-      art:"artwork",
-      music:"music-files",
-      gaming:"gaming-media",
-      sports:"sports-media"
-    }[currentType];
+        if (file.type.startsWith("video/")) {
+          targetEl.innerHTML = `<video src="${url}" controls></video>`;
+          return;
+        }
 
-    await supabase.storage.from(bucket).upload(path,file);
+        targetEl.textContent = file.name;
+      }
 
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+      function makeFilePath(prefix, file) {
+        const safeName = String(file.name || "file").replace(/\s+/g, "-");
+        return `${prefix}/${Date.now()}-${safeName}`;
+      }
 
-    let table = {
-      art:"artworks",
-      music:"music_tracks",
-      gaming:"gaming_posts",
-      sports:"sports_posts"
-    }[currentType];
+      async function uploadFile(path, file) {
+        const { error } = await supabase.storage
+          .from(UPLOAD_BUCKET)
+          .upload(path, file, { upsert: false });
 
-    await supabase.from(table).insert({
-      user_id:user.id,
-      title:document.getElementById("title").value,
-      description:document.getElementById("desc").value,
-      media_url:data.publicUrl
-    });
+        if (error) throw error;
 
-    setStatus("UPLOAD COMPLETE 🔥");
-    loadRecent();
+        const { data } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(path);
+        return data.publicUrl;
+      }
 
-  }catch(e){
-    setStatus("ERROR: "+e);
-  }
-}
+      function updateThumbUi() {
+        const separate = thumbModeInput.value === "separate";
+        thumbControl.style.display = separate ? "block" : "none";
+      }
 
-async function loadRecent(){
-  const tableMap={
-    art:"artworks",
-    music:"music_tracks",
-    gaming:"gaming_posts",
-    sports:"sports_posts"
-  };
+      async function uploadMainContent() {
+        try {
+          setStatus("Checking session...");
+          uploadBtn.disabled = true;
 
-  const { data } = await supabase
-    .from(tableMap[currentType])
-    .select("*")
-    .eq("user_id",user.id)
-    .limit(5);
+          const user = await loadSession();
+          if (!user) return;
 
-  document.getElementById("recent").innerHTML =
-    data?.map(x=>`<div>${x.title}</div>`).join("") || "None";
-}
+          const title = titleInput.value.trim();
+          const caption = captionInput.value.trim();
+          const contentType = contentTypeInput.value;
+          const mediaType = mediaTypeInput.value;
+          const mainFile = mainFileInput.files[0];
+          const thumbFile = thumbFileInput.files[0];
+          const separateThumb = thumbModeInput.value === "separate";
 
-document.getElementById("uploadBtn").onclick=upload;
-document.getElementById("clearBtn").onclick=()=>location.reload();
+          if (!title) throw new Error("Title is required.");
+          if (!mainFile) throw new Error("Main file is required.");
 
-checkUser();
-</script>
+          setStatus("Uploading main file...");
+          const mainPath = makeFilePath(user.id, mainFile);
+          const fileUrl = await uploadFile(mainPath, mainFile);
+
+          let thumbnailUrl = fileUrl;
+
+          if (separateThumb) {
+            if (!thumbFile) throw new Error("Separate thumbnail selected but no thumbnail file uploaded.");
+            setStatus("Uploading thumbnail...");
+            const thumbPath = makeFilePath(user.id, thumbFile);
+            thumbnailUrl = await uploadFile(thumbPath, thumbFile);
+          }
+
+          setStatus("Saving upload...");
+          const { error } = await supabase
+            .from("artworks")
+            .insert([{
+              user_id: user.id,
+              title,
+              caption,
+              content_type: contentType,
+              media_type: mediaType,
+              file_url: fileUrl,
+              thumbnail_url: thumbnailUrl,
+              is_featured: featuredToggle.checked
+            }]);
+
+          if (error) throw error;
+
+          setStatus("✅ Upload complete.");
+
+          titleInput.value = "";
+          captionInput.value = "";
+          contentTypeInput.value = "artwork";
+          mediaTypeInput.value = "image";
+          thumbModeInput.value = "same";
+          featuredToggle.checked = false;
+          mainFileInput.value = "";
+          thumbFileInput.value = "";
+          updateThumbUi();
+
+          mainPreview.innerHTML = "Your main file preview will show here.";
+          thumbPreview.innerHTML = "Your thumbnail preview will show here.";
+        } catch (error) {
+          console.error(error);
+          setStatus("❌ Upload error: " + error.message);
+        } finally {
+          uploadBtn.disabled = false;
+        }
+      }
+
+      mainFileInput.addEventListener("change", () => {
+        renderFilePreview(mainFileInput.files[0], mainPreview);
+      });
+
+      thumbFileInput.addEventListener("change", () => {
+        renderFilePreview(thumbFileInput.files[0], thumbPreview);
+      });
+
+      thumbModeInput.addEventListener("change", updateThumbUi);
+      uploadBtn.addEventListener("click", uploadMainContent);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        const user = session?.user || null;
+        userChip.textContent = user?.email || "Guest mode";
+      });
+
+      updateThumbUi();
+      loadSession().then(() => {
+        setStatus("Ready to upload.");
+      });
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Upload Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
