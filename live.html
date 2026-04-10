@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Live | Rich Bizness</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script type="module">
@@ -34,7 +35,7 @@
       min-height: 100vh;
       background:
         linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.86)),
-        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
@@ -127,7 +128,7 @@
       line-height: 1.75;
     }
 
-    .hero-actions, .card-actions {
+    .hero-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -257,6 +258,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      background: black;
     }
 
     .video-empty {
@@ -347,6 +349,19 @@
       outline: none;
     }
 
+    .debug-box {
+      margin-top: 14px;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.75);
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
     @media (max-width: 1300px) {
       .stats-row {
         grid-template-columns: repeat(3, 1fr);
@@ -387,6 +402,8 @@
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
         <a href="artist.html">Artist</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
         <a href="live.html" class="active">Live</a>
         <a href="watch.html">Watch</a>
         <a href="messages.html">Messages</a>
@@ -449,6 +466,7 @@
           <div class="video-shell" id="videoStage">
             <div class="video-empty">Your live preview will show here.</div>
           </div>
+          <div id="debugBox" class="debug-box">Debug info will show here.</div>
         </div>
       </div>
 
@@ -524,9 +542,9 @@
             <button id="micBtn" class="btn-dark" type="button">Toggle Mic</button>
           </div>
 
-          <div class="mini-box" id="viewerLinkBox">Viewer link will show here.</div>
-          <div class="mini-box" id="roomConfigBox">Room settings will show here.</div>
-          <div class="mini-box" id="hypePreviewBox">Hype preview will show here.</div>
+          <div id="viewerLinkBox" class="mini-box">Viewer link will show here.</div>
+          <div id="roomConfigBox" class="mini-box">Room settings will show here.</div>
+          <div id="hypePreviewBox" class="mini-box">Hype preview will show here.</div>
         </div>
 
         <div class="panel" style="margin-top:18px;">
@@ -555,12 +573,17 @@
       const TOKEN_API_URL = "/api/livekit-token";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
       });
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
+      const debugBox = document.getElementById("debugBox");
 
       const roomNameInput = document.getElementById("roomNameInput");
       const hostNameInput = document.getElementById("hostNameInput");
@@ -603,9 +626,14 @@
       let cameraEnabled = true;
       let micEnabled = true;
       let chatMessages = [];
+      let livekitReady = false;
 
       function setStatus(message) {
         statusBox.textContent = message;
+      }
+
+      function setDebug(info) {
+        debugBox.textContent = info;
       }
 
       function clearVideoStage() {
@@ -668,13 +696,22 @@
           `Mode: ${vip}`;
       }
 
-      function makeDefaultRoomName(user) {
-        return `richbizness-live-${user?.id || "rb-host"}`;
+      function normalizeIdentity(value) {
+        const raw = String(value || "").trim();
+        const clean = raw.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._@-]/g, "");
+        return clean || "host";
+      }
+
+      function makeRoomName(user) {
+        if (!user?.id) {
+          throw new Error("User not loaded");
+        }
+        return `richbizness-live-${user.id}`;
       }
 
       function makeDefaultHostName(user) {
-        if (user?.email) return user.email.split("@")[0];
-        return "richbizness-host";
+        const base = user?.email ? user.email.split("@")[0] : "richbizness-host";
+        return normalizeIdentity(base);
       }
 
       async function loadSession() {
@@ -689,15 +726,48 @@
           return false;
         }
 
-        if (!roomNameInput.value.trim()) roomNameInput.value = makeDefaultRoomName(currentUser);
-        if (!hostNameInput.value.trim()) hostNameInput.value = makeDefaultHostName(currentUser);
-        if (!liveTitleInput.value.trim()) liveTitleInput.value = "Rich Bizness Live";
-        if (!liveDescriptionInput.value.trim()) liveDescriptionInput.value = "Live session with Rich Bizness";
+        const generatedRoom = makeRoomName(currentUser);
+
+        if (!roomNameInput.value.trim()) {
+          roomNameInput.value = generatedRoom;
+        }
+
+        if (!hostNameInput.value.trim()) {
+          hostNameInput.value = makeDefaultHostName(currentUser);
+        }
+
+        if (!liveTitleInput.value.trim()) {
+          liveTitleInput.value = "Rich Bizness Live";
+        }
+
+        if (!liveDescriptionInput.value.trim()) {
+          liveDescriptionInput.value = "Live session with Rich Bizness";
+        }
+
+        if (!categoryInput.value.trim()) {
+          categoryInput.value = "Live";
+        }
 
         renderViewerLink();
         updateVipUi();
         updateHypePreview();
+        renderDebug();
         return true;
+      }
+
+      function renderDebug(extra = "") {
+        const debugText =
+          `livekitReady: ${livekitReady}\n` +
+          `currentUser.id: ${currentUser?.id || "--"}\n` +
+          `currentUser.email: ${currentUser?.email || "--"}\n` +
+          `roomName: ${roomNameInput.value.trim() || "--"}\n` +
+          `hostName: ${hostNameInput.value.trim() || "--"}\n` +
+          `liveStarted: ${liveStarted}\n` +
+          `cameraEnabled: ${cameraEnabled}\n` +
+          `micEnabled: ${micEnabled}` +
+          (extra ? `\n${extra}` : "");
+
+        setDebug(debugText);
       }
 
       async function logOut() {
@@ -718,20 +788,31 @@
       }
 
       async function fetchLiveToken(roomName, participantName) {
+        const payload = {
+          roomName,
+          participantName,
+          role: "host"
+        };
+
+        renderDebug(`tokenPayload: ${JSON.stringify(payload, null, 2)}`);
+
         const response = await fetch(TOKEN_API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            roomName,
-            participantName,
-            role: "host"
-          })
+          body: JSON.stringify(payload)
         });
 
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Token request failed.");
-        if (!payload.token) throw new Error("No LiveKit token returned.");
-        return payload.token;
+        const body = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(body.error || "Token request failed.");
+        }
+
+        if (!body.token) {
+          throw new Error("No LiveKit token returned.");
+        }
+
+        return body.token;
       }
 
       async function upsertLiveRoom(isLiveNow) {
@@ -786,24 +867,59 @@
         videoStage.appendChild(element);
       }
 
+      async function tryAttachLocalPreview() {
+        const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
+        const pub = pubs.find(Boolean);
+
+        if (pub?.videoTrack) {
+          attachLocalVideo(pub.videoTrack);
+          return;
+        }
+
+        clearVideoStage();
+      }
+
       async function startLive() {
         try {
           const ok = await loadSession();
           if (!ok) return;
-          if (!window.LivekitModules) {
-            setStatus("LiveKit still loading...");
-            return;
+
+          if (!livekitReady || !window.LivekitModules) {
+            throw new Error("LiveKit still loading. Wait a second and try again.");
           }
+
           if (liveStarted && room) {
             setStatus("You are already live.");
             return;
           }
 
-          const roomName = roomNameInput.value.trim();
-          const participantName = hostNameInput.value.trim();
+          const expectedRoom = makeRoomName(currentUser);
+          roomNameInput.value = expectedRoom;
 
-          if (!roomName) throw new Error("Room name is required.");
-          if (!participantName) throw new Error("Host name is required.");
+          const roomName = roomNameInput.value.trim();
+          const participantName = normalizeIdentity(hostNameInput.value.trim() || makeDefaultHostName(currentUser));
+          hostNameInput.value = participantName;
+
+          if (!currentUser?.id) {
+            throw new Error("User session missing.");
+          }
+
+          if (!roomName) {
+            throw new Error("Room name is required.");
+          }
+
+          if (!participantName) {
+            throw new Error("Host name is required.");
+          }
+
+          if (roomName !== expectedRoom) {
+            throw new Error("Room name mismatch. Resetting room name required.");
+          }
+
+          renderViewerLink();
+          updateVipUi();
+          updateHypePreview();
+          renderDebug("startLive validation passed");
 
           setStatus("Getting live token...");
           const token = await fetchLiveToken(roomName, participantName);
@@ -844,17 +960,16 @@
             clearVideoStage();
             appendChat("System", "Live ended.");
             setStatus("Live ended.");
+            renderDebug("room disconnected");
           });
 
           setStatus("Connecting to LiveKit...");
+          renderDebug("connecting to room");
+
           await room.connect(LIVEKIT_URL, token);
           await room.localParticipant.enableCameraAndMicrophone();
 
-          const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
-          const pub = pubs.find(Boolean);
-          if (pub?.videoTrack) attachLocalVideo(pub.videoTrack);
-          else clearVideoStage();
-
+          await tryAttachLocalPreview();
           await upsertLiveRoom(true);
 
           liveStarted = true;
@@ -871,15 +986,20 @@
 
           appendChat("System", `Live started in room: ${roomName}`);
           setStatus("WE LIT 🔥 Live started.");
+          renderDebug("live started successfully");
         } catch (error) {
+          console.error("Live start error:", error);
           setStatus("Live start error: " + error.message);
+          renderDebug(`start error: ${error.message}`);
         }
       }
 
       async function endLive() {
         try {
           if (currentUser && roomNameInput.value.trim()) {
-            try { await upsertLiveRoom(false); } catch {}
+            try {
+              await upsertLiveRoom(false);
+            } catch {}
           }
 
           if (room) {
@@ -895,8 +1015,10 @@
           clearVideoStage();
           appendChat("System", "Host ended the live.");
           setStatus("Live ended.");
+          renderDebug("endLive complete");
         } catch (error) {
           setStatus("End live error: " + error.message);
+          renderDebug(`end error: ${error.message}`);
         }
       }
 
@@ -911,16 +1033,16 @@
           await room.localParticipant.setCameraEnabled(cameraEnabled);
 
           if (cameraEnabled) {
-            const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
-            const pub = pubs.find(Boolean);
-            if (pub?.videoTrack) attachLocalVideo(pub.videoTrack);
+            await tryAttachLocalPreview();
           } else {
             clearVideoStage();
           }
 
           setStatus(cameraEnabled ? "Camera on." : "Camera off.");
+          renderDebug("camera toggled");
         } catch (error) {
           setStatus("Camera error: " + error.message);
+          renderDebug(`camera error: ${error.message}`);
         }
       }
 
@@ -934,8 +1056,10 @@
           micEnabled = !micEnabled;
           await room.localParticipant.setMicrophoneEnabled(micEnabled);
           setStatus(micEnabled ? "Mic on." : "Mic off.");
+          renderDebug("mic toggled");
         } catch (error) {
           setStatus("Mic error: " + error.message);
+          renderDebug(`mic error: ${error.message}`);
         }
       }
 
@@ -964,7 +1088,7 @@
           const message = chatInput.value.trim();
           if (!message) return;
 
-          const hostName = hostNameInput.value.trim() || "Host";
+          const hostName = normalizeIdentity(hostNameInput.value.trim() || "Host");
           const payload = JSON.stringify({
             type: "chat",
             name: hostName,
@@ -978,6 +1102,7 @@
           chatInput.value = "";
         } catch (error) {
           setStatus("Chat send error: " + error.message);
+          renderDebug(`chat error: ${error.message}`);
         }
       }
 
@@ -990,7 +1115,12 @@
       sendChatBtn.addEventListener("click", sendChat);
       logoutBtn.addEventListener("click", logOut);
 
-      roomNameInput.addEventListener("input", renderViewerLink);
+      roomNameInput.addEventListener("input", () => {
+        renderViewerLink();
+        renderDebug();
+      });
+
+      hostNameInput.addEventListener("input", renderDebug);
       liveTitleInput.addEventListener("input", updateHypePreview);
       categoryInput.addEventListener("input", updateHypePreview);
       tagsInput.addEventListener("input", updateHypePreview);
@@ -1015,16 +1145,23 @@
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
+        renderDebug();
       });
 
       window.addEventListener("livekit-ready", async () => {
+        livekitReady = true;
         const ok = await loadSession();
-        if (ok) setStatus("Live control room ready.");
+        if (ok) {
+          setStatus("Live control room ready.");
+        }
       });
 
       if (window.LivekitModules) {
+        livekitReady = true;
         loadSession().then((ok) => {
-          if (ok) setStatus("Live control room ready.");
+          if (ok) {
+            setStatus("Live control room ready.");
+          }
         });
       }
     } catch (error) {
