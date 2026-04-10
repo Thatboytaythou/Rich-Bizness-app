@@ -7,13 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script type="module">
-    import {
-      Room,
-      RoomEvent,
-      Track
-    } from "https://cdn.skypack.dev/livekit-client";
-
-    window.LivekitModules = { Room, RoomEvent, Track };
+    import { Room, RoomEvent } from "https://cdn.skypack.dev/livekit-client";
+    window.LivekitModules = { Room, RoomEvent };
     window.dispatchEvent(new Event("livekit-ready"));
   </script>
 
@@ -22,7 +17,6 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
       --gold: #f5d76e;
       --danger: #ef5b55;
       --bg: rgba(0,0,0,0.50);
@@ -162,11 +156,12 @@
       font-weight: 700;
       line-height: 1.6;
       word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(7, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -180,7 +175,7 @@
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.65rem;
       font-weight: 900;
       color: var(--green);
       word-break: break-word;
@@ -271,6 +266,29 @@
       margin-bottom: 10px;
     }
 
+    .vip-pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.30);
+      color: var(--gold);
+      font-weight: 900;
+      margin-left: 8px;
+    }
+
+    .mini-box {
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      line-height: 1.6;
+      word-break: break-word;
+      margin-top: 14px;
+      white-space: pre-wrap;
+    }
+
     .chat-list {
       display: grid;
       gap: 10px;
@@ -318,19 +336,20 @@
       outline: none;
     }
 
-    .mini-box {
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text);
-      line-height: 1.6;
-      word-break: break-word;
+    .button-stack {
+      display: grid;
+      gap: 10px;
       margin-top: 14px;
     }
 
+    @media (max-width: 1300px) {
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     @media (max-width: 1150px) {
-      .layout, .stats-row {
+      .layout {
         grid-template-columns: 1fr;
       }
     }
@@ -344,7 +363,7 @@
         min-height: 320px;
       }
 
-      .chat-form {
+      .chat-form, .stats-row {
         grid-template-columns: 1fr;
       }
     }
@@ -373,16 +392,21 @@
     </div>
 
     <div class="hero">
-      <div class="live-pill">LIVE VIEWER ROOM</div>
+      <div>
+        <span class="live-pill">LIVE VIEWER ROOM</span>
+        <span id="vipBadge" class="vip-pill" style="display:none;">VIP ACCESS</span>
+      </div>
       <h1>Watch The Stream</h1>
       <div class="subtle">
-        Join the live room, watch the host feed, and chat with the stream from one synced viewer page.
+        Join the live room, watch the host feed, tip the host, use VIP access when required, and chat in real time.
       </div>
+
+      <div id="streamHypeBox" class="mini-box">Stream info will show here.</div>
 
       <div class="hero-actions">
         <button id="joinBtn" class="btn-green" type="button">Join Live</button>
         <button id="leaveBtn" class="btn-danger" type="button">Leave Live</button>
-        <a class="btn-dark" href="live.html">Open Host Page</a>
+        <button id="vipBtn" class="btn-gold" type="button">Join VIP Live</button>
       </div>
 
       <div id="statusBox" class="status-box">Loading watch page...</div>
@@ -403,6 +427,18 @@
         <div class="stat">
           <div id="participantStat" class="stat-value">0</div>
           <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat">
+          <div id="chatStat" class="stat-value">0</div>
+          <div class="stat-label">Chat Messages</div>
+        </div>
+        <div class="stat">
+          <div id="accessStat" class="stat-value">FREE</div>
+          <div class="stat-label">Access</div>
+        </div>
+        <div class="stat">
+          <div id="countdownStat" class="stat-value">--</div>
+          <div class="stat-label">Countdown</div>
         </div>
       </div>
     </div>
@@ -431,10 +467,14 @@
             <input id="viewerNameInput" type="text" />
           </div>
 
-          <div class="mini-box">
-            Put the same room name from <strong>live.html</strong> here, or open this page using:
-            <br><br>
-            <strong>watch.html?room=your-room-name</strong>
+          <div class="mini-box" id="roomInfoBox">
+            Put the same room name from live.html here, or open this page with watch.html?room=your-room-name
+          </div>
+
+          <div class="button-stack">
+            <label style="color:#7dff71;font-weight:800;">Tip Amount (USD)</label>
+            <input id="tipAmountInput" type="number" min="1" step="0.01" value="5.00" />
+            <button id="tipBtn" class="btn-dark" type="button">Send Live Tip</button>
           </div>
         </div>
 
@@ -460,8 +500,7 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const LIVEKIT_URL = "wss://YOUR-LIVEKIT-CLOUD-URL.livekit.cloud";
+      const LIVEKIT_URL = "wss://rich-bizness-5ysa2qms.livekit.cloud";
       const TOKEN_API_URL = "/api/livekit-token";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -478,24 +517,35 @@
 
       const roomNameInput = document.getElementById("roomNameInput");
       const viewerNameInput = document.getElementById("viewerNameInput");
+      const tipAmountInput = document.getElementById("tipAmountInput");
 
       const joinBtn = document.getElementById("joinBtn");
       const leaveBtn = document.getElementById("leaveBtn");
+      const vipBtn = document.getElementById("vipBtn");
+      const tipBtn = document.getElementById("tipBtn");
+      const sendChatBtn = document.getElementById("sendChatBtn");
 
       const watchStateStat = document.getElementById("watchStateStat");
       const roomStat = document.getElementById("roomStat");
       const viewerNameStat = document.getElementById("viewerNameStat");
       const participantStat = document.getElementById("participantStat");
+      const chatStat = document.getElementById("chatStat");
+      const accessStat = document.getElementById("accessStat");
+      const countdownStat = document.getElementById("countdownStat");
 
+      const vipBadge = document.getElementById("vipBadge");
+      const roomInfoBox = document.getElementById("roomInfoBox");
+      const streamHypeBox = document.getElementById("streamHypeBox");
       const videoStage = document.getElementById("videoStage");
       const chatList = document.getElementById("chatList");
       const chatInput = document.getElementById("chatInput");
-      const sendChatBtn = document.getElementById("sendChatBtn");
 
       let currentUser = null;
       let room = null;
       let joined = false;
       let chatMessages = [];
+      let currentRoomRow = null;
+      let countdownTimer = null;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -505,12 +555,20 @@
         videoStage.innerHTML = `<div class="video-empty">Join a room to start watching live video.</div>`;
       }
 
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
       function appendChat(name, text) {
         chatMessages.push({ name, text });
+        if (chatMessages.length > 60) chatMessages = chatMessages.slice(-60);
 
-        if (chatMessages.length > 50) {
-          chatMessages = chatMessages.slice(-50);
-        }
+        chatStat.textContent = String(chatMessages.length);
 
         chatList.innerHTML = chatMessages.map(msg => `
           <div class="chat-item">
@@ -520,15 +578,6 @@
         `).join("");
 
         chatList.scrollTop = chatList.scrollHeight;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
       }
 
       function getRoomFromUrl() {
@@ -573,13 +622,12 @@
       async function fetchViewerToken(roomName, participantName) {
         const response = await fetch(TOKEN_API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             roomName,
             participantName,
-            role: "viewer"
+            role: "viewer",
+            viewerUserId: currentUser?.id || ""
           })
         });
 
@@ -594,9 +642,7 @@
           participantStat.textContent = "0";
           return;
         }
-
-        const remoteCount = room.remoteParticipants.size;
-        participantStat.textContent = String(remoteCount + 1);
+        participantStat.textContent = String(room.remoteParticipants.size + 1);
       }
 
       function attachRemoteTracks() {
@@ -623,6 +669,122 @@
         }
       }
 
+      function startCountdown(targetIso) {
+        if (countdownTimer) clearInterval(countdownTimer);
+
+        if (!targetIso) {
+          countdownStat.textContent = "--";
+          return;
+        }
+
+        function tick() {
+          const now = Date.now();
+          const target = new Date(targetIso).getTime();
+          const diff = target - now;
+
+          if (diff <= 0) {
+            countdownStat.textContent = "LIVE";
+            clearInterval(countdownTimer);
+            return;
+          }
+
+          const totalSeconds = Math.floor(diff / 1000);
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+
+          countdownStat.textContent = `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        }
+
+        tick();
+        countdownTimer = setInterval(tick, 1000);
+      }
+
+      async function loadRoomInfo(roomName) {
+        const { data, error } = await supabase
+          .from("live_rooms")
+          .select("*")
+          .eq("room_name", roomName)
+          .maybeSingle();
+
+        if (error) throw error;
+
+        currentRoomRow = data || null;
+
+        if (!currentRoomRow) {
+          vipBadge.style.display = "none";
+          accessStat.textContent = "FREE";
+          roomInfoBox.textContent = "Live room not found yet. The host may not have started the stream.";
+          streamHypeBox.textContent = "Stream info will show here.";
+          countdownStat.textContent = "--";
+          return null;
+        }
+
+        const vip = !!currentRoomRow.is_vip;
+        vipBadge.style.display = vip ? "inline-block" : "none";
+        accessStat.textContent = vip ? "VIP" : "FREE";
+
+        roomInfoBox.textContent =
+          `Title: ${currentRoomRow.title || "Rich Bizness Live"}\n` +
+          `Description: ${currentRoomRow.description || "--"}\n` +
+          `Mode: ${vip ? "VIP LIVE" : "FREE LIVE"}\n` +
+          `Live: ${currentRoomRow.is_live ? "YES" : "NO"}\n` +
+          `Price: $${(Number(currentRoomRow.vip_price_cents || 1500) / 100).toFixed(2)}`;
+
+        streamHypeBox.textContent =
+          `Category: ${currentRoomRow.category || "Live"}\n` +
+          `Tags: ${currentRoomRow.tags || "--"}\n` +
+          `Announcement: ${currentRoomRow.announcement || "--"}\n` +
+          `Scheduled: ${currentRoomRow.scheduled_for ? new Date(currentRoomRow.scheduled_for).toLocaleString() : "--"}`;
+
+        startCountdown(currentRoomRow.scheduled_for || null);
+
+        return currentRoomRow;
+      }
+
+      async function canJoinRoom(roomName) {
+        const roomRow = await loadRoomInfo(roomName);
+        if (!roomRow) {
+          throw new Error("Live room not found.");
+        }
+
+        if (!roomRow.is_live) {
+          throw new Error("This live room is not active.");
+        }
+
+        if (!roomRow.is_vip) {
+          return { allowed: true, roomRow };
+        }
+
+        if (!currentUser) {
+          return { allowed: false, roomRow, reason: "Login required for VIP live." };
+        }
+
+        if (currentUser.id === roomRow.host_user_id) {
+          return { allowed: true, roomRow };
+        }
+
+        const { data: accessRow, error: accessError } = await supabase
+          .from("live_room_access")
+          .select("*")
+          .eq("room_name", roomName)
+          .eq("viewer_user_id", currentUser.id)
+          .eq("status", "paid")
+          .maybeSingle();
+
+        if (accessError) throw accessError;
+
+        if (accessRow) {
+          return { allowed: true, roomRow };
+        }
+
+        return {
+          allowed: false,
+          roomRow,
+          reason: `VIP live access required. Price: $${(Number(roomRow.vip_price_cents || 1500) / 100).toFixed(2)}`
+        };
+      }
+
       async function joinLive() {
         try {
           await loadSession();
@@ -642,6 +804,12 @@
 
           if (!roomName) throw new Error("Room name is required.");
           if (!viewerName) throw new Error("Viewer name is required.");
+
+          const joinCheck = await canJoinRoom(roomName);
+          if (!joinCheck.allowed) {
+            setStatus(joinCheck.reason || "Access denied.");
+            return;
+          }
 
           setStatus("Getting viewer token...");
           const token = await fetchViewerToken(roomName, viewerName);
@@ -754,10 +922,135 @@
         }
       }
 
+      async function createLiveTipCheckout() {
+        try {
+          await loadSession();
+
+          const roomName = roomNameInput.value.trim();
+          if (!roomName) throw new Error("Room name missing.");
+
+          const roomRow = await loadRoomInfo(roomName);
+          if (!roomRow) throw new Error("Live room not found.");
+
+          const artistUserId = roomRow.host_user_id;
+          if (!artistUserId) throw new Error("Could not determine live host.");
+
+          const amount = Number(tipAmountInput.value);
+          if (!amount || amount <= 0) {
+            throw new Error("Enter a valid tip amount.");
+          }
+
+          const amountCents = Math.round(amount * 100);
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "direct_support",
+              title: `Live Tip • ${roomName}`,
+              amountCents,
+              description: "Live stream tip on Rich Bizness",
+              artistUserId,
+              userId: currentUser?.id || "",
+              customerEmail: currentUser?.email || "",
+              metadata: {
+                source_type: "live_tip",
+                room_name: roomName
+              },
+              successUrl: `${window.location.origin}/monetization-success.html?live=1&room=${encodeURIComponent(roomName)}`,
+              cancelUrl: `${window.location.origin}/monetization-cancel.html?live=1&room=${encodeURIComponent(roomName)}`
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create live tip checkout.");
+          if (!payload.url) throw new Error("No checkout URL returned.");
+
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("Live tip error: " + error.message);
+        }
+      }
+
+      async function createVipAccessRow(roomName, artistUserId) {
+        if (!currentUser) throw new Error("Login required for VIP access.");
+
+        const { data, error } = await supabase
+          .from("live_room_access")
+          .upsert({
+            room_name: roomName,
+            host_user_id: artistUserId,
+            viewer_user_id: currentUser.id,
+            access_type: "vip_paid",
+            status: "pending"
+          }, { onConflict: "room_name,viewer_user_id" })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+
+      async function createVipLiveCheckout() {
+        try {
+          await loadSession();
+
+          const roomName = roomNameInput.value.trim();
+          if (!roomName) throw new Error("Room name missing.");
+
+          const roomRow = await loadRoomInfo(roomName);
+          if (!roomRow) throw new Error("Live room not found.");
+          if (!roomRow.is_vip) throw new Error("This room is not VIP-only.");
+
+          const artistUserId = roomRow.host_user_id;
+          if (!artistUserId) throw new Error("Could not determine live host.");
+
+          const accessRow = await createVipAccessRow(roomName, artistUserId);
+
+          const response = await fetch("/api/create-checkout-session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "vip_live_access",
+              title: `VIP Live Access • ${roomName}`,
+              amountCents: Number(roomRow.vip_price_cents || 1500),
+              description: "VIP live access on Rich Bizness",
+              artistUserId,
+              userId: currentUser?.id || "",
+              customerEmail: currentUser?.email || "",
+              metadata: {
+                source_type: "vip_live_access",
+                room_name: roomName,
+                live_room_access_id: accessRow.id
+              },
+              successUrl: `${window.location.origin}/monetization-success.html?vip=1&room=${encodeURIComponent(roomName)}`,
+              cancelUrl: `${window.location.origin}/monetization-cancel.html?vip=1&room=${encodeURIComponent(roomName)}`
+            })
+          });
+
+          const payload = await response.json();
+          if (!response.ok) throw new Error(payload.error || "Could not create VIP live checkout.");
+          if (!payload.url) throw new Error("No checkout URL returned.");
+
+          window.location.href = payload.url;
+        } catch (error) {
+          setStatus("VIP live error: " + error.message);
+        }
+      }
+
       joinBtn.addEventListener("click", joinLive);
       leaveBtn.addEventListener("click", leaveLive);
+      vipBtn.addEventListener("click", createVipLiveCheckout);
+      tipBtn.addEventListener("click", createLiveTipCheckout);
       sendChatBtn.addEventListener("click", sendChat);
       logoutBtn.addEventListener("click", logOut);
+
+      roomNameInput.addEventListener("input", async () => {
+        const roomName = roomNameInput.value.trim();
+        if (roomName) {
+          try { await loadRoomInfo(roomName); } catch {}
+        }
+      });
 
       chatInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
@@ -773,11 +1066,19 @@
 
       window.addEventListener("livekit-ready", async () => {
         await loadSession();
+        const roomName = roomNameInput.value.trim();
+        if (roomName) {
+          try { await loadRoomInfo(roomName); } catch {}
+        }
         setStatus("Watch page ready.");
       });
 
       if (window.LivekitModules) {
-        loadSession().then(() => {
+        loadSession().then(async () => {
+          const roomName = roomNameInput.value.trim();
+          if (roomName) {
+            try { await loadRoomInfo(roomName); } catch {}
+          }
           setStatus("Watch page ready.");
         });
       }
