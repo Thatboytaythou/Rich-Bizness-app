@@ -1,585 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Gaming | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Gaming | Rich Bizness</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.86)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
-    }
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  color:white;
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
+    url("images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png") center/cover no-repeat fixed;
+}
 
-    .page {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 18px;
-    }
+.container {
+  max-width:700px;
+  margin:60px auto;
+  background:rgba(0,0,0,0.6);
+  padding:30px;
+  border-radius:20px;
+  border:1px solid rgba(125,255,113,0.2);
+}
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.46);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
-    }
+h1 {
+  color:#7dff71;
+  margin-bottom:20px;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
-    }
+input, textarea, select {
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+  background:#111;
+  color:white;
+}
 
-    .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
-      object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
-    }
+button {
+  margin-top:20px;
+  width:100%;
+  padding:14px;
+  background:#7dff71;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .nav a, .nav button {
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-      border-color: rgba(125,255,113,0.28);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero, .panel {
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
-      margin-bottom: 18px;
-    }
-
-    .hero h1, .panel h2 {
-      margin-top: 0;
-      color: #7dff71;
-    }
-
-    .hero h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      text-shadow: 0 0 18px rgba(125,255,113,0.35);
-    }
-
-    .hero p, .panel-sub {
-      color: #f1f1f1;
-      line-height: 1.7;
-      margin: 0;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
-      font-weight: 700;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 0.9fr;
-      gap: 18px;
-    }
-
-    label {
-      display: block;
-      margin: 12px 0 8px;
-      font-weight: 800;
-      color: #7dff71;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.22);
-    }
-
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .preview-box {
-      margin-top: 14px;
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .preview-media {
-      width: 100%;
-      max-height: 340px;
-      object-fit: cover;
-      border-radius: 14px;
-      background: black;
-      display: block;
-      margin-top: 12px;
-    }
-
-    .recent-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .recent-card {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .recent-title {
-      font-weight: 900;
-      color: #7dff71;
-      margin-bottom: 6px;
-    }
-
-    .recent-text {
-      color: #f2f2f2;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .recent-media {
-      width: 100%;
-      max-height: 220px;
-      border-radius: 12px;
-      object-fit: cover;
-      margin-top: 10px;
-      background: black;
-    }
-
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .button-row {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .brand {
-        font-size: 1.4rem;
-      }
-    }
-  </style>
+.status {
+  margin-top:15px;
+  font-weight:bold;
+}
+</style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
-      </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload</a>
-        <a href="upload-gaming.html" class="active">Upload Gaming</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="profile.html">Profile</a>
-        <a href="artist.html">Artist</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
+<div class="container">
+  <h1>🎮 Upload Gaming Content</h1>
 
-    <div class="hero">
-      <h1>Upload Gaming</h1>
-      <p>Drop gameplay clips, gaming moments, gamer tags, and highlights into Rich Bizness.</p>
-      <div id="statusBox" class="status-box">Checking session...</div>
-    </div>
+  <input id="title" placeholder="Title" />
+  <input id="game" placeholder="Game Name (COD, 2K, GTA, etc)" />
+  
+  <select id="type">
+    <option value="clip">Clip</option>
+    <option value="stream">Stream</option>
+    <option value="highlight">Highlight</option>
+  </select>
 
-    <div class="layout">
-      <div class="panel">
-        <h2>New Gaming Post</h2>
+  <textarea id="caption" placeholder="Caption"></textarea>
 
-        <label for="titleInput">Title</label>
-        <input id="titleInput" type="text" placeholder="Crazy win streak clip" />
+  <input type="file" id="file" />
 
-        <label for="gamerTagInput">Gamer Tag</label>
-        <input id="gamerTagInput" type="text" placeholder="Your gamer tag" />
+  <button onclick="upload()">Upload</button>
 
-        <label for="gameNameInput">Game Name</label>
-        <input id="gameNameInput" type="text" placeholder="NBA 2K / COD / Fortnite / Madden" />
+  <div id="status" class="status"></div>
+</div>
 
-        <label for="captionInput">Caption</label>
-        <textarea id="captionInput" placeholder="Tell people what happened in this clip..."></textarea>
+<script>
+const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-        <label for="mediaInput">Media File</label>
-        <input id="mediaInput" type="file" accept="image/*,video/*" />
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        <div class="button-row">
-          <button id="uploadBtn" class="btn-green" type="button">Upload Gaming Post</button>
-          <button id="clearBtn" class="btn-dark" type="button">Clear Form</button>
-        </div>
+async function upload() {
+  const status = document.getElementById("status");
 
-        <div class="preview-box">
-          <strong style="color:#7dff71;">Preview</strong>
-          <div id="previewText" class="panel-sub" style="margin-top:10px;">No file selected yet.</div>
-          <div id="previewMediaWrap"></div>
-        </div>
-      </div>
+  try {
+    status.innerText = "Uploading...";
 
-      <div class="panel">
-        <h2>Recent Gaming Uploads</h2>
-        <div class="panel-sub">Your latest gaming posts will show here after upload.</div>
-        <div id="recentList" class="recent-list"></div>
-      </div>
-    </div>
-  </div>
+    const { data: { user } } = await supabase.auth.getUser();
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const titleInput = document.getElementById("titleInput");
-      const gamerTagInput = document.getElementById("gamerTagInput");
-      const gameNameInput = document.getElementById("gameNameInput");
-      const captionInput = document.getElementById("captionInput");
-      const mediaInput = document.getElementById("mediaInput");
-
-      const uploadBtn = document.getElementById("uploadBtn");
-      const clearBtn = document.getElementById("clearBtn");
-
-      const previewText = document.getElementById("previewText");
-      const previewMediaWrap = document.getElementById("previewMediaWrap");
-      const recentList = document.getElementById("recentList");
-
-      let currentUser = null;
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-        console.log(message);
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      async function requireUser() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-
-        if (!currentUser) {
-          userChip.textContent = "No session";
-          setStatus("No active session. Redirecting to auth...");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
-          return null;
-        }
-
-        userChip.textContent = currentUser.email || "Signed in";
-        setStatus("Session active.");
-        return currentUser;
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      function clearForm() {
-        titleInput.value = "";
-        gamerTagInput.value = "";
-        gameNameInput.value = "";
-        captionInput.value = "";
-        mediaInput.value = "";
-        previewText.textContent = "No file selected yet.";
-        previewMediaWrap.innerHTML = "";
-      }
-
-      function showPreview() {
-        const file = mediaInput.files?.[0];
-
-        if (!file) {
-          previewText.textContent = "No file selected yet.";
-          previewMediaWrap.innerHTML = "";
-          return;
-        }
-
-        previewText.textContent = `${file.name} • ${file.type || "unknown type"}`;
-        previewMediaWrap.innerHTML = "";
-
-        const url = URL.createObjectURL(file);
-
-        if (file.type.startsWith("video/")) {
-          previewMediaWrap.innerHTML = `<video class="preview-media" controls src="${url}"></video>`;
-        } else if (file.type.startsWith("image/")) {
-          previewMediaWrap.innerHTML = `<img class="preview-media" src="${url}" alt="preview" />`;
-        } else {
-          previewMediaWrap.innerHTML = `<div class="empty-box">Unsupported file preview.</div>`;
-        }
-      }
-
-      async function uploadMedia(file) {
-        if (!currentUser || !file) throw new Error("Missing file upload data.");
-
-        const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const filePath = `${currentUser.id}/${fileName}`;
-
-        const { error } = await supabase.storage
-          .from("gaming-media")
-          .upload(filePath, file, { upsert: false });
-
-        if (error) throw error;
-
-        const { data } = supabase.storage.from("gaming-media").getPublicUrl(filePath);
-        const publicUrl = data?.publicUrl || "";
-
-        if (!publicUrl) {
-          throw new Error("Could not get public media URL.");
-        }
-
-        return {
-          mediaUrl: publicUrl,
-          mediaType: file.type.startsWith("video/") ? "video" : "image"
-        };
-      }
-
-      async function uploadGamingPost() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const title = titleInput.value.trim();
-          const gamerTag = gamerTagInput.value.trim();
-          const gameName = gameNameInput.value.trim();
-          const caption = captionInput.value.trim();
-          const file = mediaInput.files?.[0];
-
-          if (!title) throw new Error("Title is required.");
-          if (!gamerTag) throw new Error("Gamer tag is required.");
-          if (!gameName) throw new Error("Game name is required.");
-          if (!file) throw new Error("Select an image or video file.");
-
-          setStatus("Uploading gaming media...");
-
-          const { mediaUrl, mediaType } = await uploadMedia(file);
-
-          setStatus("Saving gaming post...");
-
-          const { error } = await supabase
-            .from("gaming_posts")
-            .insert({
-              user_id: user.id,
-              title,
-              gamer_tag: gamerTag,
-              game_name: gameName,
-              caption,
-              media_url: mediaUrl,
-              media_type: mediaType
-            });
-
-          if (error) throw error;
-
-          setStatus("Gaming post uploaded.");
-          clearForm();
-          await loadRecentUploads();
-        } catch (error) {
-          setStatus("Upload error: " + error.message);
-        }
-      }
-
-      async function loadRecentUploads() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const { data, error } = await supabase
-            .from("gaming_posts")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(6);
-
-          if (error) throw error;
-
-          const items = data || [];
-
-          if (!items.length) {
-            recentList.innerHTML = `<div class="empty-box">No gaming uploads yet.</div>`;
-            return;
-          }
-
-          recentList.innerHTML = items.map(item => `
-            <div class="recent-card">
-              <div class="recent-title">${escapeHtml(item.title || "Untitled Gaming Post")}</div>
-              <div class="recent-text">
-Gamer Tag: ${escapeHtml(item.gamer_tag || "--")}
-Game: ${escapeHtml(item.game_name || "--")}
-${escapeHtml(item.caption || "")}
-              </div>
-              ${
-                item.media_type === "video"
-                  ? `<video class="recent-media" controls src="${escapeHtml(item.media_url)}"></video>`
-                  : `<img class="recent-media" src="${escapeHtml(item.media_url)}" alt="gaming media" />`
-              }
-            </div>
-          `).join("");
-        } catch (error) {
-          recentList.innerHTML = `<div class="empty-box">Could not load gaming uploads.</div>`;
-          setStatus("Recent uploads error: " + error.message);
-        }
-      }
-
-      mediaInput.addEventListener("change", showPreview);
-      uploadBtn.addEventListener("click", uploadGamingPost);
-      clearBtn.addEventListener("click", clearForm);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "No session";
-        currentUser = session?.user || null;
-      });
-
-      requireUser().then(loadRecentUploads);
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Gaming Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+    if (!user) {
+      status.innerText = "You must be logged in";
+      return;
     }
-  </script>
+
+    const file = document.getElementById("file").files[0];
+
+    if (!file) {
+      status.innerText = "Select a file first";
+      return;
+    }
+
+    const fileName = `${Date.now()}-${file.name}`;
+
+    // Upload to storage
+    const { error: uploadError } = await supabase.storage
+      .from("gaming-uploads")
+      .upload(fileName, file);
+
+    if (uploadError) throw uploadError;
+
+    // Get public URL
+    const { data } = supabase.storage
+      .from("gaming-uploads")
+      .getPublicUrl(fileName);
+
+    const fileUrl = data.publicUrl;
+
+    // Insert into DB
+    const { error: dbError } = await supabase
+      .from("gaming_uploads")
+      .insert([{
+        user_id: user.id,
+        title: document.getElementById("title").value,
+        caption: document.getElementById("caption").value,
+        game_title: document.getElementById("game").value,
+        content_type: document.getElementById("type").value,
+        file_url: fileUrl,
+        thumbnail_url: fileUrl
+      }]);
+
+    if (dbError) throw dbError;
+
+    status.innerText = "✅ Upload successful";
+
+  } catch (err) {
+    console.error(err);
+    status.innerText = "❌ " + err.message;
+  }
+}
+</script>
+
 </body>
 </html>
