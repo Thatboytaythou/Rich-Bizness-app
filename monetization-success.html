@@ -188,7 +188,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -254,14 +254,8 @@
       margin-bottom: 8px;
     }
 
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
+    #vipFlowBox {
+      display: none;
     }
 
     @media (max-width: 980px) {
@@ -289,6 +283,8 @@
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
         <a href="artist.html">Artist</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="music-revenue.html">Revenue</a>
         <a href="monetization.html">Monetize</a>
         <a href="profile.html">Profile</a>
@@ -298,15 +294,21 @@
 
     <div class="hero">
       <div class="success-badge">✓</div>
-      <h1>Payment Completed</h1>
-      <div class="subtle">
+      <h1 id="heroTitle">Payment Completed</h1>
+      <div id="heroSubtitle" class="subtle">
         Your checkout finished successfully. Stripe is done, and your webhook should now update your monetization records.
       </div>
 
-      <div class="hero-actions">
+      <div class="hero-actions" id="defaultActions">
         <a class="btn-green" href="music-revenue.html">Open Revenue Dashboard</a>
         <a class="btn-dark" href="monetization.html">Back To Monetization</a>
         <a class="btn-gold" href="music.html">Back To Music</a>
+      </div>
+
+      <div class="hero-actions" id="vipActions" style="display:none;">
+        <a id="joinVipNowBtn" class="btn-green" href="watch.html">Join VIP Live Now</a>
+        <a id="openVipWatchBtn" class="btn-dark" href="watch.html">Open Watch Page</a>
+        <a class="btn-gold" href="live.html">Open Live Page</a>
       </div>
 
       <div id="statusBox" class="status-box">Loading success page...</div>
@@ -323,6 +325,39 @@
         <div class="stat">
           <div id="syncStat" class="stat-value">READY</div>
           <div class="stat-label">Webhook Sync</div>
+        </div>
+        <div class="stat">
+          <div id="flowStat" class="stat-value">STANDARD</div>
+          <div class="stat-label">Flow Type</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="vipFlowBox">
+      <h2>VIP Live Unlocked</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="pill">VIP ACCESS</div>
+          <div class="card-title">Your Stream Access Is Unlocking</div>
+          <div class="card-text">
+            Your VIP checkout completed. If the webhook has already finished, you can jump straight into the stream now.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pill">ROOM</div>
+          <div class="card-title" id="vipRoomTitle">--</div>
+          <div class="card-text">
+            This is the room connected to your VIP live access purchase.
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="pill">NEXT STEP</div>
+          <div class="card-title">Join The Stream</div>
+          <div class="card-text">
+            Use the VIP join button above. If access takes a moment to sync, wait a second and try again.
+          </div>
         </div>
       </div>
     </div>
@@ -342,7 +377,7 @@
           <div class="pill">DATABASE</div>
           <div class="card-title">Supabase Updates</div>
           <div class="card-text">
-            Depending on the checkout type, your premium purchase, subscription, or support earnings should be saved.
+            Depending on the checkout type, your premium purchase, subscription, VIP live access, or support earnings should be saved.
           </div>
         </div>
 
@@ -351,41 +386,6 @@
           <div class="card-title">Revenue Page Reflects It</div>
           <div class="card-text">
             Open your revenue page to see earnings and monetization activity once the webhook has finished processing.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Quick Next Moves</h2>
-      <div class="grid">
-        <div class="card">
-          <div class="card-title">Revenue Dashboard</div>
-          <div class="card-text">
-            Check your updated earnings, supporter activity, and premium unlock flow.
-          </div>
-          <div class="card-actions">
-            <a class="btn-green" href="music-revenue.html">Open Revenue</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Monetization Hub</div>
-          <div class="card-text">
-            Create more premium tracks, supporter plans, and direct support checkouts.
-          </div>
-          <div class="card-actions">
-            <a class="btn-dark" href="monetization.html">Open Monetization</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Public Artist Page</div>
-          <div class="card-text">
-            Push fans back into your artist channel and creator ecosystem.
-          </div>
-          <div class="card-actions">
-            <a class="btn-gold" href="artist.html">Open Artist</a>
           </div>
         </div>
       </div>
@@ -408,23 +408,40 @@
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
+
+      const heroTitle = document.getElementById("heroTitle");
+      const heroSubtitle = document.getElementById("heroSubtitle");
+      const defaultActions = document.getElementById("defaultActions");
+      const vipActions = document.getElementById("vipActions");
+
       const sessionIdStat = document.getElementById("sessionIdStat");
       const userStat = document.getElementById("userStat");
       const syncStat = document.getElementById("syncStat");
+      const flowStat = document.getElementById("flowStat");
+
+      const vipFlowBox = document.getElementById("vipFlowBox");
+      const joinVipNowBtn = document.getElementById("joinVipNowBtn");
+      const openVipWatchBtn = document.getElementById("openVipWatchBtn");
+      const vipRoomTitle = document.getElementById("vipRoomTitle");
 
       function setStatus(message) {
         statusBox.textContent = message;
-      }
-
-      function getSessionIdFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        return params.get("session_id") || "--";
       }
 
       function shorten(value, max = 18) {
         const text = String(value || "");
         if (text.length <= max) return text;
         return text.slice(0, max - 3) + "...";
+      }
+
+      function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          sessionId: params.get("session_id") || "--",
+          vip: params.get("vip") === "1",
+          live: params.get("live") === "1",
+          room: params.get("room") || ""
+        };
       }
 
       async function loadSession() {
@@ -434,6 +451,7 @@
         const user = data?.session?.user || null;
         userChip.textContent = user?.email || "Guest mode";
         userStat.textContent = user?.email ? shorten(user.email, 20) : "Guest";
+        return user;
       }
 
       async function logOut() {
@@ -446,20 +464,58 @@
         }
       }
 
+      function enableVipFlow(room) {
+        heroTitle.textContent = "VIP Live Unlocked";
+        heroSubtitle.textContent = "Your VIP live payment completed. You can jump into the stream now.";
+        defaultActions.style.display = "none";
+        vipActions.style.display = "flex";
+        vipFlowBox.style.display = "block";
+        flowStat.textContent = "VIP";
+        vipRoomTitle.textContent = room || "--";
+
+        const watchUrl = room
+          ? `watch.html?room=${encodeURIComponent(room)}`
+          : "watch.html";
+
+        joinVipNowBtn.href = watchUrl;
+        openVipWatchBtn.href = watchUrl;
+      }
+
+      function enableLiveTipFlow() {
+        heroTitle.textContent = "Live Tip Sent";
+        heroSubtitle.textContent = "Your live support payment completed successfully.";
+        flowStat.textContent = "LIVE TIP";
+      }
+
       async function initPage() {
         try {
           setStatus("Loading success page...");
           await loadSession();
 
-          const sessionId = getSessionIdFromUrl();
+          const { sessionId, vip, live, room } = getParams();
+
           sessionIdStat.textContent = shorten(sessionId, 20);
           syncStat.textContent = sessionId !== "--" ? "PENDING" : "READY";
 
-          if (sessionId !== "--") {
-            setStatus("Checkout completed. Your webhook should sync this payment to Supabase.");
-          } else {
-            setStatus("Payment completed. No session_id was found in the URL, but your webhook can still process the event.");
+          if (vip) {
+            enableVipFlow(room);
+            setStatus(room
+              ? `VIP payment completed. If access is still syncing, wait a moment, then open room: ${room}`
+              : "VIP payment completed. Open the watch page to join.");
+            return;
           }
+
+          if (live) {
+            enableLiveTipFlow();
+            setStatus("Live support payment completed. Your webhook should sync this to revenue.");
+            return;
+          }
+
+          setStatus(
+            sessionId !== "--"
+              ? "Checkout completed. Your webhook should sync this payment to Supabase."
+              : "Payment completed. No session_id was found in the URL, but your webhook can still process the event."
+          );
         } catch (error) {
           setStatus("Success page error: " + error.message);
         }
