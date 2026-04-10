@@ -7,11 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <script type="module">
-    import {
-      Room,
-      RoomEvent
-    } from "https://cdn.skypack.dev/livekit-client";
-
+    import { Room, RoomEvent } from "https://cdn.skypack.dev/livekit-client";
     window.LivekitModules = { Room, RoomEvent };
     window.dispatchEvent(new Event("livekit-ready"));
   </script>
@@ -21,7 +17,6 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
       --gold: #f5d76e;
       --danger: #ef5b55;
       --bg: rgba(0,0,0,0.50);
@@ -161,11 +156,12 @@
       font-weight: 700;
       line-height: 1.6;
       word-break: break-word;
+      white-space: pre-wrap;
     }
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -179,7 +175,7 @@
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 900;
       color: var(--green);
       word-break: break-word;
@@ -221,7 +217,7 @@
       font-weight: 800;
     }
 
-    .control input {
+    .control input, .control select, .control textarea {
       width: 100%;
       padding: 14px;
       border-radius: 12px;
@@ -230,6 +226,11 @@
       color: white;
       font-size: 16px;
       outline: none;
+    }
+
+    .control textarea {
+      min-height: 90px;
+      resize: vertical;
     }
 
     .button-grid {
@@ -276,6 +277,17 @@
       margin-bottom: 10px;
     }
 
+    .vip-pill {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.30);
+      color: var(--gold);
+      font-weight: 900;
+      margin-left: 8px;
+    }
+
     .mini-box {
       padding: 14px;
       border-radius: 14px;
@@ -285,6 +297,7 @@
       line-height: 1.6;
       word-break: break-word;
       margin-top: 14px;
+      white-space: pre-wrap;
     }
 
     .chat-list {
@@ -334,8 +347,14 @@
       outline: none;
     }
 
+    @media (max-width: 1300px) {
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
     @media (max-width: 1150px) {
-      .layout, .stats-row, .button-grid {
+      .layout, .button-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -349,7 +368,7 @@
         min-height: 320px;
       }
 
-      .chat-form {
+      .chat-form, .stats-row {
         grid-template-columns: 1fr;
       }
     }
@@ -378,10 +397,13 @@
     </div>
 
     <div class="hero">
-      <div class="live-pill">HOST CONTROL ROOM</div>
+      <div>
+        <span class="live-pill">HOST CONTROL ROOM</span>
+        <span id="vipModeBadge" class="vip-pill" style="display:none;">VIP LIVE</span>
+      </div>
       <h1>Maximized Live System</h1>
       <div class="subtle">
-        Start your stream, preview your camera, control mic and camera, copy the viewer link, and chat live with your viewers.
+        Start your stream, build hype, preview your camera, control mic and camera, copy the viewer link, chat with viewers, and run free or VIP live rooms.
       </div>
 
       <div class="hero-actions">
@@ -413,6 +435,10 @@
           <div id="chatStat" class="stat-value">0</div>
           <div class="stat-label">Chat Messages</div>
         </div>
+        <div class="stat">
+          <div id="accessStat" class="stat-value">FREE</div>
+          <div class="stat-label">Access Mode</div>
+        </div>
       </div>
     </div>
 
@@ -432,12 +458,60 @@
 
           <div class="control">
             <label for="roomNameInput">Room Name</label>
-            <input id="roomNameInput" type="text" value="" />
+            <input id="roomNameInput" type="text" />
           </div>
 
           <div class="control">
             <label for="hostNameInput">Host Name</label>
-            <input id="hostNameInput" type="text" value="" />
+            <input id="hostNameInput" type="text" />
+          </div>
+
+          <div class="control">
+            <label for="liveTitleInput">Live Title</label>
+            <input id="liveTitleInput" type="text" placeholder="Rich Bizness Live" />
+          </div>
+
+          <div class="control">
+            <label for="liveDescriptionInput">Live Description</label>
+            <textarea id="liveDescriptionInput" placeholder="Live session with Rich Bizness"></textarea>
+          </div>
+
+          <div class="control">
+            <label for="categoryInput">Category</label>
+            <input id="categoryInput" type="text" placeholder="Music / Gaming / Sports / Tattoo / 3D Printing" />
+          </div>
+
+          <div class="control">
+            <label for="tagsInput">Tags</label>
+            <input id="tagsInput" type="text" placeholder="rich bizness, live music, vip" />
+          </div>
+
+          <div class="control">
+            <label for="announcementInput">Pinned Announcement</label>
+            <input id="announcementInput" type="text" placeholder="We going crazy tonight 🔥 tap in" />
+          </div>
+
+          <div class="control">
+            <label for="scheduleInput">Scheduled Time</label>
+            <input id="scheduleInput" type="datetime-local" />
+          </div>
+
+          <div class="control">
+            <label for="thumbnailInput">Thumbnail URL</label>
+            <input id="thumbnailInput" type="text" placeholder="https://..." />
+          </div>
+
+          <div class="control">
+            <label for="vipToggleInput">Access Type</label>
+            <select id="vipToggleInput">
+              <option value="false">Free Live</option>
+              <option value="true">VIP Live</option>
+            </select>
+          </div>
+
+          <div class="control">
+            <label for="vipPriceInput">VIP Price (USD)</label>
+            <input id="vipPriceInput" type="number" min="1" step="0.01" value="15.00" />
           </div>
 
           <div class="button-grid">
@@ -451,6 +525,8 @@
           </div>
 
           <div class="mini-box" id="viewerLinkBox">Viewer link will show here.</div>
+          <div class="mini-box" id="roomConfigBox">Room settings will show here.</div>
+          <div class="mini-box" id="hypePreviewBox">Hype preview will show here.</div>
         </div>
 
         <div class="panel" style="margin-top:18px;">
@@ -475,16 +551,11 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
       const LIVEKIT_URL = "wss://rich-bizness-5ysa2qms.livekit.cloud";
       const TOKEN_API_URL = "/api/livekit-token";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
       });
 
       const userChip = document.getElementById("userChip");
@@ -493,6 +564,15 @@
 
       const roomNameInput = document.getElementById("roomNameInput");
       const hostNameInput = document.getElementById("hostNameInput");
+      const liveTitleInput = document.getElementById("liveTitleInput");
+      const liveDescriptionInput = document.getElementById("liveDescriptionInput");
+      const categoryInput = document.getElementById("categoryInput");
+      const tagsInput = document.getElementById("tagsInput");
+      const announcementInput = document.getElementById("announcementInput");
+      const scheduleInput = document.getElementById("scheduleInput");
+      const thumbnailInput = document.getElementById("thumbnailInput");
+      const vipToggleInput = document.getElementById("vipToggleInput");
+      const vipPriceInput = document.getElementById("vipPriceInput");
 
       const startBtn = document.getElementById("startBtn");
       const endBtn = document.getElementById("endBtn");
@@ -507,8 +587,12 @@
       const hostStat = document.getElementById("hostStat");
       const viewerStat = document.getElementById("viewerStat");
       const chatStat = document.getElementById("chatStat");
+      const accessStat = document.getElementById("accessStat");
 
+      const vipModeBadge = document.getElementById("vipModeBadge");
       const viewerLinkBox = document.getElementById("viewerLinkBox");
+      const roomConfigBox = document.getElementById("roomConfigBox");
+      const hypePreviewBox = document.getElementById("hypePreviewBox");
       const videoStage = document.getElementById("videoStage");
       const chatList = document.getElementById("chatList");
       const chatInput = document.getElementById("chatInput");
@@ -539,11 +623,7 @@
 
       function appendChat(name, text) {
         chatMessages.push({ name, text });
-
-        if (chatMessages.length > 60) {
-          chatMessages = chatMessages.slice(-60);
-        }
-
+        if (chatMessages.length > 60) chatMessages = chatMessages.slice(-60);
         chatStat.textContent = String(chatMessages.length);
 
         chatList.innerHTML = chatMessages.map(msg => `
@@ -556,9 +636,40 @@
         chatList.scrollTop = chatList.scrollHeight;
       }
 
+      function isVipMode() {
+        return String(vipToggleInput.value).trim().toLowerCase() === "true";
+      }
+
+      function updateVipUi() {
+        const vip = isVipMode();
+        vipModeBadge.style.display = vip ? "inline-block" : "none";
+        accessStat.textContent = vip ? "VIP" : "FREE";
+
+        const price = Number(vipPriceInput.value || 15).toFixed(2);
+        roomConfigBox.textContent = vip
+          ? `Mode: VIP Live\nPrice: $${price}\nRoom will require paid access in watch.html`
+          : `Mode: Free Live\nAnyone can join from watch.html`;
+      }
+
+      function updateHypePreview() {
+        const title = liveTitleInput.value.trim() || "Rich Bizness Live";
+        const category = categoryInput.value.trim() || "Live";
+        const tags = tagsInput.value.trim() || "--";
+        const announcement = announcementInput.value.trim() || "--";
+        const scheduled = scheduleInput.value || "--";
+        const vip = isVipMode() ? "VIP LIVE" : "FREE LIVE";
+
+        hypePreviewBox.textContent =
+          `Title: ${title}\n` +
+          `Category: ${category}\n` +
+          `Tags: ${tags}\n` +
+          `Announcement: ${announcement}\n` +
+          `Scheduled: ${scheduled}\n` +
+          `Mode: ${vip}`;
+      }
+
       function makeDefaultRoomName(user) {
-        const idPart = (user?.id || "rb").slice(0, 8);
-        return `richbizness-live-${idPart}`;
+        return `richbizness-live-${user?.id || "rb-host"}`;
       }
 
       function makeDefaultHostName(user) {
@@ -578,15 +689,14 @@
           return false;
         }
 
-        if (!roomNameInput.value.trim()) {
-          roomNameInput.value = makeDefaultRoomName(currentUser);
-        }
-
-        if (!hostNameInput.value.trim()) {
-          hostNameInput.value = makeDefaultHostName(currentUser);
-        }
+        if (!roomNameInput.value.trim()) roomNameInput.value = makeDefaultRoomName(currentUser);
+        if (!hostNameInput.value.trim()) hostNameInput.value = makeDefaultHostName(currentUser);
+        if (!liveTitleInput.value.trim()) liveTitleInput.value = "Rich Bizness Live";
+        if (!liveDescriptionInput.value.trim()) liveDescriptionInput.value = "Live session with Rich Bizness";
 
         renderViewerLink();
+        updateVipUi();
+        updateHypePreview();
         return true;
       }
 
@@ -610,9 +720,7 @@
       async function fetchLiveToken(roomName, participantName) {
         const response = await fetch(TOKEN_API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             roomName,
             participantName,
@@ -624,6 +732,41 @@
         if (!response.ok) throw new Error(payload.error || "Token request failed.");
         if (!payload.token) throw new Error("No LiveKit token returned.");
         return payload.token;
+      }
+
+      async function upsertLiveRoom(isLiveNow) {
+        if (!currentUser) throw new Error("Missing user.");
+
+        const roomName = roomNameInput.value.trim();
+        const title = liveTitleInput.value.trim() || "Rich Bizness Live";
+        const description = liveDescriptionInput.value.trim() || "";
+        const category = categoryInput.value.trim() || "Live";
+        const tags = tagsInput.value.trim() || "";
+        const announcement = announcementInput.value.trim() || "";
+        const scheduledFor = scheduleInput.value ? new Date(scheduleInput.value).toISOString() : null;
+        const thumbnailUrl = thumbnailInput.value.trim() || "";
+        const vip = isVipMode();
+        const vipPriceCents = Math.round(Number(vipPriceInput.value || 15) * 100);
+
+        const { error } = await supabase
+          .from("live_rooms")
+          .upsert({
+            host_user_id: currentUser.id,
+            room_name: roomName,
+            title,
+            description,
+            category,
+            tags,
+            announcement,
+            scheduled_for: scheduledFor,
+            thumbnail_url: thumbnailUrl,
+            is_live: isLiveNow,
+            is_vip: vip,
+            vip_price_cents: vipPriceCents,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "room_name" });
+
+        if (error) throw error;
       }
 
       function updateParticipantCount() {
@@ -647,12 +790,10 @@
         try {
           const ok = await loadSession();
           if (!ok) return;
-
           if (!window.LivekitModules) {
             setStatus("LiveKit still loading...");
             return;
           }
-
           if (liveStarted && room) {
             setStatus("You are already live.");
             return;
@@ -707,17 +848,14 @@
 
           setStatus("Connecting to LiveKit...");
           await room.connect(LIVEKIT_URL, token);
-
           await room.localParticipant.enableCameraAndMicrophone();
 
           const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
           const pub = pubs.find(Boolean);
+          if (pub?.videoTrack) attachLocalVideo(pub.videoTrack);
+          else clearVideoStage();
 
-          if (pub?.videoTrack) {
-            attachLocalVideo(pub.videoTrack);
-          } else {
-            clearVideoStage();
-          }
+          await upsertLiveRoom(true);
 
           liveStarted = true;
           cameraEnabled = true;
@@ -727,8 +865,10 @@
           roomStat.textContent = roomName;
           hostStat.textContent = participantName;
           updateParticipantCount();
-
+          updateVipUi();
+          updateHypePreview();
           renderViewerLink();
+
           appendChat("System", `Live started in room: ${roomName}`);
           setStatus("WE LIT 🔥 Live started.");
         } catch (error) {
@@ -738,6 +878,10 @@
 
       async function endLive() {
         try {
+          if (currentUser && roomNameInput.value.trim()) {
+            try { await upsertLiveRoom(false); } catch {}
+          }
+
           if (room) {
             room.disconnect();
             room = null;
@@ -769,9 +913,7 @@
           if (cameraEnabled) {
             const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
             const pub = pubs.find(Boolean);
-            if (pub?.videoTrack) {
-              attachLocalVideo(pub.videoTrack);
-            }
+            if (pub?.videoTrack) attachLocalVideo(pub.videoTrack);
           } else {
             clearVideoStage();
           }
@@ -849,6 +991,19 @@
       logoutBtn.addEventListener("click", logOut);
 
       roomNameInput.addEventListener("input", renderViewerLink);
+      liveTitleInput.addEventListener("input", updateHypePreview);
+      categoryInput.addEventListener("input", updateHypePreview);
+      tagsInput.addEventListener("input", updateHypePreview);
+      announcementInput.addEventListener("input", updateHypePreview);
+      scheduleInput.addEventListener("input", updateHypePreview);
+      vipToggleInput.addEventListener("change", () => {
+        updateVipUi();
+        updateHypePreview();
+      });
+      vipPriceInput.addEventListener("input", () => {
+        updateVipUi();
+        updateHypePreview();
+      });
 
       chatInput.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
