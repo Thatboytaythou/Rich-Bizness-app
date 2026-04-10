@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Profile | Rich Bizness</title>
+  <title>Rich Bizness | Profile</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
 
     body {
       margin: 0;
@@ -15,59 +28,67 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
-        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1520px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
       padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
+      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
     }
 
     .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
       object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 10px 14px;
       border-radius: 12px;
@@ -76,126 +97,311 @@
     }
 
     .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      color: var(--green);
       border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
 
-    .hero, .panel {
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
+    .hero,
+    .section {
+      padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 190px 1fr 420px;
+      grid-template-columns: 1.1fr 0.9fr;
       gap: 20px;
-      align-items: start;
+      align-items: stretch;
     }
 
-    .avatar {
-      width: 190px;
-      height: 190px;
-      border-radius: 28px;
-      object-fit: cover;
-      background: rgba(255,255,255,0.05);
-      border: 2px solid rgba(125,255,113,0.30);
-      box-shadow: 0 0 24px rgba(125,255,113,0.2);
-    }
-
-    .avatar-fallback {
-      width: 190px;
-      height: 190px;
-      border-radius: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(125,255,113,0.08);
-      border: 2px solid rgba(125,255,113,0.30);
-      color: #7dff71;
-      font-size: 2.2rem;
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(125,255,113,0.2);
-    }
-
-    .profile-title {
+    .hero h1 {
+      margin: 0 0 12px;
       font-size: 3rem;
-      font-weight: 900;
-      color: #7dff71;
-      margin: 0 0 10px;
-      line-height: 1.05;
-      text-shadow: 0 0 16px rgba(125,255,113,0.28);
+      line-height: 0.98;
+      color: var(--green);
     }
 
-    .profile-meta {
-      line-height: 1.7;
-      color: #f2f2f2;
-      white-space: pre-wrap;
-      margin-bottom: 16px;
+    .hero p,
+    .card-text,
+    .mini-text,
+    .meta-text {
+      color: var(--text);
+      line-height: 1.75;
     }
 
-    .button-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    button, .link-btn {
+    .hero-kicker,
+    .pill,
+    .pill-red,
+    .pill-gold,
+    .pill-green {
       display: inline-block;
-      padding: 14px 18px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
+      padding: 8px 12px;
+      border-radius: 999px;
       font-weight: 900;
-      cursor: pointer;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
+    }
+
+    .hero-actions,
+    .card-actions,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
       text-decoration: none;
       text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
     }
 
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-    }
-
+    .btn-green { background: var(--green); color: black; }
     .btn-dark {
-      background: rgba(255,255,255,0.08);
+      background: var(--soft);
       color: white;
       border: 1px solid rgba(255,255,255,0.08);
     }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
       font-weight: 700;
       line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
     }
 
-    .edit-box label {
+    .hero-side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-panel,
+    .edit-card {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mini-panel-title {
+      color: var(--gold);
+      font-size: 1rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .profile-head {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 18px;
+      align-items: start;
+      margin-top: 18px;
+    }
+
+    .avatar-box {
+      width: 140px;
+      height: 140px;
+      border-radius: 24px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.7);
+      font-weight: 900;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .avatar-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
       display: block;
-      margin: 12px 0 8px;
-      font-weight: 800;
-      color: #7dff71;
     }
 
-    .edit-box input,
-    .edit-box textarea {
+    .profile-meta h2 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      color: var(--gold);
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.44);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      margin: 0 0 8px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 210px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.12rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .empty-box {
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .control {
+      margin-bottom: 10px;
+    }
+
+    .control.full {
+      grid-column: 1 / -1;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control textarea {
       width: 100%;
       padding: 14px;
       border-radius: 12px;
@@ -206,211 +412,48 @@
       outline: none;
     }
 
-    .edit-box textarea {
+    .control textarea {
       min-height: 100px;
       resize: vertical;
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(8, 1fr);
-      gap: 12px;
-      margin-bottom: 18px;
-    }
-
-    .stat {
-      border-radius: 18px;
-      padding: 18px;
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-      backdrop-filter: blur(10px);
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 900;
-      color: #7dff71;
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      font-weight: 700;
-      color: #f2f2f2;
-      font-size: 0.95rem;
-    }
-
-    .tabs {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .tab-btn {
-      padding: 12px 16px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.06);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .tab-btn.active {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-    }
-
-    .content-panel {
-      display: none;
-    }
-
-    .content-panel.active {
-      display: block;
-    }
-
-    .content-panel h2 {
-      margin-top: 0;
-      color: #7dff71;
-      font-size: 2rem;
-    }
-
-    .panel-sub {
-      color: #ededed;
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .grid-cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 14px;
-    }
-
-    .card {
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .card-media {
-      width: 100%;
-      max-height: 280px;
-      border-radius: 14px;
-      object-fit: cover;
-      margin-bottom: 10px;
-      background: black;
-    }
-
-    .card-title {
-      font-weight: 900;
-      color: #7dff71;
-      margin-bottom: 6px;
-      font-size: 1.1rem;
-    }
-
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: #7dff71;
-      font-weight: 900;
-      font-size: 0.84rem;
-    }
-
-    .card-text {
-      line-height: 1.6;
-      color: #f4f4f4;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-bottom: 12px;
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .card-actions a,
-    .card-actions button {
-      text-decoration: none;
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    @media (max-width: 1380px) {
-      .hero-grid {
-        grid-template-columns: 190px 1fr;
-      }
-
-      .edit-box {
-        grid-column: 1 / -1;
-      }
-
+    @media (max-width: 1320px) {
       .stats-row {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
-
-    @media (max-width: 920px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .grid-cards {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .stats-row {
+      .grid-4 {
         grid-template-columns: repeat(2, 1fr);
       }
 
-      .profile-title {
-        font-size: 2.2rem;
-      }
-
-      .brand {
-        font-size: 1.4rem;
-      }
-
-      .card-actions {
+      .hero-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 520px) {
+    @media (max-width: 960px) {
+      .grid-3,
+      .grid-4,
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-head {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
       .stats-row {
         grid-template-columns: 1fr;
       }
 
-      .tabs {
-        display: grid;
-        grid-template-columns: 1fr;
+      .hero h1 {
+        font-size: 2.3rem;
+      }
+
+      .card-cover {
+        height: 190px;
       }
     }
   </style>
@@ -419,148 +462,185 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Profile</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="gallery.html">Gallery</a>
+        <a href="music.html">Music</a>
         <a href="artist.html">Artist</a>
-        <a href="profile.html" class="active">Profile</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="monetization.html">Monetization</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="messages.html">Messages</a>
         <a href="notifications.html">Notifications</a>
+        <a href="profile.html" class="active">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-grid">
-        <div id="avatarShell">
-          <div class="avatar-fallback">RB</div>
-        </div>
-
         <div>
-          <h1 id="profileTitle" class="profile-title">Loading profile...</h1>
-          <div id="profileMeta" class="profile-meta">Loading your creator profile...</div>
+          <div class="hero-kicker">FULL SYNCED IDENTITY</div>
+          <h1>Your whole platform in one profile.</h1>
+          <p>
+            This is where music, gaming, sports, live, uploads, and creator identity all connect together under one Rich Bizness account.
+          </p>
 
-          <div class="button-row">
-            <a href="artist.html" class="link-btn btn-green">Open Artist Page</a>
-            <a href="analytics.html" class="link-btn btn-dark">Open Analytics</a>
-            <a href="monetization.html" class="link-btn btn-dark">Open Monetization</a>
-            <a href="feed.html" class="link-btn btn-dark">Open Feed</a>
+          <div class="profile-head">
+            <div id="avatarBox" class="avatar-box">No Avatar</div>
+
+            <div class="profile-meta">
+              <h2 id="displayNameText">Loading...</h2>
+              <div id="usernameText" class="meta-text">@loading</div>
+              <div id="emailText" class="meta-text">--</div>
+              <div id="bioText" class="meta-text" style="margin-top:10px;">No bio yet.</div>
+
+              <div class="hero-actions">
+                <button id="toggleEditBtn" class="btn-green" type="button">Edit Profile</button>
+                <a class="btn-dark" href="live.html">Go Live</a>
+                <a class="btn-dark" href="artist.html">Artist Page</a>
+              </div>
+            </div>
           </div>
 
-          <div id="statusBox" class="status-box">Profile page ready.</div>
+          <div id="profileStatusBox" class="status-box">Loading profile...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="musicCountStat" class="stat-value">0</div>
+              <div class="stat-label">Music Uploads</div>
+            </div>
+            <div class="stat">
+              <div id="gamingCountStat" class="stat-value">0</div>
+              <div class="stat-label">Gaming Uploads</div>
+            </div>
+            <div class="stat">
+              <div id="sportsCountStat" class="stat-value">0</div>
+              <div class="stat-label">Sports Uploads</div>
+            </div>
+            <div class="stat">
+              <div id="liveCountStat" class="stat-value">0</div>
+              <div class="stat-label">Live Rooms</div>
+            </div>
+            <div class="stat">
+              <div id="vipLiveCountStat" class="stat-value">0</div>
+              <div class="stat-label">VIP Live Rooms</div>
+            </div>
+            <div class="stat">
+              <div id="activeLiveCountStat" class="stat-value">0</div>
+              <div class="stat-label">Live Now</div>
+            </div>
+          </div>
         </div>
 
-        <div class="edit-box">
-          <label for="displayNameInput">Display Name</label>
-          <input id="displayNameInput" type="text" placeholder="Rich Bizness" />
+        <div class="hero-side">
+          <div class="mini-panel">
+            <div class="mini-panel-title">Profile Pulse</div>
+            <div id="profilePulseBox" class="mini-text">Loading profile activity...</div>
+          </div>
 
-          <label for="genreInput">Favorite Genre</label>
-          <input id="genreInput" type="text" placeholder="Hip-Hop / Multi / Creator" />
+          <div id="editCard" class="edit-card" style="display:none;">
+            <div class="mini-panel-title">Edit Profile</div>
 
-          <label for="bioInput">Bio</label>
-          <textarea id="bioInput" placeholder="Tell people what you create."></textarea>
+            <div class="form-grid">
+              <div class="control">
+                <label for="displayNameInput">Display Name</label>
+                <input id="displayNameInput" type="text" placeholder="Rich Bizness" />
+              </div>
 
-          <label for="avatarInput">Avatar Image</label>
-          <input id="avatarInput" type="file" accept="image/*" />
+              <div class="control">
+                <label for="usernameInput">Username</label>
+                <input id="usernameInput" type="text" placeholder="richbizness" />
+              </div>
 
-          <div class="button-row" style="margin-top:14px;">
-            <button id="saveProfileBtn" class="btn-green" type="button">Save Profile</button>
-            <button id="refreshBtn" class="btn-dark" type="button">Refresh Dashboard</button>
+              <div class="control full">
+                <label for="avatarUrlInput">Avatar URL</label>
+                <input id="avatarUrlInput" type="text" placeholder="https://..." />
+              </div>
+
+              <div class="control full">
+                <label for="bioInput">Bio</label>
+                <textarea id="bioInput" placeholder="Tell people about your brand, music, gaming, sports, and live energy..."></textarea>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="saveProfileBtn" class="btn-green" type="button">Save Profile</button>
+              <button id="cancelEditBtn" class="btn-dark" type="button">Cancel</button>
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Quick Moves</div>
+            <div class="card-actions">
+              <a class="btn-dark" href="upload-music.html">Upload Music</a>
+              <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
+              <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
+              <a class="btn-dark" href="watch.html">Open Watch</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="stats-row">
-      <div class="stat">
-        <div id="followersStat" class="stat-value">0</div>
-        <div class="stat-label">Followers</div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Your Live Rooms</h2>
+          <p class="mini-text">Every live room tied to your account lives here.</p>
+        </div>
       </div>
-      <div class="stat">
-        <div id="followingStat" class="stat-value">0</div>
-        <div class="stat-label">Following</div>
+      <div id="liveRoomsRail" class="grid-3">
+        <div class="empty-box">Loading live rooms...</div>
       </div>
-      <div class="stat">
-        <div id="likesStat" class="stat-value">0</div>
-        <div class="stat-label">Likes</div>
-      </div>
-      <div class="stat">
-        <div id="commentsStat" class="stat-value">0</div>
-        <div class="stat-label">Comments</div>
-      </div>
-      <div class="stat">
-        <div id="repostsStat" class="stat-value">0</div>
-        <div class="stat-label">Reposts</div>
-      </div>
-      <div class="stat">
-        <div id="premiumStat" class="stat-value">0</div>
-        <div class="stat-label">Premium</div>
-      </div>
-      <div class="stat">
-        <div id="scoreStat" class="stat-value">0</div>
-        <div class="stat-label">Creator Score</div>
-      </div>
-      <div class="stat">
-        <div id="contentStat" class="stat-value">0</div>
-        <div class="stat-label">Content</div>
-      </div>
-    </div>
+    </section>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="artTab">Artwork</button>
-      <button class="tab-btn" data-tab="musicTab">Music</button>
-      <button class="tab-btn" data-tab="gamingTab">Gaming</button>
-      <button class="tab-btn" data-tab="sportsTab">Sports</button>
-      <button class="tab-btn" data-tab="premiumTab">Premium</button>
-    </div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Your Music Uploads</h2>
+          <p class="mini-text">Your music lane tied to your profile.</p>
+        </div>
+      </div>
+      <div id="musicRail" class="grid-4">
+        <div class="empty-box">Loading music uploads...</div>
+      </div>
+    </section>
 
-    <div id="artTab" class="panel content-panel active">
-      <h2>Your Artwork</h2>
-      <div class="panel-sub">Visual drops and gallery content from your creator dashboard.</div>
-      <div id="artGrid" class="grid-cards"></div>
-    </div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Your Gaming Uploads</h2>
+          <p class="mini-text">Your gaming lane tied to your profile.</p>
+        </div>
+      </div>
+      <div id="gamingRail" class="grid-4">
+        <div class="empty-box">Loading gaming uploads...</div>
+      </div>
+    </section>
 
-    <div id="musicTab" class="panel content-panel">
-      <h2>Your Music</h2>
-      <div class="panel-sub">Tracks, covers, and audio uploads from your catalog.</div>
-      <div id="musicGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="gamingTab" class="panel content-panel">
-      <h2>Your Gaming</h2>
-      <div class="panel-sub">Gaming clips, screenshots, and highlights.</div>
-      <div id="gamingGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="sportsTab" class="panel content-panel">
-      <h2>Your Sports</h2>
-      <div class="panel-sub">Sports posts, moments, and highlight drops.</div>
-      <div id="sportsGrid" class="grid-cards"></div>
-    </div>
-
-    <div id="premiumTab" class="panel content-panel">
-      <h2>Your Premium Drops</h2>
-      <div class="panel-sub">Paid unlocks and monetized content connected to your page.</div>
-      <div id="premiumGrid" class="grid-cards"></div>
-    </div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Your Sports Uploads</h2>
+          <p class="mini-text">Your sports lane tied to your profile.</p>
+        </div>
+      </div>
+      <div id="sportsRail" class="grid-4">
+        <div class="empty-box">Loading sports uploads...</div>
+      </div>
+    </section>
   </div>
 
   <script>
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -572,40 +652,42 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const saveProfileBtn = document.getElementById("saveProfileBtn");
-      const refreshBtn = document.getElementById("refreshBtn");
+      const profileStatusBox = document.getElementById("profileStatusBox");
+      const profilePulseBox = document.getElementById("profilePulseBox");
 
-      const avatarShell = document.getElementById("avatarShell");
-      const profileTitle = document.getElementById("profileTitle");
-      const profileMeta = document.getElementById("profileMeta");
-      const statusBox = document.getElementById("statusBox");
+      const avatarBox = document.getElementById("avatarBox");
+      const displayNameText = document.getElementById("displayNameText");
+      const usernameText = document.getElementById("usernameText");
+      const emailText = document.getElementById("emailText");
+      const bioText = document.getElementById("bioText");
+
+      const musicCountStat = document.getElementById("musicCountStat");
+      const gamingCountStat = document.getElementById("gamingCountStat");
+      const sportsCountStat = document.getElementById("sportsCountStat");
+      const liveCountStat = document.getElementById("liveCountStat");
+      const vipLiveCountStat = document.getElementById("vipLiveCountStat");
+      const activeLiveCountStat = document.getElementById("activeLiveCountStat");
+
+      const liveRoomsRail = document.getElementById("liveRoomsRail");
+      const musicRail = document.getElementById("musicRail");
+      const gamingRail = document.getElementById("gamingRail");
+      const sportsRail = document.getElementById("sportsRail");
+
+      const editCard = document.getElementById("editCard");
+      const toggleEditBtn = document.getElementById("toggleEditBtn");
+      const cancelEditBtn = document.getElementById("cancelEditBtn");
+      const saveProfileBtn = document.getElementById("saveProfileBtn");
 
       const displayNameInput = document.getElementById("displayNameInput");
-      const genreInput = document.getElementById("genreInput");
+      const usernameInput = document.getElementById("usernameInput");
+      const avatarUrlInput = document.getElementById("avatarUrlInput");
       const bioInput = document.getElementById("bioInput");
-      const avatarInput = document.getElementById("avatarInput");
-
-      const followersStat = document.getElementById("followersStat");
-      const followingStat = document.getElementById("followingStat");
-      const likesStat = document.getElementById("likesStat");
-      const commentsStat = document.getElementById("commentsStat");
-      const repostsStat = document.getElementById("repostsStat");
-      const premiumStat = document.getElementById("premiumStat");
-      const scoreStat = document.getElementById("scoreStat");
-      const contentStat = document.getElementById("contentStat");
-
-      const artGrid = document.getElementById("artGrid");
-      const musicGrid = document.getElementById("musicGrid");
-      const gamingGrid = document.getElementById("gamingGrid");
-      const sportsGrid = document.getElementById("sportsGrid");
-      const premiumGrid = document.getElementById("premiumGrid");
 
       let currentUser = null;
       let currentProfile = null;
 
       function setStatus(message) {
-        statusBox.textContent = message;
-        console.log(message);
+        profileStatusBox.textContent = message;
       }
 
       function escapeHtml(text) {
@@ -617,25 +699,29 @@
           .replace(/'/g, "&#039;");
       }
 
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
       }
 
-      async function requireUser() {
+      function setUserChip(user) {
+        userChip.textContent = user?.email || "Guest mode";
+      }
+
+      async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
         currentUser = data?.session?.user || null;
+        setUserChip(currentUser);
+
         if (!currentUser) {
-          userChip.textContent = "No session";
-          setStatus("No active session. Redirecting...");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
+          window.location.href = "auth.html";
           return null;
         }
 
-        userChip.textContent = currentUser.email || "Signed in";
         return currentUser;
       }
 
@@ -649,394 +735,323 @@
         }
       }
 
-      async function getCount(table, column, value) {
-        const { count, error } = await supabase
-          .from(table)
-          .select("*", { count: "exact", head: true })
-          .eq(column, value);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getReactionCount(contentType, contentId, reactionType) {
-        const { count, error } = await supabase
-          .from("reactions")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId)
-          .eq("reaction_type", reactionType);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getCommentCount(contentType, contentId) {
-        const { count, error } = await supabase
-          .from("comments")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getRepostCount(contentType, contentId) {
-        const { count, error } = await supabase
-          .from("reposts")
-          .select("*", { count: "exact", head: true })
-          .eq("content_type", contentType)
-          .eq("content_id", contentId);
-
-        if (error) throw error;
-        return count || 0;
-      }
-
-      async function getTrendingScore(contentType, contentId) {
-        const [likes, saves, comments, reposts] = await Promise.all([
-          getReactionCount(contentType, contentId, "like"),
-          getReactionCount(contentType, contentId, "save"),
-          getCommentCount(contentType, contentId),
-          getRepostCount(contentType, contentId)
-        ]);
-
-        return {
-          likes,
-          saves,
-          comments,
-          reposts,
-          score: (likes * 1) + (saves * 2) + (comments * 3) + (reposts * 4)
-        };
-      }
-
-      async function loadProfile() {
-        const user = await requireUser();
-        if (!user) return;
-
-        const { data, error } = await supabase
+      async function ensureProfile(user) {
+        const existing = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .maybeSingle();
 
-        if (error) throw error;
+        if (existing.error) throw existing.error;
 
-        currentProfile = data || null;
+        if (existing.data) return existing.data;
 
-        const displayName = currentProfile?.display_name || user.email || "Rich Bizness Creator";
-        profileTitle.textContent = displayName;
-        profileMeta.innerHTML = `
-Email: ${escapeHtml(currentProfile?.email || user.email || "--")}
-Genre: ${escapeHtml(currentProfile?.favorite_genre || "--")}
-Bio: ${escapeHtml(currentProfile?.bio || "No creator bio yet.")}
-        `;
+        const insertRes = await supabase
+          .from("profiles")
+          .insert([{
+            id: user.id,
+            email: user.email || "",
+            username: null,
+            display_name: null,
+            avatar_url: null,
+            bio: null
+          }])
+          .select()
+          .single();
 
-        displayNameInput.value = currentProfile?.display_name || "";
-        genreInput.value = currentProfile?.favorite_genre || "";
-        bioInput.value = currentProfile?.bio || "";
-
-        if (currentProfile?.avatar_url) {
-          avatarShell.innerHTML = `<img class="avatar" src="${escapeHtml(currentProfile.avatar_url)}" alt="avatar" />`;
-        } else {
-          avatarShell.innerHTML = `<div class="avatar-fallback">RB</div>`;
-        }
+        if (insertRes.error) throw insertRes.error;
+        return insertRes.data;
       }
 
-      async function uploadAvatar(file) {
-        if (!currentUser || !file) return "";
+      function renderProfile(profile, user) {
+        currentProfile = profile;
 
-        const ext = (file.name.split(".").pop() || "png").toLowerCase();
-        const filePath = `${currentUser.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+        const displayName = profile?.display_name || user?.user_metadata?.display_name || "Rich Bizness User";
+        const username = profile?.username || "no_username";
+        const email = profile?.email || user?.email || "--";
+        const bio = profile?.bio || "No bio yet.";
+        const avatarUrl = profile?.avatar_url || "";
 
-        const { error } = await supabase.storage
-          .from("avatars")
-          .upload(filePath, file, { upsert: false });
+        displayNameText.textContent = displayName;
+        usernameText.textContent = `@${username}`;
+        emailText.textContent = email;
+        bioText.textContent = bio;
 
-        if (error) throw error;
+        if (avatarUrl) {
+          avatarBox.innerHTML = `<img src="${avatarUrl}" alt="Avatar" />`;
+        } else {
+          avatarBox.textContent = "No Avatar";
+        }
 
-        const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
-        return data?.publicUrl || "";
+        displayNameInput.value = profile?.display_name || "";
+        usernameInput.value = profile?.username || "";
+        avatarUrlInput.value = profile?.avatar_url || "";
+        bioInput.value = profile?.bio || "";
+      }
+
+      function renderRail(rows, targetEl, type) {
+        if (!rows.length) {
+          targetEl.innerHTML = `<div class="empty-box">Nothing here yet.</div>`;
+          return;
+        }
+
+        targetEl.innerHTML = rows.map(row => {
+          if (type === "live") {
+            const thumbStyle = row.thumbnail_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
+            return `
+              <div class="card">
+                <div class="card-cover custom-bg" style="${thumbStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="${row.is_live ? "pill-red" : "pill"}">${row.is_live ? "LIVE NOW" : "ROOM"}</span>
+                    <span class="${row.is_vip ? "pill-gold" : "pill-green"}">${row.is_vip ? "VIP" : "FREE"}</span>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Live Room")}</div>
+                  <div class="card-text">
+Category: ${escapeHtml(row.category || "--")}<br>
+Tags: ${escapeHtml(row.tags || "--")}<br>
+Announcement: ${escapeHtml(row.announcement || "--")}<br>
+Scheduled: ${escapeHtml(formatDate(row.scheduled_for))}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="watch.html?room=${encodeURIComponent(row.room_name)}">Watch</a>
+                    <a class="btn-dark" href="live.html">Open Live</a>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          if (type === "music") {
+            const coverStyle = row.cover_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.cover_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
+            return `
+              <div class="card">
+                <div class="card-cover custom-bg" style="${coverStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="pill-gold">${escapeHtml(row.genre || "MUSIC")}</span>
+                    ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Music Upload")}</div>
+                  <div class="card-text">
+Artist: ${escapeHtml(row.artist_name || "--")}<br>
+Album: ${escapeHtml(row.album_name || "--")}<br>
+Mood: ${escapeHtml(row.mood || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "music.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                    <a class="btn-dark" href="music.html">Music</a>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          if (type === "gaming") {
+            const coverStyle = row.thumbnail_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
+            return `
+              <div class="card">
+                <div class="card-cover custom-bg" style="${coverStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="pill-gold">${escapeHtml(row.game_title || "GAMING")}</span>
+                    ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Gaming Upload")}</div>
+                  <div class="card-text">
+Platform: ${escapeHtml(row.platform || "--")}<br>
+Gamer Tag: ${escapeHtml(row.gamer_tag || "--")}<br>
+Clip Type: ${escapeHtml(row.clip_type || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "gaming.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                    <a class="btn-dark" href="gaming.html">Gaming</a>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          const coverStyle = row.thumbnail_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
+          return `
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  <span class="pill-gold">${escapeHtml(row.sport_name || "SPORTS")}</span>
+                  ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(row.title || "Sports Upload")}</div>
+                <div class="card-text">
+Team: ${escapeHtml(row.team_name || "--")}<br>
+Athlete: ${escapeHtml(row.athlete_name || "--")}<br>
+Position: ${escapeHtml(row.position_name || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                </div>
+                <div class="card-actions">
+                  <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "sports.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                  <a class="btn-dark" href="sports.html">Sports</a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
       }
 
       async function saveProfile() {
         try {
-          const user = await requireUser();
-          if (!user) return;
+          if (!currentUser) throw new Error("No active user.");
 
-          setStatus("Saving profile...");
-
-          let avatarUrl = currentProfile?.avatar_url || "";
-          const avatarFile = avatarInput.files?.[0];
-
-          if (avatarFile) {
-            avatarUrl = await uploadAvatar(avatarFile);
-          }
-
-          const payload = {
-            id: user.id,
-            email: user.email || "",
-            display_name: displayNameInput.value.trim(),
-            favorite_genre: genreInput.value.trim(),
-            bio: bioInput.value.trim(),
-            avatar_url: avatarUrl,
+          const updates = {
+            id: currentUser.id,
+            email: currentUser.email || "",
+            display_name: displayNameInput.value.trim() || null,
+            username: (usernameInput.value.trim().toLowerCase() || null),
+            avatar_url: avatarUrlInput.value.trim() || null,
+            bio: bioInput.value.trim() || null,
             updated_at: new Date().toISOString()
           };
 
-          const { error } = await supabase
+          if (updates.username) {
+            updates.username = updates.username.replace(/[^a-z0-9_]/g, "");
+          }
+
+          const { data, error } = await supabase
             .from("profiles")
-            .upsert(payload, { onConflict: "id" });
+            .upsert(updates)
+            .select()
+            .single();
 
           if (error) throw error;
 
-          avatarInput.value = "";
-          setStatus("Profile saved.");
-          await loadDashboard();
+          renderProfile(data, currentUser);
+          editCard.style.display = "none";
+          setStatus("✅ Profile updated.");
         } catch (error) {
-          setStatus("Save profile error: " + error.message);
+          setStatus("❌ Save profile error: " + error.message);
         }
       }
 
-      async function loadStatsAndContent() {
-        const userId = currentUser.id;
-
-        const [
-          followers,
-          following,
-          premiumCountVal,
-          artRes,
-          musicRes,
-          gamingRes,
-          sportsRes,
-          premiumRes
-        ] = await Promise.all([
-          getCount("followers", "following_id", userId),
-          getCount("followers", "follower_id", userId),
-          getCount("premium_content", "creator_id", userId),
-          supabase.from("artworks").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("music_tracks").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("gaming_posts").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("sports_posts").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
-          supabase.from("premium_content").select("*").eq("creator_id", userId).eq("is_active", true).order("created_at", { ascending: false })
-        ]);
-
-        if (artRes.error) throw artRes.error;
-        if (musicRes.error) throw musicRes.error;
-        if (gamingRes.error) throw gamingRes.error;
-        if (sportsRes.error) throw sportsRes.error;
-        if (premiumRes.error) throw premiumRes.error;
-
-        const artItems = artRes.data || [];
-        const musicItems = musicRes.data || [];
-        const gamingItems = gamingRes.data || [];
-        const sportsItems = sportsRes.data || [];
-        const premiumItems = premiumRes.data || [];
-
-        followersStat.textContent = followers;
-        followingStat.textContent = following;
-        premiumStat.textContent = premiumCountVal;
-
-        const contentItems = [
-          ...artItems.map(item => ({ type: "art", id: item.id })),
-          ...musicItems.map(item => ({ type: "music", id: item.id })),
-          ...gamingItems.map(item => ({ type: "gaming", id: item.id })),
-          ...sportsItems.map(item => ({ type: "sports", id: item.id }))
-        ];
-
-        let totalLikes = 0;
-        let totalComments = 0;
-        let totalReposts = 0;
-        let totalScore = followers * 5;
-
-        for (const item of contentItems) {
-          const engagement = await getTrendingScore(item.type, item.id);
-          totalLikes += engagement.likes;
-          totalComments += engagement.comments;
-          totalReposts += engagement.reposts;
-          totalScore += engagement.score;
-        }
-
-        likesStat.textContent = totalLikes;
-        commentsStat.textContent = totalComments;
-        repostsStat.textContent = totalReposts;
-        scoreStat.textContent = totalScore;
-        contentStat.textContent = contentItems.length;
-
-        renderArtwork(artItems);
-        renderMusic(musicItems);
-        renderGaming(gamingItems);
-        renderSports(sportsItems);
-        renderPremium(premiumItems);
-      }
-
-      function renderArtwork(items) {
-        if (!items.length) {
-          emptyState(artGrid, "No artwork yet.");
-          return;
-        }
-
-        artGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">ART</div>
-            <img class="card-media" src="${escapeHtml(item.image_url || item.media_url || "")}" alt="artwork" />
-            <div class="card-title">${escapeHtml(item.title || "Untitled Artwork")}</div>
-            <div class="card-text">${escapeHtml(item.description || "")}</div>
-            <div class="card-actions">
-              <a class="btn-green" href="gallery.html">Open Gallery</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderMusic(items) {
-        if (!items.length) {
-          emptyState(musicGrid, "No music yet.");
-          return;
-        }
-
-        musicGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">MUSIC</div>
-            ${item.cover_url ? `<img class="card-media" src="${escapeHtml(item.cover_url)}" alt="cover" />` : ""}
-            <div class="card-title">${escapeHtml(item.title || "Untitled Track")}</div>
-            <div class="card-text">
-Artist: ${escapeHtml(item.artist_name || "--")}
-Genre: ${escapeHtml(item.genre || "--")}
-${escapeHtml(item.description || "")}
-            </div>
-            ${item.audio_url ? `<audio controls style="width:100%;margin-top:10px;" src="${escapeHtml(item.audio_url)}"></audio>` : ""}
-            <div class="card-actions">
-              <a class="btn-green" href="music.html">Open Music</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderGaming(items) {
-        if (!items.length) {
-          emptyState(gamingGrid, "No gaming posts yet.");
-          return;
-        }
-
-        gamingGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">GAMING</div>
-            ${
-              item.media_type === "video"
-                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
-                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="gaming media" />`
-            }
-            <div class="card-title">${escapeHtml(item.title || "Untitled Gaming Post")}</div>
-            <div class="card-text">
-Gamer Tag: ${escapeHtml(item.gamer_tag || "--")}
-Game: ${escapeHtml(item.game_name || "--")}
-${escapeHtml(item.caption || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="gaming.html">Open Gaming</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderSports(items) {
-        if (!items.length) {
-          emptyState(sportsGrid, "No sports posts yet.");
-          return;
-        }
-
-        sportsGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">SPORTS</div>
-            ${
-              item.media_type === "video"
-                ? `<video class="card-media" controls src="${escapeHtml(item.media_url)}"></video>`
-                : `<img class="card-media" src="${escapeHtml(item.media_url)}" alt="sports media" />`
-            }
-            <div class="card-title">${escapeHtml(item.title || "Untitled Sports Post")}</div>
-            <div class="card-text">
-Athlete: ${escapeHtml(item.athlete_name || "--")}
-Team: ${escapeHtml(item.team_name || "--")}
-Sport: ${escapeHtml(item.sport_name || "--")}
-${escapeHtml(item.caption || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="sports.html">Open Sports</a>
-              <a class="btn-dark" href="feed.html">Open Feed</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function renderPremium(items) {
-        if (!items.length) {
-          emptyState(premiumGrid, "No premium drops yet.");
-          return;
-        }
-
-        premiumGrid.innerHTML = items.map(item => `
-          <div class="card">
-            <div class="pill">PREMIUM</div>
-            <div class="card-title">${escapeHtml(item.title || "Premium Drop")}</div>
-            <div class="card-text">
-Type: ${escapeHtml(item.content_type || "--")}
-Content ID: ${escapeHtml(item.content_id || "--")}
-Price: $${((Number(item.price_cents || 0)) / 100).toFixed(2)}
-${escapeHtml(item.description || "")}
-            </div>
-            <div class="card-actions">
-              <a class="btn-green" href="monetization.html">Open Monetization</a>
-              <a class="btn-dark" href="artist.html">Open Artist</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function setupTabs() {
-        const tabButtons = document.querySelectorAll(".tab-btn");
-        const panels = document.querySelectorAll(".content-panel");
-
-        tabButtons.forEach(button => {
-          button.addEventListener("click", () => {
-            tabButtons.forEach(btn => btn.classList.remove("active"));
-            panels.forEach(panel => panel.classList.remove("active"));
-
-            button.classList.add("active");
-            document.getElementById(button.dataset.tab).classList.add("active");
-          });
-        });
-      }
-
-      async function loadDashboard() {
+      async function loadProfilePage() {
         try {
-          setStatus("Loading profile dashboard...");
-          await loadProfile();
-          await loadStatsAndContent();
-          setStatus("Profile dashboard loaded.");
+          setStatus("Loading profile...");
+          const user = await loadSession();
+          if (!user) return;
+
+          const profile = await ensureProfile(user);
+          renderProfile(profile, user);
+
+          const [
+            musicRes,
+            gamingRes,
+            sportsRes,
+            liveRes
+          ] = await Promise.all([
+            supabase
+              .from("music_uploads")
+              .select("*")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
+
+            supabase
+              .from("gaming_uploads")
+              .select("*")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
+
+            supabase
+              .from("sports_uploads")
+              .select("*")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
+
+            supabase
+              .from("live_rooms")
+              .select("*")
+              .eq("host_user_id", user.id)
+              .order("updated_at", { ascending: false })
+              .limit(8)
+          ]);
+
+          if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
+          if (gamingRes.error && gamingRes.error.code !== "42P01") throw gamingRes.error;
+          if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
+          if (liveRes.error && liveRes.error.code !== "42P01") throw liveRes.error;
+
+          const musicRows = musicRes.data || [];
+          const gamingRows = gamingRes.data || [];
+          const sportsRows = sportsRes.data || [];
+          const liveRows = liveRes.data || [];
+
+          musicCountStat.textContent = musicRows.length;
+          gamingCountStat.textContent = gamingRows.length;
+          sportsCountStat.textContent = sportsRows.length;
+          liveCountStat.textContent = liveRows.length;
+          vipLiveCountStat.textContent = liveRows.filter(r => r.is_vip).length;
+          activeLiveCountStat.textContent = liveRows.filter(r => r.is_live).length;
+
+          renderRail(liveRows, liveRoomsRail, "live");
+          renderRail(musicRows, musicRail, "music");
+          renderRail(gamingRows, gamingRail, "gaming");
+          renderRail(sportsRows, sportsRail, "sports");
+
+          profilePulseBox.textContent =
+            `Display Name: ${profile?.display_name || "Not set"}\n` +
+            `Username: ${profile?.username || "Not set"}\n` +
+            `Music Uploads: ${musicRows.length}\n` +
+            `Gaming Uploads: ${gamingRows.length}\n` +
+            `Sports Uploads: ${sportsRows.length}\n` +
+            `Live Rooms: ${liveRows.length}`;
+
+          setStatus("✅ Profile fully synced.");
         } catch (error) {
-          setStatus("Profile dashboard error: " + error.message);
-          emptyState(artGrid, "Could not load artwork.");
-          emptyState(musicGrid, "Could not load music.");
-          emptyState(gamingGrid, "Could not load gaming.");
-          emptyState(sportsGrid, "Could not load sports.");
-          emptyState(premiumGrid, "Could not load premium.");
+          console.error("Profile load error:", error);
+          setStatus("❌ Profile load error: " + error.message);
+          profilePulseBox.textContent = "Could not load profile activity right now.";
         }
       }
+
+      toggleEditBtn.addEventListener("click", () => {
+        editCard.style.display = editCard.style.display === "none" ? "block" : "none";
+      });
+
+      cancelEditBtn.addEventListener("click", () => {
+        editCard.style.display = "none";
+        if (currentProfile && currentUser) {
+          renderProfile(currentProfile, currentUser);
+        }
+      });
 
       saveProfileBtn.addEventListener("click", saveProfile);
-      refreshBtn.addEventListener("click", loadDashboard);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "No session";
         currentUser = session?.user || null;
+        setUserChip(currentUser);
       });
 
-      setupTabs();
-      loadDashboard();
+      loadProfilePage();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
