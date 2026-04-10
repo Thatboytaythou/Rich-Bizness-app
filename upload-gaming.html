@@ -1,1 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Gaming | Rich Bizness</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.55);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.90)),
+        url("images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.7rem;
+      line-height: 1;
+      color: var(--green);
+    }
+
+    .subtle {
+      color: var(--text);
+      line-height: 1.75;
+      margin-bottom: 20px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .control {
+      margin-bottom: 6px;
+    }
+
+    .control.full {
+      grid-column: 1 / -1;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control select,
+    .control textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .checkbox-row input {
+      width: auto;
+      transform: scale(1.2);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .preview-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .preview-card h3 {
+      margin-top: 0;
+      color: var(--gold);
+    }
+
+    .preview-box {
+      min-height: 180px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      color: rgba(255,255,255,0.7);
+      text-align: center;
+      padding: 12px;
+    }
+
+    .preview-box img,
+    .preview-box video {
+      max-width: 100%;
+      max-height: 320px;
+      display: block;
+      border-radius: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .form-grid,
+      .preview-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png" alt="Rich Bizness" />
+        <span>Upload Gaming</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h1>Upload Gaming Content</h1>
+      <div class="subtle">
+        Drop clips, highlights, wins, rage moments, tutorials, or montages and push them straight into your gaming lane.
+      </div>
+
+      <div class="form-grid">
+        <div class="control">
+          <label for="titleInput">Title</label>
+          <input id="titleInput" type="text" placeholder="Crazy comeback in ranked match" />
+        </div>
+
+        <div class="control">
+          <label for="gameInput">Game Name</label>
+          <input id="gameInput" type="text" placeholder="Call of Duty, 2K, GTA, Fortnite..." />
+        </div>
+
+        <div class="control">
+          <label for="platformInput">Platform</label>
+          <input id="platformInput" type="text" placeholder="PS5, Xbox, PC, Switch" />
+        </div>
+
+        <div class="control">
+          <label for="gamerTagInput">Gamer Tag</label>
+          <input id="gamerTagInput" type="text" placeholder="Your gamer tag" />
+        </div>
+
+        <div class="control">
+          <label for="contentTypeInput">Content Type</label>
+          <select id="contentTypeInput">
+            <option value="clip">Clip</option>
+            <option value="stream">Stream</option>
+            <option value="highlight">Highlight</option>
+            <option value="short">Short</option>
+            <option value="video">Video</option>
+          </select>
+        </div>
+
+        <div class="control">
+          <label for="clipTypeInput">Clip Type</label>
+          <select id="clipTypeInput">
+            <option value="funny">Funny</option>
+            <option value="win">Win</option>
+            <option value="rage">Rage</option>
+            <option value="highlight">Highlight</option>
+            <option value="tutorial">Tutorial</option>
+            <option value="montage">Montage</option>
+          </select>
+        </div>
+
+        <div class="control full">
+          <label for="captionInput">Caption</label>
+          <textarea id="captionInput" placeholder="Tell people what happened in this clip..."></textarea>
+        </div>
+
+        <div class="control full">
+          <label for="mainFileInput">Main File</label>
+          <input id="mainFileInput" type="file" accept="video/*,image/*" />
+        </div>
+
+        <div class="control full">
+          <label for="thumbFileInput">Thumbnail File (optional)</label>
+          <input id="thumbFileInput" type="file" accept="image/*" />
+        </div>
+
+        <div class="control full">
+          <label>Featured Clip</label>
+          <div class="checkbox-row">
+            <input id="featuredToggle" type="checkbox" />
+            <span>Mark this upload as featured</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="uploadBtn" class="btn-green" type="button">Upload Gaming Content</button>
+        <a class="btn-dark" href="gaming.html">Back To Gaming</a>
+        <a class="btn-gold" href="live.html">Go Live</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Ready to upload.</div>
+
+      <div class="preview-grid">
+        <div class="preview-card">
+          <h3>Main File Preview</h3>
+          <div id="mainPreview" class="preview-box">Your main file preview will show here.</div>
+        </div>
+
+        <div class="preview-card">
+          <h3>Thumbnail Preview</h3>
+          <div id="thumbPreview" class="preview-box">Your thumbnail preview will show here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const MAIN_BUCKET = "gaming-uploads";
+      const THUMB_BUCKET = "gaming-thumbnails";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const titleInput = document.getElementById("titleInput");
+      const gameInput = document.getElementById("gameInput");
+      const platformInput = document.getElementById("platformInput");
+      const gamerTagInput = document.getElementById("gamerTagInput");
+      const contentTypeInput = document.getElementById("contentTypeInput");
+      const clipTypeInput = document.getElementById("clipTypeInput");
+      const captionInput = document.getElementById("captionInput");
+      const mainFileInput = document.getElementById("mainFileInput");
+      const thumbFileInput = document.getElementById("thumbFileInput");
+      const featuredToggle = document.getElementById("featuredToggle");
+      const uploadBtn = document.getElementById("uploadBtn");
+
+      const mainPreview = document.getElementById("mainPreview");
+      const thumbPreview = document.getElementById("thumbPreview");
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        const user = data?.session?.user || null;
+        userChip.textContent = user?.email || "Guest mode";
+
+        if (!user) {
+          window.location.href = "auth.html";
+          return null;
+        }
+
+        return user;
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      function renderFilePreview(file, targetEl) {
+        if (!file) {
+          targetEl.innerHTML = "No file selected.";
+          return;
+        }
+
+        const url = URL.createObjectURL(file);
+
+        if (file.type.startsWith("image/")) {
+          targetEl.innerHTML = `<img src="${url}" alt="Preview" />`;
+          return;
+        }
+
+        if (file.type.startsWith("video/")) {
+          targetEl.innerHTML = `<video src="${url}" controls></video>`;
+          return;
+        }
+
+        targetEl.textContent = file.name;
+      }
+
+      function makeFilePath(prefix, file) {
+        const safeName = String(file.name || "file").replace(/\s+/g, "-");
+        return `${prefix}/${Date.now()}-${safeName}`;
+      }
+
+      async function uploadFile(bucket, path, file) {
+        const { error } = await supabase.storage
+          .from(bucket)
+          .upload(path, file, {
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+        return data.publicUrl;
+      }
+
+      async function uploadGaming() {
+        try {
+          setStatus("Checking session...");
+          uploadBtn.disabled = true;
+
+          const user = await loadSession();
+          if (!user) return;
+
+          const title = titleInput.value.trim();
+          const gameTitle = gameInput.value.trim();
+          const platform = platformInput.value.trim();
+          const gamerTag = gamerTagInput.value.trim();
+          const contentType = contentTypeInput.value;
+          const clipType = clipTypeInput.value;
+          const caption = captionInput.value.trim();
+
+          const mainFile = mainFileInput.files[0];
+          const thumbFile = thumbFileInput.files[0];
+
+          if (!title) throw new Error("Title is required.");
+          if (!gameTitle) throw new Error("Game name is required.");
+          if (!mainFile) throw new Error("Main file is required.");
+
+          setStatus("Uploading main file...");
+          const mainPath = makeFilePath(user.id, mainFile);
+          const fileUrl = await uploadFile(MAIN_BUCKET, mainPath, mainFile);
+
+          let thumbnailUrl = fileUrl;
+
+          if (thumbFile) {
+            setStatus("Uploading thumbnail...");
+            const thumbPath = makeFilePath(user.id, thumbFile);
+            thumbnailUrl = await uploadFile(THUMB_BUCKET, thumbPath, thumbFile);
+          }
+
+          setStatus("Saving gaming upload...");
+          const { error } = await supabase
+            .from("gaming_uploads")
+            .insert([{
+              user_id: user.id,
+              title,
+              caption,
+              game_title: gameTitle,
+              content_type: contentType,
+              platform,
+              gamer_tag: gamerTag,
+              clip_type: clipType,
+              file_url: fileUrl,
+              thumbnail_url: thumbnailUrl,
+              is_featured: featuredToggle.checked
+            }]);
+
+          if (error) throw error;
+
+          setStatus("✅ Gaming upload successful.");
+
+          titleInput.value = "";
+          gameInput.value = "";
+          platformInput.value = "";
+          gamerTagInput.value = "";
+          captionInput.value = "";
+          contentTypeInput.value = "clip";
+          clipTypeInput.value = "funny";
+          featuredToggle.checked = false;
+          mainFileInput.value = "";
+          thumbFileInput.value = "";
+          mainPreview.innerHTML = "Your main file preview will show here.";
+          thumbPreview.innerHTML = "Your thumbnail preview will show here.";
+        } catch (error) {
+          console.error(error);
+          setStatus("❌ Upload error: " + error.message);
+        } finally {
+          uploadBtn.disabled = false;
+        }
+      }
+
+      mainFileInput.addEventListener("change", () => {
+        renderFilePreview(mainFileInput.files[0], mainPreview);
+      });
+
+      thumbFileInput.addEventListener("change", () => {
+        renderFilePreview(thumbFileInput.files[0], thumbPreview);
+      });
+
+      uploadBtn.addEventListener("click", uploadGaming);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        const user = session?.user || null;
+        userChip.textContent = user?.email || "Guest mode";
+      });
+
+      loadSession().then(() => {
+        setStatus("Ready to upload gaming content.");
+      });
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Upload Gaming Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
