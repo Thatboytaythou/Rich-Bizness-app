@@ -16,7 +16,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { roomName, participantName, role = "viewer" } = req.body || {};
+    const {
+      roomName,
+      participantName,
+      role = "viewer",
+      viewerUserId = ""
+    } = req.body || {};
 
     if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET) {
       return res.status(500).json({
@@ -33,6 +38,7 @@ export default async function handler(req, res) {
     const safeRoom = normalize(roomName);
     const safeName = normalize(participantName);
     const safeRole = normalize(role).toLowerCase();
+    const safeViewerUserId = normalize(viewerUserId);
 
     if (!safeRoom) {
       return res.status(400).json({ error: "Missing roomName" });
@@ -63,11 +69,12 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: "Live room is not active" });
     }
 
-    const hostUserId = String(roomRow.host_user_id || "");
+    const hostUserId = normalize(roomRow.host_user_id);
     const isHost = safeRole === "host";
 
     if (isHost) {
       const expectedHostRoom = `richbizness-live-${hostUserId}`;
+
       if (safeRoom !== expectedHostRoom) {
         return res.status(403).json({
           error: "Host is not allowed to use this room"
@@ -133,10 +140,47 @@ export default async function handler(req, res) {
       });
     }
 
+    if (!safeViewerUserId) {
+      return res.status(403).json({
+        error: "VIP live access requires login"
+      });
+    }
+
+    if (safeViewerUserId === hostUserId) {
+      const token = new AccessToken(
+        process.env.LIVEKIT_API_KEY,
+        process.env.LIVEKIT_API_SECRET,
+        {
+          identity: safeName,
+          ttl: "6h"
+        }
+      );
+
+      token.addGrant({
+        room: safeRoom,
+        roomJoin: true,
+        canPublish: false,
+        canSubscribe: true,
+        canPublishData: true
+      });
+
+      const jwt = await token.toJwt();
+
+      return res.status(200).json({
+        ok: true,
+        token: jwt,
+        room: safeRoom,
+        identity: safeName,
+        role: "viewer",
+        access: "vip_host_view"
+      });
+    }
+
     const accessRes = await supabase
       .from("live_room_access")
       .select("*")
       .eq("room_name", safeRoom)
+      .eq("viewer_user_id", safeViewerUserId)
       .eq("status", "paid")
       .maybeSingle();
 
@@ -179,6 +223,7 @@ export default async function handler(req, res) {
     });
   } catch (error) {
     console.error("livekit-token error", error);
+
     return res.status(500).json({
       error: error?.message || "Failed to generate LiveKit token"
     });
