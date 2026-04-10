@@ -11,12 +11,10 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
       --gold: #f5d76e;
       --danger: #ef5b55;
       --bg: rgba(0,0,0,0.50);
       --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
@@ -41,7 +39,6 @@
 
     .topbar,
     .hero,
-    .section,
     .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -103,13 +100,8 @@
       font-weight: 700;
     }
 
-    .hero,
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
     .hero {
+      padding: 24px;
       text-align: center;
     }
 
@@ -135,14 +127,12 @@
       color: var(--danger);
     }
 
-    .subtle,
-    .card-text {
+    .subtle {
       color: var(--text);
       line-height: 1.75;
     }
 
-    .hero-actions,
-    .card-actions {
+    .hero-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -164,26 +154,10 @@
       cursor: pointer;
     }
 
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark { background: var(--soft); color: white; border: 1px solid rgba(255,255,255,0.08); }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
@@ -191,85 +165,6 @@
       font-weight: 700;
       line-height: 1.6;
       text-align: left;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--gold);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 14px;
-    }
-
-    .card {
-      padding: 18px;
-      border-radius: 20px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(245,215,110,0.12);
-      border: 1px solid rgba(245,215,110,0.22);
-      color: var(--gold);
-      font-weight: 900;
-      font-size: 0.84rem;
-    }
-
-    .card-title {
-      font-size: 1.12rem;
-      font-weight: 900;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-
-    @media (max-width: 980px) {
-      .grid,
-      .stats-row {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.25rem;
-      }
     }
   </style>
 </head>
@@ -285,82 +180,27 @@
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
-        <a href="artist.html">Artist</a>
-        <a href="music-revenue.html">Revenue</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="monetization.html">Monetize</a>
-        <a href="profile.html">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="cancel-badge">×</div>
-      <h1>Checkout Was Cancelled</h1>
-      <div class="subtle">
-        No payment was completed. Nothing is broken — you can go back, change the offer, and try again whenever you want.
+      <h1 id="heroTitle">Checkout Was Cancelled</h1>
+      <div id="heroSubtitle" class="subtle">
+        No payment was completed. Nothing broke — you can go back and try again.
       </div>
 
       <div class="hero-actions">
-        <a class="btn-danger" href="monetization.html">Back To Monetization</a>
-        <a class="btn-dark" href="music.html">Back To Music</a>
-        <a class="btn-gold" href="artist-channel-manage.html">Manage Artist Channel</a>
+        <a id="primaryRetryBtn" class="btn-danger" href="monetization.html">Back To Monetization</a>
+        <a id="watchRetryBtn" class="btn-dark" href="watch.html" style="display:none;">Back To Watch Page</a>
+        <a class="btn-gold" href="music.html">Back To Music</a>
       </div>
 
       <div id="statusBox" class="status-box">Loading cancel page...</div>
-
-      <div class="stats-row">
-        <div class="stat">
-          <div id="userStat" class="stat-value">--</div>
-          <div class="stat-label">Account</div>
-        </div>
-        <div class="stat">
-          <div id="flowStat" class="stat-value">CANCELLED</div>
-          <div class="stat-label">Checkout Flow</div>
-        </div>
-        <div class="stat">
-          <div id="retryStat" class="stat-value">READY</div>
-          <div class="stat-label">Try Again</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>What You Can Do Next</h2>
-      <div class="grid">
-        <div class="card">
-          <div class="pill">RETRY</div>
-          <div class="card-title">Go Back To Monetization</div>
-          <div class="card-text">
-            Return to your monetization hub and rebuild the checkout with the right offer, amount, or premium setup.
-          </div>
-          <div class="card-actions">
-            <a class="btn-danger" href="monetization.html">Open Monetization</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="pill">REVIEW</div>
-          <div class="card-title">Check Your Revenue Setup</div>
-          <div class="card-text">
-            Review your premium tracks, supporter plans, and revenue structure before you launch the next checkout.
-          </div>
-          <div class="card-actions">
-            <a class="btn-gold" href="music-revenue.html">Open Revenue</a>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="pill">BUILD</div>
-          <div class="card-title">Go Back Into The Platform</div>
-          <div class="card-text">
-            Push traffic back into music, artist branding, and your creator channel while you tune the money flow.
-          </div>
-          <div class="card-actions">
-            <a class="btn-dark" href="artist.html">Open Artist</a>
-            <a class="btn-dark" href="music.html">Open Music</a>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -380,16 +220,22 @@
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
-      const userStat = document.getElementById("userStat");
+      const heroTitle = document.getElementById("heroTitle");
+      const heroSubtitle = document.getElementById("heroSubtitle");
+      const primaryRetryBtn = document.getElementById("primaryRetryBtn");
+      const watchRetryBtn = document.getElementById("watchRetryBtn");
 
       function setStatus(message) {
         statusBox.textContent = message;
       }
 
-      function shorten(value, max = 20) {
-        const text = String(value || "");
-        if (text.length <= max) return text;
-        return text.slice(0, max - 3) + "...";
+      function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          vip: params.get("vip") === "1",
+          live: params.get("live") === "1",
+          room: params.get("room") || ""
+        };
       }
 
       async function loadSession() {
@@ -398,7 +244,6 @@
 
         const user = data?.session?.user || null;
         userChip.textContent = user?.email || "Guest mode";
-        userStat.textContent = user?.email ? shorten(user.email, 20) : "Guest";
       }
 
       async function logOut() {
@@ -413,21 +258,46 @@
 
       async function initPage() {
         try {
-          setStatus("Checkout was cancelled. No payment was completed.");
           await loadSession();
+
+          const { vip, live, room } = getParams();
+
+          if (vip) {
+            heroTitle.textContent = "VIP Live Checkout Cancelled";
+            heroSubtitle.textContent = "Your VIP live payment was cancelled. You can go back and unlock access whenever you want.";
+            primaryRetryBtn.textContent = "Retry VIP Flow";
+            primaryRetryBtn.href = room
+              ? `watch.html?room=${encodeURIComponent(room)}`
+              : "watch.html";
+
+            watchRetryBtn.style.display = "inline-block";
+            watchRetryBtn.href = room
+              ? `watch.html?room=${encodeURIComponent(room)}`
+              : "watch.html";
+
+            setStatus("VIP checkout was cancelled. No charge was completed.");
+            return;
+          }
+
+          if (live) {
+            heroTitle.textContent = "Live Tip Cancelled";
+            heroSubtitle.textContent = "Your live support checkout was cancelled. You can still go back to the stream.";
+            primaryRetryBtn.textContent = "Back To Watch";
+            primaryRetryBtn.href = room
+              ? `watch.html?room=${encodeURIComponent(room)}`
+              : "watch.html";
+
+            setStatus("Live tip checkout was cancelled. No charge was completed.");
+            return;
+          }
+
+          setStatus("Checkout was cancelled. No payment was completed.");
         } catch (error) {
           setStatus("Cancel page error: " + error.message);
         }
       }
 
       logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
-        userStat.textContent = user?.email ? shorten(user.email, 20) : "Guest";
-      });
-
       initPage();
     } catch (error) {
       document.body.innerHTML = `
