@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gallery | Rich Bizness</title>
+  <title>Rich Bizness | Gallery</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
 
     body {
       margin: 0;
@@ -15,59 +28,67 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1500px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
       padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
+      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
     }
 
     .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
       object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 10px 14px;
       border-radius: 12px;
@@ -76,125 +97,163 @@
     }
 
     .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      color: var(--green);
       border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
 
-    .hero, .controls, .section {
-      background: rgba(0,0,0,0.46);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
+    .hero,
+    .section {
+      padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero h1 {
-      margin: 0 0 10px;
+      margin: 0 0 12px;
       font-size: 3rem;
-      font-weight: 900;
-      color: #7dff71;
-      text-shadow: 0 0 18px rgba(125,255,113,0.35);
+      line-height: 0.98;
+      color: var(--green);
     }
 
-    .hero p {
-      margin: 0;
-      color: #f1f1f1;
-      line-height: 1.7;
-      max-width: 900px;
+    .subtle,
+    .card-text,
+    .card-meta {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-red,
+    .pill-gold,
+    .pill-green {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
+    }
+
+    .hero-actions,
+    .filter-row,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .filter-btn {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark,
+    .filter-btn {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+
+    .filter-btn.active {
+      background: var(--green);
+      color: black;
     }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
       font-weight: 700;
-    }
-
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1.4fr 0.8fr 0.8fr 0.8fr;
-      gap: 12px;
-      align-items: end;
-    }
-
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 800;
-      color: #7dff71;
-    }
-
-    .control input,
-    .control select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
-      margin-bottom: 18px;
+      margin-top: 18px;
     }
 
     .stat {
-      border-radius: 18px;
       padding: 18px;
-      background: rgba(0,0,0,0.46);
+      border-radius: 18px;
+      background: rgba(0,0,0,0.44);
       border: 1px solid rgba(125,255,113,0.16);
       text-align: center;
-      backdrop-filter: blur(10px);
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.75rem;
       font-weight: 900;
-      color: #7dff71;
+      color: var(--green);
+      word-break: break-word;
     }
 
     .stat-label {
       margin-top: 6px;
+      color: var(--muted);
       font-weight: 700;
-      color: #f2f2f2;
     }
 
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 14px;
-      font-size: 2rem;
-      color: #7dff71;
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .filters-grid input,
+    .filters-grid select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
     }
 
     .gallery-grid {
@@ -203,146 +262,119 @@
       gap: 16px;
     }
 
-    .gallery-card {
+    .card {
       border-radius: 20px;
-      padding: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-    }
-
-    .gallery-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 20px rgba(125,255,113,0.10);
-    }
-
-    .media-frame {
-      width: 100%;
-      height: 280px;
-      border-radius: 16px;
       overflow: hidden;
-      background: black;
-      margin-bottom: 12px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
     }
 
-    .media-frame img,
-    .media-frame video {
+    .card-cover {
+      height: 250px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-cover video {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      display: block;
+      z-index: 0;
       background: black;
     }
 
-    .card-type {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: #7dff71;
-      font-weight: 900;
-      font-size: 0.88rem;
+    .card-cover .overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.12));
+      z-index: 1;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
 
     .card-title {
-      font-size: 1.1rem;
+      color: var(--gold);
+      font-size: 1.12rem;
       font-weight: 900;
-      color: #7dff71;
       margin-bottom: 8px;
-      line-height: 1.35;
     }
 
-    .card-text {
-      color: #f4f4f4;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-bottom: 12px;
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.5;
     }
 
-    .artist-link {
-      color: #7dff71;
+    .card-meta a {
+      color: var(--green);
       text-decoration: none;
-      font-weight: 800;
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .card-actions a,
-    .card-actions button {
-      text-decoration: none;
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.22);
-    }
-
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .empty-box {
-      padding: 18px;
-      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
+      grid-column: 1 / -1;
     }
 
-    @media (max-width: 1200px) {
+    @media (max-width: 1320px) {
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .filters-grid,
       .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
       }
-
-      .controls-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
     }
 
-    @media (max-width: 760px) {
-      .hero h1 {
-        font-size: 2.3rem;
-      }
-
-      .gallery-grid,
-      .controls-grid,
+    @media (max-width: 860px) {
       .stats-row,
-      .card-actions {
+      .filters-grid,
+      .gallery-grid {
         grid-template-columns: 1fr;
       }
 
-      .brand {
-        font-size: 1.45rem;
+      .hero h1 {
+        font-size: 2.2rem;
       }
 
-      .media-frame {
-        height: 240px;
+      .card-cover {
+        height: 210px;
       }
     }
   </style>
@@ -351,90 +383,87 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Gallery</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
+        <a href="feed.html">Feed</a>
         <a href="gallery.html" class="active">Gallery</a>
-        <a href="upload.html">Upload</a>
-        <a href="live.html">Go Live</a>
-        <a href="watch.html">Watch Live</a>
         <a href="music.html">Music</a>
+        <a href="artist.html">Artist</a>
         <a href="gaming.html">Gaming</a>
         <a href="sports.html">Sports</a>
-        <a href="artist.html">Artist</a>
         <a href="profile.html">Profile</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <button id="logoutBtn" type="button">Log Out</button>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Gallery</h1>
-      <p>
-        Explore Rich Bizness visuals, open artist pages, and move through artwork drops from across the platform.
-      </p>
+      <div class="hero-kicker">VISUAL SHOWCASE</div>
+      <h1>Artwork, creator visuals, and video drops in one gallery.</h1>
+      <div class="subtle">
+        This gallery pulls your visual content into one clean lane with filters, creator links, and comments access.
+      </div>
+
+      <div class="hero-actions">
+        <button id="refreshBtn" class="btn-green" type="button">Refresh Gallery</button>
+        <a class="btn-dark" href="upload.html">Upload</a>
+        <a class="btn-dark" href="feed.html">Open Feed</a>
+      </div>
+
       <div id="statusBox" class="status-box">Loading gallery...</div>
-    </div>
 
-    <div class="controls">
-      <div class="controls-grid">
-        <div class="control">
-          <label for="searchInput">Search title / description</label>
-          <input id="searchInput" type="text" placeholder="Search gallery..." />
+      <div class="stats-row">
+        <div class="stat">
+          <div id="allCountStat" class="stat-value">0</div>
+          <div class="stat-label">All Items</div>
         </div>
-
-        <div class="control">
-          <label for="typeFilter">Filter type</label>
-          <select id="typeFilter">
-            <option value="all">All</option>
-            <option value="image">Images</option>
-            <option value="video">Videos</option>
-          </select>
+        <div class="stat">
+          <div id="imageCountStat" class="stat-value">0</div>
+          <div class="stat-label">Images</div>
         </div>
-
-        <div class="control">
-          <label for="sortFilter">Sort</label>
-          <select id="sortFilter">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="title">Title A-Z</option>
-          </select>
+        <div class="stat">
+          <div id="videoCountStat" class="stat-value">0</div>
+          <div class="stat-label">Videos</div>
         </div>
-
-        <div class="control">
-          <label>&nbsp;</label>
-          <button id="refreshBtn" type="button">Refresh Gallery</button>
+        <div class="stat">
+          <div id="featuredCountStat" class="stat-value">0</div>
+          <div class="stat-label">Featured</div>
+        </div>
+        <div class="stat">
+          <div id="viewCountStat" class="stat-value">0</div>
+          <div class="stat-label">Views</div>
         </div>
       </div>
-    </div>
 
-    <div class="stats-row">
-      <div class="stat">
-        <div id="totalStat" class="stat-value">0</div>
-        <div class="stat-label">Total Posts</div>
-      </div>
-      <div class="stat">
-        <div id="imageStat" class="stat-value">0</div>
-        <div class="stat-label">Images</div>
-      </div>
-      <div class="stat">
-        <div id="videoStat" class="stat-value">0</div>
-        <div class="stat-label">Videos</div>
-      </div>
-      <div class="stat">
-        <div id="artistStat" class="stat-value">0</div>
-        <div class="stat-label">Artists Shown</div>
+      <div class="filters-grid">
+        <input id="searchInput" type="text" placeholder="Search title, caption, creator..." />
+        <select id="contentTypeFilter">
+          <option value="">All Content Types</option>
+          <option value="artwork">Artwork</option>
+          <option value="creator_post">Creator Post</option>
+          <option value="image_drop">Image Drop</option>
+          <option value="video_drop">Video Drop</option>
+        </select>
+        <select id="mediaTypeFilter">
+          <option value="">All Media</option>
+          <option value="image">Image</option>
+          <option value="video">Video</option>
+        </select>
+        <select id="featuredFilter">
+          <option value="">All Items</option>
+          <option value="featured">Featured Only</option>
+        </select>
       </div>
     </div>
 
     <div class="section">
-      <h2>Gallery Drops</h2>
-      <div id="galleryGrid" class="gallery-grid"></div>
+      <div id="galleryGrid" class="gallery-grid">
+        <div class="empty-box">Loading gallery...</div>
+      </div>
     </div>
   </div>
 
@@ -442,10 +471,6 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -457,27 +482,27 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const searchInput = document.getElementById("searchInput");
-      const typeFilter = document.getElementById("typeFilter");
-      const sortFilter = document.getElementById("sortFilter");
       const refreshBtn = document.getElementById("refreshBtn");
-
-      const totalStat = document.getElementById("totalStat");
-      const imageStat = document.getElementById("imageStat");
-      const videoStat = document.getElementById("videoStat");
-      const artistStat = document.getElementById("artistStat");
-
+      const statusBox = document.getElementById("statusBox");
       const galleryGrid = document.getElementById("galleryGrid");
 
+      const allCountStat = document.getElementById("allCountStat");
+      const imageCountStat = document.getElementById("imageCountStat");
+      const videoCountStat = document.getElementById("videoCountStat");
+      const featuredCountStat = document.getElementById("featuredCountStat");
+      const viewCountStat = document.getElementById("viewCountStat");
+
+      const searchInput = document.getElementById("searchInput");
+      const contentTypeFilter = document.getElementById("contentTypeFilter");
+      const mediaTypeFilter = document.getElementById("mediaTypeFilter");
+      const featuredFilter = document.getElementById("featuredFilter");
+
       let currentUser = null;
-      let allArtwork = [];
       let profileMap = {};
+      let galleryCache = [];
 
       function setStatus(message) {
         statusBox.textContent = message;
-        console.log(message);
       }
 
       function escapeHtml(text) {
@@ -489,17 +514,29 @@
           .replace(/'/g, "&#039;");
       }
 
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function getCreatorLabel(userId, fallback = "Creator") {
+        const profile = profileMap[userId] || {};
+        return profile.display_name || profile.username || profile.email || fallback;
+      }
+
+      function getArtistLink(userId) {
+        const profile = profileMap[userId] || {};
+        if (!profile.username) return "artist.html";
+        return `artist.html?u=${encodeURIComponent(profile.username)}`;
       }
 
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-
-        const user = data?.session?.user || null;
-        currentUser = user;
-        userChip.textContent = user?.email || "Guest mode";
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       }
 
       async function logOut() {
@@ -512,166 +549,161 @@
         }
       }
 
-      function detectMediaType(item) {
-        if (item.media_type) return item.media_type;
-        if (item.video_url) return "video";
-        return "image";
-      }
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
 
-      function getMediaUrl(item) {
-        return item.video_url || item.image_url || item.media_url || "";
-      }
-
-      async function loadGalleryData() {
-        setStatus("Loading gallery...");
-        await loadSession();
-
-        const { data: artworkData, error: artworkError } = await supabase
-          .from("artworks")
+        const { data, error } = await supabase
+          .from("profiles")
           .select("*")
-          .order("created_at", { ascending: false });
+          .in("id", ids);
 
-        if (artworkError) throw artworkError;
-
-        allArtwork = (artworkData || []).map(item => ({
-          ...item,
-          _mediaType: detectMediaType(item),
-          _mediaUrl: getMediaUrl(item)
-        }));
-
-        const userIds = [...new Set(allArtwork.map(item => item.user_id).filter(Boolean))];
+        if (error) throw error;
 
         profileMap = {};
-
-        if (userIds.length) {
-          const { data: profileData, error: profileError } = await supabase
-            .from("profiles")
-            .select("id,email,display_name,avatar_url")
-            .in("id", userIds);
-
-          if (profileError) throw profileError;
-
-          (profileData || []).forEach(profile => {
-            profileMap[profile.id] = profile;
-          });
-        }
-
-        applyGalleryFilters();
-        setStatus("Gallery loaded.");
+        (data || []).forEach(profile => {
+          profileMap[profile.id] = profile;
+        });
       }
 
-      function updateStats(items) {
-        const images = items.filter(item => item._mediaType === "image").length;
-        const videos = items.filter(item => item._mediaType === "video").length;
-        const artistCount = new Set(items.map(item => item.user_id).filter(Boolean)).size;
-
-        totalStat.textContent = items.length;
-        imageStat.textContent = images;
-        videoStat.textContent = videos;
-        artistStat.textContent = artistCount;
+      function updateStats(rows) {
+        allCountStat.textContent = String(rows.length);
+        imageCountStat.textContent = String(rows.filter(r => r.media_type === "image").length);
+        videoCountStat.textContent = String(rows.filter(r => r.media_type === "video").length);
+        featuredCountStat.textContent = String(rows.filter(r => !!r.is_featured).length);
+        viewCountStat.textContent = String(rows.reduce((sum, r) => sum + Number(r.views || 0), 0));
       }
 
-      function sortItems(items, mode) {
-        const cloned = [...items];
+      function getFilteredRows() {
+        const q = searchInput.value.trim().toLowerCase();
+        const contentType = contentTypeFilter.value;
+        const mediaType = mediaTypeFilter.value;
+        const featured = featuredFilter.value;
 
-        if (mode === "oldest") {
-          cloned.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-        } else if (mode === "title") {
-          cloned.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
-        } else {
-          cloned.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-        }
+        return galleryCache.filter(row => {
+          const creator = getCreatorLabel(row.user_id, "").toLowerCase();
+          const matchesSearch = !q || [
+            row.title,
+            row.caption,
+            row.content_type,
+            row.media_type,
+            creator
+          ].join(" ").toLowerCase().includes(q);
 
-        return cloned;
+          const matchesContentType = !contentType || row.content_type === contentType;
+          const matchesMediaType = !mediaType || row.media_type === mediaType;
+          const matchesFeatured = !featured || (featured === "featured" && !!row.is_featured);
+
+          return matchesSearch && matchesContentType && matchesMediaType && matchesFeatured;
+        });
       }
 
-      function renderGallery(items) {
-        if (!items.length) {
-          emptyState(galleryGrid, "No gallery posts match your search.");
+      function renderGallery() {
+        const rows = getFilteredRows();
+
+        if (!rows.length) {
+          galleryGrid.innerHTML = `<div class="empty-box">No gallery items found.</div>`;
           return;
         }
 
-        galleryGrid.innerHTML = items.map(item => {
-          const profile = profileMap[item.user_id] || {};
-          const artistName = profile.display_name || profile.email || "Artist";
-          const mediaUrl = item._mediaUrl;
-          const mediaType = item._mediaType;
+        galleryGrid.innerHTML = rows.map(row => {
+          const creator = getCreatorLabel(row.user_id);
+          const creatorLink = getArtistLink(row.user_id);
+          const mediaType = row.media_type || "image";
+
+          let coverContent = `
+            <div class="card-cover custom-bg" style="background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url || row.file_url || "images/brand/logo-music-label.png").replace(/'/g, "%27")}');">
+              <div class="card-pill-wrap">
+                <span class="${mediaType === "video" ? "pill-red" : "pill-green"}">${escapeHtml(mediaType.toUpperCase())}</span>
+                <span class="pill-gold">${escapeHtml(row.content_type || "ART")}</span>
+                ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+              </div>
+            </div>
+          `;
+
+          if (mediaType === "video" && row.file_url) {
+            coverContent = `
+              <div class="card-cover">
+                <video muted playsinline preload="metadata" src="${escapeHtml(row.file_url)}"></video>
+                <div class="overlay"></div>
+                <div class="card-pill-wrap">
+                  <span class="pill-red">VIDEO</span>
+                  <span class="pill-gold">${escapeHtml(row.content_type || "VIDEO")}</span>
+                  ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                </div>
+              </div>
+            `;
+          }
 
           return `
-            <div class="gallery-card">
-              <div class="card-type">${escapeHtml(mediaType.toUpperCase())}</div>
+            <div class="card">
+              ${coverContent}
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(row.title || "Gallery Item")}</div>
+                <div class="card-text">${escapeHtml(row.caption || "No caption.")}</div>
 
-              <div class="media-frame">
-                ${
-                  mediaType === "video"
-                    ? `<video controls src="${escapeHtml(mediaUrl)}"></video>`
-                    : `<img src="${escapeHtml(mediaUrl)}" alt="gallery media">`
-                }
-              </div>
+                <div class="card-meta">
+                  Creator: <a href="${creatorLink}">${escapeHtml(creator)}</a><br>
+                  Type: ${escapeHtml(row.content_type || "--")}<br>
+                  Media: ${escapeHtml(row.media_type || "--")}<br>
+                  Views: ${escapeHtml(row.views || 0)} • Likes: ${escapeHtml(row.likes || 0)}<br>
+                  Posted: ${escapeHtml(formatDate(row.created_at))}
+                </div>
 
-              <div class="card-title">${escapeHtml(item.title || "Untitled Artwork")}</div>
-
-              <div class="card-text">
-                ${escapeHtml(item.description || "")}
-              </div>
-
-              <div class="card-text">
-                Artist:
-                <a class="artist-link" href="artist.html?id=${encodeURIComponent(item.user_id || "")}">
-                  ${escapeHtml(artistName)}
-                </a>
-              </div>
-
-              <div class="card-actions">
-                <a class="btn-green" href="${escapeHtml(mediaUrl)}" target="_blank" rel="noopener noreferrer">Open Media</a>
-                <a class="btn-dark" href="messages.html?email=${encodeURIComponent(profile.email || "")}">Message Artist</a>
+                <div class="card-actions">
+                  <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "gallery.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                  <a class="btn-dark" href="comments.html?type=artwork&id=${encodeURIComponent(row.id)}">Comments</a>
+                  <a class="btn-dark" href="${creatorLink}">Creator</a>
+                </div>
               </div>
             </div>
           `;
         }).join("");
       }
 
-      function applyGalleryFilters() {
-        const search = searchInput.value.trim().toLowerCase();
-        const type = typeFilter.value;
-        const sort = sortFilter.value;
+      async function loadGallery() {
+        try {
+          setStatus("Loading gallery...");
 
-        let filtered = [...allArtwork];
+          const { data, error } = await supabase
+            .from("artworks")
+            .select("*")
+            .order("created_at", { ascending: false });
 
-        if (search) {
-          filtered = filtered.filter(item => {
-            const haystack = [
-              item.title || "",
-              item.description || "",
-              profileMap[item.user_id]?.display_name || "",
-              profileMap[item.user_id]?.email || ""
-            ].join(" ").toLowerCase();
+          if (error) throw error;
 
-            return haystack.includes(search);
-          });
+          galleryCache = data || [];
+          await loadProfiles(galleryCache.map(row => row.user_id));
+
+          updateStats(galleryCache);
+          renderGallery();
+          setStatus("✅ Gallery fully synced.");
+        } catch (error) {
+          console.error("Gallery load error:", error);
+          setStatus("❌ Gallery load error: " + error.message);
+          galleryGrid.innerHTML = `<div class="empty-box">Could not load gallery right now.</div>`;
         }
-
-        if (type !== "all") {
-          filtered = filtered.filter(item => item._mediaType === type);
-        }
-
-        filtered = sortItems(filtered, sort);
-
-        updateStats(filtered);
-        renderGallery(filtered);
       }
 
-      refreshBtn.addEventListener("click", loadGalleryData);
-      searchInput.addEventListener("input", applyGalleryFilters);
-      typeFilter.addEventListener("change", applyGalleryFilters);
-      sortFilter.addEventListener("change", applyGalleryFilters);
+      [searchInput, contentTypeFilter, mediaTypeFilter, featuredFilter].forEach(el => {
+        el.addEventListener("input", renderGallery);
+        el.addEventListener("change", renderGallery);
+      });
+
+      refreshBtn.addEventListener("click", loadGallery);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "Guest mode";
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadGalleryData();
+      async function init() {
+        await loadSession();
+        await loadGallery();
+      }
+
+      init();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
