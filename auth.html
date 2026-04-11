@@ -219,11 +219,6 @@
       outline: none;
     }
 
-    .control textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
     .status-box {
       margin-top: 14px;
       padding: 14px;
@@ -291,10 +286,10 @@
 
     <div class="auth-shell">
       <div class="hero">
-        <div class="hero-kicker">FULL AUTH SYSTEM</div>
-        <h1>Sign up, log in, reset password, confirm email, and stay synced.</h1>
+        <div class="hero-kicker">UPGRADED AUTH SYSTEM</div>
+        <h1>Login, signup, email confirm, reset password, and profile sync.</h1>
         <p>
-          This auth flow is built to connect your whole platform: profiles, live, gaming, sports, music, uploads, and monetization.
+          This auth page is built to connect your whole Rich Bizness platform into one clean user flow.
         </p>
 
         <div class="tab-row">
@@ -388,19 +383,19 @@
         </div>
 
         <div class="info-card">
-          <strong style="color:#f5d76e;">What This Page Handles</strong><br><br>
-          • Sign up with email + password<br>
-          • Log in with email + password<br>
-          • Email confirmation return flow<br>
+          <strong style="color:#f5d76e;">What This Handles</strong><br><br>
+          • Email signup<br>
+          • Email login<br>
+          • Confirmed session return<br>
           • Password reset email<br>
-          • Password update mode<br>
-          • Profile bootstrap in `profiles` table<br>
-          • Redirect into your platform
+          • Password recovery update<br>
+          • Profile row creation<br>
+          • Username + display name bootstrap
         </div>
 
         <div class="info-card">
-          <strong style="color:#f5d76e;">Default Redirect</strong><br><br>
-          After login or confirmed signup, this page sends users to:
+          <strong style="color:#f5d76e;">Redirect</strong><br><br>
+          After successful login, this page sends users to:
           <br><br>
           <strong>`index.html`</strong>
         </div>
@@ -507,16 +502,21 @@
 
       function getHashParams() {
         const hash = window.location.hash.replace(/^#/, "");
-        const params = new URLSearchParams(hash);
-        return params;
+        return new URLSearchParams(hash);
       }
 
       function isResetMode() {
         const hashParams = getHashParams();
         const urlParams = new URLSearchParams(window.location.search);
-
         const type = hashParams.get("type") || urlParams.get("type");
         return type === "recovery";
+      }
+
+      function cleanUsername(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9_]/g, "");
       }
 
       async function ensureProfile(user, displayName = "", username = "") {
@@ -524,11 +524,7 @@
 
         const cleanEmail = user.email || "";
         const cleanDisplayName = String(displayName || "").trim();
-        let cleanUsername = String(username || "").trim().toLowerCase();
-
-        if (cleanUsername) {
-          cleanUsername = cleanUsername.replace(/[^a-z0-9_]/g, "");
-        }
+        const cleanUserName = cleanUsername(username);
 
         const existing = await supabase
           .from("profiles")
@@ -545,33 +541,27 @@
 
           if (!existing.data.email && cleanEmail) updates.email = cleanEmail;
           if (!existing.data.display_name && cleanDisplayName) updates.display_name = cleanDisplayName;
-          if (!existing.data.username && cleanUsername) updates.username = cleanUsername;
+          if (!existing.data.username && cleanUserName) updates.username = cleanUserName;
 
-          const hasRealUpdate =
-            updates.email || updates.display_name || updates.username || updates.updated_at;
+          const { error } = await supabase
+            .from("profiles")
+            .update(updates)
+            .eq("id", user.id);
 
-          if (hasRealUpdate) {
-            const res = await supabase
-              .from("profiles")
-              .update(updates)
-              .eq("id", user.id);
-
-            if (res.error) throw res.error;
-          }
-
+          if (error) throw error;
           return;
         }
 
-        const insertRes = await supabase
+        const { error } = await supabase
           .from("profiles")
           .insert([{
             id: user.id,
             email: cleanEmail,
-            username: cleanUsername || null,
+            username: cleanUserName || null,
             display_name: cleanDisplayName || null
           }]);
 
-        if (insertRes.error) throw insertRes.error;
+        if (error) throw error;
       }
 
       async function checkSession() {
@@ -601,11 +591,20 @@
           const email = signupEmail.value.trim();
           const password = signupPassword.value;
           const displayName = signupDisplayName.value.trim();
-          const username = signupUsername.value.trim().toLowerCase();
+          const username = cleanUsername(signupUsername.value);
 
           if (!email) throw new Error("Email is required.");
           if (!password || password.length < 6) throw new Error("Password must be at least 6 characters.");
           if (!username) throw new Error("Username is required.");
+
+          const { data: existingUsername, error: userCheckErr } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("username", username)
+            .maybeSingle();
+
+          if (userCheckErr) throw userCheckErr;
+          if (existingUsername) throw new Error("Username already taken.");
 
           setStatus("Creating account...");
 
@@ -637,11 +636,11 @@
             setStatus("✅ Account created and logged in.");
             setTimeout(() => {
               window.location.href = REDIRECT_AFTER_AUTH;
-            }, 800);
+            }, 700);
             return;
           }
 
-          setStatus("✅ Account created. Check your email and confirm your account, then come back and log in.");
+          setStatus("✅ Account created. Check your email, confirm it, then come back and log in.");
           showCard("login");
           loginEmail.value = email;
         } catch (error) {
@@ -697,7 +696,7 @@
 
           if (error) throw error;
 
-          setStatus("✅ Reset email sent. Check your inbox and open the link from your email.");
+          setStatus("✅ Reset email sent. Check your inbox and open the link.");
         } catch (error) {
           setStatus("❌ Reset email error: " + error.message);
         }
@@ -771,7 +770,11 @@
 
         if (session?.user) {
           try {
-            await ensureProfile(session.user);
+            await ensureProfile(
+              session.user,
+              session.user.user_metadata?.display_name || "",
+              session.user.user_metadata?.username || ""
+            );
           } catch (err) {
             console.error("Profile sync error:", err);
           }
