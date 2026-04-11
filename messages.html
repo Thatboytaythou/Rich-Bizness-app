@@ -3,11 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Messages | Rich Bizness</title>
+  <title>Rich Bizness | Messages</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
 
     body {
       margin: 0;
@@ -15,59 +28,64 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
+        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1520px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar, .hero, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      margin-bottom: 18px;
       padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
+      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 12px;
-      font-weight: 800;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
     }
 
     .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
       object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       padding: 10px 14px;
       border-radius: 12px;
@@ -76,90 +94,144 @@
     }
 
     .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
+      color: var(--green);
       border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.06);
+      background: var(--soft);
       border: 1px solid rgba(255,255,255,0.08);
       font-weight: 700;
     }
 
-    .hero {
+    .hero,
+    .section {
       padding: 24px;
-      border-radius: 24px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(10px);
       margin-bottom: 18px;
     }
 
     .hero h1 {
-      margin: 0 0 10px;
-      color: #7dff71;
-      font-size: 3rem;
-      text-shadow: 0 0 18px rgba(125,255,113,0.35);
+      margin: 0 0 12px;
+      font-size: 2.7rem;
+      line-height: 1;
+      color: var(--green);
     }
 
-    .hero p {
-      margin: 0;
-      max-width: 920px;
-      font-size: 1.05rem;
-      color: #f3f3f3;
-      line-height: 1.7;
+    .subtle,
+    .meta-text {
+      color: var(--text);
+      line-height: 1.75;
     }
 
-    .status-box, .session-box {
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
+    .hero-actions,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
       margin-top: 16px;
       padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
       font-weight: 700;
       line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .layout {
       display: grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 380px 1fr;
       gap: 18px;
-      min-height: 760px;
     }
 
     .panel {
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
       padding: 18px;
-      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+      height: 100%;
     }
 
     .panel h2 {
-      margin: 0 0 14px;
-      color: #7dff71;
-      font-size: 1.9rem;
+      margin: 0 0 12px;
+      color: var(--green);
+      font-size: 1.35rem;
     }
 
-    .subtle {
-      color: #efefef;
-      opacity: 0.92;
-      line-height: 1.6;
-      margin-bottom: 14px;
+    .control {
+      margin-bottom: 12px;
     }
 
-    label {
+    .control label {
       display: block;
-      margin: 14px 0 8px;
+      margin-bottom: 8px;
+      color: var(--green);
       font-weight: 800;
-      color: #7dff71;
     }
 
-    input, textarea {
+    .control input,
+    .control textarea {
       width: 100%;
       padding: 14px;
       border-radius: 12px;
@@ -170,52 +242,15 @@
       outline: none;
     }
 
-    textarea {
+    .control textarea {
       min-height: 110px;
       resize: vertical;
     }
 
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button, .link-btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-      text-decoration: none;
-      text-align: center;
-      display: inline-block;
-    }
-
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.22);
-    }
-
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .search-row {
-      margin-top: 14px;
-      margin-bottom: 14px;
-    }
-
     .conversation-list {
       display: grid;
-      gap: 10px;
-      max-height: 500px;
+      gap: 12px;
+      max-height: 620px;
       overflow-y: auto;
       padding-right: 4px;
     }
@@ -226,170 +261,127 @@
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
       cursor: pointer;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .conversation-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 0 16px rgba(125,255,113,0.08);
     }
 
     .conversation-card.active {
-      border-color: rgba(125,255,113,0.35);
-      box-shadow: 0 0 18px rgba(125,255,113,0.16);
-      background: rgba(125,255,113,0.08);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.08);
     }
 
-    .conversation-name {
+    .conversation-title {
+      color: var(--gold);
       font-weight: 900;
-      color: #7dff71;
       margin-bottom: 6px;
-      line-height: 1.4;
     }
 
     .conversation-snippet {
-      color: #f1f1f1;
-      opacity: 0.88;
-      line-height: 1.5;
-      font-size: 0.95rem;
-      margin-bottom: 6px;
+      color: var(--text);
+      line-height: 1.6;
+      word-break: break-word;
     }
 
-    .conversation-time {
-      font-size: 0.82rem;
-      opacity: 0.72;
+    .conversation-meta {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    .thread-shell {
+    .messages-shell {
       display: grid;
       grid-template-rows: auto 1fr auto;
+      min-height: 700px;
       gap: 14px;
-      min-height: 724px;
     }
 
-    .thread-head {
-      border-radius: 18px;
+    .chat-header {
       padding: 16px;
+      border-radius: 18px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .thread-title {
-      font-size: 1.5rem;
-      font-weight: 900;
-      color: #7dff71;
-      margin-bottom: 8px;
-    }
-
-    .thread-meta {
-      color: #f2f2f2;
-      opacity: 0.9;
-      line-height: 1.6;
-    }
-
-    .thread-feed {
-      min-height: 420px;
-      max-height: 480px;
-      overflow-y: auto;
-      padding: 16px;
-      border-radius: 20px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.14);
-      display: grid;
-      gap: 12px;
-      align-content: start;
-    }
-
-    .bubble {
-      max-width: 78%;
+    .chat-thread {
       padding: 14px;
       border-radius: 18px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.7;
-    }
-
-    .bubble.you {
-      justify-self: end;
-      background: rgba(125,255,113,0.18);
-      border: 1px solid rgba(125,255,113,0.35);
-    }
-
-    .bubble.them {
-      justify-self: start;
-      background: rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.28);
       border: 1px solid rgba(255,255,255,0.08);
+      overflow-y: auto;
+      min-height: 440px;
+      max-height: 440px;
+      display: grid;
+      gap: 12px;
     }
 
-    .bubble-name {
+    .message-row {
+      display: flex;
+    }
+
+    .message-row.me {
+      justify-content: flex-end;
+    }
+
+    .message-bubble {
+      max-width: 72%;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      word-break: break-word;
+      white-space: pre-wrap;
+      line-height: 1.55;
+    }
+
+    .message-row.me .message-bubble {
+      background: rgba(125,255,113,0.12);
+      border-color: rgba(125,255,113,0.24);
+    }
+
+    .message-name {
+      color: var(--gold);
       font-weight: 900;
-      color: #7dff71;
       margin-bottom: 6px;
-      font-size: 0.92rem;
     }
 
-    .bubble-time {
+    .message-time {
       margin-top: 8px;
-      font-size: 0.78rem;
-      opacity: 0.72;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .composer {
-      border-radius: 18px;
       padding: 16px;
+      border-radius: 18px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .quick-actions {
+    .composer-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .quick-actions button {
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 800;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: end;
     }
 
     .empty-box {
-      padding: 18px;
-      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
     }
 
-    @media (max-width: 1150px) {
+    @media (max-width: 1080px) {
       .layout {
         grid-template-columns: 1fr;
       }
 
-      .thread-shell {
+      .messages-shell {
         min-height: auto;
       }
-    }
 
-    @media (max-width: 760px) {
-      .button-row,
-      .quick-actions {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .brand {
-        font-size: 1.45rem;
-      }
-
-      .bubble {
-        max-width: 92%;
+      .chat-thread {
+        max-height: 420px;
       }
     }
   </style>
@@ -398,84 +390,86 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Messages</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="upload.html">Upload</a>
-        <a href="live.html">Go Live</a>
-        <a href="watch.html">Watch Live</a>
         <a href="music.html">Music</a>
+        <a href="artist.html">Artist</a>
         <a href="gaming.html">Gaming</a>
         <a href="sports.html">Sports</a>
-        <a href="artist.html">Artist</a>
-        <a href="profile.html">Profile</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="messages.html" class="active">Messages</a>
         <a href="notifications.html">Notifications</a>
+        <a href="profile.html">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Messages Hub</h1>
-      <p>
-        Turn up your inbox with real conversations, fast replies, live refresh, and smoother creator-to-fan communication.
-      </p>
-      <div id="sessionBox" class="session-box">Checking session...</div>
-      <div id="statusBox" class="status-box">Messages page ready.</div>
+      <div class="hero-kicker">FULL MESSAGING LANE</div>
+      <h1>Talk to artists, fans, and creators in one synced inbox.</h1>
+      <div class="subtle">
+        Start conversations by username, keep inbox threads clean, and connect messages to the rest of your Rich Bizness platform.
+      </div>
+
+      <div class="hero-actions">
+        <button id="toggleNewChatBtn" class="btn-green" type="button">Start New Chat</button>
+        <a class="btn-dark" href="profile.html">Open Profile</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading messages...</div>
     </div>
 
     <div class="layout">
-      <div class="panel">
-        <h2>Inbox</h2>
-        <div class="subtle">Start new conversations, search your inbox, and jump into active threads.</div>
+      <div class="section">
+        <div class="panel">
+          <h2>Inbox</h2>
 
-        <label for="newChatEmailInput">Start New Chat By Email</label>
-        <input id="newChatEmailInput" type="email" placeholder="artist@email.com" />
+          <div id="newChatCard" class="panel" style="display:none; margin-bottom:14px; padding:14px;">
+            <div class="control">
+              <label for="newChatUsernameInput">Username</label>
+              <input id="newChatUsernameInput" type="text" placeholder="richbizness" />
+            </div>
+            <div class="control">
+              <label for="newChatMessageInput">First Message</label>
+              <textarea id="newChatMessageInput" placeholder="Say something..."></textarea>
+            </div>
+            <div class="actions">
+              <button id="createConversationBtn" class="btn-green" type="button">Create Chat</button>
+              <button id="cancelNewChatBtn" class="btn-dark" type="button">Cancel</button>
+            </div>
+          </div>
 
-        <div class="button-row">
-          <button id="startChatBtn" class="btn-green" type="button">Start Conversation</button>
-          <button id="refreshInboxBtn" class="btn-dark" type="button">Refresh Inbox</button>
-        </div>
-
-        <div class="search-row">
-          <label for="searchInput">Search Conversations</label>
-          <input id="searchInput" type="text" placeholder="Search by email or message..." />
-        </div>
-
-        <div id="conversationList" class="conversation-list">
-          <div class="empty-box">Loading conversations...</div>
+          <div id="conversationList" class="conversation-list">
+            <div class="empty-box">Loading inbox...</div>
+          </div>
         </div>
       </div>
 
-      <div class="panel thread-shell">
-        <div class="thread-head">
-          <div id="threadTitle" class="thread-title">No conversation selected</div>
-          <div id="threadMeta" class="thread-meta">Choose a thread from the inbox or start a new conversation.</div>
-        </div>
-
-        <div id="threadFeed" class="thread-feed">
-          <div class="empty-box">No thread open yet.</div>
-        </div>
-
-        <div class="composer">
-          <label for="messageInput">Write Message</label>
-          <textarea id="messageInput" placeholder="Type your message..."></textarea>
-
-          <div class="button-row">
-            <button id="sendBtn" class="btn-green" type="button">Send Message</button>
-            <button id="refreshThreadBtn" class="btn-dark" type="button">Refresh Thread</button>
+      <div class="section">
+        <div class="messages-shell">
+          <div id="chatHeader" class="chat-header">
+            <div class="conversation-title">No conversation selected</div>
+            <div class="conversation-snippet">Pick a thread from the inbox or start a new chat.</div>
           </div>
 
-          <div class="quick-actions">
-            <button class="btn-dark quick-btn" data-text="Yo I just tapped in.">Tap In</button>
-            <button class="btn-dark quick-btn" data-text="We should collab.">Collab</button>
-            <button class="btn-dark quick-btn" data-text="I’m watching what you building.">Support</button>
-            <button class="btn-dark quick-btn" data-text="Let’s lock something in.">Lock In</button>
+          <div id="chatThread" class="chat-thread">
+            <div class="empty-box">No messages yet.</div>
+          </div>
+
+          <div class="composer">
+            <div class="composer-grid">
+              <div class="control" style="margin-bottom:0;">
+                <label for="messageInput">Message</label>
+                <textarea id="messageInput" placeholder="Type your message..."></textarea>
+              </div>
+              <button id="sendMessageBtn" class="btn-green" type="button">Send</button>
+            </div>
           </div>
         </div>
       </div>
@@ -487,10 +481,6 @@
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
-
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
           persistSession: true,
@@ -501,36 +491,29 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const sessionBox = document.getElementById("sessionBox");
       const statusBox = document.getElementById("statusBox");
 
-      const newChatEmailInput = document.getElementById("newChatEmailInput");
-      const startChatBtn = document.getElementById("startChatBtn");
-      const refreshInboxBtn = document.getElementById("refreshInboxBtn");
-      const searchInput = document.getElementById("searchInput");
+      const toggleNewChatBtn = document.getElementById("toggleNewChatBtn");
+      const cancelNewChatBtn = document.getElementById("cancelNewChatBtn");
+      const createConversationBtn = document.getElementById("createConversationBtn");
+
+      const newChatCard = document.getElementById("newChatCard");
+      const newChatUsernameInput = document.getElementById("newChatUsernameInput");
+      const newChatMessageInput = document.getElementById("newChatMessageInput");
+
       const conversationList = document.getElementById("conversationList");
-
-      const threadTitle = document.getElementById("threadTitle");
-      const threadMeta = document.getElementById("threadMeta");
-      const threadFeed = document.getElementById("threadFeed");
-
+      const chatHeader = document.getElementById("chatHeader");
+      const chatThread = document.getElementById("chatThread");
       const messageInput = document.getElementById("messageInput");
-      const sendBtn = document.getElementById("sendBtn");
-      const refreshThreadBtn = document.getElementById("refreshThreadBtn");
-      const quickButtons = document.querySelectorAll(".quick-btn");
+      const sendMessageBtn = document.getElementById("sendMessageBtn");
 
       let currentUser = null;
+      let selectedConversationId = null;
       let conversationsCache = [];
-      let activeConversationId = null;
-      let refreshTimer = null;
+      let participantsProfileMap = {};
 
       function setStatus(message) {
         statusBox.textContent = message;
-        console.log(message);
-      }
-
-      function setSession(message) {
-        sessionBox.textContent = message;
       }
 
       function escapeHtml(text) {
@@ -549,390 +532,23 @@
         return d.toLocaleString();
       }
 
-      async function requireUser() {
+      async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
 
-        const user = data?.session?.user || null;
-        if (!user) {
-          userChip.textContent = "No session";
-          setSession("No active session. Redirecting to auth...");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          window.location.href = "auth.html";
           return null;
         }
 
-        currentUser = user;
-        userChip.textContent = user.email || "Signed in";
-        setSession(`Logged in as ${user.email || "user"}.`);
-        return user;
-      }
-
-      async function createNotification(userId, type, title, body, link = "#") {
-        try {
-          await supabase.from("notifications").insert({
-            user_id: userId,
-            type,
-            title,
-            body,
-            link
-          });
-        } catch (error) {
-          console.error("Notification insert failed:", error);
-        }
-      }
-
-      async function getConversationIdsForUser(userId) {
-        const { data, error } = await supabase
-          .from("conversation_members")
-          .select("conversation_id")
-          .eq("user_id", userId);
-
-        if (error) throw error;
-        return (data || []).map(row => row.conversation_id);
-      }
-
-      async function loadInbox() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          setStatus("Loading inbox...");
-
-          const conversationIds = await getConversationIdsForUser(user.id);
-
-          if (!conversationIds.length) {
-            conversationsCache = [];
-            renderInbox();
-            setStatus("No conversations yet.");
-            return;
-          }
-
-          const { data: memberRows, error: memberError } = await supabase
-            .from("conversation_members")
-            .select("*")
-            .in("conversation_id", conversationIds);
-
-          if (memberError) throw memberError;
-
-          const { data: messageRows, error: messageError } = await supabase
-            .from("messages")
-            .select("*")
-            .in("conversation_id", conversationIds)
-            .order("created_at", { ascending: false });
-
-          if (messageError) throw messageError;
-
-          conversationsCache = conversationIds.map(id => {
-            const members = (memberRows || []).filter(row => row.conversation_id === id);
-            const others = members.filter(row => row.user_id !== user.id);
-            const latest = (messageRows || []).find(row => row.conversation_id === id) || null;
-
-            return {
-              id,
-              members,
-              others,
-              latest
-            };
-          }).sort((a, b) => {
-            const aTime = a.latest?.created_at ? new Date(a.latest.created_at).getTime() : 0;
-            const bTime = b.latest?.created_at ? new Date(b.latest.created_at).getTime() : 0;
-            return bTime - aTime;
-          });
-
-          renderInbox();
-
-          if (!activeConversationId && conversationsCache.length) {
-            await openConversation(conversationsCache[0].id);
-          }
-
-          if (activeConversationId && !conversationsCache.find(c => c.id === activeConversationId)) {
-            activeConversationId = null;
-          }
-
-          setStatus("Inbox loaded.");
-        } catch (error) {
-          setStatus("Inbox error: " + error.message);
-          conversationList.innerHTML = `<div class="empty-box">Could not load inbox.</div>`;
-        }
-      }
-
-      function renderInbox() {
-        let rows = [...conversationsCache];
-        const search = searchInput.value.trim().toLowerCase();
-
-        if (search) {
-          rows = rows.filter(item => {
-            const label = item.others.map(x => x.user_email || "").join(" ").toLowerCase();
-            const latest = item.latest?.body?.toLowerCase() || "";
-            return label.includes(search) || latest.includes(search);
-          });
-        }
-
-        if (!rows.length) {
-          conversationList.innerHTML = `<div class="empty-box">No conversations found.</div>`;
-          return;
-        }
-
-        conversationList.innerHTML = rows.map(item => {
-          const otherNames = item.others.length
-            ? item.others.map(x => x.user_email || "Unknown").join(", ")
-            : "Just you";
-
-          const preview = item.latest?.body || "No messages yet.";
-          const time = item.latest?.created_at ? formatDate(item.latest.created_at) : "No activity";
-
-          return `
-            <div class="conversation-card ${item.id === activeConversationId ? "active" : ""}" data-id="${item.id}">
-              <div class="conversation-name">${escapeHtml(otherNames)}</div>
-              <div class="conversation-snippet">${escapeHtml(preview)}</div>
-              <div class="conversation-time">${escapeHtml(time)}</div>
-            </div>
-          `;
-        }).join("");
-
-        document.querySelectorAll(".conversation-card").forEach(card => {
-          card.addEventListener("click", async () => {
-            const id = Number(card.dataset.id);
-            await openConversation(id);
-          });
-        });
-      }
-
-      async function openConversation(conversationId) {
-        activeConversationId = conversationId;
-        renderInbox();
-        await loadThread(conversationId);
-        startAutoRefresh();
-      }
-
-      async function loadThread(conversationId = activeConversationId) {
-        try {
-          const user = await requireUser();
-          if (!user || !conversationId) return;
-
-          const convo = conversationsCache.find(x => x.id === conversationId);
-
-          if (!convo) {
-            threadTitle.textContent = "Conversation not found";
-            threadMeta.textContent = "Refresh inbox and try again.";
-            threadFeed.innerHTML = `<div class="empty-box">Conversation not found.</div>`;
-            return;
-          }
-
-          const title = convo.others.length
-            ? convo.others.map(x => x.user_email || "Unknown").join(", ")
-            : "Just you";
-
-          threadTitle.textContent = title;
-          threadMeta.textContent = `Conversation #${conversationId} • Members: ${convo.members.length}`;
-
-          const { data, error } = await supabase
-            .from("messages")
-            .select("*")
-            .eq("conversation_id", conversationId)
-            .order("created_at", { ascending: true });
-
-          if (error) throw error;
-
-          if (!data || !data.length) {
-            threadFeed.innerHTML = `<div class="empty-box">No messages yet. Start the thread.</div>`;
-            return;
-          }
-
-          threadFeed.innerHTML = data.map(msg => {
-            const mine = msg.sender_id === user.id;
-            return `
-              <div class="bubble ${mine ? "you" : "them"}">
-                <div class="bubble-name">${escapeHtml(mine ? "You" : (msg.sender_email || "Unknown"))}</div>
-                <div>${escapeHtml(msg.body || "")}</div>
-                <div class="bubble-time">${escapeHtml(formatDate(msg.created_at))}</div>
-              </div>
-            `;
-          }).join("");
-
-          threadFeed.scrollTop = threadFeed.scrollHeight;
-        } catch (error) {
-          setStatus("Thread error: " + error.message);
-          threadFeed.innerHTML = `<div class="empty-box">Could not load thread.</div>`;
-        }
-      }
-
-      async function startConversation() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const targetEmail = newChatEmailInput.value.trim().toLowerCase();
-
-          if (!targetEmail) {
-            throw new Error("Enter an email first.");
-          }
-
-          if (targetEmail === (user.email || "").toLowerCase()) {
-            throw new Error("Use another email, not your own.");
-          }
-
-          setStatus("Looking for artist...");
-
-          const { data: targetProfile, error: targetError } = await supabase
-            .from("profiles")
-            .select("id,email")
-            .ilike("email", targetEmail)
-            .maybeSingle();
-
-          if (targetError) throw targetError;
-          if (!targetProfile?.id) {
-            throw new Error("No profile found with that email.");
-          }
-
-          const existingIds = await getConversationIdsForUser(user.id);
-
-          if (existingIds.length) {
-            const { data: memberRows, error: membersError } = await supabase
-              .from("conversation_members")
-              .select("*")
-              .in("conversation_id", existingIds);
-
-            if (membersError) throw membersError;
-
-            const found = existingIds.find(conversationId => {
-              const members = (memberRows || []).filter(row => row.conversation_id === conversationId);
-              if (members.length !== 2) return false;
-
-              const ids = members.map(row => row.user_id).sort();
-              const want = [user.id, targetProfile.id].sort();
-              return ids[0] === want[0] && ids[1] === want[1];
-            });
-
-            if (found) {
-              newChatEmailInput.value = "";
-              setStatus("Conversation already exists.");
-              await loadInbox();
-              await openConversation(found);
-              return;
-            }
-          }
-
-          setStatus("Creating new conversation...");
-
-          const { data: newConversation, error: conversationError } = await supabase
-            .from("conversations")
-            .insert({})
-            .select()
-            .single();
-
-          if (conversationError) throw conversationError;
-
-          const conversationId = newConversation.id;
-
-          const { error: memberInsertError } = await supabase
-            .from("conversation_members")
-            .insert([
-              {
-                conversation_id: conversationId,
-                user_id: user.id,
-                user_email: user.email || ""
-              },
-              {
-                conversation_id: conversationId,
-                user_id: targetProfile.id,
-                user_email: targetProfile.email || targetEmail
-              }
-            ]);
-
-          if (memberInsertError) throw memberInsertError;
-
-          newChatEmailInput.value = "";
-          setStatus("Conversation created.");
-
-          await createNotification(
-            targetProfile.id,
-            "message",
-            "New conversation started",
-            `${user.email} started a conversation with you.`,
-            "messages.html"
-          );
-
-          await loadInbox();
-          await openConversation(conversationId);
-        } catch (error) {
-          setStatus("New chat error: " + error.message);
-        }
-      }
-
-      async function sendMessage() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          if (!activeConversationId) {
-            throw new Error("Choose a conversation first.");
-          }
-
-          const body = messageInput.value.trim();
-          if (!body) {
-            throw new Error("Message cannot be empty.");
-          }
-
-          setStatus("Sending message...");
-
-          const { error } = await supabase
-            .from("messages")
-            .insert({
-              conversation_id: activeConversationId,
-              sender_id: user.id,
-              sender_email: user.email || "",
-              body
-            });
-
-          if (error) throw error;
-
-          const convo = conversationsCache.find(x => x.id === activeConversationId);
-          const otherMembers = convo?.others || [];
-
-          for (const member of otherMembers) {
-            if (member.user_id) {
-              await createNotification(
-                member.user_id,
-                "message",
-                "New Message",
-                `${user.email} sent you a message.`,
-                "messages.html"
-              );
-            }
-          }
-
-          messageInput.value = "";
-          setStatus("Message sent.");
-          await loadInbox();
-          await loadThread(activeConversationId);
-        } catch (error) {
-          setStatus("Send error: " + error.message);
-        }
-      }
-
-      function startAutoRefresh() {
-        stopAutoRefresh();
-        refreshTimer = setInterval(async () => {
-          if (activeConversationId) {
-            await loadInbox();
-            await loadThread(activeConversationId);
-          }
-        }, 5000);
-      }
-
-      function stopAutoRefresh() {
-        if (refreshTimer) {
-          clearInterval(refreshTimer);
-          refreshTimer = null;
-        }
+        return currentUser;
       }
 
       async function logOut() {
         try {
-          stopAutoRefresh();
           const { error } = await supabase.auth.signOut();
           if (error) throw error;
           window.location.href = "auth.html";
@@ -941,45 +557,359 @@
         }
       }
 
-      startChatBtn.addEventListener("click", startConversation);
-      refreshInboxBtn.addEventListener("click", loadInbox);
-      refreshThreadBtn.addEventListener("click", () => loadThread(activeConversationId));
-      sendBtn.addEventListener("click", sendMessage);
-      logoutBtn.addEventListener("click", logOut);
-      searchInput.addEventListener("input", renderInbox);
+      function getOtherParticipantProfiles(conversation) {
+        const others = (conversation.participants || []).filter(p => p.user_id !== currentUser.id);
+        return others.map(p => participantsProfileMap[p.user_id]).filter(Boolean);
+      }
 
-      quickButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-          const text = btn.dataset.text || "";
-          if (!messageInput.value.trim()) {
-            messageInput.value = text;
-          } else {
-            messageInput.value = messageInput.value.trim() + " " + text;
-          }
-          messageInput.focus();
+      function conversationTitle(conversation) {
+        const others = getOtherParticipantProfiles(conversation);
+        if (!others.length) return "Just You";
+        return others.map(p => p.display_name || p.username || p.email || "User").join(", ");
+      }
+
+      function conversationSub(conversation) {
+        const others = getOtherParticipantProfiles(conversation);
+        if (!others.length) return "Your private thread";
+        return others.map(p => "@" + (p.username || "user")).join(", ");
+      }
+
+      async function loadProfilesForParticipants(userIds) {
+        const uniqueIds = [...new Set(userIds.filter(Boolean))];
+        if (!uniqueIds.length) return;
+
+        const missing = uniqueIds.filter(id => !participantsProfileMap[id]);
+        if (!missing.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", missing);
+
+        if (error) throw error;
+
+        (data || []).forEach(profile => {
+          participantsProfileMap[profile.id] = profile;
         });
+      }
+
+      async function loadConversations() {
+        const { data: participantRows, error: partErr } = await supabase
+          .from("conversation_participants")
+          .select("conversation_id, user_id, joined_at, last_read_at")
+          .eq("user_id", currentUser.id);
+
+        if (partErr) throw partErr;
+
+        const conversationIds = (participantRows || []).map(r => r.conversation_id);
+
+        if (!conversationIds.length) {
+          conversationsCache = [];
+          renderConversationList();
+          renderChatHeader(null);
+          renderMessages([]);
+          return;
+        }
+
+        const { data: conversations, error: convErr } = await supabase
+          .from("conversations")
+          .select("*")
+          .in("id", conversationIds)
+          .order("updated_at", { ascending: false });
+
+        if (convErr) throw convErr;
+
+        const { data: allParticipants, error: allPartErr } = await supabase
+          .from("conversation_participants")
+          .select("*")
+          .in("conversation_id", conversationIds);
+
+        if (allPartErr) throw allPartErr;
+
+        const allUserIds = (allParticipants || []).map(p => p.user_id);
+        await loadProfilesForParticipants(allUserIds);
+
+        const { data: latestMessages, error: latestErr } = await supabase
+          .from("messages")
+          .select("*")
+          .in("conversation_id", conversationIds)
+          .order("created_at", { ascending: false });
+
+        if (latestErr) throw latestErr;
+
+        const latestByConversation = {};
+        (latestMessages || []).forEach(msg => {
+          if (!latestByConversation[msg.conversation_id]) {
+            latestByConversation[msg.conversation_id] = msg;
+          }
+        });
+
+        conversationsCache = (conversations || []).map(conv => ({
+          ...conv,
+          participants: (allParticipants || []).filter(p => p.conversation_id === conv.id),
+          latest_message: latestByConversation[conv.id] || null
+        }));
+
+        renderConversationList();
+
+        if (!selectedConversationId && conversationsCache.length) {
+          selectedConversationId = conversationsCache[0].id;
+        }
+
+        const selected = conversationsCache.find(c => c.id === selectedConversationId) || null;
+        renderChatHeader(selected);
+
+        if (selectedConversationId) {
+          await loadMessages(selectedConversationId);
+        } else {
+          renderMessages([]);
+        }
+      }
+
+      function renderConversationList() {
+        if (!conversationsCache.length) {
+          conversationList.innerHTML = `<div class="empty-box">No conversations yet.</div>`;
+          return;
+        }
+
+        conversationList.innerHTML = conversationsCache.map(conv => {
+          const active = conv.id === selectedConversationId ? "active" : "";
+          const title = conversationTitle(conv);
+          const sub = conversationSub(conv);
+          const latest = conv.latest_message?.body || "No messages yet.";
+          const time = conv.latest_message?.created_at ? formatDate(conv.latest_message.created_at) : "--";
+
+          return `
+            <div class="conversation-card ${active}" data-id="${conv.id}">
+              <div class="conversation-title">${escapeHtml(title)}</div>
+              <div class="conversation-snippet">${escapeHtml(sub)}</div>
+              <div class="conversation-snippet" style="margin-top:8px;">${escapeHtml(latest)}</div>
+              <div class="conversation-meta">${escapeHtml(time)}</div>
+            </div>
+          `;
+        }).join("");
+
+        Array.from(conversationList.querySelectorAll(".conversation-card")).forEach(card => {
+          card.addEventListener("click", async () => {
+            selectedConversationId = Number(card.dataset.id);
+            renderConversationList();
+            const selected = conversationsCache.find(c => c.id === selectedConversationId) || null;
+            renderChatHeader(selected);
+            await loadMessages(selectedConversationId);
+            await markConversationRead(selectedConversationId);
+          });
+        });
+      }
+
+      function renderChatHeader(conversation) {
+        if (!conversation) {
+          chatHeader.innerHTML = `
+            <div class="conversation-title">No conversation selected</div>
+            <div class="conversation-snippet">Pick a thread from the inbox or start a new chat.</div>
+          `;
+          return;
+        }
+
+        chatHeader.innerHTML = `
+          <div class="conversation-title">${escapeHtml(conversationTitle(conversation))}</div>
+          <div class="conversation-snippet">${escapeHtml(conversationSub(conversation))}</div>
+        `;
+      }
+
+      function renderMessages(rows) {
+        if (!rows.length) {
+          chatThread.innerHTML = `<div class="empty-box">No messages yet.</div>`;
+          return;
+        }
+
+        chatThread.innerHTML = rows.map(row => {
+          const mine = row.sender_id === currentUser.id ? "me" : "";
+          const profile = participantsProfileMap[row.sender_id] || {};
+          const senderName = profile.display_name || profile.username || profile.email || "User";
+
+          return `
+            <div class="message-row ${mine}">
+              <div class="message-bubble">
+                <div class="message-name">${escapeHtml(senderName)}</div>
+                <div>${escapeHtml(row.body)}</div>
+                <div class="message-time">${escapeHtml(formatDate(row.created_at))}</div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        chatThread.scrollTop = chatThread.scrollHeight;
+      }
+
+      async function loadMessages(conversationId) {
+        const { data, error } = await supabase
+          .from("messages")
+          .select("*")
+          .eq("conversation_id", conversationId)
+          .order("created_at", { ascending: true });
+
+        if (error) throw error;
+
+        const senderIds = (data || []).map(m => m.sender_id);
+        await loadProfilesForParticipants(senderIds);
+        renderMessages(data || []);
+      }
+
+      async function markConversationRead(conversationId) {
+        const { error } = await supabase
+          .from("conversation_participants")
+          .update({ last_read_at: new Date().toISOString() })
+          .eq("conversation_id", conversationId)
+          .eq("user_id", currentUser.id);
+
+        if (error) throw error;
+      }
+
+      async function createConversation() {
+        try {
+          const username = newChatUsernameInput.value.trim().toLowerCase();
+          const firstMessage = newChatMessageInput.value.trim();
+
+          if (!username) throw new Error("Username is required.");
+          if (!firstMessage) throw new Error("First message is required.");
+
+          setStatus("Finding user...");
+
+          const { data: targetProfile, error: targetErr } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("username", username)
+            .maybeSingle();
+
+          if (targetErr) throw targetErr;
+          if (!targetProfile) throw new Error("No profile found with that username.");
+          if (targetProfile.id === currentUser.id) throw new Error("You can’t start a new chat with yourself.");
+
+          setStatus("Creating conversation...");
+
+          const { data: conversation, error: convErr } = await supabase
+            .from("conversations")
+            .insert([{ created_by: currentUser.id, updated_at: new Date().toISOString() }])
+            .select()
+            .single();
+
+          if (convErr) throw convErr;
+
+          const { error: partsErr } = await supabase
+            .from("conversation_participants")
+            .insert([
+              { conversation_id: conversation.id, user_id: currentUser.id, last_read_at: new Date().toISOString() },
+              { conversation_id: conversation.id, user_id: targetProfile.id }
+            ]);
+
+          if (partsErr) throw partsErr;
+
+          const { error: msgErr } = await supabase
+            .from("messages")
+            .insert([{
+              conversation_id: conversation.id,
+              sender_id: currentUser.id,
+              body: firstMessage
+            }]);
+
+          if (msgErr) throw msgErr;
+
+          const { error: updateErr } = await supabase
+            .from("conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", conversation.id);
+
+          if (updateErr) throw updateErr;
+
+          newChatUsernameInput.value = "";
+          newChatMessageInput.value = "";
+          newChatCard.style.display = "none";
+          selectedConversationId = conversation.id;
+
+          setStatus("✅ Conversation created.");
+          await loadConversations();
+        } catch (error) {
+          setStatus("❌ New conversation error: " + error.message);
+        }
+      }
+
+      async function sendMessage() {
+        try {
+          const body = messageInput.value.trim();
+          if (!selectedConversationId) throw new Error("Select a conversation first.");
+          if (!body) return;
+
+          const { error: msgErr } = await supabase
+            .from("messages")
+            .insert([{
+              conversation_id: selectedConversationId,
+              sender_id: currentUser.id,
+              body
+            }]);
+
+          if (msgErr) throw msgErr;
+
+          const { error: updateErr } = await supabase
+            .from("conversations")
+            .update({ updated_at: new Date().toISOString() })
+            .eq("id", selectedConversationId);
+
+          if (updateErr) throw updateErr;
+
+          messageInput.value = "";
+          await loadConversations();
+          await loadMessages(selectedConversationId);
+          await markConversationRead(selectedConversationId);
+          setStatus("✅ Message sent.");
+        } catch (error) {
+          setStatus("❌ Send message error: " + error.message);
+        }
+      }
+
+      toggleNewChatBtn.addEventListener("click", () => {
+        newChatCard.style.display = newChatCard.style.display === "none" ? "block" : "none";
       });
 
-      messageInput.addEventListener("keydown", (event) => {
-        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      cancelNewChatBtn.addEventListener("click", () => {
+        newChatCard.style.display = "none";
+      });
+
+      createConversationBtn.addEventListener("click", createConversation);
+      sendMessageBtn.addEventListener("click", sendMessage);
+      logoutBtn.addEventListener("click", logOut);
+
+      messageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
           sendMessage();
         }
       });
 
       supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "No session";
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      window.addEventListener("beforeunload", stopAutoRefresh);
+      async function init() {
+        await loadSession();
+        await loadConversations();
 
-      requireUser()
-        .then(() => {
-          setStatus("Messages page ready.");
-          loadInbox();
-        })
-        .catch((error) => {
-          setStatus("Startup error: " + error.message);
-        });
+        supabase
+          .channel("messages-realtime")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "messages" },
+            async () => {
+              if (!currentUser) return;
+              await loadConversations();
+            }
+          )
+          .subscribe();
+
+        setStatus("✅ Messages fully synced.");
+      }
+
+      init();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
