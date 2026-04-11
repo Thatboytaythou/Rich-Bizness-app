@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Comments</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
+    }
+
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2 {
+      color: var(--green);
+      margin-top: 0;
+    }
+
+    .subtle {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .btn-green, .btn-dark, .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .comment-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .comment-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .comment-name {
+      color: var(--gold);
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .comment-body {
+      color: var(--text);
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .comment-meta {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .comment-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .empty-box {
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Comments</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="feed.html">Feed</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h1>Comments</h1>
+      <div id="contentInfo" class="subtle">Loading content info...</div>
+      <div id="statusBox" class="status-box">Loading comments...</div>
+    </div>
+
+    <div class="section">
+      <h2>Leave a comment</h2>
+
+      <div class="control">
+        <label for="commentInput">Comment</label>
+        <textarea id="commentInput" placeholder="Say something..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="sendCommentBtn" class="btn-green" type="button">Post Comment</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>All comments</h2>
+      <div id="commentList" class="comment-list">
+        <div class="empty-box">Loading comments...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+      const contentInfo = document.getElementById("contentInfo");
+      const commentInput = document.getElementById("commentInput");
+      const sendCommentBtn = document.getElementById("sendCommentBtn");
+      const commentList = document.getElementById("commentList");
+
+      let currentUser = null;
+      let profileMap = {};
+      let currentType = "";
+      let currentId = "";
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function getParams() {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          type: String(params.get("type") || "").trim().toLowerCase(),
+          id: String(params.get("id") || "").trim()
+        };
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", ids);
+
+        if (error) throw error;
+
+        profileMap = {};
+        (data || []).forEach(profile => {
+          profileMap[profile.id] = profile;
+        });
+      }
+
+      function renderComments(rows) {
+        if (!rows.length) {
+          commentList.innerHTML = `<div class="empty-box">No comments yet.</div>`;
+          return;
+        }
+
+        commentList.innerHTML = rows.map(row => {
+          const profile = profileMap[row.user_id] || {};
+          const name = profile.display_name || profile.username || profile.email || "User";
+          const canDelete = currentUser && row.user_id === currentUser.id;
+
+          return `
+            <div class="comment-card">
+              <div class="comment-name">${escapeHtml(name)}</div>
+              <div class="comment-body">${escapeHtml(row.body)}</div>
+              <div class="comment-meta">Posted: ${escapeHtml(formatDate(row.created_at))}</div>
+              ${canDelete ? `
+                <div class="comment-actions">
+                  <button class="btn-danger delete-comment-btn" data-id="${row.id}" type="button">Delete</button>
+                </div>
+              ` : ``}
+            </div>
+          `;
+        }).join("");
+
+        Array.from(document.querySelectorAll(".delete-comment-btn")).forEach(btn => {
+          btn.addEventListener("click", async () => {
+            await deleteComment(Number(btn.dataset.id));
+          });
+        });
+      }
+
+      async function loadComments() {
+        const { data, error } = await supabase
+          .from("comments")
+          .select("*")
+          .eq("content_type", currentType)
+          .eq("content_id", currentId)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        await loadProfiles((data || []).map(row => row.user_id));
+        renderComments(data || []);
+      }
+
+      async function postComment() {
+        try {
+          if (!currentUser) throw new Error("You need to be logged in.");
+          const body = commentInput.value.trim();
+          if (!body) throw new Error("Comment is required.");
+
+          const { error } = await supabase
+            .from("comments")
+            .insert([{
+              user_id: currentUser.id,
+              content_type: currentType,
+              content_id: currentId,
+              body
+            }]);
+
+          if (error) throw error;
+
+          commentInput.value = "";
+          await loadComments();
+          setStatus("✅ Comment posted.");
+        } catch (error) {
+          setStatus("❌ Comment error: " + error.message);
+        }
+      }
+
+      async function deleteComment(id) {
+        try {
+          if (!currentUser) throw new Error("You need to be logged in.");
+
+          const { error } = await supabase
+            .from("comments")
+            .delete()
+            .eq("id", id)
+            .eq("user_id", currentUser.id);
+
+          if (error) throw error;
+
+          await loadComments();
+          setStatus("✅ Comment deleted.");
+        } catch (error) {
+          setStatus("❌ Delete error: " + error.message);
+        }
+      }
+
+      sendCommentBtn.addEventListener("click", postComment);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      async function init() {
+        await loadSession();
+
+        const params = getParams();
+        currentType = params.type;
+        currentId = params.id;
+
+        if (!currentType || !currentId) {
+          throw new Error("Missing comment target. Use comments.html?type=music&id=12");
+        }
+
+        contentInfo.textContent = `Commenting on: ${currentType} #${currentId}`;
+
+        await loadComments();
+
+        supabase
+          .channel(`comments-${currentType}-${currentId}`)
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "comments",
+              filter: `content_type=eq.${currentType}`
+            },
+            async () => {
+              await loadComments();
+            }
+          )
+          .subscribe();
+
+        setStatus("✅ Comments fully synced.");
+      }
+
+      init();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Comments Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
