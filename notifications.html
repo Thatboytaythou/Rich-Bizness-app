@@ -3,297 +3,640 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notifications | Rich Bizness</title>
+  <title>Rich Bizness | Notifications</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.84)),
-        url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
+
     .page {
-      max-width: 1200px;
-      margin: auto;
+      max-width: 1400px;
+      margin: 0 auto;
       padding: 18px;
+      padding-bottom: 40px;
     }
+
+    .topbar, .hero, .section, .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
     .topbar {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-bottom:18px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(0,0,0,0.45);
-      border:1px solid rgba(125,255,113,0.18);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
     }
+
     .brand {
-      font-size:1.8rem;
-      font-weight:900;
-      color:#7dff71;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
     }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
     .nav {
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
-    .nav a, .nav button {
-      text-decoration:none;
-      color:white;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.08);
-      padding:10px 14px;
-      border-radius:12px;
-      font-weight:700;
-      cursor:pointer;
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
+
     .nav a.active {
-      color:#7dff71;
-      box-shadow:0 0 18px rgba(125,255,113,0.28);
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
-    .hero, .card {
-      background:rgba(0,0,0,0.45);
-      border:1px solid rgba(125,255,113,0.18);
-      border-radius:22px;
-      padding:20px;
-      margin-bottom:18px;
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 700;
     }
-    .hero h1, .card h2 {
-      color:#7dff71;
-      margin-top:0;
+
+    .hero,
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
     }
-    .status {
-      margin-top:12px;
-      padding:12px;
-      border-radius:12px;
-      background:rgba(125,255,113,0.08);
-      border:1px solid rgba(125,255,113,0.18);
-      font-weight:700;
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 2.7rem;
+      line-height: 1;
+      color: var(--green);
     }
-    .button-row {
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-      margin-top:14px;
+
+    .subtle {
+      color: var(--text);
+      line-height: 1.75;
     }
-    button {
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:12px;
-      font-size:16px;
-      font-weight:800;
-      cursor:pointer;
+
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
     }
-    .btn-green {
-      background:#7dff71;
-      color:black;
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
     }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
+    .hero-actions,
+    .actions,
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
     .btn-dark {
-      background:rgba(255,255,255,0.08);
-      color:white;
-      border:1px solid rgba(255,255,255,0.08);
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
     }
-    .list {
-      display:grid;
-      gap:12px;
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
-    .note {
-      padding:16px;
-      border-radius:16px;
-      background:rgba(255,255,255,0.05);
-      border:1px solid rgba(255,255,255,0.08);
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
     }
-    .note.unread {
-      border-color:rgba(125,255,113,0.35);
-      box-shadow:0 0 16px rgba(125,255,113,0.12);
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.44);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
     }
-    .note-title {
-      font-weight:900;
-      color:#7dff71;
-      margin-bottom:6px;
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--green);
     }
-    .note-meta {
-      font-size:0.9rem;
-      opacity:0.8;
-      margin-top:8px;
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
     }
-    .note a {
-      color:#7dff71;
-      font-weight:700;
-      text-decoration:none;
+
+    .notification-list {
+      display: grid;
+      gap: 14px;
     }
-    .empty {
-      text-align:center;
-      padding:24px;
-      border-radius:14px;
-      background:rgba(255,255,255,0.04);
-      border:1px solid rgba(255,255,255,0.08);
-      font-weight:700;
+
+    .notification-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 12px;
     }
-    @media (max-width: 700px) {
-      .button-row { grid-template-columns:1fr; }
+
+    .notification-card.unread {
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 18px rgba(125,255,113,0.08);
+    }
+
+    .notification-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: start;
+    }
+
+    .notification-title {
+      color: var(--gold);
+      font-size: 1.1rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .notification-body {
+      color: var(--text);
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .notification-meta {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .notification-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .empty-box {
+      padding: 24px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 900px) {
+      .stats-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="topbar">
-      <div class="brand">Rich Bizness</div>
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Notifications</span>
+      </div>
+
       <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="profile.html">Profile</a>
+        <a href="music.html">Music</a>
+        <a href="artist.html">Artist</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="messages.html">Messages</a>
         <a href="notifications.html" class="active">Notifications</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Notifications</h1>
-      <p>See new followers, messages, and live activity.</p>
-      <div id="status" class="status">Checking session...</div>
-    </div>
+      <div class="hero-kicker">FULL ALERT LANE</div>
+      <h1>Stay on top of messages, live updates, uploads, and platform activity.</h1>
+      <div class="subtle">
+        Notifications keep your money moves, fan activity, live rooms, and creator updates all in one place.
+      </div>
 
-    <div class="card">
-      <h2>Your Alerts</h2>
-      <div class="button-row">
-        <button id="refreshBtn" class="btn-dark" type="button">Refresh</button>
-        <button id="markAllBtn" class="btn-green" type="button">Mark All Read</button>
+      <div class="hero-actions">
+        <button id="showAllBtn" class="btn-green" type="button">Show All</button>
+        <button id="showUnreadBtn" class="btn-dark" type="button">Show Unread</button>
+        <button id="markAllReadBtn" class="btn-gold" type="button">Mark All Read</button>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading notifications...</div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="totalCountStat" class="stat-value">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat">
+          <div id="unreadCountStat" class="stat-value">0</div>
+          <div class="stat-label">Unread</div>
+        </div>
+        <div class="stat">
+          <div id="messageCountStat" class="stat-value">0</div>
+          <div class="stat-label">Message Alerts</div>
+        </div>
+        <div class="stat">
+          <div id="liveCountStat" class="stat-value">0</div>
+          <div class="stat-label">Live Alerts</div>
+        </div>
       </div>
     </div>
 
-    <div id="list" class="list"></div>
+    <div class="section">
+      <div class="filter-row">
+        <span class="pill-green" id="activeFilterPill">All Notifications</span>
+      </div>
+
+      <div id="notificationList" class="notification-list">
+        <div class="empty-box">Loading notifications...</div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+
+      const showAllBtn = document.getElementById("showAllBtn");
+      const showUnreadBtn = document.getElementById("showUnreadBtn");
+      const markAllReadBtn = document.getElementById("markAllReadBtn");
+
+      const totalCountStat = document.getElementById("totalCountStat");
+      const unreadCountStat = document.getElementById("unreadCountStat");
+      const messageCountStat = document.getElementById("messageCountStat");
+      const liveCountStat = document.getElementById("liveCountStat");
+
+      const activeFilterPill = document.getElementById("activeFilterPill");
+      const notificationList = document.getElementById("notificationList");
+
+      let currentUser = null;
+      let notificationsCache = [];
+      let currentFilter = "all";
+
+      function setStatus(message) {
+        statusBox.textContent = message;
       }
-    });
 
-    const statusBox = document.getElementById("status");
-    const list = document.getElementById("list");
-    const refreshBtn = document.getElementById("refreshBtn");
-    const markAllBtn = document.getElementById("markAllBtn");
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-    let currentUser = null;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
 
-    function setStatus(message) {
-      statusBox.textContent = message;
-      console.log(message);
-    }
+      function typeLabel(type) {
+        const t = String(type || "").toLowerCase();
+        if (t === "message") return "Message";
+        if (t === "live") return "Live";
+        if (t === "upload") return "Upload";
+        if (t === "payment") return "Payment";
+        if (t === "vip") return "VIP";
+        return t ? t.charAt(0).toUpperCase() + t.slice(1) : "Alert";
+      }
 
-    function escapeHtml(text) {
-      return String(text || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
-    }
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-    function formatDate(value) {
-      if (!value) return "--";
-      const d = new Date(value);
-      return d.toLocaleString();
-    }
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
 
-    async function requireUser() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-
-      const user = data?.session?.user || null;
-      if (!user) {
-        setStatus("No active session. Redirecting...");
-        setTimeout(() => {
+        if (!currentUser) {
           window.location.href = "auth.html";
-        }, 900);
-        return null;
+          return null;
+        }
+
+        return currentUser;
       }
 
-      currentUser = user;
-      setStatus("Session active.");
-      return user;
-    }
-
-    function renderNotifications(items) {
-      if (!items || !items.length) {
-        list.innerHTML = `<div class="empty">No notifications yet.</div>`;
-        return;
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
       }
 
-      list.innerHTML = items.map(item => `
-        <div class="note ${item.is_read ? "" : "unread"}">
-          <div class="note-title">${escapeHtml(item.title || "Notification")}</div>
-          <div>${escapeHtml(item.body || "")}</div>
-          <div class="note-meta">
-            ${escapeHtml(item.type || "--")} • ${escapeHtml(formatDate(item.created_at))}
-          </div>
-          <div class="note-meta" style="margin-top:10px;">
-            <a href="${escapeHtml(item.link || "#")}">Open</a>
-          </div>
-        </div>
-      `).join("");
-    }
+      function updateStats(rows) {
+        totalCountStat.textContent = rows.length;
+        unreadCountStat.textContent = rows.filter(r => !r.is_read).length;
+        messageCountStat.textContent = rows.filter(r => String(r.type).toLowerCase() === "message").length;
+        liveCountStat.textContent = rows.filter(r => String(r.type).toLowerCase() === "live").length;
+      }
 
-    async function loadNotifications() {
-      try {
-        const user = await requireUser();
-        if (!user) return;
+      function getFilteredRows() {
+        if (currentFilter === "unread") {
+          return notificationsCache.filter(n => !n.is_read);
+        }
+        return notificationsCache;
+      }
 
-        setStatus("Loading notifications...");
+      function renderNotifications() {
+        const rows = getFilteredRows();
 
+        activeFilterPill.textContent = currentFilter === "unread" ? "Unread Only" : "All Notifications";
+
+        if (!rows.length) {
+          notificationList.innerHTML = `<div class="empty-box">No notifications here right now.</div>`;
+          return;
+        }
+
+        notificationList.innerHTML = rows.map(row => {
+          const unreadClass = row.is_read ? "" : "unread";
+          const link = row.link_url || "";
+          const type = typeLabel(row.type);
+
+          return `
+            <div class="notification-card ${unreadClass}">
+              <div class="notification-top">
+                <div>
+                  <div class="notification-title">${escapeHtml(row.title || "Notification")}</div>
+                  <div class="notification-meta">
+                    <span class="${row.is_read ? "pill" : "pill-green"}">${row.is_read ? "Read" : "Unread"}</span>
+                    <span class="pill-gold">${escapeHtml(type)}</span>
+                  </div>
+                </div>
+                <div class="notification-meta">${escapeHtml(formatDate(row.created_at))}</div>
+              </div>
+
+              <div class="notification-body">${escapeHtml(row.body || "")}</div>
+
+              <div class="notification-actions">
+                ${link ? `<a class="btn-green" href="${escapeHtml(link)}">Open</a>` : ``}
+                ${!row.is_read ? `<button class="btn-dark mark-read-btn" data-id="${row.id}" type="button">Mark Read</button>` : ``}
+                <button class="btn-danger delete-btn" data-id="${row.id}" type="button">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        Array.from(document.querySelectorAll(".mark-read-btn")).forEach(btn => {
+          btn.addEventListener("click", async () => {
+            await markRead(Number(btn.dataset.id));
+          });
+        });
+
+        Array.from(document.querySelectorAll(".delete-btn")).forEach(btn => {
+          btn.addEventListener("click", async () => {
+            await deleteNotification(Number(btn.dataset.id));
+          });
+        });
+      }
+
+      async function loadNotifications() {
         const { data, error } = await supabase
           .from("notifications")
           .select("*")
-          .eq("user_id", user.id)
+          .eq("user_id", currentUser.id)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
 
-        renderNotifications(data || []);
-        setStatus("Notifications loaded.");
-      } catch (error) {
-        setStatus("Load error: " + error.message);
-        list.innerHTML = `<div class="empty">Error loading notifications.</div>`;
+        notificationsCache = data || [];
+        updateStats(notificationsCache);
+        renderNotifications();
       }
-    }
 
-    async function markAllRead() {
-      try {
-        const user = await requireUser();
-        if (!user) return;
+      async function markRead(id) {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", id)
+            .eq("user_id", currentUser.id);
 
-        const { error } = await supabase
-          .from("notifications")
-          .update({ is_read: true })
-          .eq("user_id", user.id)
-          .eq("is_read", false);
+          if (error) throw error;
 
-        if (error) throw error;
-
-        setStatus("All notifications marked read.");
-        loadNotifications();
-      } catch (error) {
-        setStatus("Mark read error: " + error.message);
+          await loadNotifications();
+          setStatus("✅ Notification marked as read.");
+        } catch (error) {
+          setStatus("❌ Mark read error: " + error.message);
+        }
       }
+
+      async function markAllRead() {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("user_id", currentUser.id)
+            .eq("is_read", false);
+
+          if (error) throw error;
+
+          await loadNotifications();
+          setStatus("✅ All notifications marked as read.");
+        } catch (error) {
+          setStatus("❌ Mark all read error: " + error.message);
+        }
+      }
+
+      async function deleteNotification(id) {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .delete()
+            .eq("id", id)
+            .eq("user_id", currentUser.id);
+
+          if (error) throw error;
+
+          await loadNotifications();
+          setStatus("✅ Notification deleted.");
+        } catch (error) {
+          setStatus("❌ Delete error: " + error.message);
+        }
+      }
+
+      showAllBtn.addEventListener("click", () => {
+        currentFilter = "all";
+        renderNotifications();
+      });
+
+      showUnreadBtn.addEventListener("click", () => {
+        currentFilter = "unread";
+        renderNotifications();
+      });
+
+      markAllReadBtn.addEventListener("click", markAllRead);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      async function init() {
+        await loadSession();
+        await loadNotifications();
+
+        supabase
+          .channel("notifications-realtime")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${currentUser.id}` },
+            async () => {
+              await loadNotifications();
+            }
+          )
+          .subscribe();
+
+        setStatus("✅ Notifications fully synced.");
+      }
+
+      init();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Notifications Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    refreshBtn.addEventListener("click", loadNotifications);
-    markAllBtn.addEventListener("click", markAllRead);
-
-    requireUser().then(loadNotifications);
   </script>
 </body>
 </html>
