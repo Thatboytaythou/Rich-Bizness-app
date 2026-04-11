@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artist Channel | Rich Bizness</title>
+  <title>Rich Bizness | Artist</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -11,15 +11,15 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
-      --bg: rgba(0,0,0,0.50);
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.52);
       --soft: rgba(255,255,255,0.08);
       --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
     body {
@@ -28,12 +28,12 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
         url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1550px;
+      max-width: 1600px;
       margin: 0 auto;
       padding: 18px;
       padding-bottom: 40px;
@@ -47,6 +47,7 @@
       border: 1px solid var(--border);
       border-radius: 24px;
       backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
@@ -64,7 +65,7 @@
       align-items: center;
       gap: 12px;
       color: var(--green);
-      font-size: 1.8rem;
+      font-size: 1.85rem;
       font-weight: 900;
     }
 
@@ -73,12 +74,13 @@
       height: 58px;
       border-radius: 16px;
       object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
@@ -97,7 +99,7 @@
     .nav a.active {
       color: var(--green);
       border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
@@ -111,93 +113,66 @@
 
     .hero,
     .section {
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-
-    .banner {
-      width: 100%;
-      height: 320px;
-      border-radius: 22px;
-      object-fit: cover;
-      display: block;
-      background: black;
-      margin-bottom: 18px;
-    }
-
-    .banner-fallback {
-      width: 100%;
-      height: 320px;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--green);
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
+      padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 180px 1fr;
+      grid-template-columns: 1.12fr 0.88fr;
       gap: 20px;
-      align-items: start;
+      align-items: stretch;
     }
 
-    .avatar {
-      width: 180px;
-      height: 180px;
-      border-radius: 26px;
-      object-fit: cover;
-      display: block;
-      background: black;
-    }
-
-    .avatar-fallback {
-      width: 180px;
-      height: 180px;
-      border-radius: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--green);
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
-    }
-
-    h1 {
-      margin: 0 0 10px;
+    .hero h1 {
+      margin: 0 0 12px;
       font-size: 3rem;
-      line-height: 1.02;
+      line-height: 0.98;
       color: var(--green);
     }
 
-    .subtle,
-    .bio,
+    .hero p,
+    .card-text,
+    .mini-text,
     .meta-text {
       color: var(--text);
       line-height: 1.75;
     }
 
-    .pill {
+    .hero-kicker,
+    .pill,
+    .pill-red,
+    .pill-gold,
+    .pill-green {
       display: inline-block;
-      margin-bottom: 10px;
       padding: 8px 12px;
       border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
       background: rgba(125,255,113,0.12);
       border: 1px solid rgba(125,255,113,0.18);
       color: var(--green);
-      font-weight: 900;
-      font-size: 0.84rem;
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
     }
 
     .hero-actions,
-    .social-row {
+    .card-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -218,37 +193,83 @@
       cursor: pointer;
     }
 
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
+    .btn-green { background: var(--green); color: black; }
     .btn-dark {
       background: var(--soft);
       color: white;
       border: 1px solid rgba(255,255,255,0.08);
     }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
       font-weight: 700;
       line-height: 1.6;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mini-panel-title {
+      color: var(--gold);
+      font-size: 1rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .artist-head {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 18px;
+      align-items: start;
+      margin-top: 18px;
+    }
+
+    .avatar-box {
+      width: 160px;
+      height: 160px;
+      border-radius: 26px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.7);
+      font-weight: 900;
+      text-align: center;
+      padding: 12px;
+    }
+
+    .avatar-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .artist-meta h2 {
+      margin: 0 0 8px;
+      font-size: 2.1rem;
+      color: var(--gold);
     }
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -256,176 +277,142 @@
     .stat {
       padding: 18px;
       border-radius: 18px;
-      background: rgba(0,0,0,0.48);
+      background: rgba(0,0,0,0.44);
       border: 1px solid rgba(125,255,113,0.16);
       text-align: center;
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.75rem;
       font-weight: 900;
       color: var(--green);
+      word-break: break-word;
     }
 
     .stat-label {
       margin-top: 6px;
-      font-weight: 700;
       color: var(--muted);
+      font-weight: 700;
     }
 
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .feature-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 14px;
-    }
-
-    .feature-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .feature-title {
-      color: var(--gold);
-      font-weight: 900;
-      margin-bottom: 8px;
-      font-size: 1.05rem;
-    }
-
-    .feature-text {
-      color: var(--text);
-      line-height: 1.6;
-      margin-bottom: 12px;
-      white-space: pre-wrap;
-    }
-
-    .music-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 14px;
-    }
-
-    .music-card {
-      padding: 14px;
-      border-radius: 20px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .cover {
-      width: 100%;
-      height: 240px;
-      border-radius: 16px;
-      object-fit: cover;
-      background: black;
-      margin-bottom: 12px;
-      display: block;
-    }
-
-    .cover-fallback {
-      width: 100%;
-      height: 240px;
-      border-radius: 16px;
-      margin-bottom: 12px;
-      font-size: 2rem;
+    .section-header {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 900;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      margin: 0 0 8px;
       color: var(--green);
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
+      font-size: 2rem;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 210px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
     }
 
     .card-title {
+      color: var(--gold);
       font-size: 1.12rem;
       font-weight: 900;
-      color: var(--green);
       margin-bottom: 8px;
-      line-height: 1.35;
-    }
-
-    .card-text {
-      color: var(--text);
-      line-height: 1.65;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-bottom: 12px;
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .card-actions a,
-    .card-actions button {
-      text-decoration: none;
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
     }
 
     .empty-box {
-      padding: 18px;
-      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
     }
 
-    @media (max-width: 1200px) {
-      .feature-grid,
-      .music-grid,
+    @media (max-width: 1320px) {
       .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-4 {
         grid-template-columns: repeat(2, 1fr);
       }
-    }
 
-    @media (max-width: 980px) {
       .hero-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 760px) {
-      h1 {
-        font-size: 2.3rem;
-      }
-
-      .feature-grid,
-      .music-grid,
-      .stats-row,
-      .card-actions {
+    @media (max-width: 960px) {
+      .grid-3,
+      .grid-4 {
         grid-template-columns: 1fr;
       }
 
-      .banner,
-      .banner-fallback {
-        height: 220px;
+      .artist-head {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .stats-row {
+        grid-template-columns: 1fr;
       }
 
-      .avatar,
-      .avatar-fallback {
-        width: 140px;
-        height: 140px;
+      .hero h1 {
+        font-size: 2.3rem;
+      }
+
+      .card-cover {
+        height: 190px;
       }
     }
   </style>
@@ -434,91 +421,155 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Artist Channel</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Artist</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
-        <a href="albums.html">Albums</a>
-        <a href="playlist.html">Playlists</a>
         <a href="artist.html" class="active">Artist</a>
-        <a href="artist-channel-manage.html">Manage Channel</a>
-        <a href="music-revenue.html">Revenue</a>
-        <a href="monetization.html">Monetize</a>
-        <a href="profile.html">Profile</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
         <a href="messages.html">Messages</a>
         <a href="notifications.html">Notifications</a>
+        <a href="profile.html">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <div id="bannerWrap">
-        <div class="banner-fallback">RICH BIZNESS</div>
-      </div>
-
       <div class="hero-grid">
-        <div id="avatarWrap">
-          <div class="avatar-fallback">RB</div>
-        </div>
-
         <div>
-          <div id="publicPill" class="pill">ARTIST CHANNEL</div>
-          <h1 id="channelName">Loading artist...</h1>
-          <div id="channelBio" class="bio">Loading channel bio...</div>
+          <div class="hero-kicker">PUBLIC CREATOR PAGE</div>
+          <h1 id="pageTitle">Artist Page</h1>
+          <p>
+            This page pulls one creator’s public identity, uploads, and live rooms into a single public-facing lane.
+          </p>
 
-          <div class="hero-actions">
-            <button id="followBtn" class="btn-green" type="button">Follow</button>
-            <a id="messageBtn" class="btn-dark" href="messages.html">Message</a>
-            <a id="manageBtn" class="btn-gold" href="artist-channel-manage.html" style="display:none;">Manage Channel</a>
+          <div class="artist-head">
+            <div id="avatarBox" class="avatar-box">No Avatar</div>
+
+            <div class="artist-meta">
+              <h2 id="displayNameText">Loading...</h2>
+              <div id="usernameText" class="meta-text">@loading</div>
+              <div id="emailText" class="meta-text">--</div>
+              <div id="bioText" class="meta-text" style="margin-top:10px;">Loading bio...</div>
+
+              <div class="hero-actions">
+                <button id="shareBtn" class="btn-green" type="button">Copy Artist Link</button>
+                <a id="messageArtistBtn" class="btn-dark" href="messages.html">Message Artist</a>
+                <a id="watchArtistBtn" class="btn-gold" href="watch.html">Watch Live</a>
+              </div>
+            </div>
           </div>
 
-          <div class="social-row">
-            <a id="instagramBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">Instagram</a>
-            <a id="youtubeBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">YouTube</a>
-            <a id="websiteBtn" class="btn-dark" href="#" target="_blank" rel="noopener" style="display:none;">Website</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading artist channel...</div>
+          <div id="artistStatusBox" class="status-box">Loading artist page...</div>
 
           <div class="stats-row">
             <div class="stat">
-              <div id="followersStat" class="stat-value">0</div>
-              <div class="stat-label">Followers</div>
+              <div id="musicCountStat" class="stat-value">0</div>
+              <div class="stat-label">Music</div>
             </div>
             <div class="stat">
-              <div id="tracksStat" class="stat-value">0</div>
-              <div class="stat-label">Tracks</div>
+              <div id="gamingCountStat" class="stat-value">0</div>
+              <div class="stat-label">Gaming</div>
             </div>
             <div class="stat">
-              <div id="albumsStat" class="stat-value">0</div>
-              <div class="stat-label">Albums</div>
+              <div id="sportsCountStat" class="stat-value">0</div>
+              <div class="stat-label">Sports</div>
             </div>
             <div class="stat">
-              <div id="playlistsStat" class="stat-value">0</div>
-              <div class="stat-label">Playlists</div>
+              <div id="liveCountStat" class="stat-value">0</div>
+              <div class="stat-label">Live Rooms</div>
             </div>
             <div class="stat">
-              <div id="liveStat" class="stat-value">READY</div>
-              <div class="stat-label">Live Layer</div>
+              <div id="vipLiveCountStat" class="stat-value">0</div>
+              <div class="stat-label">VIP Rooms</div>
+            </div>
+            <div class="stat">
+              <div id="activeLiveCountStat" class="stat-value">0</div>
+              <div class="stat-label">Live Now</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="mini-panel">
+            <div class="mini-panel-title">Artist Pulse</div>
+            <div id="artistPulseBox" class="mini-text">Loading artist activity...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Big Picture</div>
+            <div class="mini-text">
+              This page is the public-facing lane that ties brand, content, and live energy together for fans and visitors.
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Quick Moves</div>
+            <div class="card-actions">
+              <a href="music.html" class="btn-dark">Open Music</a>
+              <a href="gaming.html" class="btn-dark">Open Gaming</a>
+              <a href="sports.html" class="btn-dark">Open Sports</a>
+              <a href="live.html" class="btn-dark">Go Live</a>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section">
-      <h2>Pinned Content</h2>
-      <div id="pinnedGrid" class="feature-grid"></div>
-    </div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Live Rooms</h2>
+          <p class="mini-text">Live rooms connected to this artist.</p>
+        </div>
+      </div>
+      <div id="liveRoomsRail" class="grid-3">
+        <div class="empty-box">Loading live rooms...</div>
+      </div>
+    </section>
 
-    <div class="section">
-      <h2>Latest Music</h2>
-      <div id="latestMusicGrid" class="music-grid"></div>
-    </div>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Music</h2>
+          <p class="mini-text">Music uploads tied to this artist.</p>
+        </div>
+      </div>
+      <div id="musicRail" class="grid-4">
+        <div class="empty-box">Loading music...</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Gaming</h2>
+          <p class="mini-text">Gaming uploads tied to this artist.</p>
+        </div>
+      </div>
+      <div id="gamingRail" class="grid-4">
+        <div class="empty-box">Loading gaming...</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <h2>Sports</h2>
+          <p class="mini-text">Sports uploads tied to this artist.</p>
+        </div>
+      </div>
+      <div id="sportsRail" class="grid-4">
+        <div class="empty-box">Loading sports...</div>
+      </div>
+    </section>
   </div>
 
   <script>
@@ -536,38 +587,38 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const bannerWrap = document.getElementById("bannerWrap");
-      const avatarWrap = document.getElementById("avatarWrap");
-      const channelName = document.getElementById("channelName");
-      const channelBio = document.getElementById("channelBio");
-      const publicPill = document.getElementById("publicPill");
-      const followBtn = document.getElementById("followBtn");
-      const messageBtn = document.getElementById("messageBtn");
-      const manageBtn = document.getElementById("manageBtn");
-      const instagramBtn = document.getElementById("instagramBtn");
-      const youtubeBtn = document.getElementById("youtubeBtn");
-      const websiteBtn = document.getElementById("websiteBtn");
-      const statusBox = document.getElementById("statusBox");
+      const shareBtn = document.getElementById("shareBtn");
+      const messageArtistBtn = document.getElementById("messageArtistBtn");
+      const watchArtistBtn = document.getElementById("watchArtistBtn");
 
-      const followersStat = document.getElementById("followersStat");
-      const tracksStat = document.getElementById("tracksStat");
-      const albumsStat = document.getElementById("albumsStat");
-      const playlistsStat = document.getElementById("playlistsStat");
+      const artistStatusBox = document.getElementById("artistStatusBox");
+      const artistPulseBox = document.getElementById("artistPulseBox");
 
-      const pinnedGrid = document.getElementById("pinnedGrid");
-      const latestMusicGrid = document.getElementById("latestMusicGrid");
+      const pageTitle = document.getElementById("pageTitle");
+      const avatarBox = document.getElementById("avatarBox");
+      const displayNameText = document.getElementById("displayNameText");
+      const usernameText = document.getElementById("usernameText");
+      const emailText = document.getElementById("emailText");
+      const bioText = document.getElementById("bioText");
+
+      const musicCountStat = document.getElementById("musicCountStat");
+      const gamingCountStat = document.getElementById("gamingCountStat");
+      const sportsCountStat = document.getElementById("sportsCountStat");
+      const liveCountStat = document.getElementById("liveCountStat");
+      const vipLiveCountStat = document.getElementById("vipLiveCountStat");
+      const activeLiveCountStat = document.getElementById("activeLiveCountStat");
+
+      const liveRoomsRail = document.getElementById("liveRoomsRail");
+      const musicRail = document.getElementById("musicRail");
+      const gamingRail = document.getElementById("gamingRail");
+      const sportsRail = document.getElementById("sportsRail");
 
       let currentUser = null;
-      let artistUserId = null;
-      let channelRow = null;
-      let isFollowing = false;
-
-      function getArtistUserId() {
-        return new URLSearchParams(window.location.search).get("id");
-      }
+      let currentArtist = null;
+      let currentLiveRows = [];
 
       function setStatus(message) {
-        statusBox.textContent = message;
+        artistStatusBox.textContent = message;
       }
 
       function escapeHtml(text) {
@@ -579,15 +630,25 @@
           .replace(/'/g, "&#039;");
       }
 
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function getUsernameFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return (params.get("u") || "").trim().toLowerCase();
       }
 
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
+
         currentUser = data?.session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
+        return currentUser;
       }
 
       async function logOut() {
@@ -600,299 +661,280 @@
         }
       }
 
-      function setLinkButton(btn, url) {
-        if (url) {
-          btn.href = url;
-          btn.style.display = "inline-block";
+      function renderArtist(profile) {
+        currentArtist = profile;
+
+        const displayName = profile?.display_name || "Artist";
+        const username = profile?.username || "unknown";
+        const email = profile?.email || "--";
+        const bio = profile?.bio || "No bio yet.";
+        const avatarUrl = profile?.avatar_url || "";
+
+        pageTitle.textContent = `${displayName} Artist Page`;
+        displayNameText.textContent = displayName;
+        usernameText.textContent = `@${username}`;
+        emailText.textContent = email;
+        bioText.textContent = bio;
+
+        if (avatarUrl) {
+          avatarBox.innerHTML = `<img src="${avatarUrl}" alt="Avatar" />`;
         } else {
-          btn.style.display = "none";
+          avatarBox.textContent = "No Avatar";
         }
+
+        messageArtistBtn.href = "messages.html";
       }
 
-      async function checkFollowing() {
-        if (!currentUser || !artistUserId || currentUser.id === artistUserId) {
-          isFollowing = false;
-          updateFollowButton();
+      function renderRail(rows, targetEl, type) {
+        if (!rows.length) {
+          targetEl.innerHTML = `<div class="empty-box">Nothing here yet.</div>`;
           return;
         }
 
-        try {
-          const { data, error } = await supabase
-            .from("followers")
-            .select("id")
-            .eq("follower_id", currentUser.id)
-            .eq("following_id", artistUserId)
-            .maybeSingle();
+        targetEl.innerHTML = rows.map(row => {
+          if (type === "live") {
+            const thumbStyle = row.thumbnail_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
 
-          if (error) throw error;
-          isFollowing = !!data;
-        } catch {
-          isFollowing = false;
-        }
-
-        updateFollowButton();
-      }
-
-      function updateFollowButton() {
-        if (!currentUser) {
-          followBtn.textContent = "Login To Follow";
-          return;
-        }
-
-        if (currentUser.id === artistUserId) {
-          followBtn.textContent = "This Is You";
-          followBtn.disabled = true;
-          manageBtn.style.display = "inline-block";
-          return;
-        }
-
-        followBtn.disabled = false;
-        followBtn.textContent = isFollowing ? "Unfollow" : "Follow";
-      }
-
-      async function toggleFollow() {
-        try {
-          if (!currentUser) {
-            window.location.href = "auth.html";
-            return;
-          }
-
-          if (currentUser.id === artistUserId) return;
-
-          if (isFollowing) {
-            const { error } = await supabase
-              .from("followers")
-              .delete()
-              .eq("follower_id", currentUser.id)
-              .eq("following_id", artistUserId);
-
-            if (error) throw error;
-            isFollowing = false;
-            setStatus("Unfollowed artist.");
-          } else {
-            const { error } = await supabase
-              .from("followers")
-              .insert({
-                follower_id: currentUser.id,
-                following_id: artistUserId
-              });
-
-            if (error) throw error;
-            isFollowing = true;
-            setStatus("Followed artist.");
-          }
-
-          updateFollowButton();
-          await loadStats();
-        } catch (error) {
-          setStatus("Follow error: " + error.message);
-        }
-      }
-
-      async function loadStats() {
-        try {
-          const [
-            followersRes,
-            tracksRes,
-            albumsRes,
-            playlistsRes
-          ] = await Promise.all([
-            supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", artistUserId),
-            supabase.from("music_tracks").select("*", { count: "exact", head: true }).eq("user_id", artistUserId),
-            supabase.from("albums").select("*", { count: "exact", head: true }).eq("user_id", artistUserId),
-            supabase.from("playlists").select("*", { count: "exact", head: true }).eq("user_id", artistUserId)
-          ]);
-
-          followersStat.textContent = followersRes.count || 0;
-          tracksStat.textContent = tracksRes.count || 0;
-          albumsStat.textContent = albumsRes.count || 0;
-          playlistsStat.textContent = playlistsRes.count || 0;
-        } catch {}
-      }
-
-      async function loadPinnedContent() {
-        if (!channelRow) {
-          emptyState(pinnedGrid, "No pinned content yet.");
-          return;
-        }
-
-        const tasks = [];
-
-        if (channelRow.pinned_track_id) {
-          tasks.push(
-            supabase.from("music_tracks").select("*").eq("id", channelRow.pinned_track_id).maybeSingle()
-              .then(({ data }) => ({ type: "track", data }))
-          );
-        }
-
-        if (channelRow.pinned_album_id) {
-          tasks.push(
-            supabase.from("albums").select("*").eq("id", channelRow.pinned_album_id).maybeSingle()
-              .then(({ data }) => ({ type: "album", data }))
-          );
-        }
-
-        if (channelRow.pinned_playlist_id) {
-          tasks.push(
-            supabase.from("playlists").select("*").eq("id", channelRow.pinned_playlist_id).maybeSingle()
-              .then(({ data }) => ({ type: "playlist", data }))
-          );
-        }
-
-        const results = await Promise.all(tasks);
-        const valid = results.filter(item => item.data);
-
-        if (!valid.length) {
-          emptyState(pinnedGrid, "No pinned content yet.");
-          return;
-        }
-
-        pinnedGrid.innerHTML = valid.map(item => {
-          if (item.type === "track") {
             return `
-              <div class="feature-card">
-                <div class="feature-title">Pinned Track</div>
-                <div class="feature-text">
-${escapeHtml(item.data.title || "Untitled Track")}
-${escapeHtml(item.data.artist_name || "Unknown Artist")}
+              <div class="card">
+                <div class="card-cover custom-bg" style="${thumbStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="${row.is_live ? "pill-red" : "pill"}">${row.is_live ? "LIVE NOW" : "ROOM"}</span>
+                    <span class="${row.is_vip ? "pill-gold" : "pill-green"}">${row.is_vip ? "VIP" : "FREE"}</span>
+                  </div>
                 </div>
-                <a class="btn-green" href="music.html?track=${item.data.id}">Open Track</a>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Live Room")}</div>
+                  <div class="card-text">
+Category: ${escapeHtml(row.category || "--")}<br>
+Tags: ${escapeHtml(row.tags || "--")}<br>
+Announcement: ${escapeHtml(row.announcement || "--")}<br>
+Scheduled: ${escapeHtml(formatDate(row.scheduled_for))}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="watch.html?room=${encodeURIComponent(row.room_name)}">Watch</a>
+                    <a class="btn-dark" href="live.html">Open Live</a>
+                  </div>
+                </div>
               </div>
             `;
           }
 
-          if (item.type === "album") {
+          if (type === "music") {
+            const coverStyle = row.cover_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.cover_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
             return `
-              <div class="feature-card">
-                <div class="feature-title">Pinned Album</div>
-                <div class="feature-text">
-${escapeHtml(item.data.title || "Untitled Album")}
-${escapeHtml(item.data.release_type || "album")}
+              <div class="card">
+                <div class="card-cover custom-bg" style="${coverStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="pill-gold">${escapeHtml(row.genre || "MUSIC")}</span>
+                    ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                  </div>
                 </div>
-                <a class="btn-green" href="album-view.html?id=${item.data.id}">Open Album</a>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Music Upload")}</div>
+                  <div class="card-text">
+Artist: ${escapeHtml(row.artist_name || "--")}<br>
+Album: ${escapeHtml(row.album_name || "--")}<br>
+Mood: ${escapeHtml(row.mood || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "music.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                    <a class="btn-dark" href="music.html">Music</a>
+                  </div>
+                </div>
               </div>
             `;
           }
+
+          if (type === "gaming") {
+            const coverStyle = row.thumbnail_url
+              ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+              : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+
+            return `
+              <div class="card">
+                <div class="card-cover custom-bg" style="${coverStyle}">
+                  <div class="card-pill-wrap">
+                    <span class="pill-gold">${escapeHtml(row.game_title || "GAMING")}</span>
+                    ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(row.title || "Gaming Upload")}</div>
+                  <div class="card-text">
+Platform: ${escapeHtml(row.platform || "--")}<br>
+Gamer Tag: ${escapeHtml(row.gamer_tag || "--")}<br>
+Clip Type: ${escapeHtml(row.clip_type || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                  </div>
+                  <div class="card-actions">
+                    <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "gaming.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                    <a class="btn-dark" href="gaming.html">Gaming</a>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+
+          const coverStyle = row.thumbnail_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
 
           return `
-            <div class="feature-card">
-              <div class="feature-title">Pinned Playlist</div>
-              <div class="feature-text">
-${escapeHtml(item.data.title || "Untitled Playlist")}
-${item.data.is_public ? "Public" : "Private"}
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  <span class="pill-gold">${escapeHtml(row.sport_name || "SPORTS")}</span>
+                  ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                </div>
               </div>
-              <a class="btn-green" href="playlist-views.html?id=${item.data.id}">Open Playlist</a>
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(row.title || "Sports Upload")}</div>
+                <div class="card-text">
+Team: ${escapeHtml(row.team_name || "--")}<br>
+Athlete: ${escapeHtml(row.athlete_name || "--")}<br>
+Position: ${escapeHtml(row.position_name || "--")}<br>
+Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}
+                </div>
+                <div class="card-actions">
+                  <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "sports.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
+                  <a class="btn-dark" href="sports.html">Sports</a>
+                </div>
+              </div>
             </div>
           `;
         }).join("");
       }
 
-      async function loadLatestMusic() {
-        const { data, error } = await supabase
-          .from("music_tracks")
-          .select("*")
-          .eq("user_id", artistUserId)
-          .order("created_at", { ascending: false })
-          .limit(6);
-
-        if (error) {
-          emptyState(latestMusicGrid, "Could not load artist music.");
-          return;
+      function updateWatchButton() {
+        const liveNow = currentLiveRows.find(r => r.is_live);
+        if (liveNow) {
+          watchArtistBtn.href = `watch.html?room=${encodeURIComponent(liveNow.room_name)}`;
+          watchArtistBtn.textContent = "Watch Live";
+        } else {
+          watchArtistBtn.href = "watch.html";
+          watchArtistBtn.textContent = "Open Watch";
         }
-
-        const tracks = data || [];
-        if (!tracks.length) {
-          emptyState(latestMusicGrid, "No music uploaded yet.");
-          return;
-        }
-
-        latestMusicGrid.innerHTML = tracks.map(track => `
-          <div class="music-card">
-            ${
-              track.cover_url
-                ? `<img class="cover" src="${escapeHtml(track.cover_url)}" alt="cover art" />`
-                : `<div class="cover-fallback">RB</div>`
-            }
-
-            <div class="card-title">${escapeHtml(track.title || "Untitled Track")}</div>
-            <div class="card-text">
-${escapeHtml(track.artist_name || "Unknown Artist")}
-Genre: ${escapeHtml(track.genre || "--")}
-Plays: ${escapeHtml(track.plays || 0)}
-            </div>
-
-            <div class="card-actions">
-              <a class="btn-green" href="music.html?track=${track.id}">Open Track</a>
-              <a class="btn-dark" href="messages.html">Message</a>
-            </div>
-          </div>
-        `).join("");
       }
 
-      async function loadArtistChannel() {
+      async function copyArtistLink() {
         try {
-          setStatus("Loading artist channel...");
+          if (!currentArtist?.username) {
+            setStatus("No username found for this artist.");
+            return;
+          }
+          const url = `${window.location.origin}/artist.html?u=${encodeURIComponent(currentArtist.username)}`;
+          await navigator.clipboard.writeText(url);
+          setStatus("✅ Artist link copied.");
+        } catch (error) {
+          setStatus("❌ Copy link error: " + error.message);
+        }
+      }
+
+      async function loadArtistPage() {
+        try {
+          setStatus("Loading artist page...");
           await loadSession();
 
-          artistUserId = getArtistUserId() || currentUser?.id || null;
-          if (!artistUserId) {
-            throw new Error("Missing artist id.");
+          const username = getUsernameFromUrl();
+          if (!username) {
+            throw new Error("Missing username in URL. Use artist.html?u=username");
           }
 
-          const { data, error } = await supabase
-            .from("artist_channels")
+          const { data: profile, error: profileErr } = await supabase
+            .from("profiles")
             .select("*")
-            .eq("user_id", artistUserId)
+            .eq("username", username)
             .maybeSingle();
 
-          if (error) throw error;
+          if (profileErr) throw profileErr;
+          if (!profile) throw new Error("Artist not found.");
 
-          channelRow = data || null;
+          renderArtist(profile);
 
-          if (channelRow) {
-            channelName.textContent = channelRow.channel_name || "Rich Bizness Artist";
-            channelBio.textContent = channelRow.bio || "No bio added yet.";
-            publicPill.textContent = channelRow.is_public ? "PUBLIC ARTIST CHANNEL" : "PRIVATE ARTIST CHANNEL";
+          const [
+            musicRes,
+            gamingRes,
+            sportsRes,
+            liveRes
+          ] = await Promise.all([
+            supabase
+              .from("music_uploads")
+              .select("*")
+              .eq("user_id", profile.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
 
-            bannerWrap.innerHTML = channelRow.banner_url
-              ? `<img class="banner" src="${escapeHtml(channelRow.banner_url)}" alt="banner" />`
-              : `<div class="banner-fallback">RICH BIZNESS</div>`;
+            supabase
+              .from("gaming_uploads")
+              .select("*")
+              .eq("user_id", profile.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
 
-            avatarWrap.innerHTML = channelRow.avatar_url
-              ? `<img class="avatar" src="${escapeHtml(channelRow.avatar_url)}" alt="avatar" />`
-              : `<div class="avatar-fallback">RB</div>`;
+            supabase
+              .from("sports_uploads")
+              .select("*")
+              .eq("user_id", profile.id)
+              .order("created_at", { ascending: false })
+              .limit(8),
 
-            setLinkButton(instagramBtn, channelRow.instagram_url);
-            setLinkButton(youtubeBtn, channelRow.youtube_url);
-            setLinkButton(websiteBtn, channelRow.website_url);
-          } else {
-            channelName.textContent = "Artist Channel";
-            channelBio.textContent = "No channel profile has been set up yet.";
-            bannerWrap.innerHTML = `<div class="banner-fallback">RICH BIZNESS</div>`;
-            avatarWrap.innerHTML = `<div class="avatar-fallback">RB</div>`;
-            instagramBtn.style.display = "none";
-            youtubeBtn.style.display = "none";
-            websiteBtn.style.display = "none";
-          }
+            supabase
+              .from("live_rooms")
+              .select("*")
+              .eq("host_user_id", profile.id)
+              .order("updated_at", { ascending: false })
+              .limit(8)
+          ]);
 
-          if (artistUserId) {
-            messageBtn.href = `messages.html`;
-          }
+          if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
+          if (gamingRes.error && gamingRes.error.code !== "42P01") throw gamingRes.error;
+          if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
+          if (liveRes.error && liveRes.error.code !== "42P01") throw liveRes.error;
 
-          await checkFollowing();
-          await loadStats();
-          await loadPinnedContent();
-          await loadLatestMusic();
+          const musicRows = musicRes.data || [];
+          const gamingRows = gamingRes.data || [];
+          const sportsRows = sportsRes.data || [];
+          const liveRows = liveRes.data || [];
+          currentLiveRows = liveRows;
 
-          setStatus("Artist channel loaded.");
+          musicCountStat.textContent = musicRows.length;
+          gamingCountStat.textContent = gamingRows.length;
+          sportsCountStat.textContent = sportsRows.length;
+          liveCountStat.textContent = liveRows.length;
+          vipLiveCountStat.textContent = liveRows.filter(r => r.is_vip).length;
+          activeLiveCountStat.textContent = liveRows.filter(r => r.is_live).length;
+
+          renderRail(liveRows, liveRoomsRail, "live");
+          renderRail(musicRows, musicRail, "music");
+          renderRail(gamingRows, gamingRail, "gaming");
+          renderRail(sportsRows, sportsRail, "sports");
+
+          updateWatchButton();
+
+          artistPulseBox.textContent =
+            `Artist: ${profile.display_name || profile.username || "Unknown"}\n` +
+            `Username: ${profile.username || "--"}\n` +
+            `Music Uploads: ${musicRows.length}\n` +
+            `Gaming Uploads: ${gamingRows.length}\n` +
+            `Sports Uploads: ${sportsRows.length}\n` +
+            `Live Rooms: ${liveRows.length}`;
+
+          setStatus("✅ Artist page fully synced.");
         } catch (error) {
-          setStatus("Artist channel error: " + error.message);
-          emptyState(pinnedGrid, "Could not load pinned content.");
-          emptyState(latestMusicGrid, "Could not load latest music.");
+          console.error("Artist load error:", error);
+          setStatus("❌ Artist page error: " + error.message);
+          artistPulseBox.textContent = "Could not load artist activity right now.";
         }
       }
 
-      followBtn.addEventListener("click", toggleFollow);
+      shareBtn.addEventListener("click", copyArtistLink);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
@@ -900,11 +942,11 @@ Plays: ${escapeHtml(track.plays || 0)}
         userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadArtistChannel();
+      loadArtistPage();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Artist Channel Startup Error</h1>
+          <h1 style="color:#7dff71;">Artist Page Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
