@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Music Revenue | Rich Bizness</title>
+  <title>Rich Bizness | Revenue</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -11,15 +11,15 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
       --gold: #f5d76e;
       --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.50);
+      --bg: rgba(0,0,0,0.52);
       --soft: rgba(255,255,255,0.08);
       --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
     body {
@@ -28,12 +28,12 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
+        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
         url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1550px;
+      max-width: 1500px;
       margin: 0 auto;
       padding: 18px;
       padding-bottom: 40px;
@@ -47,6 +47,7 @@
       border: 1px solid var(--border);
       border-radius: 24px;
       backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
@@ -64,7 +65,7 @@
       align-items: center;
       gap: 12px;
       color: var(--green);
-      font-size: 1.8rem;
+      font-size: 1.85rem;
       font-weight: 900;
     }
 
@@ -73,12 +74,13 @@
       height: 58px;
       border-radius: 16px;
       object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
@@ -97,7 +99,7 @@
     .nav a.active {
       color: var(--green);
       border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
@@ -111,24 +113,58 @@
 
     .hero,
     .section {
-      padding: 22px;
+      padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero h1 {
       margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 1.02;
+      font-size: 2.8rem;
+      line-height: 1;
       color: var(--green);
     }
 
-    .subtle {
+    .subtle,
+    .meta-text {
       color: var(--text);
       line-height: 1.75;
     }
 
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.12);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.28);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ff9f9b;
+    }
+
     .hero-actions,
-    .card-actions {
+    .filter-row,
+    .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -149,32 +185,21 @@
       cursor: pointer;
     }
 
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
+    .btn-green { background: var(--green); color: black; }
     .btn-dark {
       background: var(--soft);
       color: white;
       border: 1px solid rgba(255,255,255,0.08);
     }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
       font-weight: 700;
       line-height: 1.6;
+      white-space: pre-wrap;
       word-break: break-word;
     }
 
@@ -188,13 +213,13 @@
     .stat {
       padding: 18px;
       border-radius: 18px;
-      background: rgba(0,0,0,0.48);
+      background: rgba(0,0,0,0.44);
       border: 1px solid rgba(125,255,113,0.16);
       text-align: center;
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 900;
       color: var(--green);
       word-break: break-word;
@@ -202,112 +227,129 @@
 
     .stat-label {
       margin-top: 6px;
-      font-weight: 700;
       color: var(--muted);
+      font-weight: 700;
     }
 
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .grid-2 {
+    .layout {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
+      grid-template-columns: 340px 1fr;
       gap: 18px;
     }
 
-    .list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .item {
-      padding: 16px;
-      border-radius: 18px;
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
       background: var(--soft2);
       border: 1px solid rgba(255,255,255,0.08);
+      height: 100%;
     }
 
-    .item-title {
-      color: var(--gold);
-      font-weight: 900;
+    .panel h2 {
+      margin: 0 0 12px;
+      color: var(--green);
+      font-size: 1.35rem;
+    }
+
+    .control {
+      margin-bottom: 12px;
+    }
+
+    .control label {
+      display: block;
       margin-bottom: 8px;
-      font-size: 1.05rem;
+      color: var(--green);
+      font-weight: 800;
     }
 
-    .item-text {
+    .control select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .summary-box {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      line-height: 1.7;
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .earnings-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .earning-card {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 12px;
+    }
+
+    .earning-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: start;
+    }
+
+    .earning-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .earning-note {
       color: var(--text);
       line-height: 1.7;
       word-break: break-word;
     }
 
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-      font-weight: 900;
-      font-size: 0.84rem;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-      margin-top: 14px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 760px;
-    }
-
-    th, td {
-      text-align: left;
-      padding: 12px 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      color: var(--text);
-      vertical-align: top;
-    }
-
-    th {
-      color: var(--green);
-      font-size: 0.95rem;
+    .earning-meta {
+      color: var(--muted);
+      font-size: 13px;
     }
 
     .empty-box {
-      padding: 18px;
-      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.78);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
     }
 
-    @media (max-width: 1180px) {
+    @media (max-width: 1150px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
       .stats-row {
         grid-template-columns: repeat(3, 1fr);
       }
-
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
     }
 
-    @media (max-width: 860px) {
+    @media (max-width: 760px) {
       .stats-row {
         grid-template-columns: 1fr;
       }
 
       .hero h1 {
-        font-size: 2.25rem;
+        font-size: 2.2rem;
       }
     }
   </style>
@@ -316,99 +358,95 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Music Revenue</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness Revenue</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
-        <a href="albums.html">Albums</a>
-        <a href="playlist.html">Playlists</a>
         <a href="artist.html">Artist</a>
-        <a href="artist-channel-manage.html">Manage Channel</a>
-        <a href="monetization.html">Monetize</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
+        <a href="monetization.html">Monetization</a>
         <a href="music-revenue.html" class="active">Revenue</a>
+        <a href="payouts.html">Payouts</a>
         <a href="profile.html">Profile</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <h1>Full Synced Music Revenue</h1>
+      <div class="hero-kicker">MONEY MACHINE</div>
+      <h1>Track your revenue across live, VIP, support, and premium unlocks.</h1>
       <div class="subtle">
-        Earnings, streams, premium unlocks, supporters, and payout status — all in one synced dashboard.
+        This page shows your creator earnings from the synced checkout and webhook flow.
       </div>
 
       <div class="hero-actions">
-        <a class="btn-gold" href="monetization.html">Open Monetization Hub</a>
-        <a class="btn-dark" href="music.html">Back To Music</a>
-        <a class="btn-dark" href="artist-channel-manage.html">Manage Artist Channel</a>
+        <a class="btn-green" href="monetization.html">Open Monetization</a>
+        <a class="btn-dark" href="payouts.html">Open Payouts</a>
       </div>
 
-      <div id="statusBox" class="status-box">Loading revenue dashboard...</div>
+      <div id="statusBox" class="status-box">Loading revenue...</div>
 
       <div class="stats-row">
         <div class="stat">
           <div id="grossStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Gross Revenue</div>
+          <div class="stat-label">Total Gross</div>
         </div>
         <div class="stat">
-          <div id="streamStat" class="stat-value">0</div>
-          <div class="stat-label">Paid Streams</div>
+          <div id="countStat" class="stat-value">0</div>
+          <div class="stat-label">Revenue Events</div>
         </div>
         <div class="stat">
-          <div id="subscriberStat" class="stat-value">0</div>
-          <div class="stat-label">Active Subscribers</div>
+          <div id="tipsStat" class="stat-value">$0.00</div>
+          <div class="stat-label">Tips + Support</div>
         </div>
         <div class="stat">
-          <div id="unlockStat" class="stat-value">0</div>
-          <div class="stat-label">Premium Unlock Sales</div>
+          <div id="vipStat" class="stat-value">$0.00</div>
+          <div class="stat-label">VIP Live</div>
         </div>
         <div class="stat">
-          <div id="availableStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Available Balance</div>
+          <div id="premiumStat" class="stat-value">$0.00</div>
+          <div class="stat-label">Premium + Subs</div>
         </div>
       </div>
     </div>
 
-    <div class="grid-2">
+    <div class="layout">
       <div class="section">
-        <h2>Earnings Ledger</h2>
-        <div class="subtle">Every revenue event saved into your `music_earnings` table.</div>
-        <div id="earningsList" class="list"></div>
+        <div class="panel">
+          <h2>Revenue Filters</h2>
+
+          <div class="control">
+            <label for="typeFilter">Source Type</label>
+            <select id="typeFilter">
+              <option value="">All Revenue</option>
+              <option value="direct_support">Direct Support</option>
+              <option value="live_tip">Live Tips</option>
+              <option value="vip_live_access">VIP Live Access</option>
+              <option value="premium_track_unlock">Premium Unlock</option>
+              <option value="fan_subscription">Fan Subscription</option>
+            </select>
+          </div>
+
+          <div class="summary-box" id="summaryBox">
+Revenue summary will show here.
+          </div>
+        </div>
       </div>
 
       <div class="section">
-        <h2>Revenue Summary</h2>
-        <div id="summaryList" class="list"></div>
-      </div>
-    </div>
+        <div class="panel">
+          <h2>Earnings Feed</h2>
 
-    <div class="section">
-      <h2>Top Tracks By Plays</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Track</th>
-              <th>Genre</th>
-              <th>Plays</th>
-              <th>Likes</th>
-              <th>Reposts</th>
-            </tr>
-          </thead>
-          <tbody id="tracksTableBody"></tbody>
-        </table>
+          <div id="earningsList" class="earnings-list">
+            <div class="empty-box">Loading earnings...</div>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="section">
-      <h2>Payout Snapshot</h2>
-      <div id="payoutBox" class="list"></div>
     </div>
   </div>
 
@@ -430,31 +468,20 @@
       const statusBox = document.getElementById("statusBox");
 
       const grossStat = document.getElementById("grossStat");
-      const streamStat = document.getElementById("streamStat");
-      const subscriberStat = document.getElementById("subscriberStat");
-      const unlockStat = document.getElementById("unlockStat");
-      const availableStat = document.getElementById("availableStat");
+      const countStat = document.getElementById("countStat");
+      const tipsStat = document.getElementById("tipsStat");
+      const vipStat = document.getElementById("vipStat");
+      const premiumStat = document.getElementById("premiumStat");
 
+      const typeFilter = document.getElementById("typeFilter");
+      const summaryBox = document.getElementById("summaryBox");
       const earningsList = document.getElementById("earningsList");
-      const summaryList = document.getElementById("summaryList");
-      const tracksTableBody = document.getElementById("tracksTableBody");
-      const payoutBox = document.getElementById("payoutBox");
 
       let currentUser = null;
+      let earningsCache = [];
 
       function setStatus(message) {
         statusBox.textContent = message;
-      }
-
-      function money(cents) {
-        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
       }
 
       function escapeHtml(text) {
@@ -466,8 +493,25 @@
           .replace(/'/g, "&#039;");
       }
 
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function formatMoney(cents) {
+        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      }
+
+      function sourceLabel(type) {
+        const t = String(type || "").toLowerCase();
+        if (t === "direct_support") return "Direct Support";
+        if (t === "live_tip") return "Live Tip";
+        if (t === "vip_live_access") return "VIP Live Access";
+        if (t === "premium_track_unlock") return "Premium Unlock";
+        if (t === "fan_subscription") return "Fan Subscription";
+        return t || "Revenue";
       }
 
       async function loadSession() {
@@ -479,10 +523,10 @@
 
         if (!currentUser) {
           window.location.href = "auth.html";
-          return false;
+          return null;
         }
 
-        return true;
+        return currentUser;
       }
 
       async function logOut() {
@@ -495,207 +539,102 @@
         }
       }
 
-      function renderEarnings(earnings) {
-        if (!earnings.length) {
-          emptyState(earningsList, "No music earnings yet.");
+      function getFilteredRows() {
+        const type = typeFilter.value;
+        if (!type) return earningsCache;
+        return earningsCache.filter(row => String(row.source_type || "") === type);
+      }
+
+      function renderStats(rows) {
+        const totalGross = rows.reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        const supportGross = rows
+          .filter(row => ["direct_support", "live_tip"].includes(String(row.source_type || "")))
+          .reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        const vipGross = rows
+          .filter(row => String(row.source_type || "") === "vip_live_access")
+          .reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        const premiumGross = rows
+          .filter(row => ["premium_track_unlock", "fan_subscription"].includes(String(row.source_type || "")))
+          .reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        grossStat.textContent = formatMoney(totalGross);
+        countStat.textContent = rows.length;
+        tipsStat.textContent = formatMoney(supportGross);
+        vipStat.textContent = formatMoney(vipGross);
+        premiumStat.textContent = formatMoney(premiumGross);
+      }
+
+      function renderSummary(rows) {
+        const totalGross = rows.reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
+
+        const byType = rows.reduce((acc, row) => {
+          const key = String(row.source_type || "other");
+          acc[key] = (acc[key] || 0) + Number(row.gross_cents || 0);
+          return acc;
+        }, {});
+
+        const breakdown = Object.entries(byType)
+          .map(([key, value]) => `${sourceLabel(key)}: ${formatMoney(value)}`)
+          .join("\n") || "No revenue yet.";
+
+        summaryBox.textContent =
+          `Total Gross: ${formatMoney(totalGross)}\n` +
+          `Revenue Events: ${rows.length}\n\n` +
+          `${breakdown}`;
+      }
+
+      function renderEarnings(rows) {
+        if (!rows.length) {
+          earningsList.innerHTML = `<div class="empty-box">No revenue records found.</div>`;
           return;
         }
 
-        earningsList.innerHTML = earnings.map(row => `
-          <div class="item">
-            <div class="pill">${escapeHtml(row.source_type || "earning")}</div>
-            <div class="item-title">${money(row.gross_cents)}</div>
-            <div class="item-text">
-              Note: ${escapeHtml(row.note || "--")}<br>
-              Track ID: ${escapeHtml(row.track_id || "--")}<br>
+        earningsList.innerHTML = rows.map(row => `
+          <div class="earning-card">
+            <div class="earning-top">
+              <div>
+                <div class="earning-title">${escapeHtml(sourceLabel(row.source_type))}</div>
+                <div class="earning-meta">
+                  <span class="pill-gold">${escapeHtml(row.source_type || "revenue")}</span>
+                </div>
+              </div>
+              <div class="earning-title">${escapeHtml(formatMoney(row.gross_cents))}</div>
+            </div>
+
+            <div class="earning-note">${escapeHtml(row.note || "No note.")}</div>
+
+            <div class="earning-meta">
+              Source ID: ${escapeHtml(row.source_id || "--")}<br>
               Created: ${escapeHtml(formatDate(row.created_at))}
             </div>
           </div>
         `).join("");
       }
 
-      function renderSummary({ gross, earningsCount, supportCount, latestEarning }) {
-        summaryList.innerHTML = `
-          <div class="item">
-            <div class="pill">SUMMARY</div>
-            <div class="item-title">Revenue Snapshot</div>
-            <div class="item-text">
-              Gross Revenue: ${money(gross)}<br>
-              Earnings Events: ${earningsCount}<br>
-              Direct Support Events: ${supportCount}<br>
-              Latest Revenue Event: ${latestEarning ? formatDate(latestEarning.created_at) : "--"}
-            </div>
-          </div>
-          <div class="item">
-            <div class="pill">SYNC</div>
-            <div class="item-title">System Status</div>
-            <div class="item-text">
-              Monetization page connected<br>
-              Stripe webhook revenue connected<br>
-              Music earnings ledger connected<br>
-              Premium unlock + subscriptions connected
-            </div>
-          </div>
-        `;
-      }
-
-      function renderTracks(tracks) {
-        if (!tracks.length) {
-          tracksTableBody.innerHTML = `
-            <tr>
-              <td colspan="5">
-                <div class="empty-box">No music tracks found.</div>
-              </td>
-            </tr>
-          `;
-          return;
-        }
-
-        tracksTableBody.innerHTML = tracks.map(track => `
-          <tr>
-            <td>${escapeHtml(track.title || "Untitled Track")}</td>
-            <td>${escapeHtml(track.genre || "--")}</td>
-            <td>${escapeHtml(track.plays || 0)}</td>
-            <td>${escapeHtml(track.likes || 0)}</td>
-            <td>${escapeHtml(track.reposts || 0)}</td>
-          </tr>
-        `).join("");
-      }
-
-      function renderPayoutSnapshot({ payoutAccount, payoutRequests, availableBalance }) {
-        const accountReady = payoutAccount?.payouts_enabled ? "Ready" : "Not Ready";
-        const detailsSubmitted = payoutAccount?.details_submitted ? "Yes" : "No";
-        const latestRequest = payoutRequests?.[0] || null;
-
-        payoutBox.innerHTML = `
-          <div class="item">
-            <div class="pill">PAYOUTS</div>
-            <div class="item-title">Account Snapshot</div>
-            <div class="item-text">
-              Account Connected: ${payoutAccount ? "Yes" : "No"}<br>
-              Payout Ready: ${accountReady}<br>
-              Details Submitted: ${detailsSubmitted}<br>
-              Available Balance: ${money(availableBalance)}
-            </div>
-          </div>
-          <div class="item">
-            <div class="pill">LATEST REQUEST</div>
-            <div class="item-title">${latestRequest ? money(latestRequest.amount_cents) : "--"}</div>
-            <div class="item-text">
-              Status: ${escapeHtml(latestRequest?.status || "--")}<br>
-              Currency: ${escapeHtml((latestRequest?.currency || "usd").toUpperCase())}<br>
-              Processed: ${escapeHtml(formatDate(latestRequest?.processed_at || latestRequest?.created_at))}
-            </div>
-          </div>
-        `;
+      function applyFilterAndRender() {
+        const rows = getFilteredRows();
+        renderStats(rows);
+        renderSummary(rows);
+        renderEarnings(rows);
       }
 
       async function loadRevenue() {
-        try {
-          setStatus("Loading revenue dashboard...");
-          const ok = await loadSession();
-          if (!ok) return;
+        const { data, error } = await supabase
+          .from("music_earnings")
+          .select("*")
+          .eq("artist_user_id", currentUser.id)
+          .order("created_at", { ascending: false });
 
-          const [
-            earningsRes,
-            streamsRes,
-            subsRes,
-            unlocksRes,
-            tracksRes,
-            payoutAccountRes,
-            payoutRequestsRes,
-            balanceViewRes
-          ] = await Promise.all([
-            supabase
-              .from("music_earnings")
-              .select("*")
-              .eq("artist_user_id", currentUser.id)
-              .order("created_at", { ascending: false }),
-            supabase
-              .from("music_streams")
-              .select("*", { count: "exact", head: true })
-              .eq("artist_user_id", currentUser.id)
-              .eq("is_paid_stream", true),
-            supabase
-              .from("fan_subscriptions")
-              .select("*", { count: "exact", head: true })
-              .eq("artist_user_id", currentUser.id)
-              .eq("status", "active"),
-            supabase
-              .from("premium_track_purchases")
-              .select("*", { count: "exact", head: true })
-              .eq("artist_user_id", currentUser.id)
-              .eq("status", "paid"),
-            supabase
-              .from("music_tracks")
-              .select("*")
-              .eq("user_id", currentUser.id)
-              .order("plays", { ascending: false })
-              .limit(10),
-            supabase
-              .from("artist_payout_accounts")
-              .select("*")
-              .eq("user_id", currentUser.id)
-              .maybeSingle(),
-            supabase
-              .from("payout_requests")
-              .select("*")
-              .eq("artist_user_id", currentUser.id)
-              .order("created_at", { ascending: false })
-              .limit(5),
-            supabase
-              .from("creator_available_balances")
-              .select("*")
-              .eq("artist_user_id", currentUser.id)
-              .maybeSingle()
-          ]);
+        if (error) throw error;
 
-          if (earningsRes.error) throw earningsRes.error;
-          if (streamsRes.error) throw streamsRes.error;
-          if (subsRes.error) throw subsRes.error;
-          if (unlocksRes.error) throw unlocksRes.error;
-          if (tracksRes.error) throw tracksRes.error;
-
-          const earnings = earningsRes.data || [];
-          const tracks = tracksRes.data || [];
-          const payoutAccount = payoutAccountRes.data || null;
-          const payoutRequests = payoutRequestsRes.data || [];
-          const balanceView = balanceViewRes.data || null;
-
-          const gross = earnings.reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
-          const supportCount = earnings.filter(row => row.source_type === "direct_support").length;
-          const latestEarning = earnings[0] || null;
-          const availableBalance = Number(balanceView?.available_cents || gross);
-
-          grossStat.textContent = money(gross);
-          streamStat.textContent = streamsRes.count || 0;
-          subscriberStat.textContent = subsRes.count || 0;
-          unlockStat.textContent = unlocksRes.count || 0;
-          availableStat.textContent = money(availableBalance);
-
-          renderEarnings(earnings);
-          renderSummary({
-            gross,
-            earningsCount: earnings.length,
-            supportCount,
-            latestEarning
-          });
-          renderTracks(tracks);
-          renderPayoutSnapshot({
-            payoutAccount,
-            payoutRequests,
-            availableBalance
-          });
-
-          setStatus("Revenue dashboard loaded.");
-        } catch (error) {
-          setStatus("Revenue dashboard error: " + error.message);
-          emptyState(earningsList, "Could not load earnings.");
-          emptyState(summaryList, "Could not load summary.");
-          emptyState(payoutBox, "Could not load payout snapshot.");
-        }
+        earningsCache = data || [];
+        applyFilterAndRender();
       }
 
+      typeFilter.addEventListener("change", applyFilterAndRender);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
@@ -703,11 +642,34 @@
         userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadRevenue();
+      async function init() {
+        await loadSession();
+        await loadRevenue();
+
+        supabase
+          .channel("revenue-realtime")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "music_earnings",
+              filter: `artist_user_id=eq.${currentUser.id}`
+            },
+            async () => {
+              await loadRevenue();
+            }
+          )
+          .subscribe();
+
+        setStatus("✅ Revenue fully synced.");
+      }
+
+      init();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Music Revenue Startup Error</h1>
+          <h1 style="color:#7dff71;">Revenue Page Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
