@@ -3,15 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness LLC | Home</title>
+  <title>Rich Bizness | Live</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script type="module">
+    import {
+      Room,
+      RoomEvent
+    } from "https://cdn.skypack.dev/livekit-client";
+
+    window.LivekitModules = { Room, RoomEvent };
+    window.dispatchEvent(new Event("livekit-ready"));
+  </script>
 
   <style>
     * { box-sizing: border-box; }
 
     :root {
       --green: #7dff71;
-      --green-2: #b8ff8d;
       --gold: #f5d76e;
       --danger: #ef5b55;
       --bg: rgba(0,0,0,0.56);
@@ -23,22 +33,14 @@
       --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.92)),
+        linear-gradient(rgba(0,0,0,0.48), rgba(0,0,0,0.92)),
         url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
-    }
-
-    a {
-      color: inherit;
     }
 
     .page {
@@ -48,11 +50,7 @@
       padding-bottom: 50px;
     }
 
-    .topbar,
-    .hero,
-    .section,
-    .status-box,
-    .rail-shell {
+    .topbar, .hero, .section, .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 24px;
@@ -68,9 +66,6 @@
       flex-wrap: wrap;
       padding: 14px 16px;
       margin-bottom: 18px;
-      position: sticky;
-      top: 12px;
-      z-index: 20;
     }
 
     .brand {
@@ -98,8 +93,7 @@
       align-items: center;
     }
 
-    .nav a,
-    .nav button {
+    .nav a, .nav button {
       text-decoration: none;
       color: white;
       background: var(--soft);
@@ -125,52 +119,21 @@
       font-weight: 700;
     }
 
-    .hero,
-    .section {
+    .hero, .section {
       padding: 24px;
       margin-bottom: 18px;
     }
 
-    .hero {
-      overflow: hidden;
-      position: relative;
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,0.72), rgba(0,0,0,0.32)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat;
-      opacity: 0.78;
-      z-index: 0;
-    }
-
-    .hero-inner {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 20px;
-      align-items: stretch;
-    }
-
     .hero h1 {
       margin: 0 0 12px;
-      font-size: 3.35rem;
-      line-height: 0.95;
+      font-size: 3rem;
+      line-height: 0.96;
       color: var(--green);
-      max-width: 900px;
     }
 
-    .subtle,
-    .card-text,
-    .mini-text,
-    .meta-text,
-    .status-box {
+    .subtle, .mini-text, .status-box {
       color: var(--text);
-      line-height: 1.75;
+      line-height: 1.7;
     }
 
     .hero-kicker,
@@ -185,9 +148,7 @@
       font-size: 0.82rem;
     }
 
-    .hero-kicker,
-    .pill,
-    .pill-green {
+    .hero-kicker, .pill, .pill-green {
       background: rgba(125,255,113,0.13);
       border: 1px solid rgba(125,255,113,0.18);
       color: var(--green);
@@ -205,20 +166,14 @@
       color: #ffb1ac;
     }
 
-    .hero-actions,
-    .card-actions,
-    .filter-row,
-    .quick-links {
+    .hero-actions, .actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-top: 18px;
     }
 
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger {
+    .btn-green, .btn-dark, .btn-gold, .btn-danger {
       display: inline-block;
       text-decoration: none;
       text-align: center;
@@ -244,32 +199,6 @@
       font-weight: 700;
       white-space: pre-wrap;
       word-break: break-word;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-side {
-      display: grid;
-      gap: 14px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .mini-panel,
-    .panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .mini-panel-title,
-    .panel h2,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.35rem;
-      font-weight: 900;
     }
 
     .stats-row {
@@ -277,8 +206,6 @@
       grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-top: 18px;
-      position: relative;
-      z-index: 1;
     }
 
     .stat {
@@ -302,153 +229,169 @@
       font-weight: 700;
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .section-header p {
-      margin: 0;
-      color: var(--text);
-    }
-
-    .grid-4 {
+    .layout {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
     }
 
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .rail-shell {
+    .panel {
       padding: 18px;
-      margin-bottom: 18px;
-    }
-
-    .card {
       border-radius: 20px;
-      overflow: hidden;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
+      margin-bottom: 14px;
     }
 
-    .card-cover {
-      height: 220px;
-      background:
-        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.12)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .card-cover.custom-bg {
-      background-size: cover;
-      background-position: center center;
-    }
-
-    .card-pill-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .card-body {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .card-title {
-      color: var(--gold);
-      font-size: 1.08rem;
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.55;
-    }
-
-    .card-meta a {
+    .panel h2 {
+      margin: 0 0 12px;
       color: var(--green);
-      text-decoration: none;
+      font-size: 1.35rem;
     }
 
-    .empty-box {
-      padding: 22px;
+    .video-shell {
+      min-height: 560px;
+      width: 100%;
+      border-radius: 22px;
+      overflow: hidden;
+      background: black;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #videoStage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: black;
+    }
+
+    .video-empty {
+      color: rgba(255,255,255,0.78);
       text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
+      font-weight: 700;
+      padding: 24px;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control textarea,
+    .control select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .mini-box {
+      padding: 14px;
+      border-radius: 14px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      grid-column: 1 / -1;
+      color: var(--text);
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin-top: 14px;
     }
 
-    .cta-grid {
+    .chat-list {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 320px;
+      overflow-y: auto;
+      padding-right: 4px;
     }
 
-    .cta-card {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
+    .chat-item {
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .cta-card h3 {
-      margin: 0 0 8px;
-      color: var(--gold);
-      font-size: 1.08rem;
+    .chat-name {
+      color: var(--green);
+      font-weight: 900;
+      margin-bottom: 6px;
     }
 
-    @media (max-width: 1360px) {
+    .chat-text {
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .chat-form {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .chat-form input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    @media (max-width: 1320px) {
       .stats-row {
         grid-template-columns: repeat(3, 1fr);
       }
+    }
 
-      .grid-4,
-      .cta-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .hero-inner {
+    @media (max-width: 1100px) {
+      .layout {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 920px) {
-      .grid-3,
-      .grid-4,
-      .cta-grid,
+    @media (max-width: 860px) {
       .stats-row {
         grid-template-columns: 1fr;
       }
 
       .hero h1 {
-        font-size: 2.4rem;
+        font-size: 2.25rem;
       }
 
-      .card-cover {
-        height: 200px;
+      .video-shell {
+        min-height: 320px;
+      }
+
+      .chat-form {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -458,238 +401,170 @@
     <div class="topbar">
       <div class="brand">
         <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness LLC</span>
+        <span>Rich Bizness Live</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html" class="active">Home</a>
+        <a href="index.html">Home</a>
         <a href="feed.html">Feed</a>
-        <a href="gallery.html">Gallery</a>
         <a href="music.html">Music</a>
         <a href="gaming.html">Gaming</a>
         <a href="sports.html">Sports</a>
-        <a href="live.html">Live</a>
+        <a href="live.html" class="active">Live</a>
         <a href="watch.html">Watch</a>
         <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <a href="analytics.html">Analytics</a>
         <a href="profile.html">Profile</a>
-        <a href="auth.html">Auth</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <div class="hero-inner">
-        <div>
-          <div class="hero-kicker">FULLY LOADED HOME BASE</div>
-          <h1>Music. Gaming. Sports. Live. Art. Money. One Rich Bizness platform.</h1>
-          <div class="subtle">
-            This homepage ties your whole system together without adding new folders. It points directly into the pages you already have and uses your current brand art and logo setup.
-          </div>
+      <div>
+        <span class="hero-kicker">MAXIMIZED LIVE SYSTEM</span>
+        <span id="vipModeBadge" class="pill-gold" style="display:none;">VIP LIVE</span>
+      </div>
 
-          <div class="hero-actions">
-            <a class="btn-green" href="feed.html">Open Feed</a>
-            <a class="btn-dark" href="live.html">Go Live</a>
-            <a class="btn-dark" href="watch.html">Watch Live</a>
-            <a class="btn-gold" href="monetization.html">Monetize</a>
-          </div>
+      <h1>Start your stream, run the room, and control the whole live lane.</h1>
 
-          <div class="quick-links">
-            <a class="btn-dark" href="upload.html">Main Upload</a>
-            <a class="btn-dark" href="upload-music.html">Upload Music</a>
-            <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
-            <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
-          </div>
+      <div class="subtle">
+        Preview camera, launch your room, manage VIP or free access, push metadata into your live_rooms table, and talk to viewers in real time.
+      </div>
 
-          <div id="statusBox" class="status-box">Loading Rich Bizness home...</div>
+      <div class="hero-actions">
+        <button id="startBtn" class="btn-green" type="button">Start Live</button>
+        <button id="endBtn" class="btn-danger" type="button">End Live</button>
+        <a class="btn-dark" href="watch.html">Open Watch Page</a>
+      </div>
 
-          <div class="stats-row">
-            <div class="stat">
-              <div id="feedStat" class="stat-value">0</div>
-              <div class="stat-label">Feed Items</div>
-            </div>
-            <div class="stat">
-              <div id="liveStat" class="stat-value">0</div>
-              <div class="stat-label">Live Now</div>
-            </div>
-            <div class="stat">
-              <div id="musicStat" class="stat-value">0</div>
-              <div class="stat-label">Music Posts</div>
-            </div>
-            <div class="stat">
-              <div id="gamingStat" class="stat-value">0</div>
-              <div class="stat-label">Gaming Posts</div>
-            </div>
-            <div class="stat">
-              <div id="sportsStat" class="stat-value">0</div>
-              <div class="stat-label">Sports Posts</div>
-            </div>
-            <div class="stat">
-              <div id="artStat" class="stat-value">0</div>
-              <div class="stat-label">Art Posts</div>
-            </div>
-          </div>
+      <div id="statusBox" class="status-box">Loading live control room...</div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="liveStateStat" class="stat-value">OFF</div>
+          <div class="stat-label">Live State</div>
         </div>
-
-        <div class="hero-side">
-          <div class="mini-panel">
-            <div class="mini-panel-title">Platform Pulse</div>
-            <div id="pulseBox" class="mini-text">Loading platform pulse...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Money Lane</div>
-            <div class="mini-text">
-              Track revenue, payouts, monetization, VIP live access, unlocks, and creator growth from the same system.
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="music-revenue.html">Revenue</a>
-              <a class="btn-dark" href="payouts.html">Payouts</a>
-              <a class="btn-dark" href="monetization.html">Monetization</a>
-            </div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Music Empire</div>
-            <div class="mini-text">
-              Albums, playlists, music pages, unlock pages, and artist lanes all connect from here.
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="music.html">Music</a>
-              <a class="btn-dark" href="albums.html">Albums</a>
-              <a class="btn-dark" href="playlist.html">Playlist</a>
-              <a class="btn-dark" href="playlist-views.html">Playlist Views</a>
-            </div>
-          </div>
+        <div class="stat">
+          <div id="roomStat" class="stat-value">--</div>
+          <div class="stat-label">Room</div>
+        </div>
+        <div class="stat">
+          <div id="hostStat" class="stat-value">--</div>
+          <div class="stat-label">Host</div>
+        </div>
+        <div class="stat">
+          <div id="viewerStat" class="stat-value">0</div>
+          <div class="stat-label">Participants</div>
+        </div>
+        <div class="stat">
+          <div id="chatStat" class="stat-value">0</div>
+          <div class="stat-label">Chat Messages</div>
+        </div>
+        <div class="stat">
+          <div id="accessStat" class="stat-value">FREE</div>
+          <div class="stat-label">Access Mode</div>
         </div>
       </div>
     </div>
 
-    <div class="section">
-      <div class="section-header">
-        <div>
-          <h2>Core Platform Shortcuts</h2>
-          <p>Everything important already in your repo, all linked from one place.</p>
+    <div class="layout">
+      <div class="section">
+        <div class="panel">
+          <h2>Host Preview</h2>
+          <div id="videoStage" class="video-shell">
+            <div class="video-empty">Your preview will show here.</div>
+          </div>
+          <div id="debugBox" class="mini-box">Debug info will show here.</div>
         </div>
       </div>
 
-      <div class="cta-grid">
-        <div class="cta-card">
-          <h3>Creator Feed</h3>
-          <div class="mini-text">Unified feed for live, music, gaming, sports, and art.</div>
-          <div class="card-actions">
-            <a class="btn-green" href="feed.html">Open Feed</a>
+      <div class="section">
+        <div class="panel">
+          <h2>Live Controls</h2>
+
+          <div class="control">
+            <label for="roomNameInput">Room Name</label>
+            <input id="roomNameInput" type="text" />
+          </div>
+
+          <div class="control">
+            <label for="hostNameInput">Host Name</label>
+            <input id="hostNameInput" type="text" />
+          </div>
+
+          <div class="control">
+            <label for="liveTitleInput">Live Title</label>
+            <input id="liveTitleInput" type="text" placeholder="Rich Bizness Live" />
+          </div>
+
+          <div class="control">
+            <label for="liveDescriptionInput">Live Description</label>
+            <textarea id="liveDescriptionInput" placeholder="Live session with Rich Bizness"></textarea>
+          </div>
+
+          <div class="control">
+            <label for="categoryInput">Category</label>
+            <input id="categoryInput" type="text" placeholder="Music / Gaming / Sports / Tattoo / 3D Printing" />
+          </div>
+
+          <div class="control">
+            <label for="tagsInput">Tags</label>
+            <input id="tagsInput" type="text" placeholder="rich bizness, live, vip" />
+          </div>
+
+          <div class="control">
+            <label for="announcementInput">Pinned Announcement</label>
+            <input id="announcementInput" type="text" placeholder="We lit tonight 🔥" />
+          </div>
+
+          <div class="control">
+            <label for="scheduleInput">Scheduled Time</label>
+            <input id="scheduleInput" type="datetime-local" />
+          </div>
+
+          <div class="control">
+            <label for="thumbnailInput">Thumbnail URL</label>
+            <input id="thumbnailInput" type="text" placeholder="https://..." />
+          </div>
+
+          <div class="control">
+            <label for="vipToggleInput">Access Mode</label>
+            <select id="vipToggleInput">
+              <option value="false">Free Live</option>
+              <option value="true">VIP Live</option>
+            </select>
+          </div>
+
+          <div class="control">
+            <label for="vipPriceInput">VIP Price (USD)</label>
+            <input id="vipPriceInput" type="number" min="1" step="0.01" value="15.00" />
+          </div>
+
+          <div class="actions">
+            <button id="copyRoomBtn" class="btn-dark" type="button">Copy Viewer Link</button>
+            <button id="openWatchBtn" class="btn-dark" type="button">Open Watch</button>
+            <button id="camBtn" class="btn-dark" type="button">Toggle Camera</button>
+            <button id="micBtn" class="btn-dark" type="button">Toggle Mic</button>
+          </div>
+
+          <div id="viewerLinkBox" class="mini-box">Viewer link will show here.</div>
+          <div id="roomConfigBox" class="mini-box">Room config will show here.</div>
+        </div>
+
+        <div class="panel">
+          <h2>Host Chat</h2>
+          <div id="chatList" class="chat-list">
+            <div class="chat-item">
+              <div class="chat-name">System</div>
+              <div class="chat-text">Start live to open chat.</div>
+            </div>
+          </div>
+
+          <div class="chat-form">
+            <input id="chatInput" type="text" placeholder="Talk to your viewers..." />
+            <button id="sendChatBtn" class="btn-green" type="button">Send</button>
           </div>
         </div>
-
-        <div class="cta-card">
-          <h3>Gallery</h3>
-          <div class="mini-text">Visual lane for artwork, creator posts, image drops, and video drops.</div>
-          <div class="card-actions">
-            <a class="btn-green" href="gallery.html">Open Gallery</a>
-          </div>
-        </div>
-
-        <div class="cta-card">
-          <h3>Live System</h3>
-          <div class="mini-text">Start live, watch live, and build up the hype layer.</div>
-          <div class="card-actions">
-            <a class="btn-green" href="live.html">Host Live</a>
-            <a class="btn-dark" href="watch.html">Watch</a>
-          </div>
-        </div>
-
-        <div class="cta-card">
-          <h3>Auth + Profile</h3>
-          <div class="mini-text">Account setup, login, profile edits, and creator identity.</div>
-          <div class="card-actions">
-            <a class="btn-green" href="auth.html">Auth</a>
-            <a class="btn-dark" href="profile.html">Profile</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Live Rail</h2>
-          <p>Active rooms and recent live energy.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="live.html">Host</a>
-          <a class="btn-dark" href="watch.html">Viewer Page</a>
-        </div>
-      </div>
-      <div id="liveRail" class="grid-3">
-        <div class="empty-box">Loading live rail...</div>
-      </div>
-    </div>
-
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Music Rail</h2>
-          <p>Recent music drops from your platform.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="music.html">Music</a>
-          <a class="btn-dark" href="albums.html">Albums</a>
-          <a class="btn-dark" href="playlist.html">Playlist</a>
-        </div>
-      </div>
-      <div id="musicRail" class="grid-4">
-        <div class="empty-box">Loading music rail...</div>
-      </div>
-    </div>
-
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Gaming Rail</h2>
-          <p>Gaming uploads, clips, and creator momentum.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="gaming.html">Gaming</a>
-          <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
-        </div>
-      </div>
-      <div id="gamingRail" class="grid-4">
-        <div class="empty-box">Loading gaming rail...</div>
-      </div>
-    </div>
-
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Sports Rail</h2>
-          <p>Sports uploads, clips, and highlight energy.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="sports.html">Sports</a>
-          <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
-        </div>
-      </div>
-      <div id="sportsRail" class="grid-4">
-        <div class="empty-box">Loading sports rail...</div>
-      </div>
-    </div>
-
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Visual Rail</h2>
-          <p>Artwork, image drops, and brand visuals.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="gallery.html">Gallery</a>
-          <a class="btn-dark" href="upload.html">Upload</a>
-        </div>
-      </div>
-      <div id="artRail" class="grid-4">
-        <div class="empty-box">Loading visual rail...</div>
       </div>
     </div>
   </div>
@@ -698,6 +573,8 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const LIVEKIT_URL = "wss://rich-bizness-5ysa2qms.livekit.cloud";
+      const TOKEN_API_URL = "/api/livekit-token";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -710,26 +587,57 @@
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
-      const pulseBox = document.getElementById("pulseBox");
+      const debugBox = document.getElementById("debugBox");
 
-      const feedStat = document.getElementById("feedStat");
-      const liveStat = document.getElementById("liveStat");
-      const musicStat = document.getElementById("musicStat");
-      const gamingStat = document.getElementById("gamingStat");
-      const sportsStat = document.getElementById("sportsStat");
-      const artStat = document.getElementById("artStat");
+      const roomNameInput = document.getElementById("roomNameInput");
+      const hostNameInput = document.getElementById("hostNameInput");
+      const liveTitleInput = document.getElementById("liveTitleInput");
+      const liveDescriptionInput = document.getElementById("liveDescriptionInput");
+      const categoryInput = document.getElementById("categoryInput");
+      const tagsInput = document.getElementById("tagsInput");
+      const announcementInput = document.getElementById("announcementInput");
+      const scheduleInput = document.getElementById("scheduleInput");
+      const thumbnailInput = document.getElementById("thumbnailInput");
+      const vipToggleInput = document.getElementById("vipToggleInput");
+      const vipPriceInput = document.getElementById("vipPriceInput");
 
-      const liveRail = document.getElementById("liveRail");
-      const musicRail = document.getElementById("musicRail");
-      const gamingRail = document.getElementById("gamingRail");
-      const sportsRail = document.getElementById("sportsRail");
-      const artRail = document.getElementById("artRail");
+      const startBtn = document.getElementById("startBtn");
+      const endBtn = document.getElementById("endBtn");
+      const copyRoomBtn = document.getElementById("copyRoomBtn");
+      const openWatchBtn = document.getElementById("openWatchBtn");
+      const camBtn = document.getElementById("camBtn");
+      const micBtn = document.getElementById("micBtn");
+      const sendChatBtn = document.getElementById("sendChatBtn");
+
+      const liveStateStat = document.getElementById("liveStateStat");
+      const roomStat = document.getElementById("roomStat");
+      const hostStat = document.getElementById("hostStat");
+      const viewerStat = document.getElementById("viewerStat");
+      const chatStat = document.getElementById("chatStat");
+      const accessStat = document.getElementById("accessStat");
+
+      const vipModeBadge = document.getElementById("vipModeBadge");
+      const videoStage = document.getElementById("videoStage");
+      const viewerLinkBox = document.getElementById("viewerLinkBox");
+      const roomConfigBox = document.getElementById("roomConfigBox");
+
+      const chatList = document.getElementById("chatList");
+      const chatInput = document.getElementById("chatInput");
 
       let currentUser = null;
-      let profileMap = {};
+      let room = null;
+      let liveStarted = false;
+      let cameraEnabled = true;
+      let micEnabled = true;
+      let livekitReady = false;
+      let chatMessages = [];
 
       function setStatus(message) {
         statusBox.textContent = message;
+      }
+
+      function setDebug(message) {
+        debugBox.textContent = message;
       }
 
       function escapeHtml(text) {
@@ -741,32 +649,425 @@
           .replace(/'/g, "&#039;");
       }
 
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
+      function clearVideoStage() {
+        videoStage.innerHTML = `<div class="video-empty">Your preview will show here.</div>`;
       }
 
-      function getCreatorLabel(userId, fallback = "Creator") {
-        const profile = profileMap[userId] || {};
-        return profile.display_name || profile.username || profile.email || fallback;
+      function appendChat(name, text) {
+        chatMessages.push({ name, text });
+        if (chatMessages.length > 60) chatMessages = chatMessages.slice(-60);
+
+        chatStat.textContent = String(chatMessages.length);
+
+        chatList.innerHTML = chatMessages.map(msg => `
+          <div class="chat-item">
+            <div class="chat-name">${escapeHtml(msg.name)}</div>
+            <div class="chat-text">${escapeHtml(msg.text)}</div>
+          </div>
+        `).join("");
+
+        chatList.scrollTop = chatList.scrollHeight;
       }
 
-      function getArtistLink(userId) {
-        const profile = profileMap[userId] || {};
-        if (!profile.username) return "artist.html";
-        return `artist.html?u=${encodeURIComponent(profile.username)}`;
+      function normalizeIdentity(value) {
+        const raw = String(value || "").trim();
+        const clean = raw.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9._@-]/g, "");
+        return clean || "host";
+      }
+
+      function makeRoomName(user) {
+        if (!user?.id) throw new Error("User not loaded");
+        return `richbizness-live-${user.id}`;
+      }
+
+      function makeDefaultHostName(user) {
+        const base = user?.email ? user.email.split("@")[0] : "richbizness-host";
+        return normalizeIdentity(base);
+      }
+
+      function isVipMode() {
+        return String(vipToggleInput.value).trim().toLowerCase() === "true";
+      }
+
+      function renderViewerLink() {
+        const roomName = roomNameInput.value.trim();
+        const url = `${window.location.origin}/watch.html?room=${encodeURIComponent(roomName)}`;
+        viewerLinkBox.textContent = url;
+        return url;
+      }
+
+      function updateVipUi() {
+        const vip = isVipMode();
+        vipModeBadge.style.display = vip ? "inline-block" : "none";
+        accessStat.textContent = vip ? "VIP" : "FREE";
+
+        roomConfigBox.textContent =
+          `Mode: ${vip ? "VIP" : "FREE"}\n` +
+          `VIP Price: $${Number(vipPriceInput.value || 15).toFixed(2)}\n` +
+          `Room Name: ${roomNameInput.value.trim() || "--"}`;
+      }
+
+      function renderDebug(extra = "") {
+        const debug =
+          `livekitReady: ${livekitReady}\n` +
+          `currentUser.id: ${currentUser?.id || "--"}\n` +
+          `currentUser.email: ${currentUser?.email || "--"}\n` +
+          `roomName: ${roomNameInput.value.trim() || "--"}\n` +
+          `hostName: ${hostNameInput.value.trim() || "--"}\n` +
+          `liveStarted: ${liveStarted}\n` +
+          `cameraEnabled: ${cameraEnabled}\n` +
+          `micEnabled: ${micEnabled}` +
+          (extra ? `\n${extra}` : "");
+
+        setDebug(debug);
       }
 
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
+
         currentUser = data?.session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          window.location.href = "auth.html";
+          return false;
+        }
+
+        const generatedRoom = makeRoomName(currentUser);
+
+        if (!roomNameInput.value.trim()) {
+          roomNameInput.value = generatedRoom;
+        }
+
+        if (!hostNameInput.value.trim()) {
+          hostNameInput.value = makeDefaultHostName(currentUser);
+        }
+
+        if (!liveTitleInput.value.trim()) {
+          liveTitleInput.value = "Rich Bizness Live";
+        }
+
+        if (!liveDescriptionInput.value.trim()) {
+          liveDescriptionInput.value = "Live session with Rich Bizness";
+        }
+
+        if (!categoryInput.value.trim()) {
+          categoryInput.value = "Live";
+        }
+
+        renderViewerLink();
+        updateVipUi();
+        renderDebug();
+        return true;
       }
 
-      async function logOut() {
+      async function fetchLiveToken(roomName, participantName) {
+        const payload = {
+          roomName,
+          participantName,
+          role: "host"
+        };
+
+        renderDebug(`tokenPayload: ${JSON.stringify(payload, null, 2)}`);
+
+        const response = await fetch(TOKEN_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const body = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(body.error || "Token request failed.");
+        }
+
+        if (!body.token) {
+          throw new Error("No LiveKit token returned.");
+        }
+
+        return body.token;
+      }
+
+      async function upsertLiveRoom(isLiveNow) {
+        if (!currentUser) throw new Error("Missing user.");
+
+        const roomName = roomNameInput.value.trim();
+        const title = liveTitleInput.value.trim() || "Rich Bizness Live";
+        const description = liveDescriptionInput.value.trim() || "";
+        const category = categoryInput.value.trim() || "Live";
+        const tags = tagsInput.value.trim() || "";
+        const announcement = announcementInput.value.trim() || "";
+        const scheduledFor = scheduleInput.value ? new Date(scheduleInput.value).toISOString() : null;
+        const thumbnailUrl = thumbnailInput.value.trim() || "";
+        const vip = isVipMode();
+        const vipPriceCents = Math.round(Number(vipPriceInput.value || 15) * 100);
+
+        const { error } = await supabase
+          .from("live_rooms")
+          .upsert({
+            host_user_id: currentUser.id,
+            room_name: roomName,
+            title,
+            description,
+            category,
+            tags,
+            announcement,
+            scheduled_for: scheduledFor,
+            thumbnail_url: thumbnailUrl,
+            is_live: isLiveNow,
+            is_vip: vip,
+            vip_price_cents: vipPriceCents,
+            updated_at: new Date().toISOString()
+          }, { onConflict: "room_name" });
+
+        if (error) throw error;
+      }
+
+      function updateParticipantCount() {
+        if (!room) {
+          viewerStat.textContent = "0";
+          return;
+        }
+        viewerStat.textContent = String(room.remoteParticipants.size + 1);
+      }
+
+      function attachLocalVideo(track) {
+        videoStage.innerHTML = "";
+        const element = track.attach();
+        element.muted = true;
+        element.autoplay = true;
+        element.playsInline = true;
+        videoStage.appendChild(element);
+      }
+
+      async function tryAttachLocalPreview() {
+        const pubs = Array.from(room.localParticipant.videoTrackPublications.values());
+        const pub = pubs.find(Boolean);
+
+        if (pub?.videoTrack) {
+          attachLocalVideo(pub.videoTrack);
+          return;
+        }
+
+        clearVideoStage();
+      }
+
+      async function startLive() {
+        try {
+          const ok = await loadSession();
+          if (!ok) return;
+
+          if (!livekitReady || !window.LivekitModules) {
+            throw new Error("LiveKit still loading. Wait a second and try again.");
+          }
+
+          if (liveStarted && room) {
+            setStatus("You are already live.");
+            return;
+          }
+
+          const expectedRoom = makeRoomName(currentUser);
+          roomNameInput.value = expectedRoom;
+
+          const roomName = roomNameInput.value.trim();
+          const participantName = normalizeIdentity(hostNameInput.value.trim() || makeDefaultHostName(currentUser));
+          hostNameInput.value = participantName;
+
+          if (!roomName) throw new Error("Room name is required.");
+          if (!participantName) throw new Error("Host name is required.");
+          if (roomName !== expectedRoom) throw new Error("Room name mismatch.");
+
+          renderViewerLink();
+          updateVipUi();
+          renderDebug("startLive validation passed");
+
+          setStatus("Getting live token...");
+          const token = await fetchLiveToken(roomName, participantName);
+
+          const { Room, RoomEvent } = window.LivekitModules;
+          room = new Room();
+
+          room.on(RoomEvent.TrackSubscribed, () => {
+            updateParticipantCount();
+          });
+
+          room.on(RoomEvent.ParticipantConnected, (participant) => {
+            updateParticipantCount();
+            appendChat("System", `${participant.identity} joined the room.`);
+          });
+
+          room.on(RoomEvent.ParticipantDisconnected, (participant) => {
+            updateParticipantCount();
+            appendChat("System", `${participant.identity} left the room.`);
+          });
+
+          room.on(RoomEvent.DataReceived, (payload, participant) => {
+            try {
+              const text = new TextDecoder().decode(payload);
+              const parsed = JSON.parse(text);
+              if (parsed?.type === "chat") {
+                appendChat(parsed.name || participant?.identity || "Viewer", parsed.message || "");
+              }
+            } catch {}
+          });
+
+          room.on(RoomEvent.Disconnected, () => {
+            liveStarted = false;
+            liveStateStat.textContent = "OFF";
+            roomStat.textContent = "--";
+            hostStat.textContent = "--";
+            viewerStat.textContent = "0";
+            clearVideoStage();
+            appendChat("System", "Live ended.");
+            setStatus("Live ended.");
+            renderDebug("room disconnected");
+          });
+
+          setStatus("Connecting to LiveKit...");
+          await room.connect(LIVEKIT_URL, token);
+          await room.localParticipant.enableCameraAndMicrophone();
+
+          await tryAttachLocalPreview();
+          await upsertLiveRoom(true);
+
+          liveStarted = true;
+          cameraEnabled = true;
+          micEnabled = true;
+
+          liveStateStat.textContent = "LIVE";
+          roomStat.textContent = roomName;
+          hostStat.textContent = participantName;
+          updateParticipantCount();
+
+          appendChat("System", `Live started in room: ${roomName}`);
+          setStatus("✅ Live started.");
+          renderDebug("live started successfully");
+        } catch (error) {
+          console.error("Live start error:", error);
+          setStatus("❌ Live start error: " + error.message);
+          renderDebug(`start error: ${error.message}`);
+        }
+      }
+
+      async function endLive() {
+        try {
+          if (currentUser && roomNameInput.value.trim()) {
+            try {
+              await upsertLiveRoom(false);
+            } catch {}
+          }
+
+          if (room) {
+            room.disconnect();
+            room = null;
+          }
+
+          liveStarted = false;
+          liveStateStat.textContent = "OFF";
+          roomStat.textContent = "--";
+          hostStat.textContent = "--";
+          viewerStat.textContent = "0";
+          clearVideoStage();
+          appendChat("System", "Host ended the live.");
+          setStatus("Live ended.");
+          renderDebug("endLive complete");
+        } catch (error) {
+          setStatus("❌ End live error: " + error.message);
+          renderDebug(`end error: ${error.message}`);
+        }
+      }
+
+      async function toggleCamera() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          cameraEnabled = !cameraEnabled;
+          await room.localParticipant.setCameraEnabled(cameraEnabled);
+
+          if (cameraEnabled) {
+            await tryAttachLocalPreview();
+          } else {
+            clearVideoStage();
+          }
+
+          setStatus(cameraEnabled ? "Camera on." : "Camera off.");
+          renderDebug("camera toggled");
+        } catch (error) {
+          setStatus("❌ Camera error: " + error.message);
+        }
+      }
+
+      async function toggleMic() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          micEnabled = !micEnabled;
+          await room.localParticipant.setMicrophoneEnabled(micEnabled);
+          setStatus(micEnabled ? "Mic on." : "Mic off.");
+          renderDebug("mic toggled");
+        } catch (error) {
+          setStatus("❌ Mic error: " + error.message);
+        }
+      }
+
+      async function copyViewerLink() {
+        try {
+          const viewerUrl = renderViewerLink();
+          await navigator.clipboard.writeText(viewerUrl);
+          setStatus("Viewer link copied.");
+        } catch {
+          setStatus("Could not copy viewer link.");
+        }
+      }
+
+      function openWatchPage() {
+        const viewerUrl = renderViewerLink();
+        window.open(viewerUrl, "_blank");
+      }
+
+      async function sendChat() {
+        try {
+          if (!room || !liveStarted) {
+            setStatus("Start live first.");
+            return;
+          }
+
+          const message = chatInput.value.trim();
+          if (!message) return;
+
+          const hostName = normalizeIdentity(hostNameInput.value.trim() || "Host");
+          const payload = JSON.stringify({
+            type: "chat",
+            name: hostName,
+            message
+          });
+
+          const bytes = new TextEncoder().encode(payload);
+          await room.localParticipant.publishData(bytes, { reliable: true });
+
+          appendChat(hostName, message);
+          chatInput.value = "";
+        } catch (error) {
+          setStatus("❌ Chat send error: " + error.message);
+        }
+      }
+
+      startBtn.addEventListener("click", startLive);
+      endBtn.addEventListener("click", endLive);
+      camBtn.addEventListener("click", toggleCamera);
+      micBtn.addEventListener("click", toggleMic);
+      copyRoomBtn.addEventListener("click", copyViewerLink);
+      openWatchBtn.addEventListener("click", openWatchPage);
+      sendChatBtn.addEventListener("click", sendChat);
+      logoutBtn.addEventListener("click", async () => {
         try {
           const { error } = await supabase.auth.signOut();
           if (error) throw error;
@@ -774,213 +1075,49 @@
         } catch (error) {
           setStatus("Logout error: " + error.message);
         }
-      }
+      });
 
-      async function loadProfiles(userIds) {
-        const ids = [...new Set(userIds.filter(Boolean))];
-        if (!ids.length) return;
+      roomNameInput.addEventListener("input", () => {
+        renderViewerLink();
+        updateVipUi();
+        renderDebug();
+      });
 
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .in("id", ids);
+      hostNameInput.addEventListener("input", renderDebug);
+      vipToggleInput.addEventListener("change", updateVipUi);
+      vipPriceInput.addEventListener("input", updateVipUi);
 
-        if (error) throw error;
-
-        profileMap = {};
-        (data || []).forEach(profile => {
-          profileMap[profile.id] = profile;
-        });
-      }
-
-      function renderCards(rows, targetEl, type) {
-        if (!rows.length) {
-          targetEl.innerHTML = `<div class="empty-box">Nothing here yet.</div>`;
-          return;
+      chatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          sendChat();
         }
-
-        targetEl.innerHTML = rows.map(row => {
-          let title = "Post";
-          let body = "No details.";
-          let imageUrl = "";
-          let creatorId = row.user_id || row.host_user_id || null;
-          let openHref = "#";
-          let secondHref = getArtistLink(creatorId);
-          let secondText = "Creator";
-          let typePill = "pill-green";
-          let extraPills = "";
-
-          if (type === "live") {
-            title = row.title || "Live Room";
-            body = `${row.category || "Live"} • ${row.announcement || row.description || "Live session"}`;
-            imageUrl = row.thumbnail_url || "";
-            openHref = `watch.html?room=${encodeURIComponent(row.room_name || "")}`;
-            secondHref = "live.html";
-            secondText = "Live Page";
-            typePill = "pill-red";
-            if (row.is_vip) extraPills += `<span class="pill-gold">VIP</span>`;
-            if (row.is_live) extraPills += `<span class="pill-red">LIVE NOW</span>`;
-          }
-
-          if (type === "music") {
-            title = row.title || "Music Upload";
-            body = `${row.artist_name || "--"} • ${row.album_name || "--"} • ${row.genre || "--"}`;
-            imageUrl = row.cover_url || "";
-            openHref = row.file_url || "music.html";
-            secondHref = "music.html";
-            secondText = "Music";
-            typePill = "pill-gold";
-            if (row.is_featured) extraPills += `<span class="pill-red">FEATURED</span>`;
-          }
-
-          if (type === "gaming") {
-            title = row.title || "Gaming Upload";
-            body = `${row.game_title || "--"} • ${row.platform || "--"} • ${row.gamer_tag || "--"}`;
-            imageUrl = row.thumbnail_url || "";
-            openHref = row.file_url || "gaming.html";
-            secondHref = "gaming.html";
-            secondText = "Gaming";
-            typePill = "pill-green";
-            if (row.is_featured) extraPills += `<span class="pill-red">FEATURED</span>`;
-          }
-
-          if (type === "sports") {
-            title = row.title || "Sports Upload";
-            body = `${row.sport_name || "--"} • ${row.team_name || "--"} • ${row.athlete_name || "--"}`;
-            imageUrl = row.thumbnail_url || "";
-            openHref = row.file_url || "sports.html";
-            secondHref = "sports.html";
-            secondText = "Sports";
-            typePill = "pill-gold";
-            if (row.is_featured) extraPills += `<span class="pill-red">FEATURED</span>`;
-          }
-
-          if (type === "art") {
-            title = row.title || "Artwork Upload";
-            body = row.caption || "Creator visual post.";
-            imageUrl = row.thumbnail_url || row.file_url || "";
-            openHref = row.file_url || "gallery.html";
-            secondHref = "gallery.html";
-            secondText = "Gallery";
-            typePill = "pill-green";
-            if (row.is_featured) extraPills += `<span class="pill-red">FEATURED</span>`;
-          }
-
-          const coverStyle = imageUrl
-            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.12)), url('${String(imageUrl).replace(/'/g, "%27")}');`
-            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.12)), url("images/brand/logo-music-label.png");`;
-
-          return `
-            <div class="card">
-              <div class="card-cover custom-bg" style="${coverStyle}">
-                <div class="card-pill-wrap">
-                  <span class="${typePill}">${escapeHtml(type.toUpperCase())}</span>
-                  ${extraPills}
-                </div>
-              </div>
-
-              <div class="card-body">
-                <div class="card-title">${escapeHtml(title)}</div>
-                <div class="card-text">${escapeHtml(body)}</div>
-
-                <div class="card-meta">
-                  Creator: <a href="${getArtistLink(creatorId)}">${escapeHtml(getCreatorLabel(creatorId))}</a><br>
-                  Posted: ${escapeHtml(formatDate(row.updated_at || row.created_at))}<br>
-                  Views: ${escapeHtml(row.views || 0)} • Likes: ${escapeHtml(row.likes || 0)}
-                </div>
-
-                <div class="card-actions">
-                  <a class="btn-green" href="${openHref}" ${String(openHref).startsWith("http") ? 'target="_blank"' : ""}>Open</a>
-                  <a class="btn-dark" href="${secondHref}">${secondText}</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      async function loadHome() {
-        try {
-          setStatus("Loading Rich Bizness home...");
-
-          const [liveRes, musicRes, gamingRes, sportsRes, artRes] = await Promise.all([
-            supabase.from("live_rooms").select("*").order("updated_at", { ascending: false }).limit(6),
-            supabase.from("music_uploads").select("*").order("created_at", { ascending: false }).limit(8),
-            supabase.from("gaming_uploads").select("*").order("created_at", { ascending: false }).limit(8),
-            supabase.from("sports_uploads").select("*").order("created_at", { ascending: false }).limit(8),
-            supabase.from("artworks").select("*").order("created_at", { ascending: false }).limit(8)
-          ]);
-
-          if (liveRes.error && liveRes.error.code !== "42P01") throw liveRes.error;
-          if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
-          if (gamingRes.error && gamingRes.error.code !== "42P01") throw gamingRes.error;
-          if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
-          if (artRes.error && artRes.error.code !== "42P01") throw artRes.error;
-
-          const liveRows = liveRes.data || [];
-          const musicRows = musicRes.data || [];
-          const gamingRows = gamingRes.data || [];
-          const sportsRows = sportsRes.data || [];
-          const artRows = artRes.data || [];
-
-          const ownerIds = [
-            ...liveRows.map(r => r.host_user_id),
-            ...musicRows.map(r => r.user_id),
-            ...gamingRows.map(r => r.user_id),
-            ...sportsRows.map(r => r.user_id),
-            ...artRows.map(r => r.user_id)
-          ];
-
-          await loadProfiles(ownerIds);
-
-          const liveNow = liveRows.filter(r => !!r.is_live).length;
-          const totalFeed = liveRows.length + musicRows.length + gamingRows.length + sportsRows.length + artRows.length;
-
-          feedStat.textContent = String(totalFeed);
-          liveStat.textContent = String(liveNow);
-          musicStat.textContent = String(musicRows.length);
-          gamingStat.textContent = String(gamingRows.length);
-          sportsStat.textContent = String(sportsRows.length);
-          artStat.textContent = String(artRows.length);
-
-          pulseBox.textContent =
-            `Live Now: ${liveNow}\n` +
-            `Music Posts: ${musicRows.length}\n` +
-            `Gaming Posts: ${gamingRows.length}\n` +
-            `Sports Posts: ${sportsRows.length}\n` +
-            `Art Posts: ${artRows.length}\n` +
-            `Feed Items Loaded: ${totalFeed}`;
-
-          renderCards(liveRows, liveRail, "live");
-          renderCards(musicRows, musicRail, "music");
-          renderCards(gamingRows, gamingRail, "gaming");
-          renderCards(sportsRows, sportsRail, "sports");
-          renderCards(artRows, artRail, "art");
-
-          setStatus("✅ Fully loaded upgraded home synced to your current repo.");
-        } catch (error) {
-          console.error("Home load error:", error);
-          setStatus("❌ Home load error: " + error.message);
-        }
-      }
-
-      logoutBtn.addEventListener("click", logOut);
+      });
 
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
+        renderDebug();
       });
 
-      async function init() {
-        await loadSession();
-        await loadHome();
-      }
+      window.addEventListener("livekit-ready", async () => {
+        livekitReady = true;
+        const ok = await loadSession();
+        if (ok) {
+          setStatus("Live control room ready.");
+        }
+      });
 
-      init();
+      if (window.LivekitModules) {
+        livekitReady = true;
+        loadSession().then((ok) => {
+          if (ok) setStatus("Live control room ready.");
+        });
+      }
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Index Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Live Page Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
