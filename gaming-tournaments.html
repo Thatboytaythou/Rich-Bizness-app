@@ -1,1 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Gaming Tournaments</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #b8ff8d;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .rail-shell,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero,
+    .section,
+    .rail-shell {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 0.94;
+      color: var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .card-text,
+    .card-meta,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .mini-panel-title,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .filters-grid select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 170px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+    }
+
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    th {
+      color: var(--green);
+      font-size: 0.95rem;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1280px) {
+      .hero-grid,
+      .grid-3,
+      .grid-2,
+      .stats-row,
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Gaming Tournaments</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="gaming.html">Gaming</a>
+        <a href="money-road-runner.html">Money Road Runner</a>
+        <a href="gaming-leaderboard.html">Leaderboard</a>
+        <a href="gaming-tournaments.html" class="active">Tournaments</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-kicker">COMPETITION ENGINE</div>
+          <h1>Join challenges, climb the standings, and turn gameplay into real pressure.</h1>
+          <div class="subtle">
+            This tournament page is built to connect your original games, scores, live streams, and later paid entry flow into one stronger gaming lane.
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn-green" href="money-road-runner.html">Play Now</a>
+            <a class="btn-dark" href="gaming-leaderboard.html">Open Leaderboard</a>
+            <a class="btn-dark" href="live.html">Go Live</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading tournaments...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="activeStat" class="stat-value">0</div>
+              <div class="stat-label">Active</div>
+            </div>
+            <div class="stat">
+              <div id="upcomingStat" class="stat-value">0</div>
+              <div class="stat-label">Upcoming</div>
+            </div>
+            <div class="stat">
+              <div id="entriesStat" class="stat-value">0</div>
+              <div class="stat-label">My Entries</div>
+            </div>
+            <div class="stat">
+              <div id="prizeStat" class="stat-value">$0</div>
+              <div class="stat-label">Top Prize Pool</div>
+            </div>
+          </div>
+
+          <div class="filters-grid">
+            <select id="gameFilter">
+              <option value="">All Games</option>
+              <option value="money-road-runner">Money Road Runner</option>
+            </select>
+
+            <select id="entryFilter">
+              <option value="">All Entry Types</option>
+              <option value="free">Free Only</option>
+              <option value="paid">Paid Only</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini-panel">
+            <div class="mini-panel-title">Tournament Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading tournament pulse...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">How It Works</div>
+            <div class="mini-text">
+              Join a challenge, play the linked game, and keep improving your best score. Later, paid entries and prize flows can plug straight into this same structure.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rail-shell">
+      <div class="section-header">
+        <div>
+          <h2>Active Tournaments</h2>
+          <p>Jump in right now and start posting scores.</p>
+        </div>
+      </div>
+      <div id="activeGrid" class="grid-3">
+        <div class="empty-box">Loading active tournaments...</div>
+      </div>
+    </div>
+
+    <div class="rail-shell">
+      <div class="section-header">
+        <div>
+          <h2>Upcoming Tournaments</h2>
+          <p>See what is opening next.</p>
+        </div>
+      </div>
+      <div id="upcomingGrid" class="grid-2">
+        <div class="empty-box">Loading upcoming tournaments...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Standings Preview</h2>
+          <p>Top tournament entries for the selected challenge.</p>
+        </div>
+      </div>
+      <div id="standingsWrap">
+        <div class="empty-box">Select a tournament to see standings.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
+
+      const activeStat = document.getElementById("activeStat");
+      const upcomingStat = document.getElementById("upcomingStat");
+      const entriesStat = document.getElementById("entriesStat");
+      const prizeStat = document.getElementById("prizeStat");
+
+      const gameFilter = document.getElementById("gameFilter");
+      const entryFilter = document.getElementById("entryFilter");
+
+      const activeGrid = document.getElementById("activeGrid");
+      const upcomingGrid = document.getElementById("upcomingGrid");
+      const standingsWrap = document.getElementById("standingsWrap");
+
+      let currentUser = null;
+      let tournaments = [];
+      let entries = [];
+      let selectedChallengeId = null;
+      let profileMap = {};
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function money(cents) {
+        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function nowIso() {
+        return new Date().toISOString();
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
+
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", ids);
+
+        if (error && error.code !== "42P01") throw error;
+
+        profileMap = {};
+        (data || []).forEach(profile => {
+          profileMap[profile.id] = profile;
+        });
+      }
+
+      function playerName(userId) {
+        const p = profileMap[userId] || {};
+        return p.display_name || p.username || p.email || "Player";
+      }
+
+      function filteredTournaments() {
+        const g = gameFilter.value;
+        const e = entryFilter.value;
+
+        return tournaments.filter(t => {
+          const matchesGame = !g || t.game_slug === g;
+          const matchesEntry =
+            !e ||
+            (e === "free" && Number(t.entry_fee_cents || 0) === 0) ||
+            (e === "paid" && Number(t.entry_fee_cents || 0) > 0);
+
+          return matchesGame && matchesEntry;
+        });
+      }
+
+      function splitTournaments(rows) {
+        const now = nowIso();
+
+        const active = rows.filter(row => {
+          const started = !row.starts_at || row.starts_at <= now;
+          const notEnded = !row.ends_at || row.ends_at >= now;
+          return !!row.is_active && started && notEnded;
+        });
+
+        const upcoming = rows.filter(row => {
+          return !!row.is_active && row.starts_at && row.starts_at > now;
+        });
+
+        return { active, upcoming };
+      }
+
+      function updateStats(rows) {
+        const { active, upcoming } = splitTournaments(rows);
+        const myEntries = currentUser
+          ? entries.filter(e => e.user_id === currentUser.id)
+          : [];
+
+        activeStat.textContent = String(active.length);
+        upcomingStat.textContent = String(upcoming.length);
+        entriesStat.textContent = String(myEntries.length);
+        prizeStat.textContent = money(Math.max(0, ...rows.map(r => Number(r.prize_cents || 0))));
+
+        pulseBox.textContent =
+          `Active: ${active.length}\n` +
+          `Upcoming: ${upcoming.length}\n` +
+          `My Entries: ${myEntries.length}\n` +
+          `Highest Prize: ${money(Math.max(0, ...rows.map(r => Number(r.prize_cents || 0))))}`;
+      }
+
+      function userEntryForChallenge(challengeId) {
+        if (!currentUser) return null;
+        return entries.find(e => e.challenge_id === challengeId && e.user_id === currentUser.id) || null;
+      }
+
+      async function joinTournament(challengeId) {
+        try {
+          if (!currentUser) {
+            setStatus("Log in first to join tournaments.");
+            return;
+          }
+
+          const existing = userEntryForChallenge(challengeId);
+          if (existing) {
+            setStatus("You already joined this tournament.");
+            selectedChallengeId = challengeId;
+            await renderStandings();
+            return;
+          }
+
+          const { error } = await supabase
+            .from("game_challenge_entries")
+            .insert([{
+              challenge_id: challengeId,
+              user_id: currentUser.id,
+              best_score: 0
+            }]);
+
+          if (error) throw error;
+
+          setStatus("Tournament joined.");
+          await loadEntries();
+          renderAll();
+          selectedChallengeId = challengeId;
+          await renderStandings();
+        } catch (error) {
+          setStatus("Join tournament error: " + error.message);
+        }
+      }
+
+      function buildTournamentCard(row) {
+        const joined = !!userEntryForChallenge(row.id);
+        const isPaid = Number(row.entry_fee_cents || 0) > 0;
+        const starts = formatDate(row.starts_at);
+        const ends = formatDate(row.ends_at);
+
+        return `
+          <div class="card">
+            <div class="card-cover">
+              <div class="card-pill-wrap">
+                <span class="pill-green">${row.game_slug || "game"}</span>
+                ${isPaid ? `<span class="pill-gold">PAID</span>` : `<span class="pill-green">FREE</span>`}
+                ${joined ? `<span class="pill-red">JOINED</span>` : ``}
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="card-title">${row.title || "Tournament"}</div>
+              <div class="card-text">${row.description || "Competition lane."}</div>
+
+              <div class="card-meta">
+                Entry: ${money(row.entry_fee_cents)}<br>
+                Prize: ${money(row.prize_cents)}<br>
+                Starts: ${starts}<br>
+                Ends: ${ends}
+              </div>
+
+              <div class="card-actions">
+                <a class="btn-green" href="${row.game_slug === 'money-road-runner' ? 'money-road-runner.html' : 'gaming.html'}">Play Game</a>
+                <button class="btn-dark join-btn" data-id="${row.id}" type="button">${joined ? "Joined" : "Join Tournament"}</button>
+                <button class="btn-gold standings-btn" data-id="${row.id}" type="button">Standings</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderAll() {
+        const rows = filteredTournaments();
+        const { active, upcoming } = splitTournaments(rows);
+
+        if (!active.length) {
+          activeGrid.innerHTML = `<div class="empty-box">No active tournaments right now.</div>`;
+        } else {
+          activeGrid.innerHTML = active.map(buildTournamentCard).join("");
+        }
+
+        if (!upcoming.length) {
+          upcomingGrid.innerHTML = `<div class="empty-box">No upcoming tournaments right now.</div>`;
+        } else {
+          upcomingGrid.innerHTML = upcoming.map(buildTournamentCard).join("");
+        }
+
+        document.querySelectorAll(".join-btn").forEach(btn => {
+          btn.addEventListener("click", () => joinTournament(Number(btn.dataset.id)));
+        });
+
+        document.querySelectorAll(".standings-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            selectedChallengeId = Number(btn.dataset.id);
+            await renderStandings();
+          });
+        });
+      }
+
+      async function loadEntries() {
+        const { data, error } = await supabase
+          .from("game_challenge_entries")
+          .select("*")
+          .order("best_score", { ascending: false });
+
+        if (error && error.code !== "42P01") throw error;
+
+        entries = data || [];
+        await loadProfiles(entries.map(e => e.user_id));
+      }
+
+      async function renderStandings() {
+        try {
+          if (!selectedChallengeId) {
+            standingsWrap.innerHTML = `<div class="empty-box">Select a tournament to see standings.</div>`;
+            return;
+          }
+
+          const rows = entries
+            .filter(e => e.challenge_id === selectedChallengeId)
+            .sort((a, b) => Number(b.best_score || 0) - Number(a.best_score || 0))
+            .slice(0, 25);
+
+          if (!rows.length) {
+            standingsWrap.innerHTML = `<div class="empty-box">No standings yet. Be the first to post a score.</div>`;
+            return;
+          }
+
+          standingsWrap.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Best Score</th>
+                  <th>Joined</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row, index) => `
+                  <tr>
+                    <td>#${index + 1}</td>
+                    <td>${playerName(row.user_id)}</td>
+                    <td>${row.best_score || 0}</td>
+                    <td>${formatDate(row.created_at)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `;
+        } catch (error) {
+          standingsWrap.innerHTML = `<div class="empty-box">Could not load standings.</div>`;
+        }
+      }
+
+      async function loadTournaments() {
+        try {
+          setStatus("Loading tournaments...");
+
+          const { data, error } = await supabase
+            .from("game_challenges")
+            .select("*")
+            .eq("is_active", true)
+            .order("starts_at", { ascending: true });
+
+          if (error && error.code !== "42P01") throw error;
+
+          tournaments = data || [];
+          await loadEntries();
+          updateStats(tournaments);
+          renderAll();
+
+          if (!selectedChallengeId && tournaments.length) {
+            selectedChallengeId = tournaments[0].id;
+            await renderStandings();
+          }
+
+          setStatus("✅ Tournaments loaded.");
+        } catch (error) {
+          console.error("Tournament load error:", error);
+          setStatus("❌ Tournament load error: " + error.message);
+          activeGrid.innerHTML = `<div class="empty-box">Could not load active tournaments.</div>`;
+          upcomingGrid.innerHTML = `<div class="empty-box">Could not load upcoming tournaments.</div>`;
+          standingsWrap.innerHTML = `<div class="empty-box">Could not load standings.</div>`;
+        }
+      }
+
+      gameFilter.addEventListener("change", () => {
+        renderAll();
+        updateStats(filteredTournaments());
+      });
+
+      entryFilter.addEventListener("change", () => {
+        renderAll();
+        updateStats(filteredTournaments());
+      });
+
+      async function init() {
+        await loadSession();
+        await loadTournaments();
+      }
+
+      init();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Tournament Page Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
