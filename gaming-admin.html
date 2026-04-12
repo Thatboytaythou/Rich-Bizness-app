@@ -1,1 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Gaming Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #b8ff8d;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1720px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .rail-shell,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero,
+    .section,
+    .rail-shell {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 0.94;
+      color: var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .card-text,
+    .card-meta,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .mini-panel,
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .mini-panel-title,
+    .panel h2,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .control {
+      margin-bottom: 14px;
+    }
+
+    .control label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .control input,
+    .control textarea,
+    .control select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .control textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 170px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    th {
+      color: var(--green);
+      font-size: 0.95rem;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
+    }
+
+    .locked {
+      padding: 28px;
+      text-align: center;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: white;
+    }
+
+    @media (max-width: 1450px) {
+      .hero-grid,
+      .two-col,
+      .three-col,
+      .grid-3,
+      .grid-4,
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.3rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="appRoot">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Gaming Admin</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="gaming.html">Gaming</a>
+        <a href="money-road-runner.html">Play</a>
+        <a href="gaming-leaderboard.html">Leaderboard</a>
+        <a href="gaming-tournaments.html">Tournaments</a>
+        <a href="gaming-admin.html" class="active">Gaming Admin</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div id="adminContent" style="display:none;">
+      <div class="hero">
+        <div class="hero-grid">
+          <div>
+            <div class="hero-kicker">OWNER CONTROL ROOM</div>
+            <h1>Run tournaments, manage clips, and keep the whole gaming lane organized.</h1>
+            <div class="subtle">
+              This admin page is your command center for the gaming side of Rich Bizness.
+            </div>
+
+            <div class="hero-actions">
+              <button id="refreshAllBtn" class="btn-green" type="button">Refresh All</button>
+              <a class="btn-dark" href="gaming.html">Open Gaming</a>
+              <a class="btn-dark" href="gaming-tournaments.html">Open Tournaments</a>
+              <a class="btn-dark" href="gaming-leaderboard.html">Open Leaderboard</a>
+            </div>
+
+            <div id="statusBox" class="status-box">Loading gaming admin...</div>
+
+            <div class="stats-row">
+              <div class="stat">
+                <div id="tourStat" class="stat-value">0</div>
+                <div class="stat-label">Tournaments</div>
+              </div>
+              <div class="stat">
+                <div id="activeTourStat" class="stat-value">0</div>
+                <div class="stat-label">Active Now</div>
+              </div>
+              <div class="stat">
+                <div id="scoreStat" class="stat-value">0</div>
+                <div class="stat-label">Scores</div>
+              </div>
+              <div class="stat">
+                <div id="clipStat" class="stat-value">0</div>
+                <div class="stat-label">Gaming Clips</div>
+              </div>
+              <div class="stat">
+                <div id="featuredStat" class="stat-value">0</div>
+                <div class="stat-label">Featured Clips</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="mini-panel">
+              <div class="mini-panel-title">Admin Pulse</div>
+              <div id="pulseBox" class="mini-text">Loading admin pulse...</div>
+            </div>
+
+            <div class="mini-panel">
+              <div class="mini-panel-title">What This Controls</div>
+              <div class="mini-text">
+                Create tournaments, end tournaments, feature clips, review top scores, and keep the gaming side synced.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="section">
+          <div class="panel">
+            <h2>Create Tournament</h2>
+
+            <div class="control">
+              <label for="challengeTitleInput">Tournament Title</label>
+              <input id="challengeTitleInput" type="text" placeholder="Money Road Weekend Clash" />
+            </div>
+
+            <div class="control">
+              <label for="challengeGameInput">Game Slug</label>
+              <select id="challengeGameInput">
+                <option value="money-road-runner">money-road-runner</option>
+              </select>
+            </div>
+
+            <div class="control">
+              <label for="challengeDescInput">Description</label>
+              <textarea id="challengeDescInput" placeholder="Run the money road and take the top spot."></textarea>
+            </div>
+
+            <div class="three-col">
+              <div class="control">
+                <label for="challengeEntryInput">Entry Fee (USD)</label>
+                <input id="challengeEntryInput" type="number" min="0" step="0.01" value="0.00" />
+              </div>
+
+              <div class="control">
+                <label for="challengePrizeInput">Prize Pool (USD)</label>
+                <input id="challengePrizeInput" type="number" min="0" step="0.01" value="100.00" />
+              </div>
+
+              <div class="control">
+                <label for="challengeActiveInput">Active</label>
+                <select id="challengeActiveInput">
+                  <option value="true">Yes</option>
+                  <option value="false">No</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="three-col">
+              <div class="control">
+                <label for="challengeStartsInput">Starts At</label>
+                <input id="challengeStartsInput" type="datetime-local" />
+              </div>
+
+              <div class="control">
+                <label for="challengeEndsInput">Ends At</label>
+                <input id="challengeEndsInput" type="datetime-local" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="createChallengeBtn" class="btn-green" type="button">Create Tournament</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="panel">
+            <h2>Top Score Control View</h2>
+            <div id="topScoresWrap" class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Player</th>
+                    <th>Score</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td colspan="4">Loading scores...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rail-shell">
+        <div class="section-header">
+          <div>
+            <h2>Tournament Manager</h2>
+            <p>Review tournaments and end them when needed.</p>
+          </div>
+        </div>
+        <div id="challengeGrid" class="grid-3">
+          <div class="empty-box">Loading tournaments...</div>
+        </div>
+      </div>
+
+      <div class="rail-shell">
+        <div class="section-header">
+          <div>
+            <h2>Gaming Clip Manager</h2>
+            <p>Feature or unfeature clips from the gaming lane.</p>
+          </div>
+        </div>
+        <div id="clipsGrid" class="grid-4">
+          <div class="empty-box">Loading clips...</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lockedView" class="locked" style="display:none;">
+      <h2 style="color:#ef5b55; margin-top:0;">Access Denied</h2>
+      <p>This page is for the Rich Bizness gaming admin only.</p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="btn-dark" href="gaming.html">Back to Gaming</a>
+        <a class="btn-dark" href="auth.html">Log In</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const ADMIN_USER_ID = "thatboytay3d@gmail.com";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const refreshAllBtn = document.getElementById("refreshAllBtn");
+
+      const adminContent = document.getElementById("adminContent");
+      const lockedView = document.getElementById("lockedView");
+
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
+
+      const tourStat = document.getElementById("tourStat");
+      const activeTourStat = document.getElementById("activeTourStat");
+      const scoreStat = document.getElementById("scoreStat");
+      const clipStat = document.getElementById("clipStat");
+      const featuredStat = document.getElementById("featuredStat");
+
+      const challengeTitleInput = document.getElementById("challengeTitleInput");
+      const challengeGameInput = document.getElementById("challengeGameInput");
+      const challengeDescInput = document.getElementById("challengeDescInput");
+      const challengeEntryInput = document.getElementById("challengeEntryInput");
+      const challengePrizeInput = document.getElementById("challengePrizeInput");
+      const challengeActiveInput = document.getElementById("challengeActiveInput");
+      const challengeStartsInput = document.getElementById("challengeStartsInput");
+      const challengeEndsInput = document.getElementById("challengeEndsInput");
+      const createChallengeBtn = document.getElementById("createChallengeBtn");
+
+      const topScoresWrap = document.getElementById("topScoresWrap");
+      const challengeGrid = document.getElementById("challengeGrid");
+      const clipsGrid = document.getElementById("clipsGrid");
+
+      let currentUser = null;
+      let profilesById = {};
+      let tournaments = [];
+      let scores = [];
+      let clips = [];
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function moneyFromCents(cents) {
+        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      }
+
+      function usdToCents(value) {
+        return Math.round(Number(value || 0) * 100);
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function setLocked(isLocked) {
+        adminContent.style.display = isLocked ? "none" : "block";
+        lockedView.style.display = isLocked ? "block" : "none";
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          setLocked(true);
+          return false;
+        }
+
+        if (!ADMIN_USER_ID || currentUser.id !== ADMIN_USER_ID) {
+          setLocked(true);
+          return false;
+        }
+
+        setLocked(false);
+        return true;
+      }
+
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", ids);
+
+        if (error && error.code !== "42P01") throw error;
+
+        profilesById = {};
+        (data || []).forEach(profile => {
+          profilesById[profile.id] = profile;
+        });
+      }
+
+      function playerName(userId) {
+        const p = profilesById[userId] || {};
+        return p.display_name || p.username || p.email || "Player";
+      }
+
+      async function createTournament() {
+        try {
+          const title = challengeTitleInput.value.trim();
+          const gameSlug = challengeGameInput.value.trim();
+          const description = challengeDescInput.value.trim();
+          const entryFee = usdToCents(challengeEntryInput.value);
+          const prize = usdToCents(challengePrizeInput.value);
+          const isActive = String(challengeActiveInput.value) === "true";
+          const startsAt = challengeStartsInput.value ? new Date(challengeStartsInput.value).toISOString() : null;
+          const endsAt = challengeEndsInput.value ? new Date(challengeEndsInput.value).toISOString() : null;
+
+          if (!title) throw new Error("Tournament title is required.");
+          if (!gameSlug) throw new Error("Game slug is required.");
+
+          const { error } = await supabase
+            .from("game_challenges")
+            .insert([{
+              game_slug: gameSlug,
+              title,
+              description,
+              entry_fee_cents: entryFee,
+              prize_cents: prize,
+              starts_at: startsAt,
+              ends_at: endsAt,
+              is_active: isActive
+            }]);
+
+          if (error) throw error;
+
+          setStatus("✅ Tournament created.");
+          challengeTitleInput.value = "";
+          challengeDescInput.value = "";
+          challengeEntryInput.value = "0.00";
+          challengePrizeInput.value = "100.00";
+          challengeStartsInput.value = "";
+          challengeEndsInput.value = "";
+
+          await loadAllAdminData();
+        } catch (error) {
+          setStatus("❌ Create tournament error: " + error.message);
+        }
+      }
+
+      async function endTournament(challengeId) {
+        try {
+          const { error } = await supabase
+            .from("game_challenges")
+            .update({
+              is_active: false,
+              ends_at: new Date().toISOString()
+            })
+            .eq("id", challengeId);
+
+          if (error) throw error;
+
+          setStatus("Tournament ended.");
+          await loadAllAdminData();
+        } catch (error) {
+          setStatus("End tournament error: " + error.message);
+        }
+      }
+
+      async function toggleFeaturedClip(clipId, nextValue) {
+        try {
+          const { error } = await supabase
+            .from("gaming_uploads")
+            .update({
+              is_featured: nextValue
+            })
+            .eq("id", clipId);
+
+          if (error) throw error;
+
+          setStatus(nextValue ? "Clip featured." : "Clip unfeatured.");
+          await loadAllAdminData();
+        } catch (error) {
+          setStatus("Clip update error: " + error.message);
+        }
+      }
+
+      function renderStats() {
+        const now = new Date().toISOString();
+        const activeCount = tournaments.filter(t => {
+          const started = !t.starts_at || t.starts_at <= now;
+          const notEnded = !t.ends_at || t.ends_at >= now;
+          return !!t.is_active && started && notEnded;
+        }).length;
+
+        tourStat.textContent = String(tournaments.length);
+        activeTourStat.textContent = String(activeCount);
+        scoreStat.textContent = String(scores.length);
+        clipStat.textContent = String(clips.length);
+        featuredStat.textContent = String(clips.filter(c => !!c.is_featured).length);
+
+        pulseBox.textContent =
+          `Tournaments: ${tournaments.length}\n` +
+          `Active Now: ${activeCount}\n` +
+          `Scores Loaded: ${scores.length}\n` +
+          `Gaming Clips: ${clips.length}\n` +
+          `Featured Clips: ${clips.filter(c => !!c.is_featured).length}`;
+      }
+
+      function renderTopScores() {
+        if (!scores.length) {
+          topScoresWrap.innerHTML = `
+            <table>
+              <thead>
+                <tr><th>Game</th><th>Player</th><th>Score</th><th>Date</th></tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="4">No scores yet.</td></tr>
+              </tbody>
+            </table>
+          `;
+          return;
+        }
+
+        topScoresWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${scores.slice(0, 20).map(row => `
+                <tr>
+                  <td>${escapeHtml(row.game_slug || "--")}</td>
+                  <td>${escapeHtml(playerName(row.user_id))}</td>
+                  <td>${escapeHtml(row.score || 0)}</td>
+                  <td>${escapeHtml(formatDate(row.created_at))}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function renderTournaments() {
+        if (!tournaments.length) {
+          challengeGrid.innerHTML = `<div class="empty-box">No tournaments yet.</div>`;
+          return;
+        }
+
+        challengeGrid.innerHTML = tournaments.map(row => `
+          <div class="card">
+            <div class="card-cover">
+              <div class="card-pill-wrap">
+                <span class="pill-green">${escapeHtml(row.game_slug || "game")}</span>
+                ${Number(row.entry_fee_cents || 0) > 0 ? `<span class="pill-gold">PAID</span>` : `<span class="pill-green">FREE</span>`}
+                ${row.is_active ? `<span class="pill-red">ACTIVE</span>` : `<span class="pill-gold">ENDED</span>`}
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="card-title">${escapeHtml(row.title || "Tournament")}</div>
+              <div class="card-text">${escapeHtml(row.description || "No description.")}</div>
+
+              <div class="card-meta">
+Entry: ${moneyFromCents(row.entry_fee_cents)}
+Prize: ${moneyFromCents(row.prize_cents)}
+Starts: ${formatDate(row.starts_at)}
+Ends: ${formatDate(row.ends_at)}
+              </div>
+
+              <div class="card-actions">
+                <a class="btn-dark" href="gaming-tournaments.html">Open Public View</a>
+                ${row.is_active ? `<button class="btn-danger end-tour-btn" data-id="${row.id}" type="button">End Tournament</button>` : ""}
+              </div>
+            </div>
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".end-tour-btn").forEach(btn => {
+          btn.addEventListener("click", () => endTournament(Number(btn.dataset.id)));
+        });
+      }
+
+      function renderClips() {
+        if (!clips.length) {
+          clipsGrid.innerHTML = `<div class="empty-box">No gaming clips yet.</div>`;
+          return;
+        }
+
+        clipsGrid.innerHTML = clips.map(row => {
+          const coverStyle = row.thumbnail_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
+
+          return `
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  <span class="pill-green">${escapeHtml((row.platform || "gaming").toUpperCase())}</span>
+                  ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : `<span class="pill-gold">NORMAL</span>`}
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(row.title || "Gaming Clip")}</div>
+                <div class="card-text">${escapeHtml(row.game_title || "Game")} • ${escapeHtml(row.gamer_tag || "No gamer tag")}</div>
+
+                <div class="card-meta">
+Creator: ${escapeHtml(playerName(row.user_id))}
+Views: ${escapeHtml(row.views || 0)}
+Likes: ${escapeHtml(row.likes || 0)}
+Posted: ${escapeHtml(formatDate(row.created_at))}
+                </div>
+
+                <div class="card-actions">
+                  <a class="btn-dark" href="${row.file_url || 'gaming.html'}" ${String(row.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open Clip</a>
+                  <button
+                    class="${row.is_featured ? 'btn-danger' : 'btn-green'} feature-btn"
+                    data-id="${row.id}"
+                    data-next="${row.is_featured ? 'false' : 'true'}"
+                    type="button"
+                  >
+                    ${row.is_featured ? 'Unfeature' : 'Feature'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".feature-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            toggleFeaturedClip(Number(btn.dataset.id), btn.dataset.next === "true");
+          });
+        });
+      }
+
+      async function loadAllAdminData() {
+        try {
+          setStatus("Loading gaming admin...");
+
+          const ok = await loadSession();
+          if (!ok) return;
+
+          const [challengeRes, scoreRes, clipRes] = await Promise.all([
+            supabase
+              .from("game_challenges")
+              .select("*")
+              .order("created_at", { ascending: false }),
+
+            supabase
+              .from("game_scores")
+              .select("*")
+              .order("score", { ascending: false })
+              .limit(100),
+
+            supabase
+              .from("gaming_uploads")
+              .select("*")
+              .order("created_at", { ascending: false })
+              .limit(40)
+          ]);
+
+          if (challengeRes.error && challengeRes.error.code !== "42P01") throw challengeRes.error;
+          if (scoreRes.error && scoreRes.error.code !== "42P01") throw scoreRes.error;
+          if (clipRes.error && clipRes.error.code !== "42P01") throw clipRes.error;
+
+          tournaments = challengeRes.data || [];
+          scores = scoreRes.data || [];
+          clips = clipRes.data || [];
+
+          await loadProfiles([
+            ...scores.map(r => r.user_id),
+            ...clips.map(r => r.user_id)
+          ]);
+
+          renderStats();
+          renderTopScores();
+          renderTournaments();
+          renderClips();
+
+          setStatus("✅ Gaming admin fully polished and synced.");
+        } catch (error) {
+          console.error(error);
+          setStatus("❌ Gaming admin load error: " + error.message);
+        }
+      }
+
+      createChallengeBtn.addEventListener("click", createTournament);
+      refreshAllBtn.addEventListener("click", loadAllAdminData);
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      });
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadAllAdminData();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Gaming Admin Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
