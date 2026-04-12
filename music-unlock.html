@@ -3,226 +3,673 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Unlock Track | Rich Bizness</title>
+  <title>Rich Bizness | Music Unlock</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      min-height: 100vh;
       color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .rail-shell,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background:
-        linear-gradient(rgba(0,0,0,.72), rgba(0,0,0,.88)),
-        url("images/brand/logo-music-label.png") center/cover no-repeat fixed;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
     }
-    .box {
-      width: min(720px, calc(100vw - 24px));
-      background: rgba(0,0,0,.52);
-      border: 1px solid rgba(125,255,113,.18);
-      border-radius: 24px;
-      padding: 28px;
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
-    h1 { color: #7dff71; margin-top: 0; }
-    .subtle { line-height: 1.7; color: #f1f1f1; }
-    .status {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(125,255,113,.08);
-      border: 1px solid rgba(125,255,113,.18);
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       font-weight: 700;
     }
-    .row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
+
+    .hero,
+    .rail-shell {
+      padding: 24px;
+      margin-bottom: 18px;
     }
-    button, a {
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 0.95;
+      color: var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
       display: inline-block;
       text-decoration: none;
       text-align: center;
-      padding: 14px;
-      border-radius: 12px;
-      border: none;
+      padding: 14px 18px;
+      border-radius: 14px;
       font-weight: 900;
+      border: none;
       cursor: pointer;
     }
-    .green { background: #7dff71; color: black; }
-    .dark { background: rgba(255,255,255,.08); color: white; border: 1px solid rgba(255,255,255,.08); }
-    @media (max-width: 640px) { .row { grid-template-columns: 1fr; } }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      color: var(--green);
+      font-size: 1.35rem;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 220px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-text {
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1320px) {
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .stats-row,
+      .grid-4 {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Unlock Premium Track</h1>
-    <div id="trackInfo" class="subtle">Loading track...</div>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Music Unlock</span>
+      </div>
 
-    <div class="row">
-      <button id="buyTrackBtn" class="green" type="button">Buy Track</button>
-      <button id="subscribeBtn" class="dark" type="button">Subscribe To Artist</button>
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="music.html">Music</a>
+        <a href="music-unlock.html" class="active">Unlock</a>
+        <a href="feed.html">Feed</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
     </div>
 
-    <div class="row">
-      <a class="dark" href="music.html">Back To Music</a>
-      <a class="dark" href="monetization.html">Open Monetization</a>
+    <div class="hero">
+      <div class="hero-kicker">PREMIUM MUSIC ACCESS</div>
+      <h1>Unlock tracks, support artists, and open premium music lanes.</h1>
+      <div class="subtle">
+        This page uses your current Stripe checkout flow and your current Supabase setup. Locked tracks go through checkout, and unlocked tracks open normally.
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn-green" href="music.html">Back to Music</a>
+        <a class="btn-dark" href="feed.html">Open Feed</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading music unlocks...</div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="lockedStat" class="stat-value">0</div>
+          <div class="stat-label">Locked Tracks</div>
+        </div>
+        <div class="stat">
+          <div id="unlockedStat" class="stat-value">0</div>
+          <div class="stat-label">Unlocked For Me</div>
+        </div>
+        <div class="stat">
+          <div id="allStat" class="stat-value">0</div>
+          <div class="stat-label">Tracks Loaded</div>
+        </div>
+        <div class="stat">
+          <div id="priceStat" class="stat-value">$0</div>
+          <div class="stat-label">Top Unlock Price</div>
+        </div>
+      </div>
     </div>
 
-    <div id="statusBox" class="status">Loading premium access...</div>
+    <div class="rail-shell">
+      <div class="section-header">
+        <div>
+          <h2>Premium Music</h2>
+          <p>Unlock premium tracks and artist releases.</p>
+        </div>
+      </div>
+
+      <div id="musicGrid" class="grid-4">
+        <div class="empty-box">Loading premium music...</div>
+      </div>
+    </div>
   </div>
 
   <script>
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const CHECKOUT_API_URL = "/api/create-checkout-session";
 
-    const trackInfo = document.getElementById("trackInfo");
-    const statusBox = document.getElementById("statusBox");
-    const buyTrackBtn = document.getElementById("buyTrackBtn");
-    const subscribeBtn = document.getElementById("subscribeBtn");
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
 
-    let currentUser = null;
-    let trackRow = null;
-    let premiumRow = null;
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
 
-    function setStatus(message) {
-      statusBox.textContent = message;
-    }
+      const lockedStat = document.getElementById("lockedStat");
+      const unlockedStat = document.getElementById("unlockedStat");
+      const allStat = document.getElementById("allStat");
+      const priceStat = document.getElementById("priceStat");
 
-    function getTrackId() {
-      return new URLSearchParams(window.location.search).get("track");
-    }
+      const musicGrid = document.getElementById("musicGrid");
 
-    async function requireUser() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      currentUser = data?.session?.user || null;
-      if (!currentUser) {
-        window.location.href = "auth.html";
-        return null;
+      let currentUser = null;
+      let unlockRows = [];
+      let musicRows = [];
+
+      function setStatus(message) {
+        statusBox.textContent = message;
       }
-      return currentUser;
-    }
 
-    async function loadPage() {
-      try {
-        setStatus("Loading track...");
-        await requireUser();
-
-        const trackId = getTrackId();
-        if (!trackId) throw new Error("Missing track id.");
-
-        const [{ data: track, error: trackError }, { data: premium, error: premiumError }] = await Promise.all([
-          supabase.from("music_tracks").select("*").eq("id", trackId).maybeSingle(),
-          supabase.from("premium_tracks").select("*").eq("track_id", trackId).maybeSingle()
-        ]);
-
-        if (trackError) throw trackError;
-        if (premiumError) throw premiumError;
-        if (!track || !premium) throw new Error("Premium track not found.");
-
-        trackRow = track;
-        premiumRow = premium;
-
-        trackInfo.textContent = `${track.title || "Untitled Track"} by ${track.artist_name || "Unknown Artist"} • Unlock: $${((premium.unlock_price_cents || 0) / 100).toFixed(2)}${premium.is_subscriber_only ? " • Subscriber access available" : ""}`;
-        setStatus("Choose how you want to unlock this track.");
-      } catch (error) {
-        setStatus("Load error: " + error.message);
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
-    }
 
-    async function buyTrack() {
-      try {
-        if (!trackRow || !premiumRow) throw new Error("Track not loaded.");
+      function money(cents) {
+        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
+      }
 
-        const { data: purchaseRow, error: purchaseError } = await supabase
-          .from("premium_track_purchases")
-          .insert({
-            buyer_user_id: currentUser.id,
-            artist_user_id: trackRow.user_id,
-            track_id: trackRow.id,
-            amount_cents: premiumRow.unlock_price_cents,
-            status: "pending"
-          })
-          .select()
-          .single();
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
 
-        if (purchaseError) throw purchaseError;
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
 
-        const response = await fetch("/api/create-checkout-session", {
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      async function startCheckout({ type, amount, title, metadata = {} }) {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        const token = data?.session?.access_token;
+        if (!token) {
+          throw new Error("You must be logged in first.");
+        }
+
+        const response = await fetch(CHECKOUT_API_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify({
-            mode: "premium_track_unlock",
-            title: trackRow.title || "Premium Track Unlock",
-            amountCents: premiumRow.unlock_price_cents,
-            metadata: {
-              premium_track_purchase_id: String(purchaseRow.id),
-              artist_user_id: trackRow.user_id,
-              track_id: String(trackRow.id)
-            }
+            type,
+            amount,
+            title,
+            metadata
           })
         });
 
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Could not create checkout.");
-        window.location.href = payload.url;
-      } catch (error) {
-        setStatus("Buy error: " + error.message);
+        const body = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(body.error || "Checkout session failed");
+        }
+
+        if (!body.url) {
+          throw new Error("No checkout URL returned");
+        }
+
+        window.location.href = body.url;
       }
-    }
 
-    async function subscribeArtist() {
-      try {
-        if (!trackRow) throw new Error("Track not loaded.");
+      async function loadUnlocks() {
+        if (!currentUser?.id) {
+          unlockRows = [];
+          return;
+        }
 
-        const amountCents = 500;
+        const { data, error } = await supabase
+          .from("music_unlocks")
+          .select("*")
+          .eq("user_id", currentUser.id)
+          .eq("status", "active");
 
-        const { data: subRow, error: subError } = await supabase
-          .from("fan_subscriptions")
-          .upsert({
-            fan_user_id: currentUser.id,
-            artist_user_id: trackRow.user_id,
-            tier_name: "Supporter",
-            amount_cents: amountCents,
-            status: "pending"
-          }, { onConflict: "fan_user_id,artist_user_id" })
-          .select()
-          .single();
+        if (error && error.code !== "42P01") throw error;
+        unlockRows = data || [];
+      }
 
-        if (subError) throw subError;
+      function isTrackUnlocked(track) {
+        if (!track) return false;
+        if (!track.is_locked) return true;
 
-        const response = await fetch("/api/create-checkout-session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mode: "fan_subscription",
-            title: `Artist Subscription`,
-            amountCents: amountCents,
+        return unlockRows.some(row =>
+          (row.track_slug && track.slug && row.track_slug === track.slug) ||
+          (row.album_slug && track.album_slug && row.album_slug === track.album_slug)
+        );
+      }
+
+      async function unlockTrack(track) {
+        try {
+          if (!track) throw new Error("Track not found.");
+
+          await startCheckout({
+            type: "music_unlock",
+            amount: Number(track.price_cents || 299),
+            title: track.title || "Music Unlock",
             metadata: {
-              fan_subscription_id: String(subRow.id),
-              artist_user_id: trackRow.user_id
+              track_slug: track.slug || "",
+              album_slug: track.album_slug || ""
             }
-          })
-        });
-
-        const payload = await response.json();
-        if (!response.ok) throw new Error(payload.error || "Could not create subscription checkout.");
-        window.location.href = payload.url;
-      } catch (error) {
-        setStatus("Subscription error: " + error.message);
+          });
+        } catch (error) {
+          setStatus("Music unlock error: " + error.message);
+        }
       }
+
+      function renderStats() {
+        const locked = musicRows.filter(row => !!row.is_locked).length;
+        const unlocked = musicRows.filter(row => isTrackUnlocked(row)).length;
+        const topPrice = Math.max(0, ...musicRows.map(row => Number(row.price_cents || 0)));
+
+        lockedStat.textContent = String(locked);
+        unlockedStat.textContent = String(unlocked);
+        allStat.textContent = String(musicRows.length);
+        priceStat.textContent = money(topPrice);
+      }
+
+      function renderMusic() {
+        if (!musicRows.length) {
+          musicGrid.innerHTML = `<div class="empty-box">No premium music found yet.</div>`;
+          return;
+        }
+
+        musicGrid.innerHTML = musicRows.map(track => {
+          const unlocked = isTrackUnlocked(track);
+          const coverStyle = track.cover_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(track.cover_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
+
+          const openHref = track.file_url || "music.html";
+
+          return `
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  ${track.is_locked ? `<span class="pill-red">LOCKED</span>` : `<span class="pill-green">OPEN</span>`}
+                  ${unlocked ? `<span class="pill-green">UNLOCKED</span>` : ``}
+                  <span class="pill-gold">${money(track.price_cents || 299)}</span>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(track.title || "Premium Track")}</div>
+                <div class="card-text">
+                  ${escapeHtml(track.artist_name || "Artist")} • ${escapeHtml(track.album_name || "Single")}
+                </div>
+
+                <div class="card-meta">
+                  Genre: ${escapeHtml(track.genre || "--")}<br>
+                  Posted: ${escapeHtml(formatDate(track.created_at))}<br>
+                  Access: ${track.is_locked ? (unlocked ? "Unlocked" : "Locked") : "Open"}
+                </div>
+
+                <div class="card-actions">
+                  ${
+                    !track.is_locked || unlocked
+                      ? `<a class="btn-green" href="${openHref}" ${String(openHref).startsWith("http") ? 'target="_blank"' : ""}>Open Track</a>`
+                      : `<button class="btn-gold unlock-btn" data-id="${track.id}" type="button">Unlock Now</button>`
+                  }
+                  <a class="btn-dark" href="music.html">Music Page</a>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".unlock-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const id = Number(btn.dataset.id);
+            const track = musicRows.find(row => row.id === id);
+            if (track) unlockTrack(track);
+          });
+        });
+      }
+
+      async function loadMusicUnlockPage() {
+        try {
+          setStatus("Loading music unlocks...");
+          await loadSession();
+          await loadUnlocks();
+
+          const { data, error } = await supabase
+            .from("music_uploads")
+            .select("*")
+            .order("created_at", { ascending: false });
+
+          if (error && error.code !== "42P01") throw error;
+
+          musicRows = (data || []).filter(row => !!row.is_locked || Number(row.price_cents || 0) > 0);
+
+          renderStats();
+          renderMusic();
+
+          setStatus("✅ Music unlock page loaded.");
+        } catch (error) {
+          console.error("Music unlock load error:", error);
+          setStatus("❌ Music unlock load error: " + error.message);
+          musicGrid.innerHTML = `<div class="empty-box">Could not load premium music right now.</div>`;
+        }
+      }
+
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadMusicUnlockPage();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Music Unlock Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
     }
-
-    buyTrackBtn.addEventListener("click", buyTrack);
-    subscribeBtn.addEventListener("click", subscribeArtist);
-
-    loadPage();
   </script>
 </body>
 </html>
