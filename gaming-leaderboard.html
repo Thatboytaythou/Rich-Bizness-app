@@ -1,1 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Gaming Leaderboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 50px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a, .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero, .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 2.8rem;
+      line-height: 0.96;
+      color: var(--green);
+    }
+
+    .subtle, .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker, .pill-green, .pill-gold {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker, .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green, .btn-dark, .btn-gold {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .filters select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    th {
+      color: var(--green);
+      font-size: 0.95rem;
+    }
+
+    td {
+      color: var(--text);
+    }
+
+    .rank {
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 900px) {
+      .filters, .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        margin-bottom: 14px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: 10px;
+      }
+
+      td {
+        border-bottom: none;
+        padding: 8px 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Gaming Leaderboard</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="gaming.html">Gaming</a>
+        <a href="money-road-runner.html">Money Road Runner</a>
+        <a href="gaming-leaderboard.html" class="active">Leaderboard</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-kicker">COMPETITION LANE</div>
+      <h1>Track top scores and start building your Rich Bizness arcade rankings.</h1>
+      <div class="subtle">
+        This leaderboard is ready for Money Road Runner first, then future games after that.
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn-green" href="money-road-runner.html">Play Money Road Runner</a>
+        <a class="btn-dark" href="gaming.html">Back to Gaming</a>
+      </div>
+
+      <div id="statusBox" class="status-box">Loading leaderboard...</div>
+
+      <div class="filters">
+        <select id="gameFilter">
+          <option value="money-road-runner">Money Road Runner</option>
+        </select>
+
+        <select id="timeFilter">
+          <option value="all">All Time</option>
+          <option value="week">Last 7 Days</option>
+          <option value="day">Last 24 Hours</option>
+        </select>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat">
+          <div id="entriesStat" class="stat-value">0</div>
+          <div class="stat-label">Entries</div>
+        </div>
+        <div class="stat">
+          <div id="topScoreStat" class="stat-value">0</div>
+          <div class="stat-label">Top Score</div>
+        </div>
+        <div class="stat">
+          <div id="playersStat" class="stat-value">0</div>
+          <div class="stat-label">Players</div>
+        </div>
+        <div class="stat">
+          <div id="myBestStat" class="stat-value">--</div>
+          <div class="stat-label">My Best</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div id="tableWrap">
+        <div class="empty-box">Loading scores...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const statusBox = document.getElementById("statusBox");
+      const gameFilter = document.getElementById("gameFilter");
+      const timeFilter = document.getElementById("timeFilter");
+      const tableWrap = document.getElementById("tableWrap");
+
+      const entriesStat = document.getElementById("entriesStat");
+      const topScoreStat = document.getElementById("topScoreStat");
+      const playersStat = document.getElementById("playersStat");
+      const myBestStat = document.getElementById("myBestStat");
+
+      let currentUser = null;
+      let profileMap = {};
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
+
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", ids);
+
+        if (error && error.code !== "42P01") throw error;
+
+        profileMap = {};
+        (data || []).forEach(profile => {
+          profileMap[profile.id] = profile;
+        });
+      }
+
+      function getPlayerName(userId) {
+        const profile = profileMap[userId] || {};
+        return profile.display_name || profile.username || profile.email || "Player";
+      }
+
+      function getStartDateForFilter(value) {
+        const now = new Date();
+        if (value === "day") {
+          now.setHours(now.getHours() - 24);
+          return now.toISOString();
+        }
+        if (value === "week") {
+          now.setDate(now.getDate() - 7);
+          return now.toISOString();
+        }
+        return null;
+      }
+
+      async function loadLeaderboard() {
+        try {
+          setStatus("Loading leaderboard...");
+
+          const slug = gameFilter.value;
+          const startDate = getStartDateForFilter(timeFilter.value);
+
+          let query = supabase
+            .from("game_scores")
+            .select("*")
+            .eq("game_slug", slug)
+            .order("score", { ascending: false })
+            .order("created_at", { ascending: true })
+            .limit(100);
+
+          if (startDate) {
+            query = query.gte("created_at", startDate);
+          }
+
+          const { data, error } = await query;
+
+          if (error && error.code !== "42P01") throw error;
+
+          const rows = data || [];
+          await loadProfiles(rows.map(row => row.user_id));
+
+          entriesStat.textContent = String(rows.length);
+          topScoreStat.textContent = String(rows[0]?.score || 0);
+          playersStat.textContent = String(new Set(rows.map(r => r.user_id).filter(Boolean)).size);
+
+          const myRows = currentUser ? rows.filter(r => r.user_id === currentUser.id) : [];
+          myBestStat.textContent = myRows.length ? String(Math.max(...myRows.map(r => Number(r.score || 0)))) : "--";
+
+          if (!rows.length) {
+            tableWrap.innerHTML = `<div class="empty-box">No scores yet. Be the first to post one.</div>`;
+            setStatus("No scores yet.");
+            return;
+          }
+
+          tableWrap.innerHTML = `
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>Score</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.map((row, index) => `
+                  <tr>
+                    <td class="rank">#${index + 1}</td>
+                    <td>${getPlayerName(row.user_id)}</td>
+                    <td>${row.score}</td>
+                    <td>${formatDate(row.created_at)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          `;
+
+          setStatus("✅ Leaderboard loaded.");
+        } catch (error) {
+          console.error("Leaderboard load error:", error);
+          setStatus("❌ Leaderboard load error: " + error.message);
+          tableWrap.innerHTML = `<div class="empty-box">Could not load leaderboard right now.</div>`;
+        }
+      }
+
+      gameFilter.addEventListener("change", loadLeaderboard);
+      timeFilter.addEventListener("change", loadLeaderboard);
+
+      async function init() {
+        await loadSession();
+        await loadLeaderboard();
+      }
+
+      init();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Leaderboard Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
