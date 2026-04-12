@@ -1,34 +1,16 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
 export const config = {
   api: {
-    bodyParser: false,
-  },
+    bodyParser: false
+  }
 };
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-03-31.basil",
-});
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  }
-);
-
-function toInt(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? Math.round(n) : fallback;
-}
-
-function getSessionMetadata(session) {
-  return session?.metadata || {};
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 async function readRawBody(req) {
@@ -39,205 +21,109 @@ async function readRawBody(req) {
   return Buffer.concat(chunks);
 }
 
-async function recordDirectSupport(session) {
-  const metadata = getSessionMetadata(session);
-  const artistUserId = metadata.artist_user_id || metadata.artistUserId || "";
-  const userId = metadata.user_id || metadata.userId || "";
-  const sourceType = metadata.source_type || "direct_support";
-  const roomName = metadata.room_name || "";
-  const sourceId =
-    metadata.source_id ||
-    metadata.track_id ||
-    metadata.album_id ||
-    metadata.playlist_id ||
-    null;
-
-  if (!artistUserId) {
-    throw new Error("Missing artist_user_id for direct support.");
-  }
-
-  const note =
-    sourceType === "live_tip"
-      ? `Live tip${roomName ? ` • ${roomName}` : ""}${userId ? ` • from ${userId}` : ""}`
-      : sourceType === "vip_live_access"
-      ? `VIP live access${roomName ? ` • ${roomName}` : ""}${userId ? ` • from ${userId}` : ""}`
-      : `Direct support${userId ? ` • from ${userId}` : ""}`;
-
-  const insertEarnRes = await supabase
-    .from("music_earnings")
-    .insert({
-      artist_user_id: artistUserId,
-      source_type: sourceType,
-      source_id: sourceId,
-      gross_cents: toInt(session.amount_total, 0),
-      note,
-    });
-
-  if (insertEarnRes.error) throw insertEarnRes.error;
+function normalizeType(value) {
+  return String(value || "").trim().toLowerCase();
 }
 
-async function markLiveRoomAccessPaid(session) {
-  const metadata = getSessionMetadata(session);
-  const accessId = metadata.live_room_access_id || "";
+async function unlockTournamentEntry({ supabaseAdmin, userId, paymentId, metadata }) {
+  const challengeId = Number(metadata.challenge_id);
 
-  if (!accessId) {
-    throw new Error("Missing live_room_access_id in metadata.");
+  if (!Number.isFinite(challengeId) || challengeId <= 0) {
+    return { ok: false, reason: "Missing or invalid challenge_id" };
   }
 
-  const updateRes = await supabase
-    .from("live_room_access")
-    .update({
-      status: "paid",
-      stripe_session_id: session.id,
-    })
-    .eq("id", accessId)
-    .select()
-    .single();
+  const { data: existingEntry, error: existingEntryError } = await supabaseAdmin
+    .from("game_challenge_entries")
+    .select("id")
+    .eq("challenge_id", challengeId)
+    .eq("user_id", userId)
+    .maybeSingle();
 
-  if (updateRes.error) throw updateRes.error;
-}
-
-async function markPremiumPurchasePaid(session) {
-  const metadata = getSessionMetadata(session);
-  const buyerUserId = metadata.user_id || "";
-  const artistUserId = metadata.artist_user_id || "";
-  const trackId = metadata.track_id || null;
-  const title = metadata.title || "Premium unlock";
-
-  if (!artistUserId) {
-    throw new Error("Missing artist_user_id for premium unlock.");
+  if (existingEntryError) {
+    throw existingEntryError;
   }
 
-  const earnRes = await supabase
-    .from("music_earnings")
-    .insert({
-      artist_user_id: artistUserId,
-      source_type: "premium_track_unlock",
-      source_id: trackId,
-      gross_cents: toInt(session.amount_total, 0),
-      note: `${title}${buyerUserId ? ` • from ${buyerUserId}` : ""}`,
-    });
-
-  if (earnRes.error) throw earnRes.error;
-
-  if (buyerUserId && trackId) {
-    const purchaseRes = await supabase
-      .from("premium_track_purchases")
-      .upsert(
-        {
-          buyer_user_id: buyerUserId,
-          artist_user_id: artistUserId,
-          track_id: trackId,
-          stripe_session_id: session.id,
-          status: "paid",
-        },
-        { onConflict: "buyer_user_id,track_id" }
-      );
-
-    if (purchaseRes.error && purchaseRes.error.code !== "42P01") {
-      throw purchaseRes.error;
-    }
-  }
-}
-
-async function activateFanSubscriptionFromCheckout(session) {
-  const metadata = getSessionMetadata(session);
-  const subscriberUserId = metadata.user_id || "";
-  const artistUserId = metadata.artist_user_id || "";
-  const planName = metadata.plan_name || "Fan subscription";
-
-  if (!artistUserId) {
-    throw new Error("Missing artist_user_id for fan subscription.");
+  if (existingEntry) {
+    return { ok: true, action: "already_exists", challenge_id: challengeId };
   }
 
-  const subscriptionId = session.subscription || null;
-
-  const subRes = await supabase
-    .from("fan_subscriptions")
-    .upsert(
+  const { error: insertError } = await supabaseAdmin
+    .from("game_challenge_entries")
+    .insert([
       {
-        subscriber_user_id: subscriberUserId || null,
-        artist_user_id: artistUserId,
-        stripe_subscription_id: subscriptionId,
-        stripe_session_id: session.id,
-        status: "active",
-        plan_name: planName,
-      },
-      { onConflict: "subscriber_user_id,artist_user_id" }
+        challenge_id: challengeId,
+        user_id: userId,
+        best_score: 0
+      }
+    ]);
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return { ok: true, action: "created", challenge_id: challengeId, payment_id: paymentId };
+}
+
+async function unlockVipLive({ supabaseAdmin, userId, paymentId, metadata }) {
+  const roomName = String(metadata.room_name || metadata.room || "").trim();
+
+  if (!roomName) {
+    return { ok: false, reason: "Missing room_name" };
+  }
+
+  const { error } = await supabaseAdmin
+    .from("vip_live_access")
+    .upsert(
+      [
+        {
+          user_id: userId,
+          room_name: roomName,
+          status: "active",
+          source_payment_id: paymentId
+        }
+      ],
+      {
+        onConflict: "user_id,room_name"
+      }
     );
 
-  if (subRes.error && subRes.error.code !== "42P01") {
-    throw subRes.error;
+  if (error) {
+    throw error;
   }
 
-  const earnRes = await supabase
-    .from("music_earnings")
-    .insert({
-      artist_user_id: artistUserId,
-      source_type: "fan_subscription",
-      source_id: subscriptionId,
-      gross_cents: toInt(session.amount_total, 0),
-      note: `${planName}${subscriberUserId ? ` • from ${subscriberUserId}` : ""}`,
-    });
-
-  if (earnRes.error) throw earnRes.error;
+  return { ok: true, action: "granted", room_name: roomName };
 }
 
-async function markSubscriptionCanceled(subscription) {
-  const subId = subscription?.id;
-  if (!subId) return;
+async function unlockMusic({ supabaseAdmin, userId, paymentId, metadata }) {
+  const trackSlug = String(metadata.track_slug || "").trim() || null;
+  const albumSlug = String(metadata.album_slug || "").trim() || null;
 
-  const res = await supabase
-    .from("fan_subscriptions")
-    .update({
-      status: "canceled",
-    })
-    .eq("stripe_subscription_id", subId);
-
-  if (res.error && res.error.code !== "42P01") {
-    throw res.error;
-  }
-}
-
-async function markSubscriptionUpdated(subscription) {
-  const subId = subscription?.id;
-  if (!subId) return;
-
-  const status = subscription?.status || "active";
-
-  const res = await supabase
-    .from("fan_subscriptions")
-    .update({
-      status,
-    })
-    .eq("stripe_subscription_id", subId);
-
-  if (res.error && res.error.code !== "42P01") {
-    throw res.error;
-  }
-}
-
-async function handleCheckoutSessionCompleted(session) {
-  const metadata = getSessionMetadata(session);
-  const mode = metadata.mode || metadata.checkout_mode || metadata.source_type || "";
-
-  if (mode === "premium_track_unlock") {
-    await markPremiumPurchasePaid(session);
-    return;
+  if (!trackSlug && !albumSlug) {
+    return { ok: false, reason: "Missing track_slug or album_slug" };
   }
 
-  if (mode === "fan_subscription") {
-    await activateFanSubscriptionFromCheckout(session);
-    return;
+  const { error } = await supabaseAdmin
+    .from("music_unlocks")
+    .insert([
+      {
+        user_id: userId,
+        track_slug: trackSlug,
+        album_slug: albumSlug,
+        status: "active",
+        source_payment_id: paymentId
+      }
+    ]);
+
+  if (error) {
+    throw error;
   }
 
-  if (mode === "vip_live_access") {
-    await markLiveRoomAccessPaid(session);
-    await recordDirectSupport(session);
-    return;
-  }
-
-  await recordDirectSupport(session);
+  return {
+    ok: true,
+    action: "unlocked",
+    track_slug: trackSlug,
+    album_slug: albumSlug
+  };
 }
 
 export default async function handler(req, res) {
@@ -245,64 +131,168 @@ export default async function handler(req, res) {
     return res.status(405).send("Method not allowed");
   }
 
-  if (
-    !process.env.STRIPE_SECRET_KEY ||
-    !process.env.STRIPE_WEBHOOK_SECRET ||
-    !process.env.SUPABASE_URL ||
-    !process.env.SUPABASE_SERVICE_ROLE_KEY
-  ) {
-    return res.status(500).json({
-      error:
-        "Missing STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, SUPABASE_URL, or SUPABASE_SERVICE_ROLE_KEY",
-    });
-  }
-
-  let event;
-
   try {
-    const rawBody = await readRawBody(req);
-    const signature = req.headers["stripe-signature"];
+    const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  try {
-    switch (event.type) {
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        await handleCheckoutSessionCompleted(session);
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object;
-        await markSubscriptionUpdated(subscription);
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object;
-        await markSubscriptionCanceled(subscription);
-        break;
-      }
-
-      default: {
-        break;
-      }
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return res.status(500).send("Missing STRIPE_SECRET_KEY");
     }
 
-    return res.status(200).json({ received: true });
-  } catch (err) {
-    console.error("Webhook processing error:", err);
-    return res.status(500).json({
-      error: err?.message || "Webhook processing failed",
+    if (!stripeWebhookSecret) {
+      return res.status(500).send("Missing STRIPE_WEBHOOK_SECRET");
+    }
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return res.status(500).send("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+    }
+
+    const signature = req.headers["stripe-signature"];
+    if (!signature) {
+      return res.status(400).send("Missing Stripe signature");
+    }
+
+    const rawBody = await readRawBody(req);
+
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(rawBody, signature, stripeWebhookSecret);
+    } catch (error) {
+      console.error("stripe-webhook signature verification failed:", error);
+      return res.status(400).send(`Webhook Error: ${error.message}`);
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
     });
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+
+      const sessionId = session.id;
+      const paymentIntentId =
+        typeof session.payment_intent === "string" ? session.payment_intent : null;
+
+      const { data: paymentRow, error: paymentLookupError } = await supabaseAdmin
+        .from("payments")
+        .select("*")
+        .eq("stripe_session_id", sessionId)
+        .maybeSingle();
+
+      if (paymentLookupError) {
+        console.error("stripe-webhook payment lookup error:", paymentLookupError);
+        return res.status(500).send(paymentLookupError.message);
+      }
+
+      if (!paymentRow) {
+        console.error("stripe-webhook payment row not found for session:", sessionId);
+        return res.status(200).json({
+          ok: true,
+          warning: "Payment row not found, webhook acknowledged"
+        });
+      }
+
+      const metadata = isPlainObject(paymentRow.metadata) ? paymentRow.metadata : {};
+      const type = normalizeType(paymentRow.type);
+      const userId = paymentRow.user_id;
+
+      const { error: paymentUpdateError } = await supabaseAdmin
+        .from("payments")
+        .update({
+          status: "paid",
+          stripe_payment_intent_id: paymentIntentId,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            ...metadata,
+            stripe_checkout_status: session.payment_status || null,
+            stripe_customer_email: session.customer_details?.email || session.customer_email || null
+          }
+        })
+        .eq("id", paymentRow.id);
+
+      if (paymentUpdateError) {
+        console.error("stripe-webhook payment update error:", paymentUpdateError);
+        return res.status(500).send(paymentUpdateError.message);
+      }
+
+      let unlockResult = { ok: true, action: "none" };
+
+      if (type === "tournament_entry") {
+        unlockResult = await unlockTournamentEntry({
+          supabaseAdmin,
+          userId,
+          paymentId: paymentRow.id,
+          metadata
+        });
+      } else if (type === "vip_live") {
+        unlockResult = await unlockVipLive({
+          supabaseAdmin,
+          userId,
+          paymentId: paymentRow.id,
+          metadata
+        });
+      } else if (type === "music_unlock") {
+        unlockResult = await unlockMusic({
+          supabaseAdmin,
+          userId,
+          paymentId: paymentRow.id,
+          metadata
+        });
+      }
+
+      const { error: finalPaymentMetaError } = await supabaseAdmin
+        .from("payments")
+        .update({
+          updated_at: new Date().toISOString(),
+          metadata: {
+            ...metadata,
+            unlock_result: unlockResult
+          }
+        })
+        .eq("id", paymentRow.id);
+
+      if (finalPaymentMetaError) {
+        console.error("stripe-webhook final metadata update error:", finalPaymentMetaError);
+        return res.status(500).send(finalPaymentMetaError.message);
+      }
+
+      return res.status(200).json({
+        received: true,
+        type,
+        unlock_result: unlockResult
+      });
+    }
+
+    if (event.type === "checkout.session.expired") {
+      const session = event.data.object;
+
+      const { error } = await supabaseAdmin
+        .from("payments")
+        .update({
+          status: "expired",
+          updated_at: new Date().toISOString()
+        })
+        .eq("stripe_session_id", session.id);
+
+      if (error) {
+        console.error("stripe-webhook expire update error:", error);
+        return res.status(500).send(error.message);
+      }
+
+      return res.status(200).json({ received: true, status: "expired" });
+    }
+
+    return res.status(200).json({
+      received: true,
+      ignored: true,
+      event_type: event.type
+    });
+  } catch (error) {
+    console.error("stripe-webhook fatal error:", error);
+    return res.status(500).send(error?.message || "Webhook failure");
   }
 }
