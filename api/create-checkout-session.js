@@ -1,132 +1,180 @@
 import Stripe from "stripe";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-function toCents(value) {
-  const num = Number(value || 0);
-  return Math.round(num);
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function getBaseUrl(req) {
-  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/$/, "");
-  const proto = req.headers["x-forwarded-proto"] || "https";
-  const host = req.headers.host;
-  return `${proto}://${host}`;
+function normalizeType(type) {
+  return String(type || "").trim().toLowerCase();
+}
+
+function buildCheckoutConfig({ type, amount, title, metadata, appUrl }) {
+  const safeAmount = Math.max(50, Math.floor(Number(amount || 0)));
+  const safeTitle = String(title || "Rich Bizness Payment").trim() || "Rich Bizness Payment";
+
+  const base = {
+    payment_method_types: ["card"],
+    mode: "payment",
+    line_items: [
+      {
+        price_data: {
+          currency: "usd",
+          product_data: {
+            name: safeTitle
+          },
+          unit_amount: safeAmount
+        },
+        quantity: 1
+      }
+    ],
+    success_url: `${appUrl}/monetization-success.html?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${appUrl}/monetization-cancel.html`,
+    metadata: {
+      type,
+      ...Object.fromEntries(
+        Object.entries(metadata || {}).map(([k, v]) => [k, String(v)])
+      )
+    }
+  };
+
+  return base;
 }
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-
   try {
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
+    }
+
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const appUrl = process.env.APP_URL;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!stripeSecretKey) {
+      return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY" });
+    }
+
+    if (!appUrl) {
+      return res.status(500).json({ error: "Missing APP_URL" });
+    }
+
+    if (!supabaseUrl || !serviceRoleKey) {
+      return res.status(500).json({
+        error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+      });
+    }
+
+    const authHeader = req.headers.authorization || "";
+    const accessToken = authHeader.startsWith("Bearer ")
+      ? authHeader.slice(7).trim()
+      : null;
+
+    if (!accessToken) {
+      return res.status(401).json({ error: "Missing auth token" });
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    });
+
     const {
-      mode,
+      data: { user },
+      error: userError
+    } = await supabaseAdmin.auth.getUser(accessToken);
+
+    if (userError || !user) {
+      return res.status(401).json({ error: "Invalid user session" });
+    }
+
+    const body = req.body || {};
+    const type = normalizeType(body.type);
+    const amount = Number(body.amount);
+    const title = String(body.title || "").trim();
+    const metadata = isPlainObject(body.metadata) ? body.metadata : {};
+
+    if (!type) {
+      return res.status(400).json({ error: "Missing payment type" });
+    }
+
+    if (!Number.isFinite(amount) || amount < 50) {
+      return res.status(400).json({
+        error: "Invalid amount. Amount must be in cents and at least 50."
+      });
+    }
+
+    if (!title) {
+      return res.status(400).json({ error: "Missing title" });
+    }
+
+    const allowedTypes = new Set([
+      "tournament_entry",
+      "vip_live",
+      "music_unlock",
+      "general_payment"
+    ]);
+
+    if (!allowedTypes.has(type)) {
+      return res.status(400).json({ error: "Unsupported payment type" });
+    }
+
+    const checkoutConfig = buildCheckoutConfig({
+      type,
+      amount,
       title,
-      amountCents,
-      description = "",
-      artistUserId = "",
-      successUrl,
-      cancelUrl,
-      metadata = {},
-      customerEmail = "",
-      userId = "",
-    } = req.body || {};
+      metadata,
+      appUrl
+    });
 
-    if (!process.env.STRIPE_SECRET_KEY) {
-      return res.status(500).json({ error: "Missing STRIPE_SECRET_KEY." });
-    }
+    checkoutConfig.customer_email = user.email || undefined;
 
-    if (!mode) {
-      return res.status(400).json({ error: "Missing mode." });
-    }
+    const session = await stripe.checkout.sessions.create(checkoutConfig);
 
-    const supportedModes = [
-      "direct_support",
-      "premium_track_unlock",
-      "fan_subscription",
-    ];
-
-    if (!supportedModes.includes(mode)) {
-      return res.status(400).json({ error: `Unsupported mode: ${mode}` });
-    }
-
-    const cents = toCents(amountCents);
-    if (!cents || cents < 50) {
-      return res.status(400).json({ error: "amountCents must be at least 50." });
-    }
-
-    const baseUrl = getBaseUrl(req);
-    const finalSuccessUrl =
-      successUrl || `${baseUrl}/monetization-success.html?session_id={CHECKOUT_SESSION_ID}`;
-    const finalCancelUrl =
-      cancelUrl || `${baseUrl}/monetization-cancel.html`;
-
-    const safeTitle = String(title || "Rich Bizness Checkout").slice(0, 200);
-    const safeDescription = String(description || "").slice(0, 500);
-
-    const commonMetadata = {
-      app_mode: mode,
-      artist_user_id: String(artistUserId || ""),
-      user_id: String(userId || ""),
-      ...Object.fromEntries(
-        Object.entries(metadata || {}).map(([k, v]) => [k, String(v ?? "")])
-      ),
+    const paymentRow = {
+      user_id: user.id,
+      type,
+      status: "pending",
+      amount: Math.floor(amount),
+      currency: "usd",
+      title,
+      stripe_session_id: session.id,
+      stripe_payment_intent_id:
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : null,
+      metadata: {
+        ...metadata,
+        checkout_url: session.url,
+        stripe_mode: session.mode
+      }
     };
 
-    let sessionMode = "payment";
-    const lineItem = {
-      price_data: {
-        currency: "usd",
-        product_data: {
-          name: safeTitle,
-          description: safeDescription || undefined,
-        },
-        unit_amount: cents,
-      },
-      quantity: 1,
-    };
+    const { error: paymentInsertError } = await supabaseAdmin
+      .from("payments")
+      .insert([paymentRow]);
 
-    if (mode === "fan_subscription") {
-      sessionMode = "subscription";
-      lineItem.price_data = {
-        currency: "usd",
-        product_data: {
-          name: safeTitle || "Artist Supporter Plan",
-          description: safeDescription || "Monthly artist support",
-        },
-        recurring: {
-          interval: "month",
-        },
-        unit_amount: cents,
-      };
+    if (paymentInsertError) {
+      console.error("create-checkout-session payment insert error:", paymentInsertError);
+      return res.status(500).json({
+        error: paymentInsertError.message || "Failed to save payment session"
+      });
     }
-
-    const sessionPayload = {
-      mode: sessionMode,
-      success_url: finalSuccessUrl,
-      cancel_url: finalCancelUrl,
-      line_items: [lineItem],
-      metadata: commonMetadata,
-      billing_address_collection: "auto",
-      allow_promotion_codes: true,
-      client_reference_id: String(userId || artistUserId || ""),
-    };
-
-    if (customerEmail) {
-      sessionPayload.customer_email = customerEmail;
-    }
-
-    const session = await stripe.checkout.sessions.create(sessionPayload);
 
     return res.status(200).json({
-      id: session.id,
+      ok: true,
       url: session.url,
+      session_id: session.id
     });
   } catch (error) {
-    console.error("create-checkout-session error", error);
+    console.error("create-checkout-session error:", error);
     return res.status(500).json({
-      error: error?.message || "Failed to create checkout session.",
+      error: error?.message || "Checkout session creation failed"
     });
   }
 }
