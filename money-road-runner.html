@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness | Money Road Runner</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -275,7 +277,7 @@
     }
 
     .overlay-card {
-      width: min(560px, 100%);
+      width: min(620px, 100%);
       background: rgba(0,0,0,0.72);
       border: 1px solid rgba(125,255,113,0.22);
       border-radius: 24px;
@@ -294,6 +296,19 @@
       margin: 0;
       color: var(--text);
       line-height: 1.7;
+    }
+
+    .result-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--text);
+      text-align: left;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.6;
     }
 
     .touch-controls {
@@ -350,6 +365,7 @@
         <a href="index.html">Home</a>
         <a href="gaming.html" class="active">Gaming</a>
         <a href="gaming-leaderboard.html">Leaderboard</a>
+        <a href="gaming-tournaments.html">Tournaments</a>
         <a href="upload-gaming.html">Upload Gaming</a>
       </div>
     </div>
@@ -360,7 +376,7 @@
           <div class="hero-kicker">ORIGINAL RICH BIZNESS ARCADE</div>
           <h1>Run the money road. Dodge the blockers. Touch the treehouse lane.</h1>
           <div class="subtle">
-            This is your first fully original Rich Bizness mini-game. Collect cash, avoid obstacles, and push your score higher as the road speeds up.
+            This is your first fully original Rich Bizness mini-game. Now it also submits scores and updates active tournament standings through your synced API.
           </div>
 
           <div class="hero-actions">
@@ -413,13 +429,9 @@
           </div>
 
           <div class="mini-panel">
-            <div class="mini-panel-title">Next Upgrade Hooks</div>
+            <div class="mini-panel-title">Leaderboard Sync</div>
             <div class="mini-text">
-              This page is ready for future:
-              <br>• Supabase score submit
-              <br>• daily leaderboard
-              <br>• tournament mode
-              <br>• gamer profile sync
+              If you are logged in, your score can be submitted to the leaderboard and any active Money Road tournaments can update automatically.
             </div>
           </div>
         </div>
@@ -444,6 +456,7 @@
           <div class="overlay-card">
             <h2>Run Over</h2>
             <p id="gameOverText">Your score: 0</p>
+            <div id="submitResultBox" class="result-box">Waiting for result...</div>
             <div class="hero-actions" style="justify-content:center;">
               <button id="overlayRestartBtn" class="btn-gold" type="button">Run Again</button>
             </div>
@@ -461,6 +474,18 @@
 
   <script>
     try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const SUBMIT_SCORE_API_URL = "/api/submit-game-score";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
       const canvas = document.getElementById("gameCanvas");
       const ctx = canvas.getContext("2d");
 
@@ -476,6 +501,7 @@
       const startOverlay = document.getElementById("startOverlay");
       const gameOverOverlay = document.getElementById("gameOverOverlay");
       const gameOverText = document.getElementById("gameOverText");
+      const submitResultBox = document.getElementById("submitResultBox");
 
       const statusBox = document.getElementById("statusBox");
       const scoreStat = document.getElementById("scoreStat");
@@ -513,7 +539,6 @@
         distanceTick: 0,
         spawnTick: 0,
         moneySpawnTick: 0,
-        frameId: null,
         playerLane: 1,
         obstacles: [],
         pickups: [],
@@ -521,13 +546,13 @@
         lastTime: 0
       };
 
-      bestStat.textContent = String(game.best);
-
       const player = {
         width: 86,
         height: 120,
         y: canvas.height - 170
       };
+
+      bestStat.textContent = String(game.best);
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -556,6 +581,7 @@
         game.pickups = [];
         game.roadStripeOffset = 0;
         game.lastTime = 0;
+        submitResultBox.textContent = "Waiting for result...";
         updateHud();
         draw();
       }
@@ -583,20 +609,87 @@
         if (!game.paused) requestAnimationFrame(loop);
       }
 
+      async function submitScoreToServer(finalScore, moneyBags) {
+        try {
+          submitResultBox.textContent = "Submitting score...";
+          const { data, error } = await supabase.auth.getSession();
+          if (error) throw error;
+
+          const token = data?.session?.access_token;
+          if (!token) {
+            submitResultBox.textContent = "Log in to submit score and join leaderboard standings.";
+            setStatus("Game over. Log in to submit score.");
+            return;
+          }
+
+          const response = await fetch(SUBMIT_SCORE_API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              game_slug: "money-road-runner",
+              score: Math.floor(finalScore),
+              meta: {
+                money_bags: moneyBags
+              }
+            })
+          });
+
+          const body = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(body.error || "Score submit failed");
+          }
+
+          let resultText = `Score submitted.\nLeaderboard score: ${Math.floor(finalScore)}\nMoney bags: ${moneyBags}`;
+
+          if (Array.isArray(body.tournament_updates) && body.tournament_updates.length) {
+            const lines = body.tournament_updates.map(update => {
+              const title = update.challenge_title || "Tournament";
+              if (update.action === "created") {
+                return `• ${title}: joined and posted ${update.best_score}`;
+              }
+              if (update.action === "updated") {
+                return `• ${title}: new best ${update.best_score} (was ${update.previous_best_score})`;
+              }
+              return `• ${title}: best stays ${update.best_score}`;
+            });
+
+            resultText += `\n\nTournament updates:\n${lines.join("\n")}`;
+          } else {
+            resultText += `\n\nNo active tournaments updated.`;
+          }
+
+          submitResultBox.textContent = resultText;
+          setStatus("Score submitted to leaderboard.");
+        } catch (error) {
+          submitResultBox.textContent = `Could not submit score.\n${error.message}`;
+          setStatus("Could not submit score: " + error.message);
+        }
+      }
+
       function endGame() {
         game.running = false;
         game.over = true;
         game.paused = false;
 
-        if (game.score > game.best) {
-          game.best = Math.floor(game.score);
+        const finalScore = Math.floor(game.score);
+        const moneyBags = game.money;
+
+        if (finalScore > game.best) {
+          game.best = finalScore;
           localStorage.setItem(STORAGE_KEY, String(game.best));
         }
 
         updateHud();
-        gameOverText.textContent = `Your score: ${Math.floor(game.score)} | Money bags: ${game.money} | Best: ${game.best}`;
+        gameOverText.textContent = `Your score: ${finalScore} | Money bags: ${moneyBags} | Best: ${game.best}`;
+        submitResultBox.textContent = "Preparing result...";
         gameOverOverlay.classList.remove("hidden");
         setStatus("You hit a blocker. Run it back.");
+
+        submitScoreToServer(finalScore, moneyBags);
       }
 
       function moveLeft() {
@@ -933,12 +1026,8 @@
       }
 
       function keyHandler(e) {
-        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-          moveLeft();
-        }
-        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-          moveRight();
-        }
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") moveLeft();
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") moveRight();
         if (e.key === " " || e.code === "Space") {
           e.preventDefault();
           pauseGame();
