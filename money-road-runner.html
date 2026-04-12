@@ -1,1 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Money Road Runner</title>
 
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green2: #b8ff8d;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.58);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.05);
+      --border: rgba(125,255,113,0.18);
+      --text: #f5f5f5;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.28);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 40px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.85rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .hero,
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 3rem;
+      line-height: 0.94;
+      color: var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: var(--soft);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: var(--soft2);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .mini-panel-title {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.3rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .game-wrap {
+      position: relative;
+      width: 100%;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #081008;
+      box-shadow: var(--shadow);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      background:
+        linear-gradient(to bottom, #0e1c10 0%, #102914 45%, #0d170e 100%);
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.42);
+      z-index: 3;
+      padding: 20px;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .overlay-card {
+      width: min(560px, 100%);
+      background: rgba(0,0,0,0.72);
+      border: 1px solid rgba(125,255,113,0.22);
+      border-radius: 24px;
+      padding: 24px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .overlay-card h2 {
+      margin: 0 0 10px;
+      color: var(--green);
+      font-size: 2rem;
+    }
+
+    .overlay-card p {
+      margin: 0;
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .touch-controls {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .touch-controls button {
+      padding: 16px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      font-weight: 900;
+      font-size: 16px;
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 800px) {
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .touch-controls {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Money Road Runner</span>
+      </div>
+
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="gaming.html" class="active">Gaming</a>
+        <a href="gaming-leaderboard.html">Leaderboard</a>
+        <a href="upload-gaming.html">Upload Gaming</a>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-grid">
+        <div>
+          <div class="hero-kicker">ORIGINAL RICH BIZNESS ARCADE</div>
+          <h1>Run the money road. Dodge the blockers. Touch the treehouse lane.</h1>
+          <div class="subtle">
+            This is your first fully original Rich Bizness mini-game. Collect cash, avoid obstacles, and push your score higher as the road speeds up.
+          </div>
+
+          <div class="hero-actions">
+            <button id="startBtn" class="btn-green" type="button">Start Game</button>
+            <button id="pauseBtn" class="btn-dark" type="button">Pause</button>
+            <button id="restartBtn" class="btn-gold" type="button">Restart</button>
+          </div>
+
+          <div id="statusBox" class="status-box">Ready to run. Use A/D or ←/→ to move. Space to pause.</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="scoreStat" class="stat-value">0</div>
+              <div class="stat-label">Score</div>
+            </div>
+            <div class="stat">
+              <div id="moneyStat" class="stat-value">0</div>
+              <div class="stat-label">Money Bags</div>
+            </div>
+            <div class="stat">
+              <div id="speedStat" class="stat-value">1x</div>
+              <div class="stat-label">Speed</div>
+            </div>
+            <div class="stat">
+              <div id="bestStat" class="stat-value">0</div>
+              <div class="stat-label">Best</div>
+            </div>
+            <div class="stat">
+              <div id="stateStat" class="stat-value">READY</div>
+              <div class="stat-label">State</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini-panel">
+            <div class="mini-panel-title">How To Play</div>
+            <div class="mini-text">
+              Move left and right across the road lanes. Grab money bags for bonus score. Do not hit crates, cones, or road blockers.
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Controls</div>
+            <div class="mini-text">
+              Desktop: A / D or Left / Right arrows<br>
+              Pause: Space<br>
+              Mobile: use on-screen buttons
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Next Upgrade Hooks</div>
+            <div class="mini-text">
+              This page is ready for future:
+              <br>• Supabase score submit
+              <br>• daily leaderboard
+              <br>• tournament mode
+              <br>• gamer profile sync
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="game-wrap">
+        <canvas id="gameCanvas" width="1200" height="700"></canvas>
+
+        <div id="startOverlay" class="overlay">
+          <div class="overlay-card">
+            <h2>Money Road Runner</h2>
+            <p>Collect money. Dodge blockers. Build your score.</p>
+            <div class="hero-actions" style="justify-content:center;">
+              <button id="overlayStartBtn" class="btn-green" type="button">Play Now</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="gameOverOverlay" class="overlay hidden">
+          <div class="overlay-card">
+            <h2>Run Over</h2>
+            <p id="gameOverText">Your score: 0</p>
+            <div class="hero-actions" style="justify-content:center;">
+              <button id="overlayRestartBtn" class="btn-gold" type="button">Run Again</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="touch-controls">
+        <button id="leftBtn" type="button">⬅</button>
+        <button id="pauseTouchBtn" type="button">⏯</button>
+        <button id="rightBtn" type="button">➡</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const startBtn = document.getElementById("startBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const overlayStartBtn = document.getElementById("overlayStartBtn");
+      const overlayRestartBtn = document.getElementById("overlayRestartBtn");
+      const leftBtn = document.getElementById("leftBtn");
+      const rightBtn = document.getElementById("rightBtn");
+      const pauseTouchBtn = document.getElementById("pauseTouchBtn");
+
+      const startOverlay = document.getElementById("startOverlay");
+      const gameOverOverlay = document.getElementById("gameOverOverlay");
+      const gameOverText = document.getElementById("gameOverText");
+
+      const statusBox = document.getElementById("statusBox");
+      const scoreStat = document.getElementById("scoreStat");
+      const moneyStat = document.getElementById("moneyStat");
+      const speedStat = document.getElementById("speedStat");
+      const bestStat = document.getElementById("bestStat");
+      const stateStat = document.getElementById("stateStat");
+
+      const STORAGE_KEY = "richbizness_money_road_runner_best";
+
+      const world = {
+        width: canvas.width,
+        height: canvas.height,
+        roadTop: 60,
+        roadBottom: canvas.height - 60,
+        laneCount: 3,
+        laneWidth: 180,
+        roadCenterX: canvas.width / 2
+      };
+
+      const laneCenters = [
+        world.roadCenterX - world.laneWidth,
+        world.roadCenterX,
+        world.roadCenterX + world.laneWidth
+      ];
+
+      const game = {
+        running: false,
+        paused: false,
+        over: false,
+        score: 0,
+        money: 0,
+        best: Number(localStorage.getItem(STORAGE_KEY) || 0),
+        speed: 7,
+        distanceTick: 0,
+        spawnTick: 0,
+        moneySpawnTick: 0,
+        frameId: null,
+        playerLane: 1,
+        obstacles: [],
+        pickups: [],
+        roadStripeOffset: 0,
+        lastTime: 0
+      };
+
+      bestStat.textContent = String(game.best);
+
+      const player = {
+        width: 86,
+        height: 120,
+        y: canvas.height - 170
+      };
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function updateHud() {
+        scoreStat.textContent = String(Math.floor(game.score));
+        moneyStat.textContent = String(game.money);
+        speedStat.textContent = `${(game.speed / 7).toFixed(1)}x`;
+        bestStat.textContent = String(game.best);
+        stateStat.textContent = game.over ? "DOWN" : game.paused ? "PAUSED" : game.running ? "LIVE" : "READY";
+      }
+
+      function resetGame() {
+        game.running = false;
+        game.paused = false;
+        game.over = false;
+        game.score = 0;
+        game.money = 0;
+        game.speed = 7;
+        game.distanceTick = 0;
+        game.spawnTick = 0;
+        game.moneySpawnTick = 0;
+        game.playerLane = 1;
+        game.obstacles = [];
+        game.pickups = [];
+        game.roadStripeOffset = 0;
+        game.lastTime = 0;
+        updateHud();
+        draw();
+      }
+
+      function startGame() {
+        if (game.running && !game.over) return;
+        resetGame();
+        game.running = true;
+        startOverlay.classList.add("hidden");
+        gameOverOverlay.classList.add("hidden");
+        setStatus("Run started. Dodge blockers and grab money.");
+        updateHud();
+        requestAnimationFrame(loop);
+      }
+
+      function restartGame() {
+        startGame();
+      }
+
+      function pauseGame() {
+        if (!game.running || game.over) return;
+        game.paused = !game.paused;
+        setStatus(game.paused ? "Paused." : "Back on the money road.");
+        updateHud();
+        if (!game.paused) requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        game.running = false;
+        game.over = true;
+        game.paused = false;
+
+        if (game.score > game.best) {
+          game.best = Math.floor(game.score);
+          localStorage.setItem(STORAGE_KEY, String(game.best));
+        }
+
+        updateHud();
+        gameOverText.textContent = `Your score: ${Math.floor(game.score)} | Money bags: ${game.money} | Best: ${game.best}`;
+        gameOverOverlay.classList.remove("hidden");
+        setStatus("You hit a blocker. Run it back.");
+      }
+
+      function moveLeft() {
+        if (game.playerLane > 0) game.playerLane -= 1;
+      }
+
+      function moveRight() {
+        if (game.playerLane < world.laneCount - 1) game.playerLane += 1;
+      }
+
+      function spawnObstacle() {
+        const lane = Math.floor(Math.random() * world.laneCount);
+        const kinds = ["crate", "cone", "barrier"];
+        const kind = kinds[Math.floor(Math.random() * kinds.length)];
+
+        game.obstacles.push({
+          lane,
+          y: -140,
+          width: kind === "barrier" ? 110 : 80,
+          height: kind === "barrier" ? 70 : 80,
+          kind
+        });
+      }
+
+      function spawnPickup() {
+        const lane = Math.floor(Math.random() * world.laneCount);
+        game.pickups.push({
+          lane,
+          y: -80,
+          size: 42
+        });
+      }
+
+      function playerRect() {
+        return {
+          x: laneCenters[game.playerLane] - player.width / 2,
+          y: player.y,
+          width: player.width,
+          height: player.height
+        };
+      }
+
+      function intersects(a, b) {
+        return (
+          a.x < b.x + b.width &&
+          a.x + a.width > b.x &&
+          a.y < b.y + b.height &&
+          a.y + a.height > b.y
+        );
+      }
+
+      function update(delta) {
+        if (!game.running || game.paused || game.over) return;
+
+        const deltaFactor = delta / 16.666;
+        game.speed += 0.0025 * deltaFactor;
+        game.score += 0.18 * game.speed * deltaFactor;
+        game.distanceTick += delta;
+        game.spawnTick += delta;
+        game.moneySpawnTick += delta;
+        game.roadStripeOffset += game.speed * 8 * deltaFactor;
+
+        const spawnRate = Math.max(360, 980 - game.score * 0.45);
+        const moneyRate = Math.max(700, 1500 - game.score * 0.2);
+
+        if (game.spawnTick >= spawnRate) {
+          spawnObstacle();
+          game.spawnTick = 0;
+        }
+
+        if (game.moneySpawnTick >= moneyRate) {
+          spawnPickup();
+          game.moneySpawnTick = 0;
+        }
+
+        const speedY = game.speed * 10 * deltaFactor;
+
+        for (const obstacle of game.obstacles) {
+          obstacle.y += speedY;
+        }
+
+        for (const pickup of game.pickups) {
+          pickup.y += speedY * 0.95;
+        }
+
+        game.obstacles = game.obstacles.filter(o => o.y < canvas.height + 160);
+        game.pickups = game.pickups.filter(p => p.y < canvas.height + 120);
+
+        const pRect = playerRect();
+
+        for (const obstacle of game.obstacles) {
+          const oRect = {
+            x: laneCenters[obstacle.lane] - obstacle.width / 2,
+            y: obstacle.y,
+            width: obstacle.width,
+            height: obstacle.height
+          };
+
+          if (intersects(pRect, oRect)) {
+            endGame();
+            return;
+          }
+        }
+
+        game.pickups = game.pickups.filter(pickup => {
+          const pickRect = {
+            x: laneCenters[pickup.lane] - pickup.size / 2,
+            y: pickup.y,
+            width: pickup.size,
+            height: pickup.size
+          };
+
+          if (intersects(pRect, pickRect)) {
+            game.money += 1;
+            game.score += 25;
+            return false;
+          }
+          return true;
+        });
+
+        updateHud();
+      }
+
+      function drawBackground() {
+        const roadLeft = world.roadCenterX - world.laneWidth * 1.75;
+        const roadWidth = world.laneWidth * 3.5;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        sky.addColorStop(0, "#0f2012");
+        sky.addColorStop(0.45, "#17301a");
+        sky.addColorStop(1, "#0a100b");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.fillStyle = "#0f2a12";
+        ctx.fillRect(0, world.roadTop, roadLeft, world.roadBottom - world.roadTop);
+        ctx.fillRect(roadLeft + roadWidth, world.roadTop, canvas.width - (roadLeft + roadWidth), world.roadBottom - world.roadTop);
+
+        ctx.fillStyle = "#1a1a1a";
+        ctx.fillRect(roadLeft, world.roadTop, roadWidth, world.roadBottom - world.roadTop);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.08)";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(roadLeft, world.roadTop, roadWidth, world.roadBottom - world.roadTop);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.12)";
+        ctx.lineWidth = 6;
+        for (let i = 1; i < world.laneCount; i++) {
+          const x = roadLeft + (roadWidth / world.laneCount) * i;
+          for (let y = -80 + (game.roadStripeOffset % 120); y < canvas.height + 120; y += 120) {
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x, y + 60);
+            ctx.stroke();
+          }
+        }
+
+        ctx.fillStyle = "rgba(125,255,113,0.16)";
+        for (let i = 0; i < 12; i++) {
+          ctx.beginPath();
+          ctx.arc(100 + i * 95, 80 + (i % 2) * 14, 26, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        drawTreehouseTarget();
+      }
+
+      function drawTreehouseTarget() {
+        const cx = canvas.width / 2;
+        const cy = 70;
+
+        ctx.fillStyle = "rgba(125,255,113,0.14)";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#5e3d1f";
+        ctx.fillRect(cx - 10, cy + 10, 20, 36);
+
+        ctx.fillStyle = "#3f7e3e";
+        ctx.beginPath();
+        ctx.arc(cx, cy, 52, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#7a4e26";
+        ctx.fillRect(cx - 26, cy - 10, 52, 28);
+
+        ctx.fillStyle = "#d7b76b";
+        ctx.fillRect(cx - 7, cy - 2, 14, 20);
+
+        ctx.fillStyle = "#7dff71";
+        ctx.font = "bold 18px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("TREEHOUSE", cx, cy + 78);
+      }
+
+      function drawPlayer() {
+        const rect = playerRect();
+        const x = rect.x;
+        const y = rect.y;
+
+        ctx.save();
+
+        ctx.fillStyle = "#e2c27b";
+        ctx.beginPath();
+        ctx.arc(x + player.width / 2, y + 22, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#1f1f1f";
+        ctx.fillRect(x + 22, y + 40, 42, 44);
+
+        ctx.fillStyle = "#7dff71";
+        ctx.fillRect(x + 16, y + 50, 54, 24);
+
+        ctx.fillStyle = "#111";
+        ctx.fillRect(x + 22, y + 84, 14, 32);
+        ctx.fillRect(x + 50, y + 84, 14, 32);
+
+        ctx.fillStyle = "#1e1e1e";
+        ctx.fillRect(x + 10, y + 44, 14, 10);
+        ctx.fillRect(x + 62, y + 44, 14, 10);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.18)";
+        ctx.strokeRect(x + 16, y + 50, 54, 24);
+
+        ctx.restore();
+      }
+
+      function drawObstacle(obstacle) {
+        const x = laneCenters[obstacle.lane] - obstacle.width / 2;
+        const y = obstacle.y;
+
+        if (obstacle.kind === "crate") {
+          ctx.fillStyle = "#8a5a2b";
+          ctx.fillRect(x, y, obstacle.width, obstacle.height);
+          ctx.strokeStyle = "#5b3917";
+          ctx.lineWidth = 4;
+          ctx.strokeRect(x, y, obstacle.width, obstacle.height);
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + obstacle.width, y + obstacle.height);
+          ctx.moveTo(x + obstacle.width, y);
+          ctx.lineTo(x, y + obstacle.height);
+          ctx.stroke();
+          return;
+        }
+
+        if (obstacle.kind === "cone") {
+          ctx.fillStyle = "#f29b38";
+          ctx.beginPath();
+          ctx.moveTo(x + obstacle.width / 2, y);
+          ctx.lineTo(x + obstacle.width, y + obstacle.height);
+          ctx.lineTo(x, y + obstacle.height);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = "#fff";
+          ctx.fillRect(x + 14, y + obstacle.height - 26, obstacle.width - 28, 8);
+          return;
+        }
+
+        ctx.fillStyle = "#c5c5c5";
+        ctx.fillRect(x, y, obstacle.width, obstacle.height);
+        ctx.fillStyle = "#ef5b55";
+        ctx.fillRect(x, y + 12, obstacle.width, 16);
+        ctx.fillRect(x, y + 42, obstacle.width, 16);
+      }
+
+      function drawPickup(pickup) {
+        const x = laneCenters[pickup.lane];
+        const y = pickup.y;
+        const s = pickup.size;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        ctx.fillStyle = "#f5d76e";
+        ctx.fillRect(-s / 2, -s / 2, s, s);
+
+        ctx.strokeStyle = "#a78422";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(-s / 2, -s / 2, s, s);
+
+        ctx.fillStyle = "#0d350d";
+        ctx.font = "bold 24px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("$", 0, 2);
+
+        ctx.restore();
+      }
+
+      function drawHudCanvas() {
+        ctx.fillStyle = "rgba(0,0,0,0.22)";
+        ctx.fillRect(18, 18, 270, 96);
+
+        ctx.fillStyle = "#7dff71";
+        ctx.font = "bold 28px Arial";
+        ctx.textAlign = "left";
+        ctx.fillText(`Score: ${Math.floor(game.score)}`, 34, 52);
+
+        ctx.fillStyle = "#f5d76e";
+        ctx.fillText(`Money: ${game.money}`, 34, 88);
+      }
+
+      function draw() {
+        drawBackground();
+
+        for (const pickup of game.pickups) drawPickup(pickup);
+        for (const obstacle of game.obstacles) drawObstacle(obstacle);
+
+        drawPlayer();
+        drawHudCanvas();
+      }
+
+      function loop(timestamp) {
+        if (!game.running || game.paused || game.over) {
+          draw();
+          return;
+        }
+
+        if (!game.lastTime) game.lastTime = timestamp;
+        const delta = Math.min(40, timestamp - game.lastTime);
+        game.lastTime = timestamp;
+
+        update(delta);
+        draw();
+
+        if (game.running && !game.paused && !game.over) {
+          requestAnimationFrame(loop);
+        }
+      }
+
+      function keyHandler(e) {
+        if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
+          moveLeft();
+        }
+        if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
+          moveRight();
+        }
+        if (e.key === " " || e.code === "Space") {
+          e.preventDefault();
+          pauseGame();
+        }
+      }
+
+      startBtn.addEventListener("click", startGame);
+      restartBtn.addEventListener("click", restartGame);
+      pauseBtn.addEventListener("click", pauseGame);
+      overlayStartBtn.addEventListener("click", startGame);
+      overlayRestartBtn.addEventListener("click", restartGame);
+
+      leftBtn.addEventListener("click", moveLeft);
+      rightBtn.addEventListener("click", moveRight);
+      pauseTouchBtn.addEventListener("click", pauseGame);
+
+      window.addEventListener("keydown", keyHandler);
+
+      resetGame();
+      updateHud();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Money Road Runner Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
