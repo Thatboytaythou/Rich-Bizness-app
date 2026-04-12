@@ -5,161 +5,438 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness | Gaming</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     * { box-sizing: border-box; }
+
     :root {
-      --green:#7dff71;
-      --gold:#f5d76e;
-      --danger:#ef5b55;
-      --bg:rgba(0,0,0,0.52);
-      --soft:rgba(255,255,255,0.08);
-      --soft2:rgba(255,255,255,0.04);
-      --border:rgba(125,255,113,0.18);
-      --text:#f3f3f3;
-      --muted:#cfcfcf;
+      --green: #7dff71;
+      --green-2: #b8ff8d;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
     body {
-      margin:0;
-      font-family:Arial,sans-serif;
-      color:white;
-      min-height:100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
-        url("images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png") center/cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
     }
-    .page { max-width:1600px; margin:0 auto; padding:18px; padding-bottom:40px; }
-    .topbar,.hero,.section,.status-box {
-      background:var(--bg);
-      border:1px solid var(--border);
-      border-radius:24px;
-      backdrop-filter:blur(10px);
+
+    .page {
+      max-width: 1680px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
     }
-    .topbar {
-      display:flex; justify-content:space-between; align-items:center;
-      gap:16px; flex-wrap:wrap; padding:14px 16px; margin-bottom:18px;
-    }
-    .brand {
-      display:flex; align-items:center; gap:12px;
-      color:var(--green); font-size:1.85rem; font-weight:900;
-    }
-    .brand img {
-      width:58px; height:58px; border-radius:16px; object-fit:cover;
-    }
-    .nav { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .nav a,.nav button {
-      text-decoration:none; color:white; background:var(--soft);
-      border:1px solid rgba(255,255,255,0.08);
-      padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
-    }
-    .nav a.active {
-      color:var(--green);
-      border-color:rgba(125,255,113,0.28);
-    }
-    .user-chip {
-      display:inline-block; padding:10px 14px; border-radius:999px;
-      background:var(--soft); border:1px solid rgba(255,255,255,0.08); font-weight:700;
-    }
-    .hero,.section { padding:24px; margin-bottom:18px; }
-    .hero-grid, .two-col {
-      display:grid; grid-template-columns:1.15fr 0.85fr; gap:18px;
-    }
-    .hero h1 {
-      margin:0 0 12px; font-size:3.1rem; line-height:0.98; color:var(--green);
-    }
-    .hero-kicker,.pill,.pill-red,.pill-gold,.pill-green {
-      display:inline-block; padding:8px 12px; border-radius:999px; font-weight:900; font-size:.82rem;
-    }
-    .hero-kicker,.pill,.pill-green {
-      background:rgba(125,255,113,0.12);
-      border:1px solid rgba(125,255,113,0.18);
-      color:var(--green);
-    }
-    .pill-red {
-      background:rgba(239,91,85,0.18);
-      border:1px solid rgba(239,91,85,0.28);
-      color:#ff9f9b;
-    }
-    .pill-gold {
-      background:rgba(245,215,110,0.16);
-      border:1px solid rgba(245,215,110,0.28);
-      color:var(--gold);
-    }
-    .hero p,.mini-text,.card-text { color:var(--text); line-height:1.75; }
-    .hero-actions,.card-actions,.filter-row {
-      display:flex; flex-wrap:wrap; gap:12px; margin-top:18px;
-    }
-    .btn-green,.btn-dark,.btn-gold {
-      display:inline-block; text-decoration:none; text-align:center;
-      padding:14px 18px; border-radius:14px; font-weight:900; border:none; cursor:pointer;
-    }
-    .btn-green { background:var(--green); color:black; }
-    .btn-dark {
-      background:var(--soft); color:white; border:1px solid rgba(255,255,255,0.08);
-    }
-    .btn-gold { background:var(--gold); color:black; }
+
+    .topbar,
+    .hero,
+    .section,
+    .rail-shell,
     .status-box {
-      margin-top:16px; padding:14px; font-weight:700; line-height:1.6; white-space:pre-wrap;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
-    .stats-row {
-      display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-top:18px;
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      position: sticky;
+      top: 10px;
+      z-index: 30;
     }
-    .stat {
-      padding:18px; border-radius:18px; background:rgba(0,0,0,0.44);
-      border:1px solid rgba(125,255,113,0.16); text-align:center;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
     }
-    .stat-value { font-size:1.9rem; font-weight:900; color:var(--green); }
-    .stat-label { margin-top:6px; color:var(--muted); font-weight:700; }
-    .mini-panel {
-      padding:18px; border-radius:20px; background:rgba(255,255,255,0.04);
-      border:1px solid rgba(255,255,255,0.08); min-height:110px;
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
-    .mini-panel-title { color:var(--gold); font-size:1rem; font-weight:900; margin-bottom:8px; }
-    .section-header {
-      display:flex; justify-content:space-between; align-items:flex-end;
-      gap:16px; flex-wrap:wrap; margin-bottom:16px;
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
     }
-    .section-header h2 { margin:0 0 8px; color:var(--green); font-size:2rem; }
-    .grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-    .grid-3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
-    .card {
-      border-radius:20px; overflow:hidden; background:var(--soft2);
-      border:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column;
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .card-cover {
-      height:220px;
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero,
+    .section,
+    .rail-shell {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
       background:
-        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)),
-        url("images/brand/logo-music-label.png") center/cover no-repeat;
-      padding:14px; display:flex; justify-content:space-between; align-items:flex-start;
+        linear-gradient(90deg, rgba(0,0,0,0.78), rgba(0,0,0,0.34)),
+        url("images/brand/logo-music-label.png") center center / contain no-repeat;
+      opacity: 0.22;
+      z-index: 0;
     }
-    .card-cover.custom-bg { background-size:cover; background-position:center; }
-    .card-pill-wrap { display:flex; gap:8px; flex-wrap:wrap; }
-    .card-body { padding:18px; display:flex; flex-direction:column; flex:1; }
-    .card-title { color:var(--gold); font-size:1.16rem; font-weight:900; margin-bottom:8px; }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3.2rem;
+      line-height: 0.93;
+      color: var(--green);
+      max-width: 920px;
+    }
+
+    .subtle,
+    .mini-text,
+    .card-text,
+    .card-meta,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .quick-links,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .mini-panel-title,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+      word-break: break-word;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .filters-grid input,
+    .filters-grid select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 240px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .card-meta a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
     .empty-box {
-      padding:20px; text-align:center; border-radius:16px;
-      color:rgba(255,255,255,0.78); background:rgba(255,255,255,0.04);
-      border:1px solid rgba(255,255,255,0.08);
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
     }
-    .filters {
-      display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;
+
+    @media (max-width: 1400px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid-4,
+      .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
-    .filters input,.filters select {
-      width:100%; padding:14px; border-radius:12px; border:1px solid #2c2c2c;
-      background:rgba(0,0,0,0.72); color:white; font-size:16px;
-    }
-    @media (max-width:1320px) {
-      .stats-row { grid-template-columns:repeat(3,1fr); }
-      .grid-4 { grid-template-columns:repeat(2,1fr); }
-      .hero-grid,.two-col { grid-template-columns:1fr; }
-    }
-    @media (max-width:960px) {
-      .grid-3,.grid-4,.filters { grid-template-columns:1fr; }
-    }
-    @media (max-width:760px) {
-      .stats-row { grid-template-columns:1fr; }
-      .hero h1 { font-size:2.35rem; }
-      .card-cover { height:200px; }
+
+    @media (max-width: 960px) {
+      .stats-row,
+      .grid-3,
+      .grid-4,
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero h1 {
+        font-size: 2.3rem;
+      }
+
+      .card-cover {
+        height: 210px;
+      }
     }
   </style>
 </head>
@@ -174,146 +451,143 @@
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
-        <a href="artist.html">Artist</a>
+        <a href="feed.html">Feed</a>
         <a href="gaming.html" class="active">Gaming</a>
-        <a href="sports.html">Sports</a>
         <a href="live.html">Live</a>
         <a href="watch.html">Watch</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
         <a href="profile.html">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <div class="hero-grid">
+      <div class="hero-inner">
         <div>
-          <div class="hero-kicker">GAMING TAKEOVER</div>
-          <h1>Build the Gaming Lane Into a Real Growth Machine.</h1>
-          <p>
-            Upload clips, build gamer identity, push featured content, filter by game, go live, run VIP streams,
-            and turn gaming into one of the strongest growth lanes on the platform.
-          </p>
+          <div class="hero-kicker">FULLY POLISHED GAMING HUB</div>
+          <h1>Play, post clips, build your gamer tag, and turn gaming into a real Rich Bizness lane.</h1>
+          <div class="subtle">
+            This page is built for your current setup and is ready for arcade games, leaderboards, tournaments, clips, live gaming, and creator growth.
+          </div>
 
           <div class="hero-actions">
             <a class="btn-green" href="upload-gaming.html">Upload Gaming</a>
-            <a class="btn-gold" href="live.html">Go Live Gaming</a>
+            <a class="btn-dark" href="live.html">Go Live</a>
             <a class="btn-dark" href="watch.html">Watch Gaming Live</a>
-            <a class="btn-dark" href="profile.html">Profile</a>
+            <a class="btn-gold" href="money-road-runner.html">Play Flagship Game</a>
           </div>
 
-          <div id="gamingStatusBox" class="status-box">Loading gaming systems...</div>
+          <div class="quick-links">
+            <a class="btn-dark" href="gaming-leaderboard.html">Leaderboards</a>
+            <a class="btn-dark" href="gaming-tournaments.html">Tournaments</a>
+            <a class="btn-dark" href="feed.html">Gaming Feed</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading gaming hub...</div>
 
           <div class="stats-row">
             <div class="stat">
-              <div id="gamingUploadsStat" class="stat-value">0</div>
-              <div class="stat-label">Gaming Uploads</div>
+              <div id="allStat" class="stat-value">0</div>
+              <div class="stat-label">All Clips</div>
             </div>
             <div class="stat">
-              <div id="gamingLiveStat" class="stat-value">0</div>
-              <div class="stat-label">Gaming Live Now</div>
+              <div id="featuredStat" class="stat-value">0</div>
+              <div class="stat-label">Featured</div>
             </div>
             <div class="stat">
-              <div id="gamingVipStat" class="stat-value">0</div>
-              <div class="stat-label">VIP Gaming Live</div>
+              <div id="viewsStat" class="stat-value">0</div>
+              <div class="stat-label">Views</div>
             </div>
             <div class="stat">
-              <div id="featuredGamesStat" class="stat-value">0</div>
-              <div class="stat-label">Featured Clips</div>
+              <div id="likesStat" class="stat-value">0</div>
+              <div class="stat-label">Likes</div>
             </div>
             <div class="stat">
-              <div id="totalViewsStat" class="stat-value">0</div>
-              <div class="stat-label">Total Views</div>
+              <div id="platformStat" class="stat-value">0</div>
+              <div class="stat-label">Platforms</div>
             </div>
+            <div class="stat">
+              <div id="gameStat" class="stat-value">0</div>
+              <div class="stat-label">Games</div>
+            </div>
+          </div>
+
+          <div class="filters-grid">
+            <input id="searchInput" type="text" placeholder="Search title, caption, game, platform, gamer tag..." />
+            <select id="platformFilter">
+              <option value="">All Platforms</option>
+            </select>
+            <select id="gameFilter">
+              <option value="">All Games</option>
+            </select>
+            <select id="clipTypeFilter">
+              <option value="">All Clip Types</option>
+              <option value="featured">Featured Only</option>
+            </select>
           </div>
         </div>
 
-        <div>
+        <div class="hero-side">
           <div class="mini-panel">
             <div class="mini-panel-title">Gaming Pulse</div>
-            <div id="gamingPulseBox" class="mini-text">Loading gaming activity...</div>
+            <div id="pulseBox" class="mini-text">Loading gaming pulse...</div>
           </div>
-          <div class="mini-panel" style="margin-top:14px;">
-            <div class="mini-panel-title">Growth Stack</div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Original Arcade Lane</div>
             <div class="mini-text">
-              Featured clips, live gaming rail, VIP streams, gamer tags, filters, and content discovery all working together.
+              Your gaming section can hold fully original playable mini-games, score systems, and branded challenges without copying anyone else’s IP.
+            </div>
+            <div class="card-actions">
+              <a class="btn-dark" href="money-road-runner.html">Money Road Runner</a>
+              <a class="btn-dark" href="gaming-leaderboard.html">Leaderboard</a>
             </div>
           </div>
-          <div class="mini-panel" style="margin-top:14px;">
-            <div class="mini-panel-title">Quick Moves</div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Creator Gaming</div>
+            <div class="mini-text">
+              Upload clips, connect gamer tags, post highlights, and tie everything back into profile, feed, comments, and live.
+            </div>
             <div class="card-actions">
               <a class="btn-dark" href="upload-gaming.html">Upload Clip</a>
-              <a class="btn-dark" href="live.html">Start Live</a>
-              <a class="btn-dark" href="watch.html">Watch Live</a>
+              <a class="btn-dark" href="profile.html">Profile</a>
+              <a class="btn-dark" href="comments.html">Comments</a>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <section class="section">
+    <div class="rail-shell">
       <div class="section-header">
         <div>
-          <div class="pill-red">GAMING LIVE NOW</div>
-          <h2>Gaming Streams Going Crazy</h2>
-          <p class="mini-text">Gaming live rooms pulled from your synced live system.</p>
+          <h2>Featured Gaming</h2>
+          <p>The clips and posts with the biggest push behind them.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn-dark" href="money-road-runner.html">Play Game</a>
+          <a class="btn-dark" href="gaming-tournaments.html">Tournaments</a>
         </div>
       </div>
-      <div id="gamingLiveRail" class="grid-3">
-        <div class="empty-box">Loading gaming live rooms...</div>
+      <div id="featuredRail" class="grid-4">
+        <div class="empty-box">Loading featured gaming...</div>
       </div>
-    </section>
+    </div>
 
-    <section class="section">
+    <div class="rail-shell">
       <div class="section-header">
         <div>
-          <h2>Find Clips Faster</h2>
-          <p class="mini-text">Filter by game, platform, or clip type so gaming content is easier to grow.</p>
+          <h2>Latest Gaming Drops</h2>
+          <p>Recent uploads, highlights, and gamer energy from across the platform.</p>
+        </div>
+        <div class="card-actions">
+          <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
         </div>
       </div>
-
-      <div class="filters">
-        <input id="searchInput" placeholder="Search title, caption, gamer tag..." />
-        <select id="gameFilter">
-          <option value="">All Games</option>
-        </select>
-        <select id="clipFilter">
-          <option value="">All Clip Types</option>
-          <option value="funny">Funny</option>
-          <option value="win">Win</option>
-          <option value="rage">Rage</option>
-          <option value="highlight">Highlight</option>
-          <option value="tutorial">Tutorial</option>
-          <option value="montage">Montage</option>
-        </select>
+      <div id="gamingGrid" class="grid-4">
+        <div class="empty-box">Loading gaming clips...</div>
       </div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <div>
-          <h2>Featured Gaming Clips</h2>
-          <p class="mini-text">Push your strongest uploads harder and make them easier to discover.</p>
-        </div>
-      </div>
-      <div id="featuredGamingRail" class="grid-4">
-        <div class="empty-box">Loading featured gaming clips...</div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="section-header">
-        <div>
-          <h2>All Gaming Uploads</h2>
-          <p class="mini-text">This rail pulls from your gaming uploads so it stays synced to the rest of the app.</p>
-        </div>
-      </div>
-      <div id="gamingUploadsRail" class="grid-4">
-        <div class="empty-box">Loading gaming uploads...</div>
-      </div>
-    </section>
+    </div>
   </div>
 
   <script>
@@ -322,32 +596,39 @@
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
       });
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const gamingStatusBox = document.getElementById("gamingStatusBox");
-      const gamingPulseBox = document.getElementById("gamingPulseBox");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
 
-      const gamingUploadsStat = document.getElementById("gamingUploadsStat");
-      const gamingLiveStat = document.getElementById("gamingLiveStat");
-      const gamingVipStat = document.getElementById("gamingVipStat");
-      const featuredGamesStat = document.getElementById("featuredGamesStat");
-      const totalViewsStat = document.getElementById("totalViewsStat");
-
-      const gamingLiveRail = document.getElementById("gamingLiveRail");
-      const featuredGamingRail = document.getElementById("featuredGamingRail");
-      const gamingUploadsRail = document.getElementById("gamingUploadsRail");
+      const allStat = document.getElementById("allStat");
+      const featuredStat = document.getElementById("featuredStat");
+      const viewsStat = document.getElementById("viewsStat");
+      const likesStat = document.getElementById("likesStat");
+      const platformStat = document.getElementById("platformStat");
+      const gameStat = document.getElementById("gameStat");
 
       const searchInput = document.getElementById("searchInput");
+      const platformFilter = document.getElementById("platformFilter");
       const gameFilter = document.getElementById("gameFilter");
-      const clipFilter = document.getElementById("clipFilter");
+      const clipTypeFilter = document.getElementById("clipTypeFilter");
 
-      let allUploads = [];
+      const featuredRail = document.getElementById("featuredRail");
+      const gamingGrid = document.getElementById("gamingGrid");
+
+      let currentUser = null;
+      let profileMap = {};
+      let gamingCache = [];
 
       function setStatus(message) {
-        gamingStatusBox.textContent = message;
+        statusBox.textContent = message;
       }
 
       function escapeHtml(text) {
@@ -366,12 +647,22 @@
         return d.toLocaleString();
       }
 
+      function getCreatorLabel(userId, fallback = "Gamer") {
+        const profile = profileMap[userId] || {};
+        return profile.display_name || profile.username || profile.email || fallback;
+      }
+
+      function getArtistLink(userId) {
+        const profile = profileMap[userId] || {};
+        if (!profile.username) return "artist.html";
+        return `artist.html?u=${encodeURIComponent(profile.username)}`;
+      }
+
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-        const user = data?.session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
-        return user;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       }
 
       async function logOut() {
@@ -384,184 +675,190 @@
         }
       }
 
-      function renderGamingLive(rows) {
-        if (!rows.length) {
-          gamingLiveRail.innerHTML = `<div class="empty-box">No gaming live rooms right now.</div>`;
-          return;
-        }
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
 
-        gamingLiveRail.innerHTML = rows.map(row => {
-          const thumbStyle = row.thumbnail_url
-            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
-            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", ids);
 
-          return `
-            <div class="card">
-              <div class="card-cover custom-bg" style="${thumbStyle}">
-                <div class="card-pill-wrap">
-                  <span class="pill-red">LIVE NOW</span>
-                  <span class="${row.is_vip ? "pill-gold" : "pill-green"}">${row.is_vip ? "VIP" : "FREE"}</span>
-                  <span class="pill">GAMING</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="card-title">${escapeHtml(row.title || "Gaming Live")}</div>
-                <div class="card-text">
-Category: ${escapeHtml(row.category || "Gaming")}<br>
-Tags: ${escapeHtml(row.tags || "--")}<br>
-Announcement: ${escapeHtml(row.announcement || "--")}<br>
-Scheduled: ${escapeHtml(formatDate(row.scheduled_for))}
-                </div>
-                <div class="card-actions">
-                  <a class="btn-green" href="watch.html?room=${encodeURIComponent(row.room_name)}">Watch Now</a>
-                  <a class="btn-dark" href="live.html">Go Live Too</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
+        if (error && error.code !== "42P01") throw error;
+
+        profileMap = {};
+        (data || []).forEach(profile => {
+          profileMap[profile.id] = profile;
+        });
       }
 
-      function renderUploads(rows, targetEl, emptyText) {
-        if (!rows.length) {
-          targetEl.innerHTML = `<div class="empty-box">${emptyText}</div>`;
-          return;
-        }
+      function populateFilters(rows) {
+        const platforms = [...new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean))].sort();
+        const games = [...new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean))].sort();
 
-        targetEl.innerHTML = rows.map(row => {
-          const coverStyle = row.thumbnail_url
-            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
-            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
+        platformFilter.innerHTML =
+          `<option value="">All Platforms</option>` +
+          platforms.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
 
-          return `
-            <div class="card">
-              <div class="card-cover custom-bg" style="${coverStyle}">
-                <div class="card-pill-wrap">
-                  <span class="pill-gold">${escapeHtml(row.game_title || "GAME")}</span>
-                  <span class="pill">${escapeHtml(row.clip_type || row.content_type || "clip")}</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <div class="card-title">${escapeHtml(row.title || "Gaming Upload")}</div>
-                <div class="card-text">
-Game: ${escapeHtml(row.game_title || "--")}<br>
-Platform: ${escapeHtml(row.platform || "--")}<br>
-Gamer Tag: ${escapeHtml(row.gamer_tag || "--")}<br>
-Views: ${escapeHtml(row.views || 0)} | Likes: ${escapeHtml(row.likes || 0)}<br>
-Created: ${escapeHtml(formatDate(row.created_at))}
-                </div>
-                <div class="card-actions">
-                  <a class="btn-green" href="${row.file_url ? escapeHtml(row.file_url) : "upload-gaming.html"}" target="${row.file_url ? "_blank" : "_self"}">Open</a>
-                  <a class="btn-dark" href="upload-gaming.html">Upload More</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function populateGameFilter(rows) {
-        const games = [...new Set(rows.map(r => r.game_title).filter(Boolean))].sort();
-        gameFilter.innerHTML = `<option value="">All Games</option>` +
+        gameFilter.innerHTML =
+          `<option value="">All Games</option>` +
           games.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("");
       }
 
-      function applyUploadFilters() {
-        const q = searchInput.value.trim().toLowerCase();
-        const game = gameFilter.value;
-        const clip = clipFilter.value;
+      function updateStats(rows) {
+        allStat.textContent = String(rows.length);
+        featuredStat.textContent = String(rows.filter(r => !!r.is_featured).length);
+        viewsStat.textContent = String(rows.reduce((sum, r) => sum + Number(r.views || 0), 0));
+        likesStat.textContent = String(rows.reduce((sum, r) => sum + Number(r.likes || 0), 0));
+        platformStat.textContent = String(new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean)).size);
+        gameStat.textContent = String(new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean)).size);
 
-        const filtered = allUploads.filter(row => {
-          const matchesSearch = !q || [
-            row.title, row.caption, row.gamer_tag, row.game_title, row.platform
-          ].join(" ").toLowerCase().includes(q);
-
-          const matchesGame = !game || row.game_title === game;
-          const matchesClip = !clip || (row.clip_type || "").toLowerCase() === clip.toLowerCase();
-
-          return matchesSearch && matchesGame && matchesClip;
-        });
-
-        const featured = filtered.filter(r => r.is_featured);
-        renderUploads(featured, featuredGamingRail, "No featured gaming clips yet.");
-        renderUploads(filtered, gamingUploadsRail, "No gaming uploads match these filters.");
+        pulseBox.textContent =
+          `Clips Loaded: ${rows.length}\n` +
+          `Featured: ${rows.filter(r => !!r.is_featured).length}\n` +
+          `Views: ${rows.reduce((sum, r) => sum + Number(r.views || 0), 0)}\n` +
+          `Likes: ${rows.reduce((sum, r) => sum + Number(r.likes || 0), 0)}\n` +
+          `Platforms: ${new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean)).size}\n` +
+          `Games: ${new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean)).size}`;
       }
 
-      async function loadGamingSync() {
+      function getFilteredRows() {
+        const q = searchInput.value.trim().toLowerCase();
+        const platform = platformFilter.value;
+        const game = gameFilter.value;
+        const clipMode = clipTypeFilter.value;
+
+        return gamingCache.filter(row => {
+          const creator = getCreatorLabel(row.user_id, "").toLowerCase();
+          const haystack = [
+            row.title,
+            row.caption,
+            row.game_title,
+            row.platform,
+            row.gamer_tag,
+            row.clip_type,
+            creator
+          ].join(" ").toLowerCase();
+
+          const matchesSearch = !q || haystack.includes(q);
+          const matchesPlatform = !platform || row.platform === platform;
+          const matchesGame = !game || row.game_title === game;
+          const matchesClipMode = !clipMode || (clipMode === "featured" && !!row.is_featured);
+
+          return matchesSearch && matchesPlatform && matchesGame && matchesClipMode;
+        });
+      }
+
+      function buildCard(row) {
+        const coverStyle = row.thumbnail_url
+          ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
+          : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
+
+        const creatorName = getCreatorLabel(row.user_id);
+        const creatorLink = getArtistLink(row.user_id);
+        const openHref = row.file_url || "gaming.html";
+
+        return `
+          <div class="card">
+            <div class="card-cover custom-bg" style="${coverStyle}">
+              <div class="card-pill-wrap">
+                <span class="pill-green">${escapeHtml((row.platform || "gaming").toUpperCase())}</span>
+                ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
+                ${row.clip_type ? `<span class="pill-gold">${escapeHtml(row.clip_type.toUpperCase())}</span>` : ``}
+              </div>
+            </div>
+
+            <div class="card-body">
+              <div class="card-title">${escapeHtml(row.title || "Gaming Upload")}</div>
+              <div class="card-text">
+                ${escapeHtml(row.game_title || "Game")} • ${escapeHtml(row.gamer_tag || "No gamer tag")} • ${escapeHtml(row.platform || "Platform")}
+              </div>
+
+              <div class="card-meta">
+                Creator: <a href="${creatorLink}">${escapeHtml(creatorName)}</a><br>
+                Caption: ${escapeHtml(row.caption || "No caption")}<br>
+                Posted: ${escapeHtml(formatDate(row.created_at))}<br>
+                Views: ${escapeHtml(row.views || 0)} • Likes: ${escapeHtml(row.likes || 0)}
+              </div>
+
+              <div class="card-actions">
+                <a class="btn-green" href="${openHref}" ${String(openHref).startsWith("http") ? 'target="_blank"' : ""}>Open Clip</a>
+                <a class="btn-dark" href="${creatorLink}">Creator</a>
+                <a class="btn-dark" href="comments.html?type=gaming&id=${encodeURIComponent(row.id)}">Comments</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderFeatured(rows) {
+        const featured = rows.filter(r => !!r.is_featured).slice(0, 4);
+
+        if (!featured.length) {
+          featuredRail.innerHTML = `<div class="empty-box">No featured gaming yet.</div>`;
+          return;
+        }
+
+        featuredRail.innerHTML = featured.map(buildCard).join("");
+      }
+
+      function renderGamingGrid() {
+        const rows = getFilteredRows();
+
+        if (!rows.length) {
+          gamingGrid.innerHTML = `<div class="empty-box">No gaming clips found with the current filters.</div>`;
+          return;
+        }
+
+        gamingGrid.innerHTML = rows.map(buildCard).join("");
+      }
+
+      async function loadGaming() {
         try {
-          const [
-            liveRes,
-            uploadsRes,
-            uploadsCountRes
-          ] = await Promise.all([
-            supabase
-              .from("live_rooms")
-              .select("*")
-              .ilike("category", "%gaming%")
-              .eq("is_live", true)
-              .order("updated_at", { ascending: false })
-              .limit(6),
+          setStatus("Loading gaming hub...");
 
-            supabase
-              .from("gaming_uploads")
-              .select("*")
-              .order("created_at", { ascending: false })
-              .limit(50),
+          const { data, error } = await supabase
+            .from("gaming_uploads")
+            .select("*")
+            .order("created_at", { ascending: false });
 
-            supabase
-              .from("gaming_uploads")
-              .select("*", { count: "exact", head: true })
-          ]);
+          if (error && error.code !== "42P01") throw error;
 
-          if (liveRes.error && liveRes.error.code !== "42P01") throw liveRes.error;
-          if (uploadsRes.error && uploadsRes.error.code !== "42P01") throw uploadsRes.error;
-          if (uploadsCountRes.error && uploadsCountRes.error.code !== "42P01") throw uploadsCountRes.error;
+          gamingCache = data || [];
+          await loadProfiles(gamingCache.map(row => row.user_id));
 
-          const liveRows = liveRes.data || [];
-          allUploads = uploadsRes.data || [];
-          const vipCount = liveRows.filter(row => row.is_vip).length;
-          const featuredCount = allUploads.filter(row => row.is_featured).length;
-          const totalViews = allUploads.reduce((sum, row) => sum + Number(row.views || 0), 0);
+          populateFilters(gamingCache);
+          updateStats(gamingCache);
+          renderFeatured(gamingCache);
+          renderGamingGrid();
 
-          gamingUploadsStat.textContent = uploadsCountRes.count || 0;
-          gamingLiveStat.textContent = liveRows.length;
-          gamingVipStat.textContent = vipCount;
-          featuredGamesStat.textContent = featuredCount;
-          totalViewsStat.textContent = totalViews;
-
-          renderGamingLive(liveRows);
-          populateGameFilter(allUploads);
-          applyUploadFilters();
-
-          gamingPulseBox.textContent =
-            liveRows.length
-              ? `${liveRows.length} gaming live room(s) active right now.\nTop gaming live: ${liveRows[0].title || "Gaming Live"}\nVIP gaming rooms: ${vipCount}\nFeatured clips: ${featuredCount}`
-              : `No gaming live rooms active right now.\nUploads are still ready and gaming is synced to live, profile, and discovery flow.`;
-
-          setStatus("Gaming fully synced with live, uploads, and growth rails.");
+          setStatus("✅ Gaming hub fully polished and synced.");
         } catch (error) {
-          console.error("Gaming sync error:", error);
-          setStatus("Gaming sync error: " + error.message);
-          gamingPulseBox.textContent = "Could not load gaming activity right now.";
-          gamingLiveRail.innerHTML = `<div class="empty-box">Could not load gaming live rooms.</div>`;
-          featuredGamingRail.innerHTML = `<div class="empty-box">Could not load featured clips.</div>`;
-          gamingUploadsRail.innerHTML = `<div class="empty-box">Could not load gaming uploads.</div>`;
+          console.error("Gaming load error:", error);
+          setStatus("❌ Gaming load error: " + error.message);
+          featuredRail.innerHTML = `<div class="empty-box">Could not load featured gaming.</div>`;
+          gamingGrid.innerHTML = `<div class="empty-box">Could not load gaming right now.</div>`;
         }
       }
 
-      searchInput.addEventListener("input", applyUploadFilters);
-      gameFilter.addEventListener("change", applyUploadFilters);
-      clipFilter.addEventListener("change", applyUploadFilters);
+      [searchInput, platformFilter, gameFilter, clipTypeFilter].forEach(el => {
+        el.addEventListener("input", renderGamingGrid);
+        el.addEventListener("change", renderGamingGrid);
+      });
+
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      Promise.all([loadSession(), loadGamingSync()]).then(() => {
-        setInterval(loadGamingSync, 30000);
-      });
+      async function init() {
+        await loadSession();
+        await loadGaming();
+      }
+
+      init();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
