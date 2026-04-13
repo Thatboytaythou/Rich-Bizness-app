@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload | Rich Bizness</title>
+  <title>Rich Bizness | Upload Hub</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -12,13 +12,14 @@
     :root {
       --green: #7dff71;
       --gold: #f5d76e;
+      --blue: #67b7ff;
       --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.55);
+      --bg: rgba(0,0,0,0.56);
       --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
     body {
@@ -27,22 +28,26 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.90)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1200px;
+      max-width: 1680px;
       margin: 0 auto;
       padding: 18px;
-      padding-bottom: 40px;
+      padding-bottom: 60px;
     }
 
-    .topbar, .hero, .section, .status-box {
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 24px;
       backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
@@ -60,25 +65,28 @@
       align-items: center;
       gap: 12px;
       color: var(--green);
-      font-size: 1.8rem;
+      font-size: 1.9rem;
       font-weight: 900;
     }
 
     .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
       object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
-    .nav a, .nav button {
+    .nav a,
+    .nav button {
       text-decoration: none;
       color: white;
       background: var(--soft);
@@ -92,42 +100,90 @@
     .nav a.active {
       color: var(--green);
       border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       font-weight: 700;
     }
 
-    .hero, .section {
+    .hero,
+    .section {
       padding: 24px;
       margin-bottom: 18px;
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 2.9rem;
-      line-height: 1;
-      color: var(--green);
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
     }
 
-    .subtle {
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 0.94;
+      color: var(--green);
+      max-width: 980px;
+    }
+
+    .subtle,
+    .mini-text,
+    .status-box,
+    .card-text,
+    .card-meta {
       color: var(--text);
       line-height: 1.75;
     }
 
-    .actions, .quick-links {
+    .hero-kicker,
+    .pill-green,
+    .pill-gold,
+    .pill-blue {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-blue {
+      background: rgba(103,183,255,0.18);
+      border: 1px solid rgba(103,183,255,0.28);
+      color: var(--blue);
+    }
+
+    .hero-actions,
+    .actions,
+    .card-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
       margin-top: 18px;
     }
 
-    .btn-green, .btn-dark, .btn-gold {
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-blue {
       display: inline-block;
       text-decoration: none;
       text-align: center;
@@ -140,152 +196,107 @@
 
     .btn-green { background: var(--green); color: black; }
     .btn-dark {
-      background: var(--soft);
+      background: rgba(255,255,255,0.08);
       color: white;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
     }
     .btn-gold { background: var(--gold); color: black; }
+    .btn-blue { background: var(--blue); color: black; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
       font-weight: 700;
-      line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 18px;
-    }
-
-    .panel {
+    .mini-panel {
       padding: 18px;
       border-radius: 20px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .panel h2 {
-      margin: 0 0 12px;
-      color: var(--green);
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .control {
-      margin-bottom: 6px;
-    }
-
-    .control.full {
-      grid-column: 1 / -1;
-    }
-
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--green);
-      font-weight: 800;
-    }
-
-    .control input,
-    .control select,
-    .control textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .checkbox-row input {
-      width: auto;
-      transform: scale(1.2);
-    }
-
-    .preview-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
       margin-bottom: 14px;
     }
 
-    .preview-card h3 {
-      margin-top: 0;
-      color: var(--gold);
+    .mini-panel-title,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
     }
 
-    .preview-box {
-      min-height: 220px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
       overflow: hidden;
-      color: rgba(255,255,255,0.7);
-      text-align: center;
-      padding: 12px;
-    }
-
-    .preview-box img,
-    .preview-box video {
-      max-width: 100%;
-      max-height: 360px;
-      display: block;
-      border-radius: 12px;
-    }
-
-    .mini-box {
-      padding: 14px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
+      background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
-      color: var(--text);
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-top: 14px;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    .card-cover {
+      height: 210px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
 
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
 
-      .hero h1 {
-        font-size: 2.2rem;
-      }
+    .card-title {
+      color: var(--gold);
+      font-size: 1.08rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    @media (max-width: 1400px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 2.2rem; }
+      .grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -294,12 +305,13 @@
     <div class="topbar">
       <div class="brand">
         <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Upload Hub</span>
+        <span>Rich Bizness Upload Hub</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
+        <a href="feed.html">Feed</a>
         <a href="gallery.html">Gallery</a>
         <a href="music.html">Music</a>
         <a href="gaming.html">Gaming</a>
@@ -311,101 +323,128 @@
     </div>
 
     <div class="hero">
-      <h1>Full Creator Upload Hub</h1>
-      <div class="subtle">
-        Upload artwork, images, creator videos, and featured posts from one main station. Music, gaming, and sports get their own specialized upload lanes too.
-      </div>
+      <div class="hero-grid">
+        <div>
+          <div>
+            <span class="hero-kicker">MAIN UPLOAD LANE</span>
+            <span class="pill-green">SYNCED</span>
+            <span class="pill-blue">MULTI SYSTEM</span>
+            <span class="pill-gold">NO DUPLICATES</span>
+          </div>
 
-      <div class="quick-links">
-        <a class="btn-dark" href="upload-music.html">Upload Music</a>
-        <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
-        <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
-        <a class="btn-gold" href="live.html">Go Live</a>
-      </div>
+          <h1>Upload music, fashion, gaming, sports, and gallery content from one Rich Bizness hub.</h1>
 
-      <div id="statusBox" class="status-box">Ready to upload.</div>
+          <div class="subtle">
+            This page is your main upload entry point. It does not replace your other upload pages — it keeps them organized and synced so you always know where each upload goes.
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn-green" href="upload-fashion.html">Upload Fashion</a>
+            <a class="btn-dark" href="upload-music.html">Upload Music</a>
+            <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
+            <a class="btn-dark" href="upload-sports.html">Upload Sports</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading upload hub...</div>
+        </div>
+
+        <div>
+          <div class="mini-panel">
+            <div class="mini-panel-title">Upload Map</div>
+            <div class="mini-text">
+              Fashion and merch → <strong>artwork / gallery</strong><br>
+              Music → <strong>music uploads</strong><br>
+              Gaming → <strong>gaming uploads</strong><br>
+              Sports → <strong>sports uploads</strong>
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Best Workflow</div>
+            <div class="mini-text">
+              Use this page as your command center, then upload into the exact page for that lane. That keeps your repo clean and your data synced.
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Current Expansion</div>
+            <div class="mini-text">
+              Gallery storefront is ready.
+              <br>Fashion upload is ready.
+              <br>Next strong move is syncing product sizes, variants, and creator stores.
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="layout">
-      <div class="section">
-        <div class="panel">
-          <h2>Main Upload Form</h2>
-
-          <div class="form-grid">
-            <div class="control">
-              <label for="titleInput">Title</label>
-              <input id="titleInput" type="text" placeholder="Rich Bizness visual drop" />
-            </div>
-
-            <div class="control">
-              <label for="contentTypeInput">Content Type</label>
-              <select id="contentTypeInput">
-                <option value="artwork">Artwork</option>
-                <option value="creator_post">Creator Post</option>
-                <option value="image_drop">Image Drop</option>
-                <option value="video_drop">Video Drop</option>
-              </select>
-            </div>
-
-            <div class="control">
-              <label for="mediaTypeInput">Media Type</label>
-              <select id="mediaTypeInput">
-                <option value="image">Image</option>
-                <option value="video">Video</option>
-              </select>
-            </div>
-
-            <div class="control">
-              <label for="thumbModeInput">Thumbnail</label>
-              <select id="thumbModeInput">
-                <option value="same">Use main file</option>
-                <option value="separate">Upload separate thumbnail</option>
-              </select>
-            </div>
-
-            <div class="control full">
-              <label for="captionInput">Caption</label>
-              <textarea id="captionInput" placeholder="Tell people what this upload is about..."></textarea>
-            </div>
-
-            <div class="control full">
-              <label for="mainFileInput">Main File</label>
-              <input id="mainFileInput" type="file" accept="image/*,video/*" />
-            </div>
-
-            <div class="control full" id="thumbControl" style="display:none;">
-              <label for="thumbFileInput">Separate Thumbnail</label>
-              <input id="thumbFileInput" type="file" accept="image/*" />
-            </div>
-
-            <div class="control full">
-              <label>Featured Upload</label>
-              <div class="checkbox-row">
-                <input id="featuredToggle" type="checkbox" />
-                <span>Mark this upload as featured</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button id="uploadBtn" class="btn-green" type="button">Upload Now</button>
-            <a class="btn-dark" href="gallery.html">Open Gallery</a>
-            <a class="btn-dark" href="profile.html">Open Profile</a>
-          </div>
-
-          <div id="uploadInfoBox" class="mini-box">Main uploads from this page save into the `artworks` table.</div>
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Choose Upload Lane</h2>
+          <p>Open the exact upload system you want without creating new duplicate files.</p>
         </div>
       </div>
 
-      <div class="section">
-        <div class="preview-card">
-          <h3>Main Preview</h3>
-          <div id="mainPreview" class="preview-box">Your main file preview will show here.</div>
+      <div class="grid">
+        <div class="card">
+          <div class="card-cover">
+            <span class="pill-blue">STOREFRONT</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Fashion / Gallery Upload</div>
+            <div class="card-text">Upload clothes, shoes, merch, art, tattoos, 3D work, and custom storefront items.</div>
+            <div class="card-meta">Saves into: artwork → gallery.html</div>
+            <div class="card-actions">
+              <a class="btn-green" href="upload-fashion.html">Open Fashion Upload</a>
+              <a class="btn-dark" href="gallery.html">Open Gallery</a>
+            </div>
+          </div>
         </div>
 
-        <div class="preview-card">
-          <h3>Thumbnail Preview</h3>
-          <div id="thumbPreview" class="preview-box">Your thumbnail preview will show here.</div>
+        <div class="card">
+          <div class="card-cover">
+            <span class="pill-green">MUSIC</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Music Upload</div>
+            <div class="card-text">Upload tracks, covers, locked music, and paid unlock-ready content.</div>
+            <div class="card-meta">Saves into: music_uploads → music.html</div>
+            <div class="card-actions">
+              <a class="btn-green" href="upload-music.html">Open Music Upload</a>
+              <a class="btn-dark" href="music.html">Open Music</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-cover">
+            <span class="pill-gold">GAMING</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Gaming Upload</div>
+            <div class="card-text">Upload gaming clips, challenge content, and content for the gaming system.</div>
+            <div class="card-meta">Saves into: gaming uploads → gaming.html</div>
+            <div class="card-actions">
+              <a class="btn-green" href="upload-gaming.html">Open Gaming Upload</a>
+              <a class="btn-dark" href="gaming.html">Open Gaming</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-cover">
+            <span class="pill-blue">SPORTS</span>
+          </div>
+          <div class="card-body">
+            <div class="card-title">Sports Upload</div>
+            <div class="card-text">Upload sports clips, takes, featured content, and sports creator posts.</div>
+            <div class="card-meta">Saves into: sports_uploads → sports.html</div>
+            <div class="card-actions">
+              <a class="btn-green" href="upload-sports.html">Open Sports Upload</a>
+              <a class="btn-dark" href="sports.html">Open Sports</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -415,7 +454,6 @@
     try {
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const UPLOAD_BUCKET = "creator-uploads";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -429,20 +467,6 @@
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
 
-      const titleInput = document.getElementById("titleInput");
-      const contentTypeInput = document.getElementById("contentTypeInput");
-      const mediaTypeInput = document.getElementById("mediaTypeInput");
-      const thumbModeInput = document.getElementById("thumbModeInput");
-      const captionInput = document.getElementById("captionInput");
-      const mainFileInput = document.getElementById("mainFileInput");
-      const thumbFileInput = document.getElementById("thumbFileInput");
-      const featuredToggle = document.getElementById("featuredToggle");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const thumbControl = document.getElementById("thumbControl");
-
-      const mainPreview = document.getElementById("mainPreview");
-      const thumbPreview = document.getElementById("thumbPreview");
-
       function setStatus(message) {
         statusBox.textContent = message;
       }
@@ -450,16 +474,14 @@
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-
         const user = data?.session?.user || null;
         userChip.textContent = user?.email || "Guest mode";
 
         if (!user) {
           window.location.href = "auth.html";
-          return null;
         }
 
-        return user;
+        setStatus("✅ Upload hub fully synced.");
       }
 
       async function logOut() {
@@ -472,128 +494,6 @@
         }
       }
 
-      function renderFilePreview(file, targetEl) {
-        if (!file) {
-          targetEl.innerHTML = "No file selected.";
-          return;
-        }
-
-        const url = URL.createObjectURL(file);
-
-        if (file.type.startsWith("image/")) {
-          targetEl.innerHTML = `<img src="${url}" alt="Preview" />`;
-          return;
-        }
-
-        if (file.type.startsWith("video/")) {
-          targetEl.innerHTML = `<video src="${url}" controls></video>`;
-          return;
-        }
-
-        targetEl.textContent = file.name;
-      }
-
-      function makeFilePath(prefix, file) {
-        const safeName = String(file.name || "file").replace(/\s+/g, "-");
-        return `${prefix}/${Date.now()}-${safeName}`;
-      }
-
-      async function uploadFile(path, file) {
-        const { error } = await supabase.storage
-          .from(UPLOAD_BUCKET)
-          .upload(path, file, { upsert: false });
-
-        if (error) throw error;
-
-        const { data } = supabase.storage.from(UPLOAD_BUCKET).getPublicUrl(path);
-        return data.publicUrl;
-      }
-
-      function updateThumbUi() {
-        const separate = thumbModeInput.value === "separate";
-        thumbControl.style.display = separate ? "block" : "none";
-      }
-
-      async function uploadMainContent() {
-        try {
-          setStatus("Checking session...");
-          uploadBtn.disabled = true;
-
-          const user = await loadSession();
-          if (!user) return;
-
-          const title = titleInput.value.trim();
-          const caption = captionInput.value.trim();
-          const contentType = contentTypeInput.value;
-          const mediaType = mediaTypeInput.value;
-          const mainFile = mainFileInput.files[0];
-          const thumbFile = thumbFileInput.files[0];
-          const separateThumb = thumbModeInput.value === "separate";
-
-          if (!title) throw new Error("Title is required.");
-          if (!mainFile) throw new Error("Main file is required.");
-
-          setStatus("Uploading main file...");
-          const mainPath = makeFilePath(user.id, mainFile);
-          const fileUrl = await uploadFile(mainPath, mainFile);
-
-          let thumbnailUrl = fileUrl;
-
-          if (separateThumb) {
-            if (!thumbFile) throw new Error("Separate thumbnail selected but no thumbnail file uploaded.");
-            setStatus("Uploading thumbnail...");
-            const thumbPath = makeFilePath(user.id, thumbFile);
-            thumbnailUrl = await uploadFile(thumbPath, thumbFile);
-          }
-
-          setStatus("Saving upload...");
-          const { error } = await supabase
-            .from("artworks")
-            .insert([{
-              user_id: user.id,
-              title,
-              caption,
-              content_type: contentType,
-              media_type: mediaType,
-              file_url: fileUrl,
-              thumbnail_url: thumbnailUrl,
-              is_featured: featuredToggle.checked
-            }]);
-
-          if (error) throw error;
-
-          setStatus("✅ Upload complete.");
-
-          titleInput.value = "";
-          captionInput.value = "";
-          contentTypeInput.value = "artwork";
-          mediaTypeInput.value = "image";
-          thumbModeInput.value = "same";
-          featuredToggle.checked = false;
-          mainFileInput.value = "";
-          thumbFileInput.value = "";
-          updateThumbUi();
-
-          mainPreview.innerHTML = "Your main file preview will show here.";
-          thumbPreview.innerHTML = "Your thumbnail preview will show here.";
-        } catch (error) {
-          console.error(error);
-          setStatus("❌ Upload error: " + error.message);
-        } finally {
-          uploadBtn.disabled = false;
-        }
-      }
-
-      mainFileInput.addEventListener("change", () => {
-        renderFilePreview(mainFileInput.files[0], mainPreview);
-      });
-
-      thumbFileInput.addEventListener("change", () => {
-        renderFilePreview(thumbFileInput.files[0], thumbPreview);
-      });
-
-      thumbModeInput.addEventListener("change", updateThumbUi);
-      uploadBtn.addEventListener("click", uploadMainContent);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
@@ -601,14 +501,11 @@
         userChip.textContent = user?.email || "Guest mode";
       });
 
-      updateThumbUi();
-      loadSession().then(() => {
-        setStatus("Ready to upload.");
-      });
+      loadSession();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Upload Hub Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
