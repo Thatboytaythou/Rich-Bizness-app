@@ -2,600 +2,209 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Sports | Rich Bizness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rich Bizness | Upload Sports</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
 
     :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.55);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
+      --green:#7dff71;
+      --gold:#f5d76e;
+      --blue:#67b7ff;
+      --bg:rgba(0,0,0,0.6);
     }
 
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+      margin:0;
+      font-family:Arial;
+      color:white;
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.90)),
-        url("images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.95)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed;
     }
 
-    .page {
-      max-width: 950px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 40px;
+    .page { max-width:900px; margin:auto; padding:20px; }
+
+    .box {
+      background:var(--bg);
+      border:1px solid rgba(125,255,113,0.2);
+      border-radius:20px;
+      padding:20px;
     }
 
-    .topbar,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
+    h1 { color:var(--green); }
+
+    input,select,textarea {
+      width:100%;
+      padding:14px;
+      margin-top:10px;
+      border-radius:12px;
+      border:none;
+      background:#111;
+      color:white;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
+    button {
+      margin-top:15px;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      font-weight:900;
+      background:var(--green);
+      cursor:pointer;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.8rem;
-      font-weight: 900;
+    .status {
+      margin-top:15px;
+      padding:12px;
+      background:#111;
+      border-radius:10px;
+      white-space:pre-wrap;
     }
 
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-    }
-
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: 2.7rem;
-      line-height: 1;
-      color: var(--green);
-    }
-
-    .subtle {
-      color: var(--text);
-      line-height: 1.75;
-      margin-bottom: 20px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .control {
-      margin-bottom: 6px;
-    }
-
-    .control.full {
-      grid-column: 1 / -1;
-    }
-
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--green);
-      font-weight: 800;
-    }
-
-    .control input,
-    .control select,
-    .control textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .checkbox-row input {
-      width: auto;
-      transform: scale(1.2);
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 20px;
-    }
-
-    .preview-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .preview-card h3 {
-      margin-top: 0;
-      color: var(--gold);
-    }
-
-    .preview-box {
-      min-height: 180px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      color: rgba(255,255,255,0.7);
-      text-align: center;
-      padding: 12px;
-    }
-
-    .preview-box img,
-    .preview-box video {
-      max-width: 100%;
-      max-height: 320px;
-      display: block;
-      border-radius: 12px;
-    }
-
-    @media (max-width: 860px) {
-      .form-grid,
-      .preview-grid {
-        grid-template-columns: 1fr;
-      }
-
-      h1 {
-        font-size: 2.2rem;
-      }
+    .preview {
+      margin-top:15px;
+      background:#111;
+      padding:10px;
+      border-radius:10px;
     }
   </style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Upload Sports</span>
-      </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="sports.html">Sports</a>
-        <a href="live.html">Live</a>
-        <a href="watch.html">Watch</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
+<div class="page">
+  <div class="box">
 
-    <div class="section">
-      <h1>Upload Sports Content</h1>
-      <div class="subtle">
-        Drop highlights, training clips, athlete reels, team culture, interviews, or game moments and push them into your sports lane.
-      </div>
+    <h1>Upload Sports</h1>
 
-      <div class="form-grid">
-        <div class="control">
-          <label for="titleInput">Title</label>
-          <input id="titleInput" type="text" placeholder="Insane fourth quarter comeback" />
-        </div>
+    <input id="title" placeholder="Title (Highlight, Take, Clip)">
+    <input id="sport" placeholder="Sport (NBA, NFL, etc)">
+    <input id="team" placeholder="Team (optional)">
+    <textarea id="caption" placeholder="Caption / take / analysis"></textarea>
 
-        <div class="control">
-          <label for="sportInput">Sport Name</label>
-          <input id="sportInput" type="text" placeholder="Basketball, Football, Boxing, Track..." />
-        </div>
+    <select id="featured">
+      <option value="false">Normal Post</option>
+      <option value="true">Featured Post</option>
+    </select>
 
-        <div class="control">
-          <label for="teamInput">Team Name</label>
-          <input id="teamInput" type="text" placeholder="Lakers, Chiefs, Rich Bizness Squad..." />
-        </div>
+    <input id="media" type="file" accept="video/*,image/*">
+    <input id="thumb" type="file" accept="image/*">
 
-        <div class="control">
-          <label for="athleteInput">Athlete Name</label>
-          <input id="athleteInput" type="text" placeholder="Athlete or creator name" />
-        </div>
+    <button id="uploadBtn">Upload Sports Content</button>
 
-        <div class="control">
-          <label for="positionInput">Position</label>
-          <input id="positionInput" type="text" placeholder="Point Guard, QB, Forward..." />
-        </div>
+    <div id="status" class="status"></div>
+    <div id="preview" class="preview"></div>
 
-        <div class="control">
-          <label for="contentTypeInput">Content Type</label>
-          <select id="contentTypeInput">
-            <option value="clip">Clip</option>
-            <option value="highlight">Highlight</option>
-            <option value="video">Video</option>
-            <option value="short">Short</option>
-            <option value="interview">Interview</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label for="clipTypeInput">Clip Type</label>
-          <select id="clipTypeInput">
-            <option value="highlight">Highlight</option>
-            <option value="training">Training</option>
-            <option value="gameplay">Gameplay</option>
-            <option value="interview">Interview</option>
-            <option value="warmup">Warmup</option>
-            <option value="reaction">Reaction</option>
-          </select>
-        </div>
-
-        <div class="control full">
-          <label for="captionInput">Caption</label>
-          <textarea id="captionInput" placeholder="Tell people what’s happening in this sports clip..."></textarea>
-        </div>
-
-        <div class="control full">
-          <label for="mainFileInput">Main File</label>
-          <input id="mainFileInput" type="file" accept="video/*,image/*" />
-        </div>
-
-        <div class="control full">
-          <label for="thumbFileInput">Thumbnail File (optional)</label>
-          <input id="thumbFileInput" type="file" accept="image/*" />
-        </div>
-
-        <div class="control full">
-          <label>Featured Clip</label>
-          <div class="checkbox-row">
-            <input id="featuredToggle" type="checkbox" />
-            <span>Mark this upload as featured</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button id="uploadBtn" class="btn-green" type="button">Upload Sports Content</button>
-        <a class="btn-dark" href="sports.html">Back To Sports</a>
-        <a class="btn-gold" href="live.html">Go Live</a>
-      </div>
-
-      <div id="statusBox" class="status-box">Ready to upload.</div>
-
-      <div class="preview-grid">
-        <div class="preview-card">
-          <h3>Main File Preview</h3>
-          <div id="mainPreview" class="preview-box">Your main file preview will show here.</div>
-        </div>
-
-        <div class="preview-card">
-          <h3>Thumbnail Preview</h3>
-          <div id="thumbPreview" class="preview-box">Your thumbnail preview will show here.</div>
-        </div>
-      </div>
-    </div>
   </div>
+</div>
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+<script>
+const supabase = window.supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+)
 
-      const MAIN_BUCKET = "sports-uploads";
-      const THUMB_BUCKET = "sports-thumbnails";
+const statusBox = document.getElementById("status")
+const previewBox = document.getElementById("preview")
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+function status(msg){ statusBox.textContent = msg }
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
+function slugify(text){
+  return text.toLowerCase().replace(/[^a-z0-9]+/g,"-")
+}
 
-      const titleInput = document.getElementById("titleInput");
-      const sportInput = document.getElementById("sportInput");
-      const teamInput = document.getElementById("teamInput");
-      const athleteInput = document.getElementById("athleteInput");
-      const positionInput = document.getElementById("positionInput");
-      const contentTypeInput = document.getElementById("contentTypeInput");
-      const clipTypeInput = document.getElementById("clipTypeInput");
-      const captionInput = document.getElementById("captionInput");
-      const mainFileInput = document.getElementById("mainFileInput");
-      const thumbFileInput = document.getElementById("thumbFileInput");
-      const featuredToggle = document.getElementById("featuredToggle");
-      const uploadBtn = document.getElementById("uploadBtn");
+async function upload(){
 
-      const mainPreview = document.getElementById("mainPreview");
-      const thumbPreview = document.getElementById("thumbPreview");
+  try{
+    status("Uploading sports content...")
 
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
+    const {data} = await supabase.auth.getSession()
+    const user = data.session?.user
+    if(!user) throw new Error("Login required")
 
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+    const title = document.getElementById("title").value
+    const sport = document.getElementById("sport").value
+    const team = document.getElementById("team").value
+    const caption = document.getElementById("caption").value
+    const featured = document.getElementById("featured").value === "true"
 
-        const user = data?.session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
+    const mediaFile = document.getElementById("media").files[0]
+    const thumbFile = document.getElementById("thumb").files[0]
 
-        if (!user) {
-          window.location.href = "auth.html";
-          return null;
-        }
+    if(!title || !mediaFile) throw new Error("Missing title or media")
 
-        return user;
-      }
+    const slug = slugify(title + "-" + Date.now())
 
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
+    // upload media
+    const mediaPath = `${user.id}/${slug}`
+    const {error:mediaErr} = await supabase.storage
+      .from("sports-media")
+      .upload(mediaPath, mediaFile)
 
-      function renderFilePreview(file, targetEl) {
-        if (!file) {
-          targetEl.innerHTML = "No file selected.";
-          return;
-        }
+    if(mediaErr) throw mediaErr
 
-        const url = URL.createObjectURL(file);
+    const {data:mediaUrlData} = supabase.storage
+      .from("sports-media")
+      .getPublicUrl(mediaPath)
 
-        if (file.type.startsWith("image/")) {
-          targetEl.innerHTML = `<img src="${url}" alt="Preview" />`;
-          return;
-        }
+    let thumbUrl = ""
 
-        if (file.type.startsWith("video/")) {
-          targetEl.innerHTML = `<video src="${url}" controls></video>`;
-          return;
-        }
+    if(thumbFile){
+      const thumbPath = `${user.id}/${slug}-thumb`
+      await supabase.storage
+        .from("sports-thumbnails")
+        .upload(thumbPath, thumbFile)
 
-        targetEl.textContent = file.name;
-      }
+      const {data:thumbUrlData} = supabase.storage
+        .from("sports-thumbnails")
+        .getPublicUrl(thumbPath)
 
-      function makeFilePath(prefix, file) {
-        const safeName = String(file.name || "file").replace(/\s+/g, "-");
-        return `${prefix}/${Date.now()}-${safeName}`;
-      }
-
-      async function uploadFile(bucket, path, file) {
-        const { error } = await supabase.storage
-          .from(bucket)
-          .upload(path, file, { upsert: false });
-
-        if (error) throw error;
-
-        const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-        return data.publicUrl;
-      }
-
-      async function uploadSports() {
-        try {
-          setStatus("Checking session...");
-          uploadBtn.disabled = true;
-
-          const user = await loadSession();
-          if (!user) return;
-
-          const title = titleInput.value.trim();
-          const sportName = sportInput.value.trim();
-          const teamName = teamInput.value.trim();
-          const athleteName = athleteInput.value.trim();
-          const positionName = positionInput.value.trim();
-          const contentType = contentTypeInput.value;
-          const clipType = clipTypeInput.value;
-          const caption = captionInput.value.trim();
-
-          const mainFile = mainFileInput.files[0];
-          const thumbFile = thumbFileInput.files[0];
-
-          if (!title) throw new Error("Title is required.");
-          if (!sportName) throw new Error("Sport name is required.");
-          if (!mainFile) throw new Error("Main file is required.");
-
-          setStatus("Uploading main file...");
-          const mainPath = makeFilePath(user.id, mainFile);
-          const fileUrl = await uploadFile(MAIN_BUCKET, mainPath, mainFile);
-
-          let thumbnailUrl = fileUrl;
-
-          if (thumbFile) {
-            setStatus("Uploading thumbnail...");
-            const thumbPath = makeFilePath(user.id, thumbFile);
-            thumbnailUrl = await uploadFile(THUMB_BUCKET, thumbPath, thumbFile);
-          }
-
-          setStatus("Saving sports upload...");
-          const { error } = await supabase
-            .from("sports_uploads")
-            .insert([{
-              user_id: user.id,
-              title,
-              caption,
-              sport_name: sportName,
-              team_name: teamName,
-              athlete_name: athleteName,
-              position_name: positionName,
-              content_type: contentType,
-              clip_type: clipType,
-              file_url: fileUrl,
-              thumbnail_url: thumbnailUrl,
-              is_featured: featuredToggle.checked
-            }]);
-
-          if (error) throw error;
-
-          setStatus("✅ Sports upload successful.");
-
-          titleInput.value = "";
-          sportInput.value = "";
-          teamInput.value = "";
-          athleteInput.value = "";
-          positionInput.value = "";
-          captionInput.value = "";
-          contentTypeInput.value = "clip";
-          clipTypeInput.value = "highlight";
-          featuredToggle.checked = false;
-          mainFileInput.value = "";
-          thumbFileInput.value = "";
-          mainPreview.innerHTML = "Your main file preview will show here.";
-          thumbPreview.innerHTML = "Your thumbnail preview will show here.";
-        } catch (error) {
-          console.error(error);
-          setStatus("❌ Upload error: " + error.message);
-        } finally {
-          uploadBtn.disabled = false;
-        }
-      }
-
-      mainFileInput.addEventListener("change", () => {
-        renderFilePreview(mainFileInput.files[0], mainPreview);
-      });
-
-      thumbFileInput.addEventListener("change", () => {
-        renderFilePreview(thumbFileInput.files[0], thumbPreview);
-      });
-
-      uploadBtn.addEventListener("click", uploadSports);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
-      });
-
-      loadSession().then(() => {
-        setStatus("Ready to upload sports content.");
-      });
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Sports Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+      thumbUrl = thumbUrlData.publicUrl
     }
-  </script>
+
+    const isVideo = mediaFile.type.startsWith("video")
+
+    // save to DB
+    const {error:dbErr} = await supabase
+      .from("sports_uploads")
+      .insert([{
+        user_id:user.id,
+        title,
+        caption,
+        sport_name:sport,
+        team_name:team,
+        video_url: isVideo ? mediaUrlData.publicUrl : "",
+        file_url: !isVideo ? mediaUrlData.publicUrl : "",
+        thumbnail_url:thumbUrl,
+        is_featured:featured,
+        views:0,
+        likes:0
+      }])
+
+    if(dbErr) throw dbErr
+
+    status("SUCCESS sports uploaded")
+
+    previewBox.innerHTML = `
+      <p><strong>${title}</strong></p>
+      <p>${caption}</p>
+      ${isVideo 
+        ? `<video src="${mediaUrlData.publicUrl}" controls width="100%"></video>` 
+        : `<img src="${mediaUrlData.publicUrl}" width="100%">`
+      }
+    `
+
+  }catch(err){
+    status("ERROR: "+err.message)
+  }
+}
+
+document.getElementById("uploadBtn").onclick = upload
+</script>
+
 </body>
 </html>
