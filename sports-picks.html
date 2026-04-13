@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports Picks</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:white;
+}
+
+.page{max-width:900px;margin:auto;padding:20px}
+
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  background:#111;
+  color:white;
+  border:none;
+}
+
+button{
+  margin-top:15px;
+  padding:12px;
+  background:#7dff71;
+  border:none;
+  border-radius:10px;
+  font-weight:900;
+}
+
+.pick{
+  background:#111;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<h1>Top Picks</h1>
+
+<input id="match" placeholder="Match (Lakers vs Celtics)">
+<input id="pick" placeholder="Your Pick">
+<select id="confidence">
+  <option>Low</option>
+  <option>Medium</option>
+  <option>High</option>
+</select>
+
+<textarea id="take" placeholder="Your take"></textarea>
+
+<button onclick="submitPick()">Submit Pick</button>
+
+<div id="feed"></div>
+
+</div>
+
+<script>
+const supabase = window.supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+)
+
+async function submitPick(){
+  const {data} = await supabase.auth.getSession()
+  const user = data.session?.user
+
+  await supabase.from("sports_picks").insert([{
+    user_id:user.id,
+    match:match.value,
+    pick:pick.value,
+    confidence:confidence.value,
+    take:take.value
+  }])
+
+  loadPicks()
+}
+
+async function loadPicks(){
+  const {data} = await supabase
+    .from("sports_picks")
+    .select("*")
+    .order("created_at",{ascending:false})
+
+  feed.innerHTML = data.map(p=>`
+    <div class="pick">
+      <strong>${p.match}</strong><br>
+      Pick: ${p.pick}<br>
+      Confidence: ${p.confidence}<br>
+      ${p.take}
+    </div>
+  `).join("")
+}
+
+loadPicks()
+</script>
+
+</body>
+</html>
