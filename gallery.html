@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Profile</title>
+  <title>Rich Bizness | Gallery</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -44,7 +44,6 @@
     .topbar,
     .hero,
     .section,
-    .rail-shell,
     .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -116,38 +115,16 @@
     }
 
     .hero,
-    .section,
-    .rail-shell {
+    .section {
       padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 260px 1fr 420px;
+      grid-template-columns: 1.15fr 0.85fr;
       gap: 20px;
-      align-items: start;
-    }
-
-    .avatar-box {
-      width: 260px;
-      height: 260px;
-      border-radius: 28px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255,255,255,0.76);
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .avatar-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      align-items: stretch;
     }
 
     .hero h1 {
@@ -155,6 +132,7 @@
       font-size: 3rem;
       line-height: 0.94;
       color: var(--green);
+      max-width: 980px;
     }
 
     .subtle,
@@ -167,11 +145,10 @@
     }
 
     .hero-kicker,
-    .pill,
     .pill-green,
     .pill-gold,
-    .pill-red,
-    .pill-blue {
+    .pill-blue,
+    .pill-red {
       display: inline-block;
       padding: 8px 12px;
       border-radius: 999px;
@@ -180,7 +157,6 @@
     }
 
     .hero-kicker,
-    .pill,
     .pill-green {
       background: rgba(125,255,113,0.13);
       border: 1px solid rgba(125,255,113,0.18);
@@ -193,20 +169,20 @@
       color: var(--gold);
     }
 
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
     .pill-blue {
       background: rgba(103,183,255,0.18);
       border: 1px solid rgba(103,183,255,0.28);
       color: var(--blue);
     }
 
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
     .hero-actions,
-    .actions,
+    .filter-row,
     .card-actions {
       display: flex;
       flex-wrap: wrap;
@@ -217,7 +193,6 @@
     .btn-green,
     .btn-dark,
     .btn-gold,
-    .btn-danger,
     .btn-blue {
       display: inline-block;
       text-decoration: none;
@@ -236,7 +211,6 @@
       border: 1px solid rgba(255,255,255,0.10);
     }
     .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
     .btn-blue { background: var(--blue); color: black; }
 
     .status-box {
@@ -247,8 +221,7 @@
       word-break: break-word;
     }
 
-    .mini-panel,
-    .panel {
+    .mini-panel {
       padding: 18px;
       border-radius: 20px;
       background: rgba(255,255,255,0.05);
@@ -257,7 +230,6 @@
     }
 
     .mini-panel-title,
-    .panel h2,
     .section-header h2 {
       color: var(--green);
       margin: 0 0 10px;
@@ -284,13 +256,31 @@
       font-size: 1.75rem;
       font-weight: 900;
       color: var(--green);
-      word-break: break-word;
     }
 
     .stat-label {
       margin-top: 6px;
       color: var(--muted);
       font-weight: 700;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .controls input,
+    .controls select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 16px;
+      outline: none;
     }
 
     .section-header {
@@ -307,36 +297,91 @@
       color: var(--text);
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .item-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .item-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
+    .chip {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
     }
 
-    .item-title {
+    .chip.active {
+      background: var(--green);
+      color: black;
+      border-color: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-cover {
+      height: 260px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
       color: var(--gold);
-      font-size: 1.02rem;
+      font-size: 1.08rem;
       font-weight: 900;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
-    .item-meta {
+    .price {
+      color: var(--green);
+      font-weight: 900;
+      font-size: 1.05rem;
+      margin-top: 10px;
+    }
+
+    .card-meta {
       color: var(--muted);
-      line-height: 1.65;
-      font-size: 14px;
-      margin-bottom: 12px;
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .card-meta a {
+      color: var(--green);
+      text-decoration: none;
     }
 
     .empty-box {
@@ -346,40 +391,40 @@
       color: rgba(255,255,255,0.80);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
     }
 
     @media (max-width: 1500px) {
       .hero-grid {
-        grid-template-columns: 220px 1fr;
-      }
-
-      .hero-side {
-        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
       }
 
       .stats-row {
         grid-template-columns: repeat(3, 1fr);
       }
 
-      .grid-2 {
-        grid-template-columns: 1fr;
+      .controls {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
     @media (max-width: 980px) {
-      .hero-grid,
-      .stats-row {
-        grid-template-columns: 1fr;
-      }
-
       .hero h1 {
         font-size: 2.25rem;
       }
 
-      .avatar-box {
-        width: 100%;
-        max-width: 260px;
-        height: 260px;
+      .stats-row,
+      .controls,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-cover {
+        height: 220px;
       }
     }
   </style>
@@ -389,121 +434,147 @@
     <div class="topbar">
       <div class="brand">
         <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Profile</span>
+        <span>Rich Bizness Gallery</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
         <a href="feed.html">Feed</a>
+        <a href="gallery.html" class="active">Gallery</a>
         <a href="music.html">Music</a>
         <a href="gaming.html">Gaming</a>
         <a href="sports.html">Sports</a>
-        <a href="messages.html">Messages</a>
-        <a href="profile.html" class="active">Profile</a>
+        <a href="profile.html">Profile</a>
+        <a href="upload.html">Upload</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-grid">
-        <div class="avatar-box" id="avatarBox">No Avatar</div>
-
         <div>
           <div>
-            <span class="hero-kicker">PROFILE IDENTITY HUB</span>
-            <span class="pill-blue">SPORTS STATS</span>
-            <span class="pill-green">LIVE PROFILE</span>
+            <span class="hero-kicker">STOREFRONT ENGINE</span>
+            <span class="pill-green">ART</span>
+            <span class="pill-blue">FASHION</span>
+            <span class="pill-gold">DROPS</span>
           </div>
 
-          <h1 id="displayNameView">Loading profile...</h1>
-          <div id="usernameView" class="mini-text">@loading</div>
-          <div id="emailView" class="mini-text">loading@email.com</div>
-          <div id="favoriteTeamView" class="mini-text">Favorite Team: --</div>
-          <div id="bioView" class="subtle" style="margin-top:12px;">Loading bio...</div>
+          <h1>Show art, fashion, shoes, tattoos, 3D work, and custom drops in one Rich Bizness storefront lane.</h1>
+
+          <div class="subtle">
+            This gallery is now a storefront-ready content lane. It supports visual showcase items and items for sale, so your creators can display art, merch, sneakers, clothing, tattoos, and custom builds in one place.
+          </div>
 
           <div class="hero-actions">
-            <a class="btn-green" href="sports.html">Open Sports</a>
-            <a class="btn-blue" href="sports-picks.html">Top Picks</a>
-            <a class="btn-dark" href="sports-leaderboard.html">Leaderboard</a>
-            <a class="btn-dark" href="gaming-profile.html">Gaming Profile</a>
+            <a class="btn-green" href="upload.html">Upload Item</a>
+            <a class="btn-dark" href="profile.html">Creator Profile</a>
+            <a class="btn-dark" href="feed.html">Feed</a>
           </div>
 
-          <div id="statusBox" class="status-box">Loading profile...</div>
+          <div id="statusBox" class="status-box">Loading gallery storefront...</div>
 
           <div class="stats-row">
             <div class="stat">
-              <div id="sportsPickStat" class="stat-value">0</div>
-              <div class="stat-label">Sports Picks</div>
+              <div id="allStat" class="stat-value">0</div>
+              <div class="stat-label">All Items</div>
             </div>
             <div class="stat">
-              <div id="sportsWinStat" class="stat-value">0</div>
-              <div class="stat-label">Wins</div>
+              <div id="fashionStat" class="stat-value">0</div>
+              <div class="stat-label">Fashion</div>
             </div>
             <div class="stat">
-              <div id="sportsLossStat" class="stat-value">0</div>
-              <div class="stat-label">Losses</div>
+              <div id="saleStat" class="stat-value">0</div>
+              <div class="stat-label">For Sale</div>
             </div>
             <div class="stat">
-              <div id="sportsPointStat" class="stat-value">0</div>
-              <div class="stat-label">Points</div>
+              <div id="featuredStat" class="stat-value">0</div>
+              <div class="stat-label">Featured</div>
             </div>
             <div class="stat">
-              <div id="sportsAccuracyStat" class="stat-value">0%</div>
-              <div class="stat-label">Accuracy</div>
+              <div id="topPriceStat" class="stat-value">$0</div>
+              <div class="stat-label">Top Price</div>
             </div>
+          </div>
+
+          <div class="controls">
+            <input id="searchInput" type="text" placeholder="Search title, creator, category, description..." />
+            <select id="saleFilter">
+              <option value="">All Items</option>
+              <option value="sale">For Sale</option>
+              <option value="showcase">Showcase Only</option>
+            </select>
+            <select id="sortFilter">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="price_high">Highest Price</option>
+              <option value="price_low">Lowest Price</option>
+              <option value="title_az">Title A-Z</option>
+            </select>
           </div>
         </div>
 
-        <div class="hero-side">
+        <div>
           <div class="mini-panel">
-            <div class="mini-panel-title">Sports Summary</div>
-            <div id="sportsSummaryBox" class="mini-text">Loading sports summary...</div>
+            <div class="mini-panel-title">Storefront Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading storefront pulse...</div>
           </div>
 
           <div class="mini-panel">
-            <div class="mini-panel-title">Leaderboard Snapshot</div>
-            <div id="leaderboardSummaryBox" class="mini-text">Loading leaderboard snapshot...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Quick Sports Links</div>
+            <div class="mini-panel-title">Category Lanes</div>
             <div class="mini-text">
-              <a href="sports.html" style="color:var(--green);text-decoration:none;">Sports Hub</a><br>
-              <a href="sports-picks.html" style="color:var(--green);text-decoration:none;">Submit Picks</a><br>
-              <a href="sports-leaderboard.html" style="color:var(--green);text-decoration:none;">Sports Leaderboard</a><br>
-              <a href="upload-sports.html" style="color:var(--green);text-decoration:none;">Upload Sports</a>
+              • Art
+              <br>• Fashion
+              <br>• Sneakers
+              <br>• Tattoo
+              <br>• 3D
+              <br>• Custom
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Next Storefront Upgrades</div>
+            <div class="mini-text">
+              • connect buy buttons to Stripe
+              <br>• featured drops rail
+              <br>• creator store pages
+              <br>• size / product options
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="grid-2">
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h2>Recent Sports Picks</h2>
-            <p>Latest picks and grading results tied to this profile.</p>
-          </div>
-        </div>
-
-        <div id="recentPicksList" class="item-list">
-          <div class="empty-box">Loading recent picks...</div>
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Category Filters</h2>
+          <p>Switch between art, fashion, shoes, and storefront drops.</p>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h2>Recent Sports Uploads</h2>
-            <p>Sports content posted from this profile.</p>
-          </div>
-        </div>
+      <div class="filter-row" id="categoryRow">
+        <button class="chip active" data-category="all" type="button">All</button>
+        <button class="chip" data-category="art" type="button">Art</button>
+        <button class="chip" data-category="fashion" type="button">Fashion</button>
+        <button class="chip" data-category="sneakers" type="button">Sneakers</button>
+        <button class="chip" data-category="tattoo" type="button">Tattoo</button>
+        <button class="chip" data-category="3d" type="button">3D</button>
+        <button class="chip" data-category="custom" type="button">Custom</button>
+      </div>
+    </div>
 
-        <div id="recentUploadsList" class="item-list">
-          <div class="empty-box">Loading sports uploads...</div>
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Gallery Storefront</h2>
+          <p>Creator showcase and items for sale in one visual lane.</p>
         </div>
+      </div>
+
+      <div id="galleryGrid" class="grid">
+        <div class="empty-box">Loading gallery items...</div>
       </div>
     </div>
   </div>
@@ -524,31 +595,24 @@
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
       const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
 
-      const avatarBox = document.getElementById("avatarBox");
-      const displayNameView = document.getElementById("displayNameView");
-      const usernameView = document.getElementById("usernameView");
-      const emailView = document.getElementById("emailView");
-      const favoriteTeamView = document.getElementById("favoriteTeamView");
-      const bioView = document.getElementById("bioView");
+      const allStat = document.getElementById("allStat");
+      const fashionStat = document.getElementById("fashionStat");
+      const saleStat = document.getElementById("saleStat");
+      const featuredStat = document.getElementById("featuredStat");
+      const topPriceStat = document.getElementById("topPriceStat");
 
-      const sportsPickStat = document.getElementById("sportsPickStat");
-      const sportsWinStat = document.getElementById("sportsWinStat");
-      const sportsLossStat = document.getElementById("sportsLossStat");
-      const sportsPointStat = document.getElementById("sportsPointStat");
-      const sportsAccuracyStat = document.getElementById("sportsAccuracyStat");
-
-      const sportsSummaryBox = document.getElementById("sportsSummaryBox");
-      const leaderboardSummaryBox = document.getElementById("leaderboardSummaryBox");
-      const recentPicksList = document.getElementById("recentPicksList");
-      const recentUploadsList = document.getElementById("recentUploadsList");
+      const searchInput = document.getElementById("searchInput");
+      const saleFilter = document.getElementById("saleFilter");
+      const sortFilter = document.getElementById("sortFilter");
+      const galleryGrid = document.getElementById("galleryGrid");
+      const categoryRow = document.getElementById("categoryRow");
 
       let currentUser = null;
-      let currentProfile = null;
-      let sportsPicks = [];
-      let sportsPickResults = [];
-      let sportsUploads = [];
-      let leaderboardRows = [];
+      let currentCategory = "all";
+      let items = [];
+      let profilesById = {};
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -563,6 +627,11 @@
           .replace(/'/g, "&#039;");
       }
 
+      function money(value) {
+        const n = Number(value || 0);
+        return `$${n.toFixed(2)}`;
+      }
+
       function formatDate(value) {
         if (!value) return "--";
         const d = new Date(value);
@@ -573,16 +642,8 @@
       async function loadSession() {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-
         currentUser = data?.session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
-
-        if (!currentUser) {
-          window.location.href = "auth.html";
-          return false;
-        }
-
-        return true;
       }
 
       async function logOut() {
@@ -595,205 +656,195 @@
         }
       }
 
-      async function loadProfile() {
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
         const { data, error } = await supabase
           .from("profiles")
-          .select("*")
-          .eq("id", currentUser.id)
-          .maybeSingle();
+          .select("id, username, display_name, email")
+          .in("id", ids);
 
         if (error && error.code !== "42P01") throw error;
 
-        currentProfile = data || null;
-
-        const displayName =
-          currentProfile?.display_name ||
-          currentProfile?.username ||
-          (currentUser.email ? currentUser.email.split("@")[0] : "Rich Bizness User");
-
-        displayNameView.textContent = displayName;
-        usernameView.textContent = `@${currentProfile?.username || "no_username"}`;
-        emailView.textContent = currentUser.email || "--";
-        favoriteTeamView.textContent = `Favorite Team: ${currentProfile?.favorite_team || "--"}`;
-        bioView.textContent = currentProfile?.bio || "No bio yet.";
-        
-        if (currentProfile?.avatar_url) {
-          avatarBox.innerHTML = `<img src="${escapeHtml(currentProfile.avatar_url)}" alt="Profile Avatar" />`;
-        } else {
-          avatarBox.textContent = "No Avatar";
-        }
+        profilesById = {};
+        (data || []).forEach(profile => {
+          profilesById[profile.id] = profile;
+        });
       }
 
-      async function loadSportsData() {
-        const [pickRes, resultRes, uploadRes, allPickRes, allResultRes] = await Promise.all([
-          supabase.from("sports_picks").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_pick_results").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_uploads").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_picks").select("*"),
-          supabase.from("sports_pick_results").select("*")
-        ]);
+      function getCreatorName(userId) {
+        const profile = profilesById[userId] || {};
+        return profile.display_name || profile.username || profile.email || "Creator";
+      }
 
-        if (pickRes.error && pickRes.error.code !== "42P01") throw pickRes.error;
-        if (resultRes.error && resultRes.error.code !== "42P01") throw resultRes.error;
-        if (uploadRes.error && uploadRes.error.code !== "42P01") throw uploadRes.error;
-        if (allPickRes.error && allPickRes.error.code !== "42P01") throw allPickRes.error;
-        if (allResultRes.error && allResultRes.error.code !== "42P01") throw allResultRes.error;
+      function getCreatorLink(userId) {
+        const profile = profilesById[userId] || {};
+        return profile.username ? `artist.html?u=${encodeURIComponent(profile.username)}` : "profile.html";
+      }
 
-        sportsPicks = pickRes.data || [];
-        sportsPickResults = resultRes.data || [];
-        sportsUploads = (uploadRes.data || []).map(row => ({
+      async function loadGalleryItems() {
+        const { data, error } = await supabase
+          .from("artwork")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (error && error.code !== "42P01") throw error;
+
+        items = (data || []).map(row => ({
           ...row,
-          sport_name: row.sport_name || row.sport || row.category || "Sports",
-          team_name: row.team_name || row.team || row.favorite_team || "",
-          is_featured: row.is_featured ?? row.featured ?? false
+          category: (row.category || "art").toLowerCase(),
+          price: Number(row.price || 0),
+          is_for_sale: !!row.is_for_sale,
+          is_featured: !!row.is_featured
         }));
 
-        buildLeaderboardSnapshot(allPickRes.data || [], allResultRes.data || []);
+        await loadProfiles(items.map(item => item.user_id));
       }
 
-      function buildLeaderboardSnapshot(allPicks, allResults) {
-        const resultMap = new Map(allResults.map(r => [r.pick_id, r]));
-        const grouped = new Map();
+      function updateStats() {
+        const fashionCount = items.filter(i => i.category === "fashion").length;
+        const saleCount = items.filter(i => i.is_for_sale).length;
+        const featuredCount = items.filter(i => i.is_featured).length;
+        const topPrice = Math.max(0, ...items.map(i => Number(i.price || 0)));
 
-        allPicks.forEach(pick => {
-          if (!grouped.has(pick.user_id)) {
-            grouped.set(pick.user_id, {
-              user_id: pick.user_id,
-              points: 0,
-              wins: 0,
-              losses: 0,
-              graded: 0
-            });
-          }
+        allStat.textContent = String(items.length);
+        fashionStat.textContent = String(fashionCount);
+        saleStat.textContent = String(saleCount);
+        featuredStat.textContent = String(featuredCount);
+        topPriceStat.textContent = money(topPrice);
 
-          const row = grouped.get(pick.user_id);
-          const result = resultMap.get(pick.id);
+        pulseBox.textContent =
+          `All Items: ${items.length}\n` +
+          `Fashion: ${fashionCount}\n` +
+          `For Sale: ${saleCount}\n` +
+          `Featured: ${featuredCount}\n` +
+          `Top Price: ${money(topPrice)}\n` +
+          `Current User: ${currentUser?.email || "Guest mode"}`;
+      }
 
-          if (result) {
-            row.points += Number(result.points || 0);
-            row.graded += 1;
-            const outcome = String(result.result || "").toLowerCase();
-            if (outcome === "win") row.wins += 1;
-            if (outcome === "loss") row.losses += 1;
-          }
+      function getFilteredItems() {
+        const q = searchInput.value.trim().toLowerCase();
+        const saleMode = saleFilter.value;
+        const sortMode = sortFilter.value;
+
+        let filtered = items.filter(item => {
+          const creator = getCreatorName(item.user_id).toLowerCase();
+          const haystack = [
+            item.title,
+            item.description,
+            item.category,
+            creator
+          ].join(" ").toLowerCase();
+
+          const matchesSearch = !q || haystack.includes(q);
+          const matchesCategory = currentCategory === "all" || item.category === currentCategory;
+          const matchesSale =
+            !saleMode ||
+            (saleMode === "sale" && item.is_for_sale) ||
+            (saleMode === "showcase" && !item.is_for_sale);
+
+          return matchesSearch && matchesCategory && matchesSale;
         });
 
-        leaderboardRows = Array.from(grouped.values())
-          .map(row => ({
-            ...row,
-            accuracy: row.graded ? Math.round((row.wins / row.graded) * 100) : 0
-          }))
-          .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
+        filtered.sort((a, b) => {
+          if (sortMode === "oldest") {
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
+          }
+          if (sortMode === "price_high") {
+            return Number(b.price || 0) - Number(a.price || 0);
+          }
+          if (sortMode === "price_low") {
+            return Number(a.price || 0) - Number(b.price || 0);
+          }
+          if (sortMode === "title_az") {
+            return String(a.title || "").localeCompare(String(b.title || ""));
+          }
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
+
+        return filtered;
       }
 
-      function renderSportsStats() {
-        const wins = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "win").length;
-        const losses = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "loss").length;
-        const pushes = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "push").length;
-        const points = sportsPickResults.reduce((sum, r) => sum + Number(r.points || 0), 0);
-        const graded = sportsPickResults.length;
-        const accuracy = graded ? Math.round((wins / graded) * 100) : 0;
+      function renderItems() {
+        const filtered = getFilteredItems();
 
-        sportsPickStat.textContent = String(sportsPicks.length);
-        sportsWinStat.textContent = String(wins);
-        sportsLossStat.textContent = String(losses);
-        sportsPointStat.textContent = String(points);
-        sportsAccuracyStat.textContent = `${accuracy}%`;
-
-        sportsSummaryBox.textContent =
-          `Favorite Team: ${currentProfile?.favorite_team || "--"}\n` +
-          `Total Picks: ${sportsPicks.length}\n` +
-          `Wins: ${wins}\n` +
-          `Losses: ${losses}\n` +
-          `Pushes: ${pushes}\n` +
-          `Points: ${points}\n` +
-          `Accuracy: ${accuracy}%\n` +
-          `Sports Uploads: ${sportsUploads.length}`;
-
-        const rankIndex = leaderboardRows.findIndex(row => row.user_id === currentUser.id);
-        const myLeaderboard = leaderboardRows[rankIndex] || null;
-
-        leaderboardSummaryBox.textContent =
-          `Current Rank: ${rankIndex >= 0 ? `#${rankIndex + 1}` : "Unranked"}\n` +
-          `Leaderboard Points: ${myLeaderboard?.points ?? 0}\n` +
-          `Leaderboard Wins: ${myLeaderboard?.wins ?? 0}\n` +
-          `Leaderboard Accuracy: ${myLeaderboard?.accuracy ?? 0}%`;
-      }
-
-      function renderRecentPicks() {
-        if (!sportsPicks.length) {
-          recentPicksList.innerHTML = `<div class="empty-box">No sports picks yet.</div>`;
+        if (!filtered.length) {
+          galleryGrid.innerHTML = `<div class="empty-box">No gallery items found with the current filters.</div>`;
           return;
         }
 
-        recentPicksList.innerHTML = sportsPicks.slice(0, 10).map(pick => {
-          const result = sportsPickResults.find(r => Number(r.pick_id) === Number(pick.id));
-          const outcome = result?.result || "pending";
-          const points = result?.points ?? 0;
+        galleryGrid.innerHTML = filtered.map(item => {
+          const creatorName = getCreatorName(item.user_id);
+          const creatorLink = getCreatorLink(item.user_id);
+
+          const coverStyle = item.image_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(item.image_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
 
           return `
-            <div class="item-card">
-              <div class="item-title">${escapeHtml(pick.match || "Match")}</div>
-              <div class="item-meta">
-                Pick: ${escapeHtml(pick.pick || "--")}<br>
-                Confidence: ${escapeHtml(pick.confidence || "--")}<br>
-                Take: ${escapeHtml(pick.take || "--")}<br>
-                Result: ${escapeHtml(outcome)} • ${escapeHtml(points)} pts<br>
-                Submitted: ${escapeHtml(formatDate(pick.created_at))}
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  <span class="pill-green">${escapeHtml(String(item.category || "art").toUpperCase())}</span>
+                  ${item.is_featured ? `<span class="pill-gold">FEATURED</span>` : ``}
+                  ${item.is_for_sale ? `<span class="pill-blue">FOR SALE</span>` : `<span class="pill-red">SHOWCASE</span>`}
+                </div>
               </div>
-              <div class="card-actions">
-                <a class="btn-dark" href="sports-picks.html">More Picks</a>
-                <a class="btn-dark" href="sports-leaderboard.html">Leaderboard</a>
+
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+                <div class="card-text">${escapeHtml(item.description || "Rich Bizness gallery item.")}</div>
+
+                ${item.is_for_sale ? `<div class="price">${money(item.price || 0)}</div>` : ``}
+
+                <div class="card-meta">
+                  Creator: <a href="${creatorLink}">${escapeHtml(creatorName)}</a><br>
+                  Category: ${escapeHtml(item.category || "art")}<br>
+                  Posted: ${escapeHtml(formatDate(item.created_at))}
+                </div>
+
+                <div class="card-actions">
+                  <a class="btn-dark" href="${item.image_url || 'gallery.html'}" ${String(item.image_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
+                  <a class="btn-dark" href="${creatorLink}">Creator</a>
+                  ${item.is_for_sale ? `<button class="btn-green" type="button">Buy</button>` : `<a class="btn-dark" href="feed.html">Share</a>`}
+                </div>
               </div>
             </div>
           `;
         }).join("");
       }
 
-      function renderRecentUploads() {
-        if (!sportsUploads.length) {
-          recentUploadsList.innerHTML = `<div class="empty-box">No sports uploads yet.</div>`;
-          return;
-        }
-
-        recentUploadsList.innerHTML = sportsUploads.slice(0, 10).map(row => `
-          <div class="item-card">
-            <div class="item-title">${escapeHtml(row.title || "Sports Upload")}</div>
-            <div class="item-meta">
-              Sport: ${escapeHtml(row.sport_name || "--")}<br>
-              Team: ${escapeHtml(row.team_name || "--")}<br>
-              Featured: ${row.is_featured ? "YES" : "NO"}<br>
-              Posted: ${escapeHtml(formatDate(row.created_at))}
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="${row.video_url || row.file_url || 'sports.html'}" ${String(row.video_url || row.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
-              <a class="btn-dark" href="sports.html">Sports Hub</a>
-            </div>
-          </div>
-        `).join("");
+      function setCategory(category) {
+        currentCategory = category;
+        document.querySelectorAll(".chip").forEach(chip => {
+          chip.classList.toggle("active", chip.dataset.category === category);
+        });
+        renderItems();
       }
 
-      async function loadProfilePage() {
+      async function loadGalleryPage() {
         try {
-          setStatus("Loading profile...");
-          const ok = await loadSession();
-          if (!ok) return;
-
-          await loadProfile();
-          await loadSportsData();
-
-          renderSportsStats();
-          renderRecentPicks();
-          renderRecentUploads();
-
-          setStatus("✅ Profile fully synced with sports stats.");
+          setStatus("Loading gallery storefront...");
+          await loadSession();
+          await loadGalleryItems();
+          updateStats();
+          renderItems();
+          setStatus("✅ Gallery storefront fully synced.");
         } catch (error) {
-          console.error("Profile load error:", error);
-          setStatus("❌ Profile load error: " + error.message);
-          recentPicksList.innerHTML = `<div class="empty-box">Could not load recent picks.</div>`;
-          recentUploadsList.innerHTML = `<div class="empty-box">Could not load recent sports uploads.</div>`;
+          console.error("Gallery load error:", error);
+          setStatus("❌ Gallery load error: " + error.message);
+          galleryGrid.innerHTML = `<div class="empty-box">Could not load gallery storefront right now.</div>`;
         }
       }
+
+      searchInput.addEventListener("input", renderItems);
+      saleFilter.addEventListener("change", renderItems);
+      sortFilter.addEventListener("change", renderItems);
+
+      categoryRow.querySelectorAll(".chip").forEach(chip => {
+        chip.addEventListener("click", () => setCategory(chip.dataset.category));
+      });
 
       logoutBtn.addEventListener("click", logOut);
 
@@ -802,11 +853,11 @@
         userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadProfilePage();
+      loadGalleryPage();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Profile Startup Error</h1>
+          <h1 style="color:#7dff71;">Gallery Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
