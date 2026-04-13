@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Creator Store</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --gold: #f5d76e;
+      --blue: #67b7ff;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1720px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      padding:14px 16px;
+      margin-bottom:18px;
+    }
+
+    .brand {
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--green);
+      font-size:1.9rem;
+      font-weight:900;
+    }
+
+    .brand img {
+      width:62px;
+      height:62px;
+      border-radius:18px;
+      object-fit:cover;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(0,0,0,0.35);
+    }
+
+    .nav {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration:none;
+      color:white;
+      background:var(--soft);
+      border:1px solid rgba(255,255,255,0.08);
+      padding:10px 14px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .nav a.active {
+      color:var(--green);
+      border-color:rgba(125,255,113,0.28);
+      box-shadow:0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.10);
+      font-weight:700;
+    }
+
+    .hero,
+    .section {
+      padding:24px;
+      margin-bottom:18px;
+    }
+
+    .hero-grid {
+      display:grid;
+      grid-template-columns:260px 1fr 340px;
+      gap:20px;
+      align-items:start;
+    }
+
+    .avatar-box {
+      width:260px;
+      height:260px;
+      border-radius:28px;
+      overflow:hidden;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:rgba(255,255,255,0.76);
+      font-weight:900;
+      text-align:center;
+    }
+
+    .avatar-box img {
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .hero h1 {
+      margin:0 0 12px;
+      font-size:3rem;
+      line-height:0.94;
+      color:var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .card-text,
+    .card-meta,
+    .status-box {
+      color:var(--text);
+      line-height:1.75;
+    }
+
+    .hero-kicker,
+    .pill-green,
+    .pill-gold,
+    .pill-blue,
+    .pill-red {
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:999px;
+      font-weight:900;
+      font-size:0.82rem;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background:rgba(125,255,113,0.13);
+      border:1px solid rgba(125,255,113,0.18);
+      color:var(--green);
+    }
+
+    .pill-gold {
+      background:rgba(245,215,110,0.16);
+      border:1px solid rgba(245,215,110,0.26);
+      color:var(--gold);
+    }
+
+    .pill-blue {
+      background:rgba(103,183,255,0.18);
+      border:1px solid rgba(103,183,255,0.28);
+      color:var(--blue);
+    }
+
+    .pill-red {
+      background:rgba(239,91,85,0.18);
+      border:1px solid rgba(239,91,85,0.28);
+      color:#ffb1ac;
+    }
+
+    .hero-actions,
+    .filter-row,
+    .card-actions {
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-blue {
+      display:inline-block;
+      text-decoration:none;
+      text-align:center;
+      padding:14px 18px;
+      border-radius:14px;
+      font-weight:900;
+      border:none;
+      cursor:pointer;
+    }
+
+    .btn-green { background:var(--green); color:black; }
+    .btn-dark {
+      background:rgba(255,255,255,0.08);
+      color:white;
+      border:1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background:var(--gold); color:black; }
+    .btn-blue { background:var(--blue); color:black; }
+
+    .status-box {
+      margin-top:16px;
+      padding:14px;
+      font-weight:700;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+
+    .mini-panel {
+      padding:18px;
+      border-radius:20px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      margin-bottom:14px;
+    }
+
+    .mini-panel-title,
+    .section-header h2 {
+      color:var(--green);
+      margin:0 0 10px;
+      font-size:1.35rem;
+      font-weight:900;
+    }
+
+    .stats-row {
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .stat {
+      padding:18px;
+      border-radius:18px;
+      background:rgba(0,0,0,0.42);
+      border:1px solid rgba(125,255,113,0.16);
+      text-align:center;
+    }
+
+    .stat-value {
+      font-size:1.75rem;
+      font-weight:900;
+      color:var(--green);
+    }
+
+    .stat-label {
+      margin-top:6px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .controls {
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr;
+      gap:12px;
+      margin-top:18px;
+    }
+
+    .controls input,
+    .controls select {
+      width:100%;
+      padding:14px;
+      border-radius:12px;
+      border:1px solid #2c2c2c;
+      background:rgba(0,0,0,0.72);
+      color:white;
+      font-size:16px;
+      outline:none;
+    }
+
+    .section-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .section-header p {
+      margin:0;
+      color:var(--text);
+    }
+
+    .chip {
+      padding:10px 14px;
+      border-radius:12px;
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.08);
+      color:white;
+      cursor:pointer;
+      font-weight:800;
+    }
+
+    .chip.active {
+      background:var(--green);
+      color:black;
+      border-color:transparent;
+    }
+
+    .grid {
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:16px;
+    }
+
+    .card {
+      border-radius:20px;
+      overflow:hidden;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+      min-height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .card-cover {
+      height:260px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+
+    .card-cover.custom-bg {
+      background-size:cover;
+      background-position:center center;
+    }
+
+    .card-pill-wrap {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .card-body {
+      padding:18px;
+      display:flex;
+      flex-direction:column;
+      flex:1;
+    }
+
+    .card-title {
+      color:var(--gold);
+      font-size:1.08rem;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .price {
+      color:var(--green);
+      font-weight:900;
+      font-size:1.05rem;
+      margin-top:10px;
+    }
+
+    .card-meta {
+      color:var(--muted);
+      font-size:13px;
+      margin-top:10px;
+      line-height:1.55;
+    }
+
+    .empty-box {
+      padding:22px;
+      text-align:center;
+      border-radius:16px;
+      color:rgba(255,255,255,0.80);
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      grid-column:1 / -1;
+    }
+
+    @media (max-width: 1500px) {
+      .hero-grid {
+        grid-template-columns:220px 1fr;
+      }
+
+      .hero-side {
+        grid-column:1 / -1;
+      }
+
+      .stats-row {
+        grid-template-columns:repeat(2, 1fr);
+      }
+
+      .controls {
+        grid-template-columns:1fr 1fr;
+      }
+
+      .grid {
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .stats-row,
+      .controls,
+      .grid {
+        grid-template-columns:1fr;
+      }
+
+      .hero h1 {
+        font-size:2.2rem;
+      }
+
+      .avatar-box {
+        width:100%;
+        max-width:260px;
+        height:260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Creator Store</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html">Home</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="store.html" class="active">Store</a>
+        <a href="profile.html">Profile</a>
+        <a href="upload-fashion.html">Upload Fashion</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div class="hero">
+      <div class="hero-grid">
+        <div class="avatar-box" id="avatarBox">No Avatar</div>
+
+        <div>
+          <div>
+            <span class="hero-kicker">CREATOR STOREFRONT</span>
+            <span class="pill-blue">SALE READY</span>
+            <span class="pill-gold">FASHION</span>
+            <span class="pill-green">CUSTOM DROPS</span>
+          </div>
+
+          <h1 id="storeName">Loading store...</h1>
+          <div id="storeHandle" class="mini-text">@loading</div>
+          <div id="favoriteTeamView" class="mini-text">Favorite Team: --</div>
+          <div id="bioView" class="subtle" style="margin-top:12px;">Loading creator bio...</div>
+
+          <div class="hero-actions">
+            <a id="artistPageBtn" class="btn-dark" href="artist.html">Artist Page</a>
+            <a id="profileBtn" class="btn-dark" href="profile.html">Profile</a>
+            <a class="btn-green" href="gallery.html">Open Gallery</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading creator store...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="itemStat" class="stat-value">0</div>
+              <div class="stat-label">Store Items</div>
+            </div>
+            <div class="stat">
+              <div id="saleStat" class="stat-value">0</div>
+              <div class="stat-label">For Sale</div>
+            </div>
+            <div class="stat">
+              <div id="featuredStat" class="stat-value">0</div>
+              <div class="stat-label">Featured</div>
+            </div>
+            <div class="stat">
+              <div id="topPriceStat" class="stat-value">$0</div>
+              <div class="stat-label">Top Price</div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <input id="searchInput" type="text" placeholder="Search title, category, description..." />
+            <select id="saleFilter">
+              <option value="">All Items</option>
+              <option value="sale">For Sale</option>
+              <option value="showcase">Showcase Only</option>
+            </select>
+            <select id="sortFilter">
+              <option value="newest">Newest First</option>
+              <option value="price_high">Highest Price</option>
+              <option value="price_low">Lowest Price</option>
+              <option value="title_az">Title A-Z</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="mini-panel">
+            <div class="mini-panel-title">Store Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading store pulse...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Store Lane</div>
+            <div class="mini-text">
+              This page gives each creator one storefront powered by their existing profile and artwork uploads. No duplicate store files needed.
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Works Best For</div>
+            <div class="mini-text">
+              • fashion drops
+              <br>• custom merch
+              <br>• sneakers
+              <br>• art sales
+              <br>• featured creator collections
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Store Categories</h2>
+          <p>Filter this creator’s storefront by item type.</p>
+        </div>
+      </div>
+
+      <div class="filter-row" id="categoryRow">
+        <button class="chip active" data-category="all" type="button">All</button>
+        <button class="chip" data-category="fashion" type="button">Fashion</button>
+        <button class="chip" data-category="sneakers" type="button">Sneakers</button>
+        <button class="chip" data-category="custom" type="button">Custom</button>
+        <button class="chip" data-category="art" type="button">Art</button>
+        <button class="chip" data-category="tattoo" type="button">Tattoo</button>
+        <button class="chip" data-category="3d" type="button">3D</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Store Items</h2>
+          <p>Only this creator’s items show here.</p>
+        </div>
+      </div>
+
+      <div id="storeGrid" class="grid">
+        <div class="empty-box">Loading store items...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const CHECKOUT_API_URL = "/api/create-checkout-session";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
+
+      const avatarBox = document.getElementById("avatarBox");
+      const storeName = document.getElementById("storeName");
+      const storeHandle = document.getElementById("storeHandle");
+      const favoriteTeamView = document.getElementById("favoriteTeamView");
+      const bioView = document.getElementById("bioView");
+      const artistPageBtn = document.getElementById("artistPageBtn");
+      const profileBtn = document.getElementById("profileBtn");
+
+      const itemStat = document.getElementById("itemStat");
+      const saleStat = document.getElementById("saleStat");
+      const featuredStat = document.getElementById("featuredStat");
+      const topPriceStat = document.getElementById("topPriceStat");
+
+      const searchInput = document.getElementById("searchInput");
+      const saleFilter = document.getElementById("saleFilter");
+      const sortFilter = document.getElementById("sortFilter");
+      const categoryRow = document.getElementById("categoryRow");
+      const storeGrid = document.getElementById("storeGrid");
+
+      let currentUser = null;
+      let currentCategory = "all";
+      let creatorProfile = null;
+      let creatorItems = [];
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function money(value) {
+        const n = Number(value || 0);
+        return `$${n.toFixed(2)}`;
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function getUsernameFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        return params.get("u") || "";
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      async function loadCreatorProfile(username) {
+        if (!username) {
+          throw new Error("Missing username in URL. Use store.html?u=username");
+        }
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("username", username)
+          .maybeSingle();
+
+        if (error && error.code !== "42P01") throw error;
+        if (!data) throw new Error("Creator profile not found.");
+
+        creatorProfile = data;
+
+        const displayName =
+          creatorProfile.display_name ||
+          creatorProfile.username ||
+          "Creator Store";
+
+        storeName.textContent = `${displayName} Store`;
+        storeHandle.textContent = `@${creatorProfile.username || "unknown"}`;
+        favoriteTeamView.textContent = `Favorite Team: ${creatorProfile.favorite_team || "--"}`;
+        bioView.textContent = creatorProfile.bio || "No creator bio yet.";
+
+        artistPageBtn.href = creatorProfile.username
+          ? `artist.html?u=${encodeURIComponent(creatorProfile.username)}`
+          : "artist.html";
+
+        profileBtn.href = currentUser && creatorProfile.id === currentUser.id
+          ? "profile.html"
+          : (creatorProfile.username ? `artist.html?u=${encodeURIComponent(creatorProfile.username)}` : "profile.html");
+
+        if (creatorProfile.avatar_url) {
+          avatarBox.innerHTML = `<img src="${escapeHtml(creatorProfile.avatar_url)}" alt="Creator Avatar" />`;
+        } else {
+          avatarBox.textContent = "No Avatar";
+        }
+      }
+
+      async function loadCreatorItems() {
+        const { data, error } = await supabase
+          .from("artwork")
+          .select("*")
+          .eq("user_id", creatorProfile.id)
+          .order("created_at", { ascending: false });
+
+        if (error && error.code !== "42P01") throw error;
+
+        creatorItems = (data || []).map(row => ({
+          ...row,
+          category: (row.category || "art").toLowerCase(),
+          price: Number(row.price || 0),
+          is_for_sale: !!row.is_for_sale,
+          is_featured: !!row.is_featured
+        }));
+      }
+
+      async function startArtworkCheckout(item) {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (error) throw error;
+
+          const token = data?.session?.access_token;
+          if (!token) throw new Error("You must be logged in first.");
+          if (!item?.is_for_sale) throw new Error("This item is not for sale.");
+          if (!Number(item.price || 0)) throw new Error("Missing item price.");
+
+          setStatus(`Opening checkout for ${item.title || "store item"}...`);
+
+          const response = await fetch(CHECKOUT_API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              type: "artwork_purchase",
+              amount: Math.round(Number(item.price || 0) * 100),
+              title: item.title || "Store Item",
+              metadata: {
+                artwork_id: String(item.id || ""),
+                artwork_title: item.title || "",
+                category: item.category || "",
+                image_url: item.image_url || "",
+                seller_user_id: creatorProfile.id || "",
+                seller_username: creatorProfile.username || ""
+              }
+            })
+          });
+
+          const body = await response.json().catch(() => ({}));
+
+          if (!response.ok) throw new Error(body.error || "Checkout session failed");
+          if (!body.url) throw new Error("No checkout URL returned");
+
+          window.location.href = body.url;
+        } catch (error) {
+          setStatus("Buy button error: " + error.message);
+        }
+      }
+
+      function updateStats() {
+        const saleCount = creatorItems.filter(i => i.is_for_sale).length;
+        const featuredCount = creatorItems.filter(i => i.is_featured).length;
+        const topPrice = Math.max(0, ...creatorItems.map(i => Number(i.price || 0)));
+
+        itemStat.textContent = String(creatorItems.length);
+        saleStat.textContent = String(saleCount);
+        featuredStat.textContent = String(featuredCount);
+        topPriceStat.textContent = money(topPrice);
+
+        pulseBox.textContent =
+          `Store Owner: ${creatorProfile.display_name || creatorProfile.username || "Creator"}\n` +
+          `Items: ${creatorItems.length}\n` +
+          `For Sale: ${saleCount}\n` +
+          `Featured: ${featuredCount}\n` +
+          `Top Price: ${money(topPrice)}`;
+      }
+
+      function getFilteredItems() {
+        const q = searchInput.value.trim().toLowerCase();
+        const saleMode = saleFilter.value;
+        const sortMode = sortFilter.value;
+
+        let filtered = creatorItems.filter(item => {
+          const haystack = [
+            item.title,
+            item.description,
+            item.category
+          ].join(" ").toLowerCase();
+
+          const matchesSearch = !q || haystack.includes(q);
+          const matchesCategory = currentCategory === "all" || item.category === currentCategory;
+          const matchesSale =
+            !saleMode ||
+            (saleMode === "sale" && item.is_for_sale) ||
+            (saleMode === "showcase" && !item.is_for_sale);
+
+          return matchesSearch && matchesCategory && matchesSale;
+        });
+
+        filtered.sort((a, b) => {
+          if (sortMode === "price_high") return Number(b.price || 0) - Number(a.price || 0);
+          if (sortMode === "price_low") return Number(a.price || 0) - Number(b.price || 0);
+          if (sortMode === "title_az") return String(a.title || "").localeCompare(String(b.title || ""));
+          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        });
+
+        return filtered;
+      }
+
+      function renderItems() {
+        const filtered = getFilteredItems();
+
+        if (!filtered.length) {
+          storeGrid.innerHTML = `<div class="empty-box">No store items found for this creator with the current filters.</div>`;
+          return;
+        }
+
+        storeGrid.innerHTML = filtered.map(item => {
+          const coverStyle = item.image_url
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(item.image_url).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
+
+          return `
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  <span class="pill-green">${escapeHtml(String(item.category || "art").toUpperCase())}</span>
+                  ${item.is_featured ? `<span class="pill-gold">FEATURED</span>` : ``}
+                  ${item.is_for_sale ? `<span class="pill-blue">FOR SALE</span>` : `<span class="pill-red">SHOWCASE</span>`}
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+                <div class="card-text">${escapeHtml(item.description || "Creator store item.")}</div>
+
+                ${item.is_for_sale ? `<div class="price">${money(item.price || 0)}</div>` : ``}
+
+                <div class="card-meta">
+                  Category: ${escapeHtml(item.category || "art")}<br>
+                  Posted: ${escapeHtml(formatDate(item.created_at))}
+                </div>
+
+                <div class="card-actions">
+                  <a class="btn-dark" href="${item.image_url || 'store.html'}" ${String(item.image_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
+                  ${
+                    item.is_for_sale
+                      ? `<button class="btn-green buy-btn" data-id="${item.id}" type="button">Buy Now</button>`
+                      : `<a class="btn-dark" href="gallery.html">View Gallery</a>`
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".buy-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const item = creatorItems.find(x => Number(x.id) === Number(btn.dataset.id));
+            if (item) startArtworkCheckout(item);
+          });
+        });
+      }
+
+      function setCategory(category) {
+        currentCategory = category;
+        document.querySelectorAll(".chip").forEach(chip => {
+          chip.classList.toggle("active", chip.dataset.category === category);
+        });
+        renderItems();
+      }
+
+      async function loadStorePage() {
+        try {
+          setStatus("Loading creator store...");
+          await loadSession();
+
+          const username = getUsernameFromUrl();
+          await loadCreatorProfile(username);
+          await loadCreatorItems();
+
+          updateStats();
+          renderItems();
+
+          setStatus("✅ Creator store fully synced.");
+        } catch (error) {
+          console.error("Creator store load error:", error);
+          setStatus("❌ Creator store load error: " + error.message);
+          storeGrid.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load store.")}</div>`;
+        }
+      }
+
+      searchInput.addEventListener("input", renderItems);
+      saleFilter.addEventListener("change", renderItems);
+      sortFilter.addEventListener("change", renderItems);
+
+      categoryRow.querySelectorAll(".chip").forEach(chip => {
+        chip.addEventListener("click", () => setCategory(chip.dataset.category));
+      });
+
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadStorePage();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Creator Store Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
