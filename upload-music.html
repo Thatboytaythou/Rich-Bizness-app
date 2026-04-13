@@ -1,627 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Music | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Music</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.86)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#000;
+  color:white;
+}
 
-    .page {
-      max-width: 1480px;
-      margin: 0 auto;
-      padding: 18px;
-    }
+.page{padding:20px;max-width:900px;margin:auto}
 
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-      padding: 14px 16px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.46);
-      border: 1px solid rgba(125,255,113,0.18);
-      backdrop-filter: blur(12px);
-    }
+input,select{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+  background:#111;
+  color:white;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-weight: 800;
-      font-size: 1.8rem;
-      color: #7dff71;
-      text-shadow: 0 0 12px rgba(125,255,113,0.4);
-    }
+button{
+  margin-top:15px;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#7dff71;
+  font-weight:900;
+  cursor:pointer;
+}
 
-    .brand img {
-      width: 54px;
-      height: 54px;
-      border-radius: 14px;
-      object-fit: cover;
-      box-shadow: 0 0 18px rgba(125,255,113,0.35);
-    }
-
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .nav a, .nav button {
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: #7dff71;
-      box-shadow: 0 0 18px rgba(125,255,113,0.28);
-      border-color: rgba(125,255,113,0.28);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero, .panel {
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.18);
-      border-radius: 24px;
-      padding: 22px;
-      backdrop-filter: blur(10px);
-      margin-bottom: 18px;
-    }
-
-    .hero h1, .panel h2 {
-      margin-top: 0;
-      color: #7dff71;
-    }
-
-    .hero h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-      text-shadow: 0 0 18px rgba(125,255,113,0.35);
-    }
-
-    .hero p, .panel-sub {
-      color: #f1f1f1;
-      line-height: 1.7;
-      margin: 0;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(125,255,113,0.2);
-      background: rgba(125,255,113,0.08);
-      font-weight: 700;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1fr 0.95fr;
-      gap: 18px;
-    }
-
-    label {
-      display: block;
-      margin: 12px 0 8px;
-      font-weight: 800;
-      color: #7dff71;
-    }
-
-    input, textarea, select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
-
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 900;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: #7dff71;
-      color: black;
-      box-shadow: 0 0 18px rgba(125,255,113,0.22);
-    }
-
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .preview-box {
-      margin-top: 14px;
-      border-radius: 18px;
-      padding: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .preview-cover {
-      width: 100%;
-      max-height: 320px;
-      object-fit: cover;
-      border-radius: 14px;
-      background: black;
-      display: block;
-      margin-top: 12px;
-    }
-
-    .audio-wrap {
-      margin-top: 12px;
-    }
-
-    .audio-wrap audio {
-      width: 100%;
-    }
-
-    .recent-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .recent-card {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .recent-title {
-      font-weight: 900;
-      color: #7dff71;
-      margin-bottom: 6px;
-    }
-
-    .recent-text {
-      color: #f2f2f2;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .recent-cover {
-      width: 100%;
-      max-height: 220px;
-      border-radius: 12px;
-      object-fit: cover;
-      margin-top: 10px;
-      background: black;
-    }
-
-    .recent-audio {
-      margin-top: 10px;
-    }
-
-    .recent-audio audio {
-      width: 100%;
-    }
-
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    @media (max-width: 980px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .button-row {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .brand {
-        font-size: 1.4rem;
-      }
-    }
-  </style>
+.status{
+  margin-top:15px;
+  padding:10px;
+  background:#111;
+  border-radius:10px;
+}
+</style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness</span>
-      </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="music.html">Music</a>
-        <a href="upload.html">Upload</a>
-        <a href="upload-music.html" class="active">Upload Music</a>
-        <a href="profile.html">Profile</a>
-        <a href="artist.html">Artist</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
+<div class="page">
+<h1>Upload Music</h1>
 
-    <div class="hero">
-      <h1>Upload Music</h1>
-      <p>Drop tracks, cover art, and your sound into the Rich Bizness platform.</p>
-      <div id="statusBox" class="status-box">Checking session...</div>
-    </div>
+<input id="title" placeholder="Track Title">
+<input id="artist" placeholder="Artist Name">
+<input id="album" placeholder="Album Name">
+<input id="genre" placeholder="Genre">
 
-    <div class="layout">
-      <div class="panel">
-        <h2>New Music Track</h2>
+<select id="locked">
+  <option value="false">Free Track</option>
+  <option value="true">Locked (Paid)</option>
+</select>
 
-        <label for="titleInput">Track Title</label>
-        <input id="titleInput" type="text" placeholder="Track name" />
+<input id="price" type="number" placeholder="Price in cents (e.g. 299)">
+<input id="audio" type="file" accept="audio/*">
+<input id="cover" type="file" accept="image/*">
 
-        <label for="artistNameInput">Artist Name</label>
-        <input id="artistNameInput" type="text" placeholder="Artist / Brand name" />
+<button id="uploadBtn">Upload Track</button>
 
-        <label for="genreInput">Genre</label>
-        <input id="genreInput" type="text" placeholder="Hip-Hop / R&B / Drill / Pop" />
+<div id="status" class="status"></div>
+</div>
 
-        <label for="descriptionInput">Description</label>
-        <textarea id="descriptionInput" placeholder="Tell people about this track..."></textarea>
+<script>
+const supabase = window.supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+)
 
-        <label for="coverInput">Cover Image</label>
-        <input id="coverInput" type="file" accept="image/*" />
+const statusBox = document.getElementById("status")
 
-        <label for="audioInput">Audio File</label>
-        <input id="audioInput" type="file" accept="audio/*" />
+function status(msg){statusBox.textContent=msg}
 
-        <div class="button-row">
-          <button id="uploadBtn" class="btn-green" type="button">Upload Music Track</button>
-          <button id="clearBtn" class="btn-dark" type="button">Clear Form</button>
-        </div>
+function slugify(text){
+  return text.toLowerCase().replace(/[^a-z0-9]+/g,"-")
+}
 
-        <div class="preview-box">
-          <strong style="color:#7dff71;">Preview</strong>
-          <div id="previewText" class="panel-sub" style="margin-top:10px;">No files selected yet.</div>
-          <div id="previewCoverWrap"></div>
-          <div id="previewAudioWrap" class="audio-wrap"></div>
-        </div>
-      </div>
+async function upload(){
 
-      <div class="panel">
-        <h2>Recent Music Uploads</h2>
-        <div class="panel-sub">Your latest music tracks will show here after upload.</div>
-        <div id="recentList" class="recent-list"></div>
-      </div>
-    </div>
-  </div>
+  try{
+    status("Uploading...")
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const {data} = await supabase.auth.getSession()
+    const user = data.session?.user
 
-      if (!window.supabase) {
-        throw new Error("Supabase CDN did not load.");
-      }
+    if(!user) throw new Error("Login required")
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+    const title = document.getElementById("title").value
+    const artist = document.getElementById("artist").value
+    const album = document.getElementById("album").value
+    const genre = document.getElementById("genre").value
+    const locked = document.getElementById("locked").value === "true"
+    const price = Number(document.getElementById("price").value || 0)
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
+    const audioFile = document.getElementById("audio").files[0]
+    const coverFile = document.getElementById("cover").files[0]
 
-      const titleInput = document.getElementById("titleInput");
-      const artistNameInput = document.getElementById("artistNameInput");
-      const genreInput = document.getElementById("genreInput");
-      const descriptionInput = document.getElementById("descriptionInput");
-      const coverInput = document.getElementById("coverInput");
-      const audioInput = document.getElementById("audioInput");
+    if(!title || !audioFile) throw new Error("Missing title or audio")
 
-      const uploadBtn = document.getElementById("uploadBtn");
-      const clearBtn = document.getElementById("clearBtn");
+    const slug = slugify(title + "-" + Date.now())
 
-      const previewText = document.getElementById("previewText");
-      const previewCoverWrap = document.getElementById("previewCoverWrap");
-      const previewAudioWrap = document.getElementById("previewAudioWrap");
-      const recentList = document.getElementById("recentList");
+    // upload audio
+    const audioPath = `${user.id}/${slug}.mp3`
 
-      let currentUser = null;
+    const {error:audioErr} = await supabase.storage
+      .from("music-files")
+      .upload(audioPath, audioFile)
 
-      function setStatus(message) {
-        statusBox.textContent = message;
-        console.log(message);
-      }
+    if(audioErr) throw audioErr
 
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
+    const {data:audioUrlData} = supabase.storage
+      .from("music-files")
+      .getPublicUrl(audioPath)
 
-      async function requireUser() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+    let coverUrl = ""
 
-        currentUser = data?.session?.user || null;
+    if(coverFile){
+      const coverPath = `${user.id}/${slug}.jpg`
 
-        if (!currentUser) {
-          userChip.textContent = "No session";
-          setStatus("No active session. Redirecting to auth...");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
-          return null;
-        }
+      await supabase.storage
+        .from("music-covers")
+        .upload(coverPath, coverFile)
 
-        userChip.textContent = currentUser.email || "Signed in";
-        setStatus("Session active.");
-        return currentUser;
-      }
+      const {data:coverUrlData} = supabase.storage
+        .from("music-covers")
+        .getPublicUrl(coverPath)
 
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      function clearForm() {
-        titleInput.value = "";
-        artistNameInput.value = "";
-        genreInput.value = "";
-        descriptionInput.value = "";
-        coverInput.value = "";
-        audioInput.value = "";
-        previewText.textContent = "No files selected yet.";
-        previewCoverWrap.innerHTML = "";
-        previewAudioWrap.innerHTML = "";
-      }
-
-      function showPreview() {
-        const coverFile = coverInput.files?.[0];
-        const audioFile = audioInput.files?.[0];
-
-        if (!coverFile && !audioFile) {
-          previewText.textContent = "No files selected yet.";
-          previewCoverWrap.innerHTML = "";
-          previewAudioWrap.innerHTML = "";
-          return;
-        }
-
-        const parts = [];
-        if (coverFile) parts.push(`${coverFile.name} • image`);
-        if (audioFile) parts.push(`${audioFile.name} • audio`);
-        previewText.textContent = parts.join(" | ");
-
-        previewCoverWrap.innerHTML = "";
-        previewAudioWrap.innerHTML = "";
-
-        if (coverFile) {
-          const coverUrl = URL.createObjectURL(coverFile);
-          previewCoverWrap.innerHTML = `<img class="preview-cover" src="${coverUrl}" alt="cover preview" />`;
-        }
-
-        if (audioFile) {
-          const audioUrl = URL.createObjectURL(audioFile);
-          previewAudioWrap.innerHTML = `<audio controls src="${audioUrl}"></audio>`;
-        }
-      }
-
-      async function uploadFile(bucketName, file) {
-        if (!currentUser || !file) throw new Error("Missing file upload data.");
-
-        const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-        const filePath = `${currentUser.id}/${fileName}`;
-
-        const { error } = await supabase.storage
-          .from(bucketName)
-          .upload(filePath, file, { upsert: false });
-
-        if (error) throw error;
-
-        const { data } = supabase.storage.from(bucketName).getPublicUrl(filePath);
-        const publicUrl = data?.publicUrl || "";
-
-        if (!publicUrl) {
-          throw new Error(`Could not get public URL for ${bucketName}.`);
-        }
-
-        return publicUrl;
-      }
-
-      async function uploadMusicTrack() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const title = titleInput.value.trim();
-          const artistName = artistNameInput.value.trim();
-          const genre = genreInput.value.trim();
-          const description = descriptionInput.value.trim();
-          const coverFile = coverInput.files?.[0];
-          const audioFile = audioInput.files?.[0];
-
-          if (!title) throw new Error("Track title is required.");
-          if (!artistName) throw new Error("Artist name is required.");
-          if (!genre) throw new Error("Genre is required.");
-          if (!audioFile) throw new Error("Audio file is required.");
-
-          setStatus("Uploading music files...");
-
-          let coverUrl = "";
-          if (coverFile) {
-            coverUrl = await uploadFile("music-covers", coverFile);
-          }
-
-          const audioUrl = await uploadFile("music-files", audioFile);
-
-          setStatus("Saving music track...");
-
-          const { error } = await supabase
-            .from("music_tracks")
-            .insert({
-              user_id: user.id,
-              artist_name: artistName,
-              artist_email: user.email || "",
-              title,
-              genre,
-              description,
-              cover_url: coverUrl,
-              audio_url: audioUrl
-            });
-
-          if (error) throw error;
-
-          setStatus("Music track uploaded.");
-          clearForm();
-          await loadRecentUploads();
-        } catch (error) {
-          setStatus("Upload error: " + error.message);
-        }
-      }
-
-      async function loadRecentUploads() {
-        try {
-          const user = await requireUser();
-          if (!user) return;
-
-          const { data, error } = await supabase
-            .from("music_tracks")
-            .select("*")
-            .eq("user_id", user.id)
-            .order("created_at", { ascending: false })
-            .limit(6);
-
-          if (error) throw error;
-
-          const items = data || [];
-
-          if (!items.length) {
-            recentList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
-            return;
-          }
-
-          recentList.innerHTML = items.map(item => `
-            <div class="recent-card">
-              <div class="recent-title">${escapeHtml(item.title || "Untitled Track")}</div>
-              <div class="recent-text">
-Artist: ${escapeHtml(item.artist_name || "--")}
-Genre: ${escapeHtml(item.genre || "--")}
-${escapeHtml(item.description || "")}
-              </div>
-              ${
-                item.cover_url
-                  ? `<img class="recent-cover" src="${escapeHtml(item.cover_url)}" alt="cover art" />`
-                  : ""
-              }
-              <div class="recent-audio">
-                ${
-                  item.audio_url
-                    ? `<audio controls src="${escapeHtml(item.audio_url)}"></audio>`
-                    : `<div class="empty-box">No audio file</div>`
-                }
-              </div>
-            </div>
-          `).join("");
-        } catch (error) {
-          recentList.innerHTML = `<div class="empty-box">Could not load music uploads.</div>`;
-          setStatus("Recent uploads error: " + error.message);
-        }
-      }
-
-      coverInput.addEventListener("change", showPreview);
-      audioInput.addEventListener("change", showPreview);
-      uploadBtn.addEventListener("click", uploadMusicTrack);
-      clearBtn.addEventListener("click", clearForm);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        userChip.textContent = session?.user?.email || "No session";
-        currentUser = session?.user || null;
-      });
-
-      requireUser().then(loadRecentUploads);
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Music Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+      coverUrl = coverUrlData.publicUrl
     }
-  </script>
+
+    // save to database
+    const {error:dbErr} = await supabase
+      .from("music_uploads")
+      .insert([{
+        user_id:user.id,
+        title,
+        artist_name:artist,
+        album_name:album,
+        genre,
+        file_url:audioUrlData.publicUrl,
+        cover_url:coverUrl,
+        slug,
+        album_slug: slugify(album || ""),
+        price_cents:price,
+        is_locked:locked
+      }])
+
+    if(dbErr) throw dbErr
+
+    status("SUCCESS uploaded")
+
+  }catch(err){
+    status("ERROR: "+err.message)
+  }
+}
+
+document.getElementById("uploadBtn").onclick = upload
+</script>
+
 </body>
 </html>
