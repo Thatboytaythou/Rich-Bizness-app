@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Sports Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    :root {
+      --green: #7dff71;
+      --green-2: #b8ff8d;
+      --gold: #f5d76e;
+      --danger: #ef5b55;
+      --blue: #67b7ff;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .nav a,
+    .nav button {
+      text-decoration: none;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero,
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3rem;
+      line-height: 0.94;
+      color: var(--green);
+    }
+
+    .subtle,
+    .mini-text,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill-green,
+    .pill-gold,
+    .pill-blue,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-blue {
+      background: rgba(103,183,255,0.18);
+      border: 1px solid rgba(103,183,255,0.28);
+      color: var(--blue);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .actions,
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-blue,
+    .btn-danger {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-blue { background: var(--blue); color: black; }
+    .btn-danger { background: var(--danger); color: white; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .mini-panel,
+    .panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .mini-panel-title,
+    .panel h2,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .filters-grid input,
+    .filters-grid select,
+    .grade-select,
+    .grade-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .item-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .item-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .item-title {
+      color: var(--gold);
+      font-size: 1.02rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .item-meta {
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .grade-grid {
+      display: grid;
+      grid-template-columns: 1fr 130px auto;
+      gap: 10px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .locked {
+      padding: 28px;
+      text-align: center;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: white;
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    @media (max-width: 1450px) {
+      .hero-grid,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .filters-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 920px) {
+      .hero h1 {
+        font-size: 2.25rem;
+      }
+
+      .stats-row,
+      .grade-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page" id="appRoot">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Sports Admin</span>
+      </div>
+
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="sports.html">Sports</a>
+        <a href="sports-picks.html">Top Picks</a>
+        <a href="sports-leaderboard.html">Leaderboard</a>
+        <a href="sports-admin.html" class="active">Sports Admin</a>
+        <a href="upload-sports.html">Upload Sports</a>
+        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <div id="adminContent" style="display:none;">
+      <div class="hero">
+        <div class="hero-grid">
+          <div>
+            <div>
+              <span class="hero-kicker">SPORTS CONTROL ROOM</span>
+              <span class="pill-blue">GRADE PICKS</span>
+              <span class="pill-gold">FEATURE POSTS</span>
+              <span class="pill-green">SYNC LEADERBOARD</span>
+            </div>
+
+            <h1>Manage sports uploads, grade picks, and control the sports ranking system.</h1>
+
+            <div class="subtle">
+              This sports admin page is your command center for the sports lane. It lets you feature sports content and grade picks so your sports leaderboard stays current.
+            </div>
+
+            <div class="hero-actions">
+              <button id="refreshAllBtn" class="btn-green" type="button">Refresh All</button>
+              <a class="btn-dark" href="sports.html">Open Sports</a>
+              <a class="btn-dark" href="sports-leaderboard.html">Open Leaderboard</a>
+              <a class="btn-gold" href="sports-picks.html">Open Picks</a>
+            </div>
+
+            <div id="statusBox" class="status-box">Loading sports admin...</div>
+
+            <div class="stats-row">
+              <div class="stat">
+                <div id="uploadStat" class="stat-value">0</div>
+                <div class="stat-label">Sports Uploads</div>
+              </div>
+              <div class="stat">
+                <div id="featuredStat" class="stat-value">0</div>
+                <div class="stat-label">Featured Posts</div>
+              </div>
+              <div class="stat">
+                <div id="pickStat" class="stat-value">0</div>
+                <div class="stat-label">Sports Picks</div>
+              </div>
+              <div class="stat">
+                <div id="gradedStat" class="stat-value">0</div>
+                <div class="stat-label">Graded Picks</div>
+              </div>
+              <div class="stat">
+                <div id="pointStat" class="stat-value">0</div>
+                <div class="stat-label">Points Given</div>
+              </div>
+            </div>
+
+            <div class="filters-grid">
+              <input id="searchInput" type="text" placeholder="Search title, match, player, team..." />
+              <select id="postFilter">
+                <option value="">All Sports Posts</option>
+                <option value="featured">Featured Only</option>
+              </select>
+              <select id="pickFilter">
+                <option value="">All Picks</option>
+                <option value="graded">Graded Only</option>
+                <option value="pending">Pending Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <div class="mini-panel">
+              <div class="mini-panel-title">Admin Pulse</div>
+              <div id="pulseBox" class="mini-text">Loading sports admin pulse...</div>
+            </div>
+
+            <div class="mini-panel">
+              <div class="mini-panel-title">What This Controls</div>
+              <div class="mini-text">
+                • feature or unfeature sports posts
+                <br>• grade picks as win, loss, or push
+                <br>• assign leaderboard points
+                <br>• keep sports rankings synced
+              </div>
+            </div>
+
+            <div class="mini-panel">
+              <div class="mini-panel-title">Scoring Suggestion</div>
+              <div class="mini-text">
+                Win = 10 points
+                <br>Loss = 0 points
+                <br>Push = 2 points
+                <br>You can change that anytime before saving a result.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <h2>Sports Upload Manager</h2>
+              <p>Feature or unfeature sports content for the main sports hub.</p>
+            </div>
+          </div>
+
+          <div id="sportsUploadList" class="item-list">
+            <div class="empty-box">Loading sports uploads...</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div>
+              <h2>Pick Grading Manager</h2>
+              <p>Grade picks and push them into the sports leaderboard system.</p>
+            </div>
+          </div>
+
+          <div id="pickGradeList" class="item-list">
+            <div class="empty-box">Loading sports picks...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="lockedView" class="locked" style="display:none;">
+      <h2 style="color:#ef5b55; margin-top:0;">Access Denied</h2>
+      <p>This page is for the Rich Bizness sports admin only.</p>
+      <div class="hero-actions" style="justify-content:center;">
+        <a class="btn-dark" href="sports.html">Back to Sports</a>
+        <a class="btn-dark" href="auth.html">Log In</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+      const ADMIN_USER_ID = "thatboytay3d@gmail.com";
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
+
+      const userChip = document.getElementById("userChip");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const refreshAllBtn = document.getElementById("refreshAllBtn");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
+
+      const uploadStat = document.getElementById("uploadStat");
+      const featuredStat = document.getElementById("featuredStat");
+      const pickStat = document.getElementById("pickStat");
+      const gradedStat = document.getElementById("gradedStat");
+      const pointStat = document.getElementById("pointStat");
+
+      const searchInput = document.getElementById("searchInput");
+      const postFilter = document.getElementById("postFilter");
+      const pickFilter = document.getElementById("pickFilter");
+      const sportsUploadList = document.getElementById("sportsUploadList");
+      const pickGradeList = document.getElementById("pickGradeList");
+
+      const adminContent = document.getElementById("adminContent");
+      const lockedView = document.getElementById("lockedView");
+
+      let currentUser = null;
+      let profilesById = {};
+      let sportsUploads = [];
+      let sportsPicks = [];
+      let pickResults = [];
+
+      function setStatus(message) {
+        statusBox.textContent = message;
+      }
+
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function setLocked(isLocked) {
+        adminContent.style.display = isLocked ? "none" : "block";
+        lockedView.style.display = isLocked ? "block" : "none";
+      }
+
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+
+        if (!currentUser) {
+          setLocked(true);
+          return false;
+        }
+
+        if (!ADMIN_USER_ID || currentUser.id !== ADMIN_USER_ID) {
+          setLocked(true);
+          return false;
+        }
+
+        setLocked(false);
+        return true;
+      }
+
+      async function logOut() {
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (error) {
+          setStatus("Logout error: " + error.message);
+        }
+      }
+
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) return;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", ids);
+
+        if (error && error.code !== "42P01") throw error;
+
+        profilesById = {};
+        (data || []).forEach(profile => {
+          profilesById[profile.id] = profile;
+        });
+      }
+
+      function getName(userId) {
+        const profile = profilesById[userId] || {};
+        return profile.display_name || profile.username || profile.email || "User";
+      }
+
+      function getResultForPick(pickId) {
+        return pickResults.find(r => Number(r.pick_id) === Number(pickId)) || null;
+      }
+
+      async function loadData() {
+        const [uploadRes, pickRes, resultRes] = await Promise.all([
+          supabase.from("sports_uploads").select("*").order("created_at", { ascending: false }),
+          supabase.from("sports_picks").select("*").order("created_at", { ascending: false }),
+          supabase.from("sports_pick_results").select("*").order("created_at", { ascending: false })
+        ]);
+
+        if (uploadRes.error && uploadRes.error.code !== "42P01") throw uploadRes.error;
+        if (pickRes.error && pickRes.error.code !== "42P01") throw pickRes.error;
+        if (resultRes.error && resultRes.error.code !== "42P01") throw resultRes.error;
+
+        sportsUploads = (uploadRes.data || []).map(row => ({
+          ...row,
+          sport_name: row.sport_name || row.sport || row.category || "Sports",
+          team_name: row.team_name || row.team || row.favorite_team || "",
+          is_featured: row.is_featured ?? row.featured ?? false,
+          views: row.views ?? 0,
+          likes: row.likes ?? 0
+        }));
+
+        sportsPicks = pickRes.data || [];
+        pickResults = resultRes.data || [];
+
+        await loadProfiles([
+          ...sportsUploads.map(r => r.user_id),
+          ...sportsPicks.map(r => r.user_id),
+          ...pickResults.map(r => r.user_id)
+        ]);
+      }
+
+      function updateStats() {
+        const featured = sportsUploads.filter(r => !!r.is_featured).length;
+        const graded = pickResults.length;
+        const points = pickResults.reduce((sum, r) => sum + Number(r.points || 0), 0);
+
+        uploadStat.textContent = String(sportsUploads.length);
+        featuredStat.textContent = String(featured);
+        pickStat.textContent = String(sportsPicks.length);
+        gradedStat.textContent = String(graded);
+        pointStat.textContent = String(points);
+
+        pulseBox.textContent =
+          `Sports Uploads: ${sportsUploads.length}\n` +
+          `Featured Posts: ${featured}\n` +
+          `Sports Picks: ${sportsPicks.length}\n` +
+          `Graded Picks: ${graded}\n` +
+          `Points Given: ${points}`;
+      }
+
+      function getFilteredUploads() {
+        const q = searchInput.value.trim().toLowerCase();
+        const mode = postFilter.value;
+
+        return sportsUploads.filter(row => {
+          const creator = getName(row.user_id).toLowerCase();
+          const haystack = [
+            row.title,
+            row.caption,
+            row.sport_name,
+            row.team_name,
+            creator
+          ].join(" ").toLowerCase();
+
+          const matchesSearch = !q || haystack.includes(q);
+          const matchesMode = !mode || (mode === "featured" && !!row.is_featured);
+          return matchesSearch && matchesMode;
+        });
+      }
+
+      function getFilteredPicks() {
+        const q = searchInput.value.trim().toLowerCase();
+        const mode = pickFilter.value;
+
+        return sportsPicks.filter(row => {
+          const player = getName(row.user_id).toLowerCase();
+          const haystack = [
+            row.match,
+            row.pick,
+            row.confidence,
+            row.take,
+            player
+          ].join(" ").toLowerCase();
+
+          const result = getResultForPick(row.id);
+          const graded = !!result;
+
+          const matchesSearch = !q || haystack.includes(q);
+          const matchesMode =
+            !mode ||
+            (mode === "graded" && graded) ||
+            (mode === "pending" && !graded);
+
+          return matchesSearch && matchesMode;
+        });
+      }
+
+      async function toggleFeatured(uploadId, nextValue) {
+        try {
+          const { error } = await supabase
+            .from("sports_uploads")
+            .update({ is_featured: nextValue })
+            .eq("id", uploadId);
+
+          if (error) throw error;
+
+          setStatus(nextValue ? "Sports post featured." : "Sports post unfeatured.");
+          await loadSportsAdmin();
+        } catch (error) {
+          setStatus("Feature update error: " + error.message);
+        }
+      }
+
+      async function saveGrade(pickId) {
+        try {
+          const resultSelect = document.getElementById(`result-${pickId}`);
+          const pointsInput = document.getElementById(`points-${pickId}`);
+
+          const result = resultSelect.value;
+          const points = Number(pointsInput.value || 0);
+          const pick = sportsPicks.find(p => Number(p.id) === Number(pickId));
+
+          if (!pick) throw new Error("Pick not found.");
+          if (!result) throw new Error("Choose a result.");
+          if (!Number.isFinite(points) || points < 0) throw new Error("Points must be 0 or more.");
+
+          const existing = getResultForPick(pickId);
+
+          if (existing) {
+            const { error } = await supabase
+              .from("sports_pick_results")
+              .update({
+                result,
+                points,
+                user_id: pick.user_id
+              })
+              .eq("id", existing.id);
+
+            if (error) throw error;
+          } else {
+            const { error } = await supabase
+              .from("sports_pick_results")
+              .insert([{
+                pick_id: pick.id,
+                user_id: pick.user_id,
+                result,
+                points
+              }]);
+
+            if (error) throw error;
+          }
+
+          setStatus("Pick grade saved.");
+          await loadSportsAdmin();
+        } catch (error) {
+          setStatus("Grade save error: " + error.message);
+        }
+      }
+
+      function renderUploads() {
+        const rows = getFilteredUploads();
+
+        if (!rows.length) {
+          sportsUploadList.innerHTML = `<div class="empty-box">No sports uploads found.</div>`;
+          return;
+        }
+
+        sportsUploadList.innerHTML = rows.map(row => `
+          <div class="item-card">
+            <div class="item-title">${escapeHtml(row.title || "Sports Post")}</div>
+            <div class="item-meta">
+              Creator: ${escapeHtml(getName(row.user_id))}<br>
+              Sport: ${escapeHtml(row.sport_name || "--")}<br>
+              Team: ${escapeHtml(row.team_name || "--")}<br>
+              Featured: ${row.is_featured ? "YES" : "NO"}<br>
+              Views: ${escapeHtml(row.views || 0)} • Likes: ${escapeHtml(row.likes || 0)}<br>
+              Posted: ${escapeHtml(formatDate(row.created_at))}
+            </div>
+
+            <div class="card-actions">
+              <a class="btn-dark" href="${row.video_url || row.file_url || 'sports.html'}" ${String(row.video_url || row.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
+              <button class="${row.is_featured ? 'btn-danger' : 'btn-green'} feature-btn" data-id="${row.id}" data-next="${row.is_featured ? 'false' : 'true'}" type="button">
+                ${row.is_featured ? 'Unfeature' : 'Feature'}
+              </button>
+            </div>
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".feature-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            toggleFeatured(Number(btn.dataset.id), btn.dataset.next === "true");
+          });
+        });
+      }
+
+      function renderPickGrades() {
+        const rows = getFilteredPicks();
+
+        if (!rows.length) {
+          pickGradeList.innerHTML = `<div class="empty-box">No sports picks found.</div>`;
+          return;
+        }
+
+        pickGradeList.innerHTML = rows.map(row => {
+          const existing = getResultForPick(row.id);
+          const currentResult = existing?.result || "";
+          const currentPoints = existing?.points ?? (
+            row.confidence === "High" ? 10 :
+            row.confidence === "Medium" ? 6 : 3
+          );
+
+          return `
+            <div class="item-card">
+              <div class="item-title">${escapeHtml(row.match || "Match")}</div>
+              <div class="item-meta">
+                Player: ${escapeHtml(getName(row.user_id))}<br>
+                Pick: ${escapeHtml(row.pick || "--")}<br>
+                Confidence: ${escapeHtml(row.confidence || "--")}<br>
+                Take: ${escapeHtml(row.take || "--")}<br>
+                Submitted: ${escapeHtml(formatDate(row.created_at))}<br>
+                Current Grade: ${escapeHtml(existing?.result || "pending")} • ${escapeHtml(existing?.points ?? 0)} pts
+              </div>
+
+              <div class="grade-grid">
+                <select class="grade-select" id="result-${row.id}">
+                  <option value="" ${currentResult === "" ? "selected" : ""}>Choose result</option>
+                  <option value="win" ${currentResult === "win" ? "selected" : ""}>Win</option>
+                  <option value="loss" ${currentResult === "loss" ? "selected" : ""}>Loss</option>
+                  <option value="push" ${currentResult === "push" ? "selected" : ""}>Push</option>
+                </select>
+
+                <input class="grade-input" id="points-${row.id}" type="number" min="0" value="${currentPoints}" />
+
+                <button class="btn-blue save-grade-btn" data-id="${row.id}" type="button">Save Grade</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".save-grade-btn").forEach(btn => {
+          btn.addEventListener("click", () => saveGrade(Number(btn.dataset.id)));
+        });
+      }
+
+      async function loadSportsAdmin() {
+        try {
+          setStatus("Loading sports admin...");
+          const ok = await loadSession();
+          if (!ok) return;
+
+          await loadData();
+          updateStats();
+          renderUploads();
+          renderPickGrades();
+
+          setStatus("✅ Sports admin fully synced.");
+        } catch (error) {
+          console.error("Sports admin load error:", error);
+          setStatus("❌ Sports admin load error: " + error.message);
+          sportsUploadList.innerHTML = `<div class="empty-box">Could not load sports uploads.</div>`;
+          pickGradeList.innerHTML = `<div class="empty-box">Could not load sports picks.</div>`;
+        }
+      }
+
+      [searchInput, postFilter, pickFilter].forEach(el => {
+        el.addEventListener("input", () => {
+          renderUploads();
+          renderPickGrades();
+        });
+        el.addEventListener("change", () => {
+          renderUploads();
+          renderPickGrades();
+        });
+      });
+
+      refreshAllBtn.addEventListener("click", loadSportsAdmin);
+      logoutBtn.addEventListener("click", logOut);
+
+      supabase.auth.onAuthStateChange((_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadSportsAdmin();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Sports Admin Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
