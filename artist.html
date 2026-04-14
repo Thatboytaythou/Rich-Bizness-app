@@ -215,11 +215,12 @@
       display: inline-block;
       text-decoration: none;
       text-align: center;
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-radius: 14px;
       font-weight: 900;
       border: none;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .btn-green { background: var(--green); color: black; }
@@ -257,7 +258,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(6, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -382,6 +383,37 @@
       margin-top: 10px;
     }
 
+    .comment-box {
+      margin-top: 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .comment-input {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid #2c2c2c;
+      background: rgba(0,0,0,0.72);
+      color: white;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .comment-preview {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #cfcfcf;
+      display: grid;
+      gap: 6px;
+    }
+
+    .comment-item {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.05);
+    }
+
     .empty-box {
       padding: 22px;
       text-align: center;
@@ -447,6 +479,7 @@
         <a href="feed.html">Feed</a>
         <a href="music.html">Music</a>
         <a href="gallery.html">Gallery</a>
+        <a href="store.html">Store</a>
         <a href="sports.html">Sports</a>
         <a href="artist.html" class="active">Artist</a>
         <a href="profile.html">Profile</a>
@@ -477,6 +510,7 @@
             <a id="openProfileBtn" class="btn-dark" href="profile.html">Profile</a>
             <a id="messageArtistBtn" class="btn-dark" href="messages.html">Message Artist</a>
             <a id="watchArtistBtn" class="btn-gold" href="watch.html">Watch</a>
+            <a id="liveArtistBtn" class="btn-dark" href="live.html">Live</a>
             <button id="copyArtistBtn" class="btn-blue" type="button">Copy Artist Link</button>
           </div>
 
@@ -499,9 +533,13 @@
               <div id="sportsStat" class="stat-value">0</div>
               <div class="stat-label">Sports Posts</div>
             </div>
-            <div class="stat">
+            <div id="featuredWrap" class="stat">
               <div id="featuredStat" class="stat-value">0</div>
               <div class="stat-label">Featured</div>
+            </div>
+            <div class="stat">
+              <div id="likesStat" class="stat-value">0</div>
+              <div class="stat-label">Store Likes</div>
             </div>
           </div>
         </div>
@@ -515,18 +553,18 @@
           <div class="mini-panel">
             <div class="mini-panel-title">Channel Links</div>
             <div class="mini-text">
-              This artist page now acts like the bridge between the creator profile, music lane, gallery/store lane, sports content, and live/watch flow.
+              This artist page bridges profile, store, music, sports, and live/watch in one synced creator hub.
             </div>
           </div>
 
           <div class="mini-panel">
-            <div class="mini-panel-title">Best Next Actions</div>
+            <div class="mini-panel-title">What Else Is Built In</div>
             <div class="mini-text">
-              • upload music
-              <br>• upload fashion
-              <br>• open store
-              <br>• go live
-              <br>• post sports content
+              • auto username fallback
+              <br>• live store likes/comments
+              <br>• creator store links
+              <br>• artist share link
+              <br>• synced creator identity
             </div>
           </div>
         </div>
@@ -614,6 +652,7 @@
       const openProfileBtn = document.getElementById("openProfileBtn");
       const messageArtistBtn = document.getElementById("messageArtistBtn");
       const watchArtistBtn = document.getElementById("watchArtistBtn");
+      const liveArtistBtn = document.getElementById("liveArtistBtn");
       const copyArtistBtn = document.getElementById("copyArtistBtn");
 
       const musicStat = document.getElementById("musicStat");
@@ -621,6 +660,7 @@
       const saleStat = document.getElementById("saleStat");
       const sportsStat = document.getElementById("sportsStat");
       const featuredStat = document.getElementById("featuredStat");
+      const likesStat = document.getElementById("likesStat");
 
       const musicGrid = document.getElementById("musicGrid");
       const storeGrid = document.getElementById("storeGrid");
@@ -631,6 +671,9 @@
       let musicRows = [];
       let storeRows = [];
       let sportsRows = [];
+      let artworkLikes = [];
+      let artworkComments = [];
+      let liveChannel = null;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -657,9 +700,27 @@
         return `$${n.toFixed(2)}`;
       }
 
-      function getUsernameFromUrl() {
+      async function getUsernameFromUrlOrSession() {
         const params = new URLSearchParams(window.location.search);
-        return params.get("u") || "";
+        let username = params.get("u");
+
+        if (username) return username;
+
+        const { data: { session } } = await supabase.auth.getSession();
+        const user = session?.user;
+
+        if (!user) throw new Error("No username and no session.");
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .single();
+
+        if (error && error.code !== "42P01") throw error;
+        if (!data?.username) throw new Error("No username found for user.");
+
+        return data.username;
       }
 
       function buildStoreUrl(username) {
@@ -684,8 +745,6 @@
       }
 
       async function loadArtistProfile(username) {
-        if (!username) throw new Error("Missing username in URL. Use artist.html?u=username");
-
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -717,12 +776,13 @@
           : buildStoreUrl(profile.username);
         messageArtistBtn.href = "messages.html";
         watchArtistBtn.href = "watch.html";
+        liveArtistBtn.href = "live.html";
       }
 
       async function loadArtistContent() {
         const [musicRes, storeRes, sportsRes] = await Promise.all([
           supabase.from("music_uploads").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
-          supabase.from("artwork").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
+          supabase.from("artworks").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
           supabase.from("sports_uploads").select("*").eq("user_id", profile.id).order("created_at", { ascending: false })
         ]);
 
@@ -736,7 +796,9 @@
           category: (row.category || "art").toLowerCase(),
           price: Number(row.price || 0),
           is_for_sale: !!row.is_for_sale,
-          is_featured: !!row.is_featured
+          is_featured: !!row.is_featured,
+          likes_count: Number(row.likes_count || 0),
+          comments_count: Number(row.comments_count || 0)
         }));
         sportsRows = (sportsRes.data || []).map(row => ({
           ...row,
@@ -746,7 +808,119 @@
         }));
       }
 
+      async function loadArtworkSocialData(artworkIds = []) {
+        if (!artworkIds.length) {
+          artworkLikes = [];
+          artworkComments = [];
+          return;
+        }
+
+        const { data: likesData, error: likesError } = await supabase
+          .from("artwork_likes")
+          .select("*")
+          .in("artwork_id", artworkIds);
+
+        if (likesError && likesError.code !== "42P01") throw likesError;
+
+        const { data: commentsData, error: commentsError } = await supabase
+          .from("comments")
+          .select("*")
+          .eq("content_type", "artwork")
+          .in("content_id", artworkIds)
+          .order("created_at", { ascending: false });
+
+        if (commentsError && commentsError.code !== "42P01") throw commentsError;
+
+        artworkLikes = likesData || [];
+        artworkComments = commentsData || [];
+      }
+
+      function getArtworkLikeCount(artworkId, fallback = 0) {
+        const count = artworkLikes.filter(x => Number(x.artwork_id) === Number(artworkId)).length;
+        return count || Number(fallback || 0);
+      }
+
+      function getArtworkCommentCount(artworkId, fallback = 0) {
+        const count = artworkComments.filter(x => Number(x.content_id) === Number(artworkId)).length;
+        return count || Number(fallback || 0);
+      }
+
+      function hasUserLikedArtwork(artworkId) {
+        return !!currentUser && artworkLikes.some(
+          x => Number(x.artwork_id) === Number(artworkId) && x.user_id === currentUser.id
+        );
+      }
+
+      async function toggleArtworkLike(artworkId) {
+        try {
+          if (!currentUser) throw new Error("Log in first.");
+
+          const liked = hasUserLikedArtwork(artworkId);
+
+          if (liked) {
+            const existing = artworkLikes.find(
+              x => Number(x.artwork_id) === Number(artworkId) && x.user_id === currentUser.id
+            );
+
+            if (existing) {
+              const { error } = await supabase
+                .from("artwork_likes")
+                .delete()
+                .eq("id", existing.id);
+
+              if (error) throw error;
+            }
+          } else {
+            const { error } = await supabase
+              .from("artwork_likes")
+              .insert([{
+                artwork_id: artworkId,
+                user_id: currentUser.id
+              }]);
+
+            if (error) throw error;
+          }
+        } catch (error) {
+          setStatus("Like error: " + error.message);
+        }
+      }
+
+      async function addArtworkComment(artworkId) {
+        try {
+          if (!currentUser) throw new Error("Log in first.");
+
+          const input = document.getElementById(`comment-input-${artworkId}`);
+          if (!input) throw new Error("Comment input not found.");
+
+          const body = input.value.trim();
+          if (!body) throw new Error("Write a comment first.");
+
+          const { error } = await supabase
+            .from("comments")
+            .insert([{
+              user_id: currentUser.id,
+              content_type: "artwork",
+              content_id: artworkId,
+              body
+            }]);
+
+          if (error) throw error;
+
+          input.value = "";
+        } catch (error) {
+          setStatus("Comment error: " + error.message);
+        }
+      }
+
+      function getArtworkCommentsPreview(artworkId, limit = 3) {
+        return artworkComments
+          .filter(x => Number(x.content_id) === Number(artworkId))
+          .slice(0, limit);
+      }
+
       function updateStats() {
+        const totalLikes = storeRows.reduce((sum, row) => sum + getArtworkLikeCount(row.id, row.likes_count), 0);
+
         musicStat.textContent = String(musicRows.length);
         storeStat.textContent = String(storeRows.length);
         saleStat.textContent = String(storeRows.filter(x => x.is_for_sale).length);
@@ -754,6 +928,7 @@
         featuredStat.textContent = String(
           storeRows.filter(x => x.is_featured).length + sportsRows.filter(x => x.is_featured).length
         );
+        likesStat.textContent = String(totalLikes);
 
         pulseBox.textContent =
           `Artist: ${profile.display_name || profile.username || "Artist"}\n` +
@@ -761,9 +936,8 @@
           `Store Items: ${storeRows.length}\n` +
           `For Sale: ${storeRows.filter(x => x.is_for_sale).length}\n` +
           `Sports Posts: ${sportsRows.length}\n` +
-          `Featured Content: ${
-            storeRows.filter(x => x.is_featured).length + sportsRows.filter(x => x.is_featured).length
-          }`;
+          `Store Likes: ${totalLikes}\n` +
+          `Featured Content: ${storeRows.filter(x => x.is_featured).length + sportsRows.filter(x => x.is_featured).length}`;
       }
 
       function renderMusic() {
@@ -825,15 +999,32 @@
               <div class="card-text">${escapeHtml(item.description || "Creator storefront item.")}</div>
               ${item.is_for_sale ? `<div class="price">${money(item.price || 0)}</div>` : ``}
               <div class="card-meta">
-                Posted: ${escapeHtml(formatDate(item.created_at))}
+                Posted: ${escapeHtml(formatDate(item.created_at))}<br>
+                Likes: ${getArtworkLikeCount(item.id, item.likes_count)} • Comments: ${getArtworkCommentCount(item.id, item.comments_count)}
               </div>
               <div class="card-actions">
                 <a class="btn-green" href="${item.image_url || buildStoreUrl(profile.username)}" ${String(item.image_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
                 <a class="btn-dark" href="${buildStoreUrl(profile.username)}">Store</a>
+                <button class="btn-blue like-artwork-btn" data-id="${item.id}" type="button">
+                  ${hasUserLikedArtwork(item.id) ? "Unlike" : "Like"}
+                </button>
+              </div>
+              <div class="comment-box">
+                <input class="comment-input" id="comment-input-${item.id}" type="text" placeholder="Add comment..." />
+                <button class="btn-dark comment-artwork-btn" data-id="${item.id}" type="button">Comment</button>
+              </div>
+              <div class="comment-preview">
+                ${
+                  getArtworkCommentsPreview(item.id).map(c => `
+                    <div class="comment-item">${escapeHtml(c.body)}</div>
+                  `).join("") || `<div>No comments yet.</div>`
+                }
               </div>
             </div>
           </div>
         `).join("");
+
+        mountArtworkSocialHandlers();
       }
 
       function renderSports() {
@@ -871,6 +1062,22 @@
         `).join("");
       }
 
+      function mountArtworkSocialHandlers() {
+        document.querySelectorAll(".like-artwork-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            await toggleArtworkLike(Number(btn.dataset.id));
+            await refreshAll();
+          });
+        });
+
+        document.querySelectorAll(".comment-artwork-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            await addArtworkComment(Number(btn.dataset.id));
+            await refreshAll();
+          });
+        });
+      }
+
       function setTab(tab) {
         document.querySelectorAll(".tab-btn").forEach(btn => {
           btn.classList.toggle("active", btn.dataset.tab === tab);
@@ -890,21 +1097,59 @@
         }
       }
 
+      function subscribeArtworkLive() {
+        if (liveChannel) {
+          supabase.removeChannel(liveChannel);
+        }
+
+        liveChannel = supabase
+          .channel("artist-artworks-live")
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "artworks" },
+            async () => {
+              await refreshAll();
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "artwork_likes" },
+            async () => {
+              await refreshAll();
+            }
+          )
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table: "comments" },
+            async payload => {
+              if (payload.new?.content_type === "artwork" || payload.old?.content_type === "artwork") {
+                await refreshAll();
+              }
+            }
+          )
+          .subscribe();
+      }
+
+      async function refreshAll() {
+        await loadArtistContent();
+        await loadArtworkSocialData(storeRows.map(item => item.id));
+        updateStats();
+        renderMusic();
+        renderStore();
+        renderSports();
+      }
+
       async function loadArtistPage() {
         try {
           setStatus("Loading artist page...");
           await loadSession();
 
-          const username = getUsernameFromUrl();
+          const username = await getUsernameFromUrlOrSession();
           await loadArtistProfile(username);
-          await loadArtistContent();
+          await refreshAll();
+          subscribeArtworkLive();
 
-          updateStats();
-          renderMusic();
-          renderStore();
-          renderSports();
-
-          setStatus("✅ Artist page fully synced with store, music, sports, and profile.");
+          setStatus("✅ Artist page fully synced with store, music, sports, likes, comments, and live updates.");
         } catch (error) {
           console.error("artist page load error:", error);
           setStatus("❌ Artist page load error: " + error.message);
