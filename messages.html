@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Messages</title>
+  <title>Rich Bizness | Notifications</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -12,10 +12,10 @@
     :root {
       --green: #7dff71;
       --gold: #f5d76e;
+      --blue: #67b7ff;
       --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.52);
+      --bg: rgba(0,0,0,0.56);
       --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
@@ -28,18 +28,21 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
-        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1600px;
+      max-width: 1680px;
       margin: 0 auto;
       padding: 18px;
-      padding-bottom: 40px;
+      padding-bottom: 60px;
     }
 
-    .topbar, .hero, .section, .status-box {
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 24px;
@@ -62,16 +65,17 @@
       align-items: center;
       gap: 12px;
       color: var(--green);
-      font-size: 1.85rem;
+      font-size: 1.9rem;
       font-weight: 900;
     }
 
     .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
 
     .nav {
@@ -103,8 +107,8 @@
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       font-weight: 700;
     }
 
@@ -114,23 +118,33 @@
       margin-bottom: 18px;
     }
 
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
     .hero h1 {
       margin: 0 0 12px;
-      font-size: 2.7rem;
-      line-height: 1;
+      font-size: 3rem;
+      line-height: 0.94;
       color: var(--green);
     }
 
     .subtle,
-    .meta-text {
+    .mini-text,
+    .status-box,
+    .notif-body,
+    .notif-meta {
       color: var(--text);
       line-height: 1.75;
     }
 
     .hero-kicker,
-    .pill,
     .pill-green,
     .pill-gold,
+    .pill-blue,
     .pill-red {
       display: inline-block;
       padding: 8px 12px;
@@ -140,27 +154,33 @@
     }
 
     .hero-kicker,
-    .pill,
     .pill-green {
-      background: rgba(125,255,113,0.12);
+      background: rgba(125,255,113,0.13);
       border: 1px solid rgba(125,255,113,0.18);
       color: var(--green);
     }
 
     .pill-gold {
       background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.28);
+      border: 1px solid rgba(245,215,110,0.26);
       color: var(--gold);
+    }
+
+    .pill-blue {
+      background: rgba(103,183,255,0.18);
+      border: 1px solid rgba(103,183,255,0.28);
+      color: var(--blue);
     }
 
     .pill-red {
       background: rgba(239,91,85,0.18);
       border: 1px solid rgba(239,91,85,0.28);
-      color: #ff9f9b;
+      color: #ffb1ac;
     }
 
     .hero-actions,
-    .actions {
+    .filter-row,
+    .notif-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -170,218 +190,177 @@
     .btn-green,
     .btn-dark,
     .btn-gold,
-    .btn-danger {
+    .btn-blue,
+    .btn-red {
       display: inline-block;
       text-decoration: none;
       text-align: center;
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-radius: 14px;
       font-weight: 900;
       border: none;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .btn-green { background: var(--green); color: black; }
     .btn-dark {
-      background: var(--soft);
+      background: rgba(255,255,255,0.08);
       color: white;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
     }
     .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
+    .btn-blue { background: var(--blue); color: black; }
+    .btn-red { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
       font-weight: 700;
-      line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 18px;
-    }
-
-    .panel {
+    .mini-panel {
       padding: 18px;
       border-radius: 20px;
-      background: var(--soft2);
+      background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.08);
-      height: 100%;
+      margin-bottom: 14px;
     }
 
-    .panel h2 {
-      margin: 0 0 12px;
+    .mini-panel-title,
+    .section-header h2 {
       color: var(--green);
+      margin: 0 0 10px;
       font-size: 1.35rem;
+      font-weight: 900;
     }
 
-    .control {
-      margin-bottom: 12px;
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
     }
 
-    .control label {
-      display: block;
-      margin-bottom: 8px;
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
       color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .chip {
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
       font-weight: 800;
     }
 
-    .control input,
-    .control textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
+    .chip.active {
+      background: var(--green);
+      color: black;
+      border-color: transparent;
     }
 
-    .control textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .conversation-list {
+    .notif-list {
       display: grid;
-      gap: 12px;
-      max-height: 620px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-
-    .conversation-card {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-    }
-
-    .conversation-card.active {
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.08);
-    }
-
-    .conversation-title {
-      color: var(--gold);
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .conversation-snippet {
-      color: var(--text);
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .conversation-meta {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .messages-shell {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 700px;
       gap: 14px;
     }
 
-    .chat-header {
-      padding: 16px;
+    .notif-card {
+      padding: 18px;
       border-radius: 18px;
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .chat-thread {
-      padding: 14px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.28);
-      border: 1px solid rgba(255,255,255,0.08);
-      overflow-y: auto;
-      min-height: 440px;
-      max-height: 440px;
-      display: grid;
-      gap: 12px;
+    .notif-card.unread {
+      border-color: rgba(125,255,113,0.35);
+      box-shadow: 0 0 20px rgba(125,255,113,0.08);
     }
 
-    .message-row {
+    .notif-top {
       display: flex;
-    }
-
-    .message-row.me {
-      justify-content: flex-end;
-    }
-
-    .message-bubble {
-      max-width: 72%;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      word-break: break-word;
-      white-space: pre-wrap;
-      line-height: 1.55;
-    }
-
-    .message-row.me .message-bubble {
-      background: rgba(125,255,113,0.12);
-      border-color: rgba(125,255,113,0.24);
-    }
-
-    .message-name {
-      color: var(--gold);
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .message-time {
-      margin-top: 8px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .composer {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .composer-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
+      justify-content: space-between;
       gap: 12px;
-      align-items: end;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .notif-title {
+      color: var(--gold);
+      font-size: 1.05rem;
+      font-weight: 900;
+    }
+
+    .notif-body {
+      margin-top: 8px;
+    }
+
+    .notif-meta {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--muted);
     }
 
     .empty-box {
-      padding: 20px;
+      padding: 22px;
       text-align: center;
       border-radius: 16px;
-      color: rgba(255,255,255,0.78);
+      color: rgba(255,255,255,0.80);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    @media (max-width: 1080px) {
-      .layout {
+    @media (max-width: 1400px) {
+      .hero-grid {
         grid-template-columns: 1fr;
       }
 
-      .messages-shell {
-        min-height: auto;
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .hero h1 {
+        font-size: 2.2rem;
       }
 
-      .chat-thread {
-        max-height: 420px;
+      .stats-row {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -391,87 +370,131 @@
     <div class="topbar">
       <div class="brand">
         <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Messages</span>
+        <span>Notifications</span>
       </div>
 
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
+        <a href="feed.html">Feed</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="store.html">Store</a>
         <a href="artist.html">Artist</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="sports.html">Sports</a>
-        <a href="live.html">Live</a>
-        <a href="watch.html">Watch</a>
-        <a href="messages.html" class="active">Messages</a>
-        <a href="notifications.html">Notifications</a>
         <a href="profile.html">Profile</a>
+        <a href="notifications.html" class="active">Notifications</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
-      <div class="hero-kicker">FULL MESSAGING LANE</div>
-      <h1>Talk to artists, fans, and creators in one synced inbox.</h1>
-      <div class="subtle">
-        Start conversations by username, keep inbox threads clean, and connect messages to the rest of your Rich Bizness platform.
-      </div>
+      <div class="hero-grid">
+        <div>
+          <div>
+            <span class="hero-kicker">FULL NOTIFICATION HUB</span>
+            <span class="pill-green">LIKES</span>
+            <span class="pill-blue">COMMENTS</span>
+            <span class="pill-gold">SALES</span>
+            <span class="pill-red">SPORTS</span>
+          </div>
 
-      <div class="hero-actions">
-        <button id="toggleNewChatBtn" class="btn-green" type="button">Start New Chat</button>
-        <a class="btn-dark" href="profile.html">Open Profile</a>
-      </div>
+          <h1>Track every like, comment, sale, and creator update from one Rich Bizness notification center.</h1>
 
-      <div id="statusBox" class="status-box">Loading messages...</div>
+          <div class="subtle">
+            This page is built to become the main alert hub for your platform. It supports store sales, artwork likes, comments, sports grading, and future creator system alerts.
+          </div>
+
+          <div class="hero-actions">
+            <button id="markAllBtn" class="btn-green" type="button">Mark All Read</button>
+            <a class="btn-dark" href="profile.html">Profile</a>
+            <a class="btn-dark" href="store.html">Store</a>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading notifications...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="allStat" class="stat-value">0</div>
+              <div class="stat-label">All</div>
+            </div>
+            <div class="stat">
+              <div id="unreadStat" class="stat-value">0</div>
+              <div class="stat-label">Unread</div>
+            </div>
+            <div class="stat">
+              <div id="likesStat" class="stat-value">0</div>
+              <div class="stat-label">Likes</div>
+            </div>
+            <div class="stat">
+              <div id="salesStat" class="stat-value">0</div>
+              <div class="stat-label">Sales</div>
+            </div>
+            <div class="stat">
+              <div id="sportsStat" class="stat-value">0</div>
+              <div class="stat-label">Sports</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini-panel">
+            <div class="mini-panel-title">Notification Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading pulse...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Current Categories</div>
+            <div class="mini-text">
+              • like
+              <br>• comment
+              <br>• sale
+              <br>• sports
+              <br>• system
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">More You Can Add Later</div>
+            <div class="mini-text">
+              • follows
+              <br>• messages
+              <br>• live alerts
+              <br>• payout alerts
+              <br>• music unlock alerts
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="layout">
-      <div class="section">
-        <div class="panel">
-          <h2>Inbox</h2>
-
-          <div id="newChatCard" class="panel" style="display:none; margin-bottom:14px; padding:14px;">
-            <div class="control">
-              <label for="newChatUsernameInput">Username</label>
-              <input id="newChatUsernameInput" type="text" placeholder="richbizness" />
-            </div>
-            <div class="control">
-              <label for="newChatMessageInput">First Message</label>
-              <textarea id="newChatMessageInput" placeholder="Say something..."></textarea>
-            </div>
-            <div class="actions">
-              <button id="createConversationBtn" class="btn-green" type="button">Create Chat</button>
-              <button id="cancelNewChatBtn" class="btn-dark" type="button">Cancel</button>
-            </div>
-          </div>
-
-          <div id="conversationList" class="conversation-list">
-            <div class="empty-box">Loading inbox...</div>
-          </div>
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Filters</h2>
+          <p>Switch between unread, likes, sales, sports, and system alerts.</p>
         </div>
       </div>
 
-      <div class="section">
-        <div class="messages-shell">
-          <div id="chatHeader" class="chat-header">
-            <div class="conversation-title">No conversation selected</div>
-            <div class="conversation-snippet">Pick a thread from the inbox or start a new chat.</div>
-          </div>
+      <div class="filter-row" id="filterRow">
+        <button class="chip active" data-filter="all" type="button">All</button>
+        <button class="chip" data-filter="unread" type="button">Unread</button>
+        <button class="chip" data-filter="like" type="button">Likes</button>
+        <button class="chip" data-filter="comment" type="button">Comments</button>
+        <button class="chip" data-filter="sale" type="button">Sales</button>
+        <button class="chip" data-filter="sports" type="button">Sports</button>
+        <button class="chip" data-filter="system" type="button">System</button>
+      </div>
+    </div>
 
-          <div id="chatThread" class="chat-thread">
-            <div class="empty-box">No messages yet.</div>
-          </div>
-
-          <div class="composer">
-            <div class="composer-grid">
-              <div class="control" style="margin-bottom:0;">
-                <label for="messageInput">Message</label>
-                <textarea id="messageInput" placeholder="Type your message..."></textarea>
-              </div>
-              <button id="sendMessageBtn" class="btn-green" type="button">Send</button>
-            </div>
-          </div>
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Your Notifications</h2>
+          <p>Newest first, live synced.</p>
         </div>
+      </div>
+
+      <div id="notifList" class="notif-list">
+        <div class="empty-box">Loading notifications...</div>
       </div>
     </div>
   </div>
@@ -491,26 +514,24 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
+      const markAllBtn = document.getElementById("markAllBtn");
       const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
 
-      const toggleNewChatBtn = document.getElementById("toggleNewChatBtn");
-      const cancelNewChatBtn = document.getElementById("cancelNewChatBtn");
-      const createConversationBtn = document.getElementById("createConversationBtn");
+      const allStat = document.getElementById("allStat");
+      const unreadStat = document.getElementById("unreadStat");
+      const likesStat = document.getElementById("likesStat");
+      const salesStat = document.getElementById("salesStat");
+      const sportsStat = document.getElementById("sportsStat");
 
-      const newChatCard = document.getElementById("newChatCard");
-      const newChatUsernameInput = document.getElementById("newChatUsernameInput");
-      const newChatMessageInput = document.getElementById("newChatMessageInput");
-
-      const conversationList = document.getElementById("conversationList");
-      const chatHeader = document.getElementById("chatHeader");
-      const chatThread = document.getElementById("chatThread");
-      const messageInput = document.getElementById("messageInput");
-      const sendMessageBtn = document.getElementById("sendMessageBtn");
+      const notifList = document.getElementById("notifList");
+      const filterRow = document.getElementById("filterRow");
 
       let currentUser = null;
-      let selectedConversationId = null;
-      let conversationsCache = [];
-      let participantsProfileMap = {};
+      let currentFilter = "all";
+      let notifications = [];
+      let profilesById = {};
+      let liveChannel = null;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -541,10 +562,7 @@
 
         if (!currentUser) {
           window.location.href = "auth.html";
-          return null;
         }
-
-        return currentUser;
       }
 
       async function logOut() {
@@ -557,363 +575,243 @@
         }
       }
 
-      function getOtherParticipantProfiles(conversation) {
-        const others = (conversation.participants || []).filter(p => p.user_id !== currentUser.id);
-        return others.map(p => participantsProfileMap[p.user_id]).filter(Boolean);
-      }
-
-      function conversationTitle(conversation) {
-        const others = getOtherParticipantProfiles(conversation);
-        if (!others.length) return "Just You";
-        return others.map(p => p.display_name || p.username || p.email || "User").join(", ");
-      }
-
-      function conversationSub(conversation) {
-        const others = getOtherParticipantProfiles(conversation);
-        if (!others.length) return "Your private thread";
-        return others.map(p => "@" + (p.username || "user")).join(", ");
-      }
-
-      async function loadProfilesForParticipants(userIds) {
-        const uniqueIds = [...new Set(userIds.filter(Boolean))];
-        if (!uniqueIds.length) return;
-
-        const missing = uniqueIds.filter(id => !participantsProfileMap[id]);
-        if (!missing.length) return;
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) {
+          profilesById = {};
+          return;
+        }
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("*")
-          .in("id", missing);
+          .select("id, username, display_name, email")
+          .in("id", ids);
 
-        if (error) throw error;
+        if (error && error.code !== "42P01") throw error;
 
+        profilesById = {};
         (data || []).forEach(profile => {
-          participantsProfileMap[profile.id] = profile;
+          profilesById[profile.id] = profile;
         });
       }
 
-      async function loadConversations() {
-        const { data: participantRows, error: partErr } = await supabase
-          .from("conversation_participants")
-          .select("conversation_id, user_id, joined_at, last_read_at")
-          .eq("user_id", currentUser.id);
+      function getActorName(actorUserId) {
+        if (!actorUserId) return "System";
+        const profile = profilesById[actorUserId] || {};
+        return profile.display_name || profile.username || profile.email || "User";
+      }
 
-        if (partErr) throw partErr;
-
-        const conversationIds = (participantRows || []).map(r => r.conversation_id);
-
-        if (!conversationIds.length) {
-          conversationsCache = [];
-          renderConversationList();
-          renderChatHeader(null);
-          renderMessages([]);
-          return;
-        }
-
-        const { data: conversations, error: convErr } = await supabase
-          .from("conversations")
+      async function loadNotifications() {
+        const { data, error } = await supabase
+          .from("notifications")
           .select("*")
-          .in("id", conversationIds)
-          .order("updated_at", { ascending: false });
-
-        if (convErr) throw convErr;
-
-        const { data: allParticipants, error: allPartErr } = await supabase
-          .from("conversation_participants")
-          .select("*")
-          .in("conversation_id", conversationIds);
-
-        if (allPartErr) throw allPartErr;
-
-        const allUserIds = (allParticipants || []).map(p => p.user_id);
-        await loadProfilesForParticipants(allUserIds);
-
-        const { data: latestMessages, error: latestErr } = await supabase
-          .from("messages")
-          .select("*")
-          .in("conversation_id", conversationIds)
+          .eq("user_id", currentUser.id)
           .order("created_at", { ascending: false });
 
-        if (latestErr) throw latestErr;
+        if (error && error.code !== "42P01") throw error;
 
-        const latestByConversation = {};
-        (latestMessages || []).forEach(msg => {
-          if (!latestByConversation[msg.conversation_id]) {
-            latestByConversation[msg.conversation_id] = msg;
-          }
-        });
+        notifications = data || [];
+        await loadProfiles(notifications.map(n => n.actor_user_id));
+      }
 
-        conversationsCache = (conversations || []).map(conv => ({
-          ...conv,
-          participants: (allParticipants || []).filter(p => p.conversation_id === conv.id),
-          latest_message: latestByConversation[conv.id] || null
-        }));
+      function updateStats() {
+        const unread = notifications.filter(n => !n.is_read).length;
+        const likes = notifications.filter(n => n.type === "like").length;
+        const sales = notifications.filter(n => n.type === "sale").length;
+        const sports = notifications.filter(n => n.type === "sports").length;
 
-        renderConversationList();
+        allStat.textContent = String(notifications.length);
+        unreadStat.textContent = String(unread);
+        likesStat.textContent = String(likes);
+        salesStat.textContent = String(sales);
+        sportsStat.textContent = String(sports);
 
-        if (!selectedConversationId && conversationsCache.length) {
-          selectedConversationId = conversationsCache[0].id;
-        }
+        pulseBox.textContent =
+          `All Notifications: ${notifications.length}\n` +
+          `Unread: ${unread}\n` +
+          `Likes: ${likes}\n` +
+          `Sales: ${sales}\n` +
+          `Sports: ${sports}`;
+      }
 
-        const selected = conversationsCache.find(c => c.id === selectedConversationId) || null;
-        renderChatHeader(selected);
+      function getFilteredNotifications() {
+        if (currentFilter === "all") return notifications;
+        if (currentFilter === "unread") return notifications.filter(n => !n.is_read);
+        return notifications.filter(n => n.type === currentFilter);
+      }
 
-        if (selectedConversationId) {
-          await loadMessages(selectedConversationId);
-        } else {
-          renderMessages([]);
+      function buildNotifLink(n) {
+        if (n.link) return n.link;
+
+        if (n.type === "sale") return "store.html";
+        if (n.type === "like" || n.type === "comment") return "gallery.html";
+        if (n.type === "sports") return "sports-leaderboard.html";
+        return "profile.html";
+      }
+
+      async function markNotificationRead(id) {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("id", id)
+            .eq("user_id", currentUser.id);
+
+          if (error) throw error;
+          await refreshAll();
+        } catch (error) {
+          setStatus("Mark read error: " + error.message);
         }
       }
 
-      function renderConversationList() {
-        if (!conversationsCache.length) {
-          conversationList.innerHTML = `<div class="empty-box">No conversations yet.</div>`;
-          return;
+      async function markAllRead() {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .update({ is_read: true })
+            .eq("user_id", currentUser.id)
+            .eq("is_read", false);
+
+          if (error) throw error;
+          await refreshAll();
+          setStatus("All notifications marked read.");
+        } catch (error) {
+          setStatus("Mark all read error: " + error.message);
         }
-
-        conversationList.innerHTML = conversationsCache.map(conv => {
-          const active = conv.id === selectedConversationId ? "active" : "";
-          const title = conversationTitle(conv);
-          const sub = conversationSub(conv);
-          const latest = conv.latest_message?.body || "No messages yet.";
-          const time = conv.latest_message?.created_at ? formatDate(conv.latest_message.created_at) : "--";
-
-          return `
-            <div class="conversation-card ${active}" data-id="${conv.id}">
-              <div class="conversation-title">${escapeHtml(title)}</div>
-              <div class="conversation-snippet">${escapeHtml(sub)}</div>
-              <div class="conversation-snippet" style="margin-top:8px;">${escapeHtml(latest)}</div>
-              <div class="conversation-meta">${escapeHtml(time)}</div>
-            </div>
-          `;
-        }).join("");
-
-        Array.from(conversationList.querySelectorAll(".conversation-card")).forEach(card => {
-          card.addEventListener("click", async () => {
-            selectedConversationId = Number(card.dataset.id);
-            renderConversationList();
-            const selected = conversationsCache.find(c => c.id === selectedConversationId) || null;
-            renderChatHeader(selected);
-            await loadMessages(selectedConversationId);
-            await markConversationRead(selectedConversationId);
-          });
-        });
       }
 
-      function renderChatHeader(conversation) {
-        if (!conversation) {
-          chatHeader.innerHTML = `
-            <div class="conversation-title">No conversation selected</div>
-            <div class="conversation-snippet">Pick a thread from the inbox or start a new chat.</div>
-          `;
-          return;
-        }
+      async function deleteNotification(id) {
+        try {
+          const { error } = await supabase
+            .from("notifications")
+            .delete()
+            .eq("id", id)
+            .eq("user_id", currentUser.id);
 
-        chatHeader.innerHTML = `
-          <div class="conversation-title">${escapeHtml(conversationTitle(conversation))}</div>
-          <div class="conversation-snippet">${escapeHtml(conversationSub(conversation))}</div>
-        `;
+          if (error) throw error;
+          await refreshAll();
+        } catch (error) {
+          setStatus("Delete notification error: " + error.message);
+        }
       }
 
-      function renderMessages(rows) {
+      function renderNotifications() {
+        const rows = getFilteredNotifications();
+
         if (!rows.length) {
-          chatThread.innerHTML = `<div class="empty-box">No messages yet.</div>`;
+          notifList.innerHTML = `<div class="empty-box">No notifications yet.</div>`;
           return;
         }
 
-        chatThread.innerHTML = rows.map(row => {
-          const mine = row.sender_id === currentUser.id ? "me" : "";
-          const profile = participantsProfileMap[row.sender_id] || {};
-          const senderName = profile.display_name || profile.username || profile.email || "User";
-
-          return `
-            <div class="message-row ${mine}">
-              <div class="message-bubble">
-                <div class="message-name">${escapeHtml(senderName)}</div>
-                <div>${escapeHtml(row.body)}</div>
-                <div class="message-time">${escapeHtml(formatDate(row.created_at))}</div>
+        notifList.innerHTML = rows.map(n => `
+          <div class="notif-card ${n.is_read ? "" : "unread"}">
+            <div class="notif-top">
+              <div class="notif-title">${escapeHtml(n.title || "Notification")}</div>
+              <div>
+                ${
+                  n.type === "like" ? `<span class="pill-blue">LIKE</span>` :
+                  n.type === "comment" ? `<span class="pill-green">COMMENT</span>` :
+                  n.type === "sale" ? `<span class="pill-gold">SALE</span>` :
+                  n.type === "sports" ? `<span class="pill-red">SPORTS</span>` :
+                  `<span class="pill-blue">SYSTEM</span>`
+                }
               </div>
             </div>
-          `;
-        }).join("");
 
-        chatThread.scrollTop = chatThread.scrollHeight;
+            <div class="notif-body">
+              ${escapeHtml(n.body || "")}
+            </div>
+
+            <div class="notif-meta">
+              From: ${escapeHtml(getActorName(n.actor_user_id))}<br>
+              Time: ${escapeHtml(formatDate(n.created_at))}<br>
+              Status: ${n.is_read ? "Read" : "Unread"}
+            </div>
+
+            <div class="notif-actions">
+              <a class="btn-dark" href="${escapeHtml(buildNotifLink(n))}">Open</a>
+              ${!n.is_read ? `<button class="btn-green mark-read-btn" data-id="${n.id}" type="button">Mark Read</button>` : ``}
+              <button class="btn-red delete-notif-btn" data-id="${n.id}" type="button">Delete</button>
+            </div>
+          </div>
+        `).join("");
+
+        document.querySelectorAll(".mark-read-btn").forEach(btn => {
+          btn.addEventListener("click", () => markNotificationRead(Number(btn.dataset.id)));
+        });
+
+        document.querySelectorAll(".delete-notif-btn").forEach(btn => {
+          btn.addEventListener("click", () => deleteNotification(Number(btn.dataset.id)));
+        });
       }
 
-      async function loadMessages(conversationId) {
-        const { data, error } = await supabase
-          .from("messages")
-          .select("*")
-          .eq("conversation_id", conversationId)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-
-        const senderIds = (data || []).map(m => m.sender_id);
-        await loadProfilesForParticipants(senderIds);
-        renderMessages(data || []);
+      function setFilter(filter) {
+        currentFilter = filter;
+        document.querySelectorAll(".chip").forEach(chip => {
+          chip.classList.toggle("active", chip.dataset.filter === filter);
+        });
+        renderNotifications();
       }
 
-      async function markConversationRead(conversationId) {
-        const { error } = await supabase
-          .from("conversation_participants")
-          .update({ last_read_at: new Date().toISOString() })
-          .eq("conversation_id", conversationId)
-          .eq("user_id", currentUser.id);
+      function subscribeNotificationsLive() {
+        if (liveChannel) {
+          supabase.removeChannel(liveChannel);
+        }
 
-        if (error) throw error;
+        liveChannel = supabase
+          .channel("notifications-live")
+          .on(
+            "postgres_changes",
+            {
+              event: "*",
+              schema: "public",
+              table: "notifications",
+              filter: `user_id=eq.${currentUser.id}`
+            },
+            async () => {
+              await refreshAll();
+            }
+          )
+          .subscribe();
       }
 
-      async function createConversation() {
+      async function refreshAll() {
+        await loadNotifications();
+        updateStats();
+        renderNotifications();
+      }
+
+      async function loadNotificationsPage() {
         try {
-          const username = newChatUsernameInput.value.trim().toLowerCase();
-          const firstMessage = newChatMessageInput.value.trim();
-
-          if (!username) throw new Error("Username is required.");
-          if (!firstMessage) throw new Error("First message is required.");
-
-          setStatus("Finding user...");
-
-          const { data: targetProfile, error: targetErr } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("username", username)
-            .maybeSingle();
-
-          if (targetErr) throw targetErr;
-          if (!targetProfile) throw new Error("No profile found with that username.");
-          if (targetProfile.id === currentUser.id) throw new Error("You can’t start a new chat with yourself.");
-
-          setStatus("Creating conversation...");
-
-          const { data: conversation, error: convErr } = await supabase
-            .from("conversations")
-            .insert([{ created_by: currentUser.id, updated_at: new Date().toISOString() }])
-            .select()
-            .single();
-
-          if (convErr) throw convErr;
-
-          const { error: partsErr } = await supabase
-            .from("conversation_participants")
-            .insert([
-              { conversation_id: conversation.id, user_id: currentUser.id, last_read_at: new Date().toISOString() },
-              { conversation_id: conversation.id, user_id: targetProfile.id }
-            ]);
-
-          if (partsErr) throw partsErr;
-
-          const { error: msgErr } = await supabase
-            .from("messages")
-            .insert([{
-              conversation_id: conversation.id,
-              sender_id: currentUser.id,
-              body: firstMessage
-            }]);
-
-          if (msgErr) throw msgErr;
-
-          const { error: updateErr } = await supabase
-            .from("conversations")
-            .update({ updated_at: new Date().toISOString() })
-            .eq("id", conversation.id);
-
-          if (updateErr) throw updateErr;
-
-          newChatUsernameInput.value = "";
-          newChatMessageInput.value = "";
-          newChatCard.style.display = "none";
-          selectedConversationId = conversation.id;
-
-          setStatus("✅ Conversation created.");
-          await loadConversations();
+          setStatus("Loading notifications...");
+          await loadSession();
+          await refreshAll();
+          subscribeNotificationsLive();
+          setStatus("✅ Notifications fully synced.");
         } catch (error) {
-          setStatus("❌ New conversation error: " + error.message);
+          console.error("notifications load error:", error);
+          setStatus("❌ Notifications load error: " + error.message);
+          notifList.innerHTML = `<div class="empty-box">Could not load notifications.</div>`;
         }
       }
 
-      async function sendMessage() {
-        try {
-          const body = messageInput.value.trim();
-          if (!selectedConversationId) throw new Error("Select a conversation first.");
-          if (!body) return;
-
-          const { error: msgErr } = await supabase
-            .from("messages")
-            .insert([{
-              conversation_id: selectedConversationId,
-              sender_id: currentUser.id,
-              body
-            }]);
-
-          if (msgErr) throw msgErr;
-
-          const { error: updateErr } = await supabase
-            .from("conversations")
-            .update({ updated_at: new Date().toISOString() })
-            .eq("id", selectedConversationId);
-
-          if (updateErr) throw updateErr;
-
-          messageInput.value = "";
-          await loadConversations();
-          await loadMessages(selectedConversationId);
-          await markConversationRead(selectedConversationId);
-          setStatus("✅ Message sent.");
-        } catch (error) {
-          setStatus("❌ Send message error: " + error.message);
-        }
-      }
-
-      toggleNewChatBtn.addEventListener("click", () => {
-        newChatCard.style.display = newChatCard.style.display === "none" ? "block" : "none";
+      filterRow.querySelectorAll(".chip").forEach(chip => {
+        chip.addEventListener("click", () => setFilter(chip.dataset.filter));
       });
 
-      cancelNewChatBtn.addEventListener("click", () => {
-        newChatCard.style.display = "none";
-      });
-
-      createConversationBtn.addEventListener("click", createConversation);
-      sendMessageBtn.addEventListener("click", sendMessage);
+      markAllBtn.addEventListener("click", markAllRead);
       logoutBtn.addEventListener("click", logOut);
-
-      messageInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
-      });
 
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
         userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      async function init() {
-        await loadSession();
-        await loadConversations();
-
-        supabase
-          .channel("messages-realtime")
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "messages" },
-            async () => {
-              if (!currentUser) return;
-              await loadConversations();
-            }
-          )
-          .subscribe();
-
-        setStatus("✅ Messages fully synced.");
-      }
-
-      init();
+      loadNotificationsPage();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Messages Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Notifications Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
