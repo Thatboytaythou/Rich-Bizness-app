@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playlists | Rich Bizness</title>
+  <title>Rich Bizness | Playlist</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -11,15 +11,15 @@
 
     :root {
       --green: #7dff71;
-      --green-2: #a8ff8f;
-      --bg: rgba(0,0,0,0.50);
+      --gold: #f5d76e;
+      --blue: #67b7ff;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
       --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
     body {
@@ -28,25 +28,27 @@
       color: white;
       min-height: 100vh;
       background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.94)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1550px;
+      max-width: 1760px;
       margin: 0 auto;
       padding: 18px;
+      padding-bottom: 50px;
     }
 
     .topbar,
     .hero,
-    .controls,
     .section,
-    .status-box {
+    .status-box,
+    .player-bar {
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 24px;
       backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
     }
 
     .topbar {
@@ -64,21 +66,23 @@
       align-items: center;
       gap: 12px;
       color: var(--green);
-      font-size: 1.8rem;
+      font-size: 1.85rem;
       font-weight: 900;
     }
 
     .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
       object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
 
     .nav {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      flex-wrap: wrap;
       align-items: center;
     }
 
@@ -97,44 +101,105 @@
     .nav a.active {
       color: var(--green);
       border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.16);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
     }
 
     .user-chip {
       display: inline-block;
       padding: 10px 14px;
       border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
       font-weight: 700;
     }
 
-    .hero, .controls, .section {
-      padding: 22px;
+    .hero,
+    .section {
+      padding: 24px;
       margin-bottom: 18px;
     }
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
+      grid-template-columns: 320px 1fr 360px;
       gap: 20px;
-      align-items: stretch;
+      align-items: start;
+    }
+
+    .cover-box {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 28px;
+      overflow: hidden;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.20)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: var(--shadow);
+    }
+
+    .cover-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .hero h1 {
       margin: 0 0 12px;
       font-size: 3rem;
-      line-height: 1.02;
+      line-height: 0.94;
       color: var(--green);
     }
 
-    .hero p, .subtle {
-      margin: 0;
+    .subtle,
+    .mini-text,
+    .status-box,
+    .track-meta,
+    .track-desc {
       color: var(--text);
       line-height: 1.75;
     }
 
-    .hero-actions {
+    .hero-kicker,
+    .pill-green,
+    .pill-blue,
+    .pill-gold,
+    .pill-red {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-blue {
+      background: rgba(103,183,255,0.18);
+      border: 1px solid rgba(103,183,255,0.28);
+      color: var(--blue);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-red {
+      background: rgba(239,91,85,0.18);
+      border: 1px solid rgba(239,91,85,0.28);
+      color: #ffb1ac;
+    }
+
+    .hero-actions,
+    .track-actions,
+    .player-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -144,345 +209,223 @@
     .btn-green,
     .btn-dark,
     .btn-gold,
-    .btn-danger {
+    .btn-blue,
+    .btn-red {
       display: inline-block;
       text-decoration: none;
       text-align: center;
-      padding: 14px 18px;
+      padding: 12px 16px;
       border-radius: 14px;
       font-weight: 900;
       border: none;
       cursor: pointer;
+      font-size: 14px;
     }
 
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
+    .btn-green { background: var(--green); color: black; }
     .btn-dark {
-      background: var(--soft);
+      background: rgba(255,255,255,0.08);
       color: white;
-      border: 1px solid rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
     }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-blue { background: var(--blue); color: black; }
+    .btn-red { background: var(--danger); color: white; }
 
     .status-box {
       margin-top: 16px;
       padding: 14px;
       font-weight: 700;
-      line-height: 1.6;
-    }
-
-    .featured-card {
-      padding: 18px;
-      border-radius: 22px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .featured-cover {
-      width: 100%;
-      height: 260px;
-      object-fit: cover;
-      border-radius: 16px;
-      background: black;
-    }
-
-    .featured-fallback,
-    .cover-fallback,
-    .mini-fallback {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--green);
-      font-weight: 900;
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
-    }
-
-    .featured-fallback {
-      width: 100%;
-      height: 260px;
-      border-radius: 16px;
-      font-size: 2rem;
-    }
-
-    .featured-title {
-      color: var(--green);
-      font-size: 1.35rem;
-      font-weight: 900;
-    }
-
-    .featured-text {
-      color: var(--text);
-      line-height: 1.65;
       white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1.2fr 1fr 1fr;
-      gap: 12px;
-      align-items: end;
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
     }
 
-    .control label {
-      display: block;
-      margin-bottom: 8px;
+    .mini-panel-title,
+    .section-header h2 {
       color: var(--green);
-      font-weight: 800;
-    }
-
-    .control input,
-    .control textarea,
-    .control select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .control button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
+      margin: 0 0 10px;
+      font-size: 1.3rem;
       font-weight: 900;
-      cursor: pointer;
-      background: var(--green);
-      color: black;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1.2fr 1.2fr;
-      gap: 18px;
-      margin-top: 14px;
     }
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-bottom: 18px;
+      margin-top: 18px;
     }
 
     .stat {
       padding: 18px;
       border-radius: 18px;
-      background: rgba(0,0,0,0.48);
+      background: rgba(0,0,0,0.42);
       border: 1px solid rgba(125,255,113,0.16);
       text-align: center;
     }
 
     .stat-value {
-      font-size: 2rem;
+      font-size: 1.7rem;
       font-weight: 900;
       color: var(--green);
     }
 
     .stat-label {
       margin-top: 6px;
-      font-weight: 700;
       color: var(--muted);
+      font-weight: 700;
     }
 
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .trending-rail {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .mini-playlist {
-      padding: 12px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .mini-cover {
-      width: 100%;
-      height: 170px;
-      object-fit: cover;
-      border-radius: 12px;
-      background: black;
-      margin-bottom: 10px;
-    }
-
-    .mini-fallback {
-      width: 100%;
-      height: 170px;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      font-size: 1.5rem;
-    }
-
-    .mini-title {
-      color: var(--green-2);
-      font-weight: 900;
-      margin-bottom: 6px;
-      line-height: 1.35;
-    }
-
-    .mini-text {
-      color: var(--text);
-      line-height: 1.55;
-      font-size: 0.95rem;
-    }
-
-    .playlist-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
       gap: 16px;
-      margin-top: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
 
-    .playlist-card {
-      padding: 14px;
-      border-radius: 20px;
-      background: var(--soft2);
+    .section-header p {
+      margin: 0;
+      color: var(--text);
+    }
+
+    .track-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .track-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: 0.2s ease;
+    }
+
+    .track-card.active {
+      border-color: rgba(125,255,113,0.35);
+      box-shadow: 0 0 22px rgba(125,255,113,0.12);
+      background: rgba(125,255,113,0.08);
+    }
+
+    .track-row {
+      display: grid;
+      grid-template-columns: 74px 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .track-cover {
+      width: 74px;
+      height: 74px;
+      border-radius: 16px;
+      overflow: hidden;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
       border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .cover {
+    .track-cover img {
       width: 100%;
-      height: 260px;
-      border-radius: 16px;
+      height: 100%;
       object-fit: cover;
-      background: black;
-      margin-bottom: 12px;
-      display: block;
     }
 
-    .cover-fallback {
-      width: 100%;
-      height: 260px;
-      border-radius: 16px;
-      margin-bottom: 12px;
-      font-size: 2rem;
-    }
-
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
+    .track-title {
+      color: var(--gold);
+      font-size: 1.02rem;
       font-weight: 900;
-      font-size: 0.84rem;
+      margin-bottom: 4px;
     }
 
-    .card-title {
-      font-size: 1.12rem;
-      font-weight: 900;
-      color: var(--green);
-      margin-bottom: 8px;
-      line-height: 1.35;
+    .track-meta {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
     }
 
-    .card-text {
-      color: var(--text);
-      line-height: 1.65;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin-bottom: 12px;
-    }
-
-    .card-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .card-actions a,
-    .card-actions button {
-      text-decoration: none;
-      text-align: center;
-      padding: 12px;
-      border-radius: 12px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
+    .track-side {
+      text-align: right;
+      min-width: 110px;
     }
 
     .empty-box {
-      padding: 18px;
-      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
       background: rgba(255,255,255,0.04);
       border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
     }
 
-    @media (max-width: 1320px) {
-      .playlist-grid,
-      .trending-rail,
+    .player-bar {
+      position: sticky;
+      bottom: 14px;
+      padding: 18px;
+      z-index: 12;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .now-playing {
+      color: white;
+      font-weight: 800;
+    }
+
+    .now-playing small {
+      display: block;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    audio {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 1500px) {
+      .hero-grid {
+        grid-template-columns: 280px 1fr;
+      }
+
+      .hero-side {
+        grid-column: 1 / -1;
+      }
+
       .stats-row {
         grid-template-columns: repeat(2, 1fr);
       }
     }
 
-    @media (max-width: 1020px) {
+    @media (max-width: 980px) {
       .hero-grid,
-      .controls-grid,
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .hero h1 {
-        font-size: 2.35rem;
-      }
-
-      .playlist-grid,
-      .trending-rail,
       .stats-row,
-      .card-actions {
+      .player-grid,
+      .track-row {
         grid-template-columns: 1fr;
       }
 
-      .cover,
-      .cover-fallback,
-      .featured-cover,
-      .featured-fallback {
-        height: 220px;
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .track-side {
+        text-align: left;
       }
     }
   </style>
@@ -491,8 +434,8 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Rich Bizness Playlists</span>
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Playlist</span>
       </div>
 
       <div class="nav">
@@ -500,138 +443,114 @@
         <a href="index.html">Home</a>
         <a href="music.html">Music</a>
         <a href="albums.html">Albums</a>
-        <a href="playlist.html" class="active">Playlists</a>
+        <a href="playlist.html" class="active">Playlist</a>
         <a href="artist.html">Artist</a>
-        <a href="artist-channel-manage.html">Channel</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="music-revenue.html">Revenue</a>
-        <a href="monetization.html">Monetize</a>
         <a href="profile.html">Profile</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
       </div>
     </div>
 
     <div class="hero">
       <div class="hero-grid">
+        <div class="cover-box" id="playlistCoverBox"></div>
+
         <div>
-          <h1>Fully Synced Playlists</h1>
-          <p>
-            Create playlists, manage public or private drops, open playlist detail pages, and connect the playlist system directly to your music empire.
-          </p>
+          <div>
+            <span class="hero-kicker">UPGRADED PLAYLIST</span>
+            <span class="pill-green">MUSIC LANE</span>
+            <span class="pill-blue">QUEUE READY</span>
+            <span class="pill-gold">RICH BIZNESS</span>
+          </div>
+
+          <h1 id="playlistTitle">Loading playlist...</h1>
+          <div id="playlistCreator" class="mini-text">by loading...</div>
+          <div id="playlistDesc" class="subtle" style="margin-top:12px;">Loading playlist description...</div>
 
           <div class="hero-actions">
-            <a class="btn-green" href="music.html">Open Music</a>
-            <a class="btn-dark" href="albums.html">Open Albums</a>
-            <a class="btn-dark" href="upload-music.html">Upload Music</a>
-            <a class="btn-gold" href="music-revenue.html">Revenue</a>
+            <button id="playAllBtn" class="btn-green" type="button">Play All</button>
+            <button id="shuffleBtn" class="btn-blue" type="button">Shuffle</button>
+            <a id="creatorArtistBtn" class="btn-dark" href="artist.html">Artist Page</a>
+            <a class="btn-dark" href="music.html">Back to Music</a>
           </div>
 
-          <div id="statusBox" class="status-box">Loading playlist system...</div>
-        </div>
+          <div id="statusBox" class="status-box">Loading playlist...</div>
 
-        <div class="featured-card" id="featuredPlaylistBox">
-          <div class="featured-fallback">RB</div>
-          <div class="featured-title">Featured Playlist</div>
-          <div class="featured-text">Loading featured playlist...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="controls">
-      <h2>Create Playlist</h2>
-      <div class="form-grid">
-        <div class="control">
-          <label for="playlistTitle">Playlist Title</label>
-          <input id="playlistTitle" type="text" placeholder="Late Night Rotation" />
-
-          <label for="playlistDescription">Description</label>
-          <textarea id="playlistDescription" placeholder="Tell people what this playlist is about..."></textarea>
-        </div>
-
-        <div class="control">
-          <label for="playlistCover">Cover URL</label>
-          <input id="playlistCover" type="text" placeholder="https://..." />
-
-          <label for="playlistVisibility">Visibility</label>
-          <select id="playlistVisibility">
-            <option value="true">Public</option>
-            <option value="false">Private</option>
-          </select>
-
-          <div style="margin-top:14px;">
-            <button id="createPlaylistBtn" type="button">Create Playlist</button>
+          <div class="stats-row">
+            <div class="stat">
+              <div id="tracksStat" class="stat-value">0</div>
+              <div class="stat-label">Tracks</div>
+            </div>
+            <div class="stat">
+              <div id="durationStat" class="stat-value">0:00</div>
+              <div class="stat-label">Duration</div>
+            </div>
+            <div class="stat">
+              <div id="viewsStat" class="stat-value">0</div>
+              <div class="stat-label">Views</div>
+            </div>
+            <div class="stat">
+              <div id="likesStat" class="stat-value">0</div>
+              <div class="stat-label">Likes</div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="controls">
-      <div class="controls-grid">
-        <div class="control">
-          <label for="searchInput">Search playlist title / description</label>
-          <input id="searchInput" type="text" placeholder="Search playlists..." />
+        <div class="hero-side">
+          <div class="mini-panel">
+            <div class="mini-panel-title">Playlist Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading playlist pulse...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">What This Page Does</div>
+            <div class="mini-text">
+              • playlist hero and cover
+              <br>• real track queue
+              <br>• play / pause / next / previous
+              <br>• artist links
+              <br>• lock-aware track UI
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Owner Tools Ready</div>
+            <div id="ownerToolsBox" class="mini-text">
+              Checking owner tools...
+            </div>
+          </div>
         </div>
-
-        <div class="control">
-          <label for="visibilityFilter">Visibility</label>
-          <select id="visibilityFilter">
-            <option value="all">All</option>
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label for="sortFilter">Sort</label>
-          <select id="sortFilter">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="title">Title A-Z</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label>&nbsp;</label>
-          <button id="refreshBtn" type="button">Refresh Playlists</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="stats-row">
-      <div class="stat">
-        <div id="playlistsStat" class="stat-value">0</div>
-        <div class="stat-label">Playlists</div>
-      </div>
-      <div class="stat">
-        <div id="publicStat" class="stat-value">0</div>
-        <div class="stat-label">Public</div>
-      </div>
-      <div class="stat">
-        <div id="privateStat" class="stat-value">0</div>
-        <div class="stat-label">Private</div>
-      </div>
-      <div class="stat">
-        <div id="myStat" class="stat-value">0</div>
-        <div class="stat-label">Mine</div>
-      </div>
-      <div class="stat">
-        <div id="filteredStat" class="stat-value">0</div>
-        <div class="stat-label">Showing</div>
       </div>
     </div>
 
     <div class="section">
-      <h2>Latest Playlist Drops</h2>
-      <div class="subtle">Newest playlists in your platform.</div>
-      <div id="trendingRail" class="trending-rail"></div>
+      <div class="section-header">
+        <div>
+          <h2>Playlist Tracks</h2>
+          <p>Preview tracks, jump through the queue, and open related artist or album lanes.</p>
+        </div>
+      </div>
+
+      <div id="trackList" class="track-list">
+        <div class="empty-box">Loading tracks...</div>
+      </div>
     </div>
 
-    <div class="section">
-      <h2>Playlist Catalog</h2>
-      <div class="subtle">Full catalog synced to your `playlists` table.</div>
-      <div id="playlistGrid" class="playlist-grid"></div>
+    <div class="player-bar">
+      <div class="player-grid">
+        <div>
+          <div id="nowPlayingBox" class="now-playing">
+            No track selected
+            <small>Pick a track from the playlist to start playback.</small>
+          </div>
+          <audio id="audioPlayer" controls preload="none"></audio>
+        </div>
+
+        <div class="player-actions">
+          <button id="prevBtn" class="btn-dark" type="button">Previous</button>
+          <button id="pauseBtn" class="btn-dark" type="button">Pause</button>
+          <button id="nextBtn" class="btn-green" type="button">Next</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -650,31 +569,38 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
 
+      const playlistCoverBox = document.getElementById("playlistCoverBox");
       const playlistTitle = document.getElementById("playlistTitle");
-      const playlistDescription = document.getElementById("playlistDescription");
-      const playlistCover = document.getElementById("playlistCover");
-      const playlistVisibility = document.getElementById("playlistVisibility");
-      const createPlaylistBtn = document.getElementById("createPlaylistBtn");
+      const playlistCreator = document.getElementById("playlistCreator");
+      const playlistDesc = document.getElementById("playlistDesc");
+      const creatorArtistBtn = document.getElementById("creatorArtistBtn");
 
-      const searchInput = document.getElementById("searchInput");
-      const visibilityFilter = document.getElementById("visibilityFilter");
-      const sortFilter = document.getElementById("sortFilter");
-      const refreshBtn = document.getElementById("refreshBtn");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
+      const ownerToolsBox = document.getElementById("ownerToolsBox");
 
-      const playlistsStat = document.getElementById("playlistsStat");
-      const publicStat = document.getElementById("publicStat");
-      const privateStat = document.getElementById("privateStat");
-      const myStat = document.getElementById("myStat");
-      const filteredStat = document.getElementById("filteredStat");
+      const tracksStat = document.getElementById("tracksStat");
+      const durationStat = document.getElementById("durationStat");
+      const viewsStat = document.getElementById("viewsStat");
+      const likesStat = document.getElementById("likesStat");
 
-      const featuredPlaylistBox = document.getElementById("featuredPlaylistBox");
-      const trendingRail = document.getElementById("trendingRail");
-      const playlistGrid = document.getElementById("playlistGrid");
+      const trackList = document.getElementById("trackList");
 
-      let allPlaylists = [];
+      const playAllBtn = document.getElementById("playAllBtn");
+      const shuffleBtn = document.getElementById("shuffleBtn");
+      const prevBtn = document.getElementById("prevBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const nextBtn = document.getElementById("nextBtn");
+
+      const audioPlayer = document.getElementById("audioPlayer");
+      const nowPlayingBox = document.getElementById("nowPlayingBox");
+
       let currentUser = null;
+      let playlist = null;
+      let playlistTracks = [];
+      let profilesById = {};
+      let currentTrackIndex = -1;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -689,8 +615,24 @@
           .replace(/'/g, "&#039;");
       }
 
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
+
+      function formatDuration(totalSeconds) {
+        const secs = Number(totalSeconds || 0);
+        const mins = Math.floor(secs / 60);
+        const rem = secs % 60;
+        return `${mins}:${String(rem).padStart(2, "0")}`;
+      }
+
+      function getPlaylistIdFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        return id ? Number(id) : null;
       }
 
       async function loadSession() {
@@ -710,244 +652,285 @@
         }
       }
 
-      async function createPlaylist() {
-        try {
-          if (!currentUser) {
-            window.location.href = "auth.html";
-            return;
-          }
+      async function loadProfiles(userIds) {
+        const ids = [...new Set(userIds.filter(Boolean))];
+        if (!ids.length) {
+          profilesById = {};
+          return;
+        }
 
-          const title = playlistTitle.value.trim();
-          const description = playlistDescription.value.trim();
-          const cover = playlistCover.value.trim();
-          const isPublic = playlistVisibility.value === "true";
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", ids);
 
-          if (!title) {
-            throw new Error("Playlist title is required.");
-          }
+        if (error && error.code !== "42P01") throw error;
 
-          const { error } = await supabase
-            .from("playlists")
-            .insert({
-              user_id: currentUser.id,
-              title,
-              description,
-              cover_url: cover,
-              is_public: isPublic
-            });
+        profilesById = {};
+        (data || []).forEach(profile => {
+          profilesById[profile.id] = profile;
+        });
+      }
 
-          if (error) throw error;
+      function getCreatorName(userId) {
+        const p = profilesById[userId] || {};
+        return p.display_name || p.username || p.email || "Creator";
+      }
 
-          playlistTitle.value = "";
-          playlistDescription.value = "";
-          playlistCover.value = "";
-          playlistVisibility.value = "true";
+      function getArtistLink(userId) {
+        const p = profilesById[userId] || {};
+        return p.username ? `artist.html?u=${encodeURIComponent(p.username)}` : "artist.html";
+      }
 
-          setStatus("Playlist created.");
-          await loadPlaylists();
-        } catch (error) {
-          setStatus("Create playlist error: " + error.message);
+      async function loadPlaylist() {
+        const playlistId = getPlaylistIdFromUrl();
+        if (!playlistId) throw new Error("Missing playlist id. Use playlist.html?id=1");
+
+        const { data, error } = await supabase
+          .from("playlists")
+          .select("*")
+          .eq("id", playlistId)
+          .maybeSingle();
+
+        if (error && error.code !== "42P01") throw error;
+        if (!data) throw new Error("Playlist not found.");
+
+        playlist = data;
+        await loadProfiles([playlist.user_id]);
+      }
+
+      async function loadPlaylistTracks() {
+        const { data: joinRows, error: joinError } = await supabase
+          .from("playlist_tracks")
+          .select("*")
+          .eq("playlist_id", playlist.id)
+          .order("position", { ascending: true });
+
+        if (joinError && joinError.code !== "42P01") throw joinError;
+
+        const trackIds = (joinRows || []).map(r => r.track_id);
+        if (!trackIds.length) {
+          playlistTracks = [];
+          return;
+        }
+
+        const { data: trackRows, error: tracksError } = await supabase
+          .from("music_uploads")
+          .select("*")
+          .in("id", trackIds);
+
+        if (tracksError && tracksError.code !== "42P01") throw tracksError;
+
+        const trackMap = new Map((trackRows || []).map(t => [Number(t.id), t]));
+
+        playlistTracks = (joinRows || [])
+          .map(r => ({
+            ...trackMap.get(Number(r.track_id)),
+            playlist_track_id: r.id,
+            position: r.position
+          }))
+          .filter(Boolean);
+
+        await loadProfiles([
+          playlist.user_id,
+          ...playlistTracks.map(t => t.user_id)
+        ]);
+      }
+
+      async function bumpPlaylistView() {
+        if (!playlist?.id) return;
+        const nextViews = Number(playlist.views || 0) + 1;
+
+        const { error } = await supabase
+          .from("playlists")
+          .update({ views: nextViews })
+          .eq("id", playlist.id);
+
+        if (!error) {
+          playlist.views = nextViews;
         }
       }
 
-      function sortPlaylists(items, mode) {
-        const cloned = [...items];
+      function renderHero() {
+        playlistTitle.textContent = playlist.title || "Playlist";
+        playlistCreator.innerHTML = `by <a href="${getArtistLink(playlist.user_id)}" style="color:var(--green);text-decoration:none;">${escapeHtml(getCreatorName(playlist.user_id))}</a>`;
+        playlistDesc.textContent = playlist.description || "No playlist description yet.";
+        creatorArtistBtn.href = getArtistLink(playlist.user_id);
 
-        if (mode === "oldest") {
-          cloned.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-        } else if (mode === "title") {
-          cloned.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+        if (playlist.cover_url) {
+          playlistCoverBox.innerHTML = `<img src="${escapeHtml(playlist.cover_url)}" alt="Playlist Cover" />`;
         } else {
-          cloned.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+          playlistCoverBox.innerHTML = "";
         }
 
-        return cloned;
+        const totalDuration = playlistTracks.reduce((sum, t) => sum + Number(t.duration_seconds || 0), 0);
+
+        tracksStat.textContent = String(playlistTracks.length);
+        durationStat.textContent = formatDuration(totalDuration);
+        viewsStat.textContent = String(playlist.views || 0);
+        likesStat.textContent = String(playlist.likes_count || 0);
+
+        pulseBox.textContent =
+          `Playlist: ${playlist.title || "Playlist"}\n` +
+          `Creator: ${getCreatorName(playlist.user_id)}\n` +
+          `Tracks: ${playlistTracks.length}\n` +
+          `Duration: ${formatDuration(totalDuration)}\n` +
+          `Views: ${playlist.views || 0}\n` +
+          `Created: ${formatDate(playlist.created_at)}`;
+
+        ownerToolsBox.textContent =
+          currentUser && currentUser.id === playlist.user_id
+            ? "You own this playlist. This page is ready for edit, reorder, and add-track tools next."
+            : "Viewer mode active. Playlist owner controls hidden.";
       }
 
-      function updateStats(filteredItems) {
-        const publicCount = allPlaylists.filter(item => item.is_public === true).length;
-        const privateCount = allPlaylists.filter(item => item.is_public === false).length;
-        const mineCount = currentUser ? allPlaylists.filter(item => item.user_id === currentUser.id).length : 0;
+      function renderTracks() {
+        if (!playlistTracks.length) {
+          trackList.innerHTML = `<div class="empty-box">No tracks in this playlist yet.</div>`;
+          return;
+        }
 
-        playlistsStat.textContent = allPlaylists.length;
-        publicStat.textContent = publicCount;
-        privateStat.textContent = privateCount;
-        myStat.textContent = mineCount;
-        filteredStat.textContent = filteredItems.length;
+        trackList.innerHTML = playlistTracks.map((track, index) => {
+          const active = index === currentTrackIndex;
+          const artistLink = getArtistLink(track.user_id);
+          const albumLink = track.album_slug
+            ? `album-view.html?slug=${encodeURIComponent(track.album_slug)}`
+            : "albums.html";
+
+          return `
+            <div class="track-card ${active ? "active" : ""}">
+              <div class="track-row">
+                <div class="track-cover">
+                  ${track.cover_url ? `<img src="${escapeHtml(track.cover_url)}" alt="Track Cover" />` : ""}
+                </div>
+
+                <div>
+                  <div class="track-title">${escapeHtml(track.title || "Track")}</div>
+                  <div class="track-desc">
+                    <a href="${artistLink}" style="color:var(--green);text-decoration:none;">${escapeHtml(track.artist_name || getCreatorName(track.user_id))}</a>
+                    ${track.album_name ? ` • <a href="${albumLink}" style="color:var(--gold);text-decoration:none;">${escapeHtml(track.album_name)}</a>` : ""}
+                  </div>
+                  <div class="track-meta">
+                    Genre: ${escapeHtml(track.genre || "--")}<br>
+                    Duration: ${escapeHtml(formatDuration(track.duration_seconds || 0))}<br>
+                    ${track.is_locked ? `Locked • $${((Number(track.price_cents || 0)) / 100).toFixed(2)}` : "Open preview"}
+                  </div>
+
+                  <div class="track-actions">
+                    <button class="btn-green play-track-btn" data-index="${index}" type="button">
+                      ${active ? "Playing" : "Play"}
+                    </button>
+                    <a class="btn-dark" href="${artistLink}">Artist</a>
+                    <a class="btn-dark" href="${albumLink}">Album</a>
+                    ${track.is_locked ? `<a class="btn-gold" href="music-unlock.html">Unlock</a>` : ""}
+                  </div>
+                </div>
+
+                <div class="track-side">
+                  ${track.is_locked ? `<span class="pill-red">LOCKED</span>` : `<span class="pill-blue">OPEN</span>`}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".play-track-btn").forEach(btn => {
+          btn.addEventListener("click", () => {
+            playTrackAtIndex(Number(btn.dataset.index));
+          });
+        });
       }
 
-      function renderFeaturedPlaylist(playlist) {
-        if (!playlist) {
-          featuredPlaylistBox.innerHTML = `
-            <div class="featured-fallback">RB</div>
-            <div class="featured-title">Featured Playlist</div>
-            <div class="featured-text">No featured playlist right now.</div>
+      function setNowPlaying(track) {
+        if (!track) {
+          nowPlayingBox.innerHTML = `
+            No track selected
+            <small>Pick a track from the playlist to start playback.</small>
           `;
           return;
         }
 
-        featuredPlaylistBox.innerHTML = `
-          ${
-            playlist.cover_url
-              ? `<img class="featured-cover" src="${escapeHtml(playlist.cover_url)}" alt="featured cover" />`
-              : `<div class="featured-fallback">RB</div>`
-          }
-          <div class="featured-title">${escapeHtml(playlist.title || "Featured Playlist")}</div>
-          <div class="featured-text">
-Visibility: ${playlist.is_public ? "Public" : "Private"}
-Created: ${new Date(playlist.created_at).toLocaleDateString()}
-${escapeHtml(playlist.description || "")}
-          </div>
-          <div class="hero-actions">
-            <a class="btn-green" href="playlist-views.html?id=${playlist.id}">Open Playlist</a>
-            <a class="btn-dark" href="music.html">Open Music</a>
-          </div>
+        nowPlayingBox.innerHTML = `
+          ${escapeHtml(track.title || "Track")}
+          <small>${escapeHtml(track.artist_name || getCreatorName(track.user_id))} • ${escapeHtml(track.album_name || "Single")}</small>
         `;
       }
 
-      function renderTrendingRail(items) {
-        if (!items.length) {
-          emptyState(trendingRail, "No playlists yet.");
+      function playTrackAtIndex(index) {
+        const track = playlistTracks[index];
+        if (!track) return;
+
+        if (!track.file_url) {
+          setStatus("Track file missing.");
           return;
         }
 
-        trendingRail.innerHTML = items.map(playlist => `
-          <div class="mini-playlist">
-            ${
-              playlist.cover_url
-                ? `<img class="mini-cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
-                : `<div class="mini-fallback">RB</div>`
-            }
-            <div class="mini-title">${escapeHtml(playlist.title || "Untitled")}</div>
-            <div class="mini-text">
-              ${playlist.is_public ? "Public" : "Private"}<br>
-              ${new Date(playlist.created_at).toLocaleDateString()}
-            </div>
-          </div>
-        `).join("");
+        currentTrackIndex = index;
+        audioPlayer.src = track.file_url;
+        audioPlayer.play().catch(() => {
+          setStatus("Playback could not start automatically.");
+        });
+        setNowPlaying(track);
+        renderTracks();
       }
 
-      async function deletePlaylist(id) {
-        try {
-          if (!currentUser) return;
-
-          const playlist = allPlaylists.find(item => Number(item.id) === Number(id));
-          if (!playlist || playlist.user_id !== currentUser.id) {
-            throw new Error("You can only delete your own playlists.");
-          }
-
-          const { error } = await supabase
-            .from("playlists")
-            .delete()
-            .eq("id", id);
-
-          if (error) throw error;
-
-          setStatus("Playlist deleted.");
-          await loadPlaylists();
-        } catch (error) {
-          setStatus("Delete playlist error: " + error.message);
-        }
-      }
-
-      function renderPlaylists(items) {
-        if (!items.length) {
-          emptyState(playlistGrid, "No playlists match your search.");
+      function playAll() {
+        if (!playlistTracks.length) {
+          setStatus("No tracks to play.");
           return;
         }
-
-        playlistGrid.innerHTML = items.map(playlist => `
-          <div class="playlist-card">
-            <div class="pill">${playlist.is_public ? "PUBLIC" : "PRIVATE"}</div>
-
-            ${
-              playlist.cover_url
-                ? `<img class="cover" src="${escapeHtml(playlist.cover_url)}" alt="playlist cover" />`
-                : `<div class="cover-fallback">RB</div>`
-            }
-
-            <div class="card-title">${escapeHtml(playlist.title || "Untitled Playlist")}</div>
-
-            <div class="card-text">
-Created: ${new Date(playlist.created_at).toLocaleDateString()}
-${escapeHtml(playlist.description || "")}
-            </div>
-
-            <div class="card-actions">
-              <a class="btn-green" href="playlist-views.html?id=${playlist.id}">Open Playlist</a>
-              ${
-                currentUser && playlist.user_id === currentUser.id
-                  ? `<button class="btn-danger" onclick="window.__deletePlaylist(${playlist.id})">Delete</button>`
-                  : `<a class="btn-dark" href="music.html">Open Music</a>`
-              }
-            </div>
-          </div>
-        `).join("");
+        playTrackAtIndex(0);
       }
 
-      function applyFilters() {
-        const search = searchInput.value.trim().toLowerCase();
-        const visibility = visibilityFilter.value;
-        const sort = sortFilter.value;
-
-        let filtered = [...allPlaylists];
-
-        if (search) {
-          filtered = filtered.filter(playlist => {
-            const haystack = [
-              playlist.title || "",
-              playlist.description || ""
-            ].join(" ").toLowerCase();
-
-            return haystack.includes(search);
-          });
+      function shufflePlay() {
+        if (!playlistTracks.length) {
+          setStatus("No tracks to shuffle.");
+          return;
         }
-
-        if (visibility === "public") {
-          filtered = filtered.filter(item => item.is_public === true);
-        } else if (visibility === "private") {
-          filtered = filtered.filter(item => item.is_public === false);
-        }
-
-        filtered = sortPlaylists(filtered, sort);
-
-        updateStats(filtered);
-        renderPlaylists(filtered);
-
-        const latest = sortPlaylists([...allPlaylists], "newest").slice(0, 4);
-        renderTrendingRail(latest);
-        renderFeaturedPlaylist(latest[0] || allPlaylists[0] || null);
+        const randomIndex = Math.floor(Math.random() * playlistTracks.length);
+        playTrackAtIndex(randomIndex);
       }
 
-      async function loadPlaylists() {
+      function playNext() {
+        if (!playlistTracks.length) return;
+        const nextIndex = currentTrackIndex < 0
+          ? 0
+          : (currentTrackIndex + 1) % playlistTracks.length;
+        playTrackAtIndex(nextIndex);
+      }
+
+      function playPrev() {
+        if (!playlistTracks.length) return;
+        const prevIndex = currentTrackIndex <= 0
+          ? playlistTracks.length - 1
+          : currentTrackIndex - 1;
+        playTrackAtIndex(prevIndex);
+      }
+
+      async function loadPlaylistPage() {
         try {
-          setStatus("Loading playlist system...");
+          setStatus("Loading playlist...");
           await loadSession();
-
-          const { data, error } = await supabase
-            .from("playlists")
-            .select("*")
-            .order("created_at", { ascending: false });
-
-          if (error) throw error;
-
-          allPlaylists = data || [];
-          applyFilters();
-          setStatus("Playlists loaded.");
+          await loadPlaylist();
+          await loadPlaylistTracks();
+          await bumpPlaylistView();
+          renderHero();
+          renderTracks();
+          setNowPlaying(null);
+          setStatus("✅ Playlist fully synced.");
         } catch (error) {
-          setStatus("Playlist load error: " + error.message);
-          emptyState(playlistGrid, "Could not load playlists.");
-          emptyState(trendingRail, "Could not load latest playlists.");
+          console.error("playlist load error:", error);
+          setStatus("❌ Playlist load error: " + error.message);
+          trackList.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load playlist.")}</div>`;
         }
       }
 
-      window.__deletePlaylist = deletePlaylist;
-
-      createPlaylistBtn.addEventListener("click", createPlaylist);
-      searchInput.addEventListener("input", applyFilters);
-      visibilityFilter.addEventListener("change", applyFilters);
-      sortFilter.addEventListener("change", applyFilters);
-      refreshBtn.addEventListener("click", loadPlaylists);
+      playAllBtn.addEventListener("click", playAll);
+      shuffleBtn.addEventListener("click", shufflePlay);
+      nextBtn.addEventListener("click", playNext);
+      prevBtn.addEventListener("click", playPrev);
+      pauseBtn.addEventListener("click", () => audioPlayer.pause());
+      audioPlayer.addEventListener("ended", playNext);
       logoutBtn.addEventListener("click", logOut);
 
       supabase.auth.onAuthStateChange((_event, session) => {
@@ -955,11 +938,11 @@ ${escapeHtml(playlist.description || "")}
         userChip.textContent = currentUser?.email || "Guest mode";
       });
 
-      loadPlaylists();
+      loadPlaylistPage();
     } catch (error) {
       document.body.innerHTML = `
         <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Playlist Page Startup Error</h1>
+          <h1 style="color:#7dff71;">Playlist Startup Error</h1>
           <p>${error.message}</p>
         </div>
       `;
