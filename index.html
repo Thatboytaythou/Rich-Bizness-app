@@ -2,237 +2,928 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Bizness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness LLC | Home</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      font-family: Arial;
-      background: black;
-      color: white;
+    :root {
+      --green: #7dff71;
+      --green2: #b8ff8d;
+      --gold: #f5d76e;
+      --blue: #67b7ff;
+      --danger: #ef5b55;
+      --bg: rgba(0,0,0,0.56);
+      --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
+      --border: rgba(125,255,113,0.18);
+      --text: #f3f3f3;
+      --muted: #cfcfcf;
+      --shadow: 0 20px 50px rgba(0,0,0,0.30);
     }
 
-    .container {
-      max-width: 1400px;
-      margin: auto;
-      padding: 16px;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: white;
+      min-height: 100vh;
+      background:
+        linear-gradient(rgba(0,0,0,0.42), rgba(0,0,0,0.93)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+    }
+
+    .page {
+      max-width: 1760px;
+      margin: 0 auto;
+      padding: 18px;
+      padding-bottom: 60px;
+    }
+
+    .topbar,
+    .hero,
+    .section,
+    .status-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--green);
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+
+    .brand img {
+      width: 62px;
+      height: 62px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.35);
     }
 
     .nav {
       display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
       gap: 10px;
-      background: #111;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
     }
 
-    .nav a {
-      color: white;
+    .nav a,
+    .nav button {
       text-decoration: none;
-      font-weight: bold;
-      background: #222;
-      padding: 8px 12px;
-      border-radius: 8px;
+      color: white;
+      background: var(--soft);
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
-    .hero {
-      background: #111;
-      padding: 20px;
-      border-radius: 12px;
+    .nav a.active {
+      color: var(--green);
+      border-color: rgba(125,255,113,0.28);
+      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    }
+
+    .user-chip {
+      display: inline-block;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.10);
+      font-weight: 700;
+    }
+
+    .hero,
+    .section {
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 3.15rem;
+      line-height: 0.93;
+      color: var(--green);
+      max-width: 980px;
+    }
+
+    .subtle,
+    .mini-text,
+    .card-text,
+    .card-meta,
+    .status-box {
+      color: var(--text);
+      line-height: 1.75;
+    }
+
+    .hero-kicker,
+    .pill-green,
+    .pill-gold,
+    .pill-blue {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.82rem;
+      margin-right: 8px;
+      margin-bottom: 10px;
+    }
+
+    .hero-kicker,
+    .pill-green {
+      background: rgba(125,255,113,0.13);
+      border: 1px solid rgba(125,255,113,0.18);
+      color: var(--green);
+    }
+
+    .pill-gold {
+      background: rgba(245,215,110,0.16);
+      border: 1px solid rgba(245,215,110,0.26);
+      color: var(--gold);
+    }
+
+    .pill-blue {
+      background: rgba(103,183,255,0.18);
+      border: 1px solid rgba(103,183,255,0.28);
+      color: var(--blue);
+    }
+
+    .hero-actions,
+    .mini-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn-green,
+    .btn-dark,
+    .btn-gold,
+    .btn-blue {
+      display: inline-block;
+      text-decoration: none;
+      text-align: center;
+      padding: 14px 18px;
+      border-radius: 14px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .btn-green { background: var(--green); color: black; }
+    .btn-dark {
+      background: rgba(255,255,255,0.08);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    .btn-gold { background: var(--gold); color: black; }
+    .btn-blue { background: var(--blue); color: black; }
+
+    .status-box {
+      margin-top: 16px;
+      padding: 14px;
+      font-weight: 700;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .mini-panel {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      margin-bottom: 14px;
+    }
+
+    .mini-panel-title,
+    .section-header h2 {
+      color: var(--green);
+      margin: 0 0 10px;
+      font-size: 1.35rem;
+      font-weight: 900;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.42);
+      border: 1px solid rgba(125,255,113,0.16);
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      flex-wrap: wrap;
       margin-bottom: 16px;
     }
 
-    .section {
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: #111;
-      padding: 12px;
-      border-radius: 12px;
-      margin-bottom: 10px;
+    .section-header p {
+      margin: 0;
+      color: var(--text);
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
-      gap: 12px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
     }
 
-    button {
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
+    .card {
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
     }
 
-    .green { background: lime; color: black; }
-    .blue { background: deepskyblue; color: black; }
-    .gold { background: gold; color: black; }
+    .card-cover {
+      height: 220px;
+      background:
+        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
+        url("images/brand/logo-music-label.png") center center / cover no-repeat;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
 
+    .card-cover.custom-bg {
+      background-size: cover;
+      background-position: center center;
+    }
+
+    .card-pill-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-title {
+      color: var(--gold);
+      font-size: 1.05rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .card-meta {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+      line-height: 1.55;
+    }
+
+    .card-meta a {
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .empty-box {
+      padding: 22px;
+      text-align: center;
+      border-radius: 16px;
+      color: rgba(255,255,255,0.80);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 1500px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+
+      .stats-row,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card-cover {
+        height: 200px;
+      }
+    }
   </style>
 </head>
-
 <body>
+  <div class="page">
+    <div class="topbar">
+      <div class="brand">
+        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+        <span>Rich Bizness LLC</span>
+      </div>
 
-<div class="container">
+      <div class="nav">
+        <span id="userChip" class="user-chip">Checking session...</span>
+        <a href="index.html" class="active">Home</a>
+        <a href="feed.html">Feed</a>
+        <a href="music.html">Music</a>
+        <a href="gaming.html">Gaming</a>
+        <a href="sports.html">Sports</a>
+        <a href="live.html">Live</a>
+        <a href="watch.html">Watch</a>
+        <a href="messages.html">Messages</a>
+        <a href="notifications.html">Notifications</a>
+        <a href="profile.html">Profile</a>
+      </div>
+    </div>
 
-  <!-- NAV -->
-  <div class="nav">
-    <div id="userInfo">Loading...</div>
+    <div class="hero">
+      <div class="hero-grid">
+        <div>
+          <div>
+            <span class="hero-kicker">FULLY POLISHED HOME BASE</span>
+            <span class="pill-green">DISCOVERY</span>
+            <span class="pill-blue">CREATORS</span>
+            <span class="pill-gold">MONETIZATION</span>
+          </div>
 
-    <div>
-      <a href="music.html">Music</a>
-      <a href="gallery.html">Gallery</a>
-      <a href="sports.html">Sports</a>
-      <a href="gaming.html">Gaming</a>
-      <a href="messages.html">Messages</a>
-      <a href="notifications.html">Notifications</a>
-      <a href="profile.html">Profile</a>
+          <h1 id="heroTitle">Build music, gaming, sports, art, live, and monetization in one Rich Bizness platform.</h1>
+
+          <div id="welcomeText" class="subtle">
+            This homepage is built around your current repo, your real brand assets, and the pages you already have live in root. No rollback, no older setup, no extra folder detours.
+          </div>
+
+          <div class="hero-actions">
+            <button class="btn-green" id="openFeedBtn" type="button">Open Feed</button>
+            <button class="btn-dark" id="goLiveBtn" type="button">Go Live</button>
+            <button class="btn-dark" id="watchLiveBtn" type="button">Watch Live</button>
+            <button class="btn-gold" id="storeHeroBtn" type="button">Monetize</button>
+          </div>
+
+          <div class="mini-actions">
+            <button class="btn-dark" id="mainUploadBtn" type="button">Main Upload</button>
+            <button class="btn-dark" id="uploadMusicBtn" type="button">Upload Music</button>
+            <button class="btn-dark" id="uploadGamingBtn" type="button">Upload Gaming</button>
+            <button class="btn-dark" id="uploadSportsBtn" type="button">Upload Sports</button>
+          </div>
+
+          <div id="statusBox" class="status-box">Loading Rich Bizness home...</div>
+
+          <div class="stats-row">
+            <div class="stat">
+              <div id="creatorCountStat" class="stat-value">0</div>
+              <div class="stat-label">Creators</div>
+            </div>
+            <div class="stat">
+              <div id="musicCountStat" class="stat-value">0</div>
+              <div class="stat-label">Music Uploads</div>
+            </div>
+            <div class="stat">
+              <div id="artCountStat" class="stat-value">0</div>
+              <div class="stat-label">Store / Gallery Items</div>
+            </div>
+            <div class="stat">
+              <div id="forSaleCountStat" class="stat-value">0</div>
+              <div class="stat-label">For Sale</div>
+            </div>
+            <div class="stat">
+              <div id="featuredCountStat" class="stat-value">0</div>
+              <div class="stat-label">Featured</div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="mini-panel">
+            <div class="mini-panel-title">Home Pulse</div>
+            <div id="pulseBox" class="mini-text">Loading home pulse...</div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Quick Platform Lanes</div>
+            <div class="mini-text">
+              • music uploads and playlists
+              <br>• creator storefront and gallery
+              <br>• sports and gaming creator lanes
+              <br>• live, watch, messages, notifications
+            </div>
+          </div>
+
+          <div class="mini-panel">
+            <div class="mini-panel-title">Current Sync Fixes</div>
+            <div class="mini-text">
+              • safer homepage loading
+              <br>• synced store link with username
+              <br>• mixed feed content routing
+              <br>• profile-aware session logic
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Top Creators</h2>
+          <p>Open artist pages directly from the main discovery lane.</p>
+        </div>
+      </div>
+
+      <div id="creatorsGrid" class="grid">
+        <div class="empty-box">Loading creators...</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <div>
+          <h2>Live Feed</h2>
+          <p>Latest music and storefront content pulled into one home feed.</p>
+        </div>
+      </div>
+
+      <div id="feedGrid" class="grid">
+        <div class="empty-box">Loading feed...</div>
+      </div>
     </div>
   </div>
 
-  <!-- HERO -->
-  <div class="hero">
-    <h1>Rich Bizness 🚀</h1>
-    <p id="welcomeText">Loading...</p>
+  <script>
+    try {
+      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    <button class="green" onclick="goLive()">WE LIT 🔥</button>
-    <button class="blue" onclick="window.location='upload.html'">Upload</button>
-    <button class="gold" onclick="window.location='store.html'">Store</button>
-  </div>
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
+      });
 
-  <!-- CREATOR SPOTLIGHT -->
-  <div class="section">
-    <h2>Top Creators</h2>
-    <div id="creators" class="grid"></div>
-  </div>
+      const userChip = document.getElementById("userChip");
+      const heroTitle = document.getElementById("heroTitle");
+      const welcomeText = document.getElementById("welcomeText");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
 
-  <!-- LIVE FEED -->
-  <div class="section">
-    <h2>Live Feed</h2>
-    <div id="feed" class="grid"></div>
-  </div>
+      const creatorCountStat = document.getElementById("creatorCountStat");
+      const musicCountStat = document.getElementById("musicCountStat");
+      const artCountStat = document.getElementById("artCountStat");
+      const forSaleCountStat = document.getElementById("forSaleCountStat");
+      const featuredCountStat = document.getElementById("featuredCountStat");
 
-</div>
+      const creatorsGrid = document.getElementById("creatorsGrid");
+      const feedGrid = document.getElementById("feedGrid");
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
-);
+      const openFeedBtn = document.getElementById("openFeedBtn");
+      const goLiveBtn = document.getElementById("goLiveBtn");
+      const watchLiveBtn = document.getElementById("watchLiveBtn");
+      const storeHeroBtn = document.getElementById("storeHeroBtn");
+      const mainUploadBtn = document.getElementById("mainUploadBtn");
+      const uploadMusicBtn = document.getElementById("uploadMusicBtn");
+      const uploadGamingBtn = document.getElementById("uploadGamingBtn");
+      const uploadSportsBtn = document.getElementById("uploadSportsBtn");
 
-let currentUser = null;
+      let currentUser = null;
+      let currentProfile = null;
+      let creators = [];
+      let musicRows = [];
+      let artworkRows = [];
 
-async function loadUser() {
-  const { data } = await supabase.auth.getSession();
-  currentUser = data.session?.user;
-
-  if (currentUser) {
-    document.getElementById("userInfo").innerText = currentUser.email;
-    document.getElementById("welcomeText").innerText = "Welcome back 🔥";
-    ensureProfile();
-  } else {
-    document.getElementById("userInfo").innerHTML =
-      '<a href="auth.html">Login / Sign Up</a>';
-    document.getElementById("welcomeText").innerText =
-      "Join Rich Bizness 🚀";
-  }
-}
-
-async function ensureProfile() {
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .single();
-
-  if (!data) {
-    await supabase.from("profiles").insert([
-      {
-        id: currentUser.id,
-        email: currentUser.email
+      function setStatus(message) {
+        statusBox.textContent = message;
       }
-    ]);
-  }
-}
 
-async function loadCreators() {
-  const { data } = await supabase
-    .from("profiles")
-    .select("*")
-    .limit(8);
+      function escapeHtml(text) {
+        return String(text || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
 
-  const el = document.getElementById("creators");
-  el.innerHTML = "";
+      function formatDate(value) {
+        if (!value) return "--";
+        const d = new Date(value);
+        if (Number.isNaN(d.getTime())) return "--";
+        return d.toLocaleString();
+      }
 
-  data.forEach(user => {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <b>${user.display_name || user.email}</b><br/>
-      <button onclick="openArtist('${user.username}')">View</button>
-    `;
-    el.appendChild(div);
-  });
-}
+      function money(value) {
+        return `$${Number(value || 0).toFixed(2)}`;
+      }
 
-function openArtist(username) {
-  window.location = "artist.html?u=" + username;
-}
+      function getProfileName(profile) {
+        return profile?.display_name || profile?.username || profile?.email || "Creator";
+      }
 
-async function loadFeed() {
-  const feedEl = document.getElementById("feed");
-  feedEl.innerHTML = "Loading...";
+      function getProfileArtistLink(profile) {
+        return profile?.username
+          ? `artist.html?u=${encodeURIComponent(profile.username)}`
+          : "artist.html";
+      }
 
-  const { data: music } = await supabase
-    .from("music_uploads")
-    .select("*")
-    .limit(6);
+      async function loadSession() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
 
-  const { data: art } = await supabase
-    .from("artworks")
-    .select("*")
-    .limit(6);
+        currentUser = data?.session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      }
 
-  const combined = [...(music||[]), ...(art||[])];
+      async function loadCurrentProfile() {
+        if (!currentUser) {
+          currentProfile = null;
+          return;
+        }
 
-  feedEl.innerHTML = "";
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .maybeSingle();
 
-  combined.forEach(item => {
-    const div = document.createElement("div");
-    div.className = "card";
+        if (error && error.code !== "42P01") throw error;
+        currentProfile = data || null;
+      }
 
-    div.innerHTML = `
-      <b>${item.title || "Untitled"}</b><br/>
-      <small>${item.artist_name || "Creator"}</small><br/>
-      <button onclick="openContent(${item.id})">Open</button>
-    `;
+      async function ensureProfile() {
+        if (!currentUser) return;
 
-    feedEl.appendChild(div);
-  });
-}
+        if (currentProfile) return;
 
-function openContent(id) {
-  window.location = "watch.html?id=" + id;
-}
+        const fallbackUsername = String(currentUser.email || "user")
+          .split("@")[0]
+          .toLowerCase()
+          .replace(/[^a-z0-9_]+/g, "_");
 
-function goLive() {
-  window.location = "live.html";
-}
+        const payload = {
+          id: currentUser.id,
+          email: currentUser.email || "",
+          username: fallbackUsername,
+          display_name: fallbackUsername,
+          onboarding_complete: true
+        };
 
-loadUser();
-loadCreators();
-loadFeed();
-</script>
+        const { error } = await supabase
+          .from("profiles")
+          .insert([payload]);
 
+        if (error && error.code !== "23505") throw error;
+
+        await loadCurrentProfile();
+      }
+
+      async function loadCreators() {
+        try {
+          const { data, error } = await supabase
+            .from("profiles")
+            .select("*")
+            .limit(8);
+
+          if (error && error.code !== "42P01") throw error;
+
+          creators = data || [];
+          creatorCountStat.textContent = String(creators.length);
+
+          if (!creators.length) {
+            creatorsGrid.innerHTML = `<div class="empty-box">No creators yet.</div>`;
+            return;
+          }
+
+          creatorsGrid.innerHTML = creators.map(profile => {
+            const artistLink = getProfileArtistLink(profile);
+
+            return `
+              <div class="card">
+                <div class="card-cover ${profile.avatar_url ? 'custom-bg' : ''}" style="${
+                  profile.avatar_url
+                    ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(profile.avatar_url).replace(/'/g, "%27")}');`
+                    : ''
+                }">
+                  <div class="card-pill-wrap">
+                    <span class="pill-green">CREATOR</span>
+                    ${profile.role ? `<span class="pill-blue">${escapeHtml(String(profile.role).toUpperCase())}</span>` : ``}
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(getProfileName(profile))}</div>
+                  <div class="card-text">${escapeHtml(profile.bio || "Rich Bizness creator lane.")}</div>
+
+                  <div class="card-meta">
+                    Username: ${escapeHtml(profile.username || "--")}<br>
+                    Favorite Team: ${escapeHtml(profile.favorite_team || "--")}
+                  </div>
+
+                  <div class="card-actions">
+                    <a class="btn-green" href="${artistLink}">Open Artist</a>
+                    ${
+                      profile.username
+                        ? `<a class="btn-dark" href="store.html?u=${encodeURIComponent(profile.username)}">Store</a>`
+                        : `<a class="btn-dark" href="profile.html">Profile</a>`
+                    }
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join("");
+        } catch (error) {
+          creatorsGrid.innerHTML = `<div class="empty-box">Creator load error: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      async function loadFeed() {
+        try {
+          const musicRes = await supabase
+            .from("music_uploads")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(8);
+
+          if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
+          musicRows = musicRes.data || [];
+
+          const artRes = await supabase
+            .from("artworks")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(8);
+
+          if (artRes.error && artRes.error.code !== "42P01") throw artRes.error;
+          artworkRows = artRes.data || [];
+
+          musicCountStat.textContent = String(musicRows.length);
+          artCountStat.textContent = String(artworkRows.length);
+          forSaleCountStat.textContent = String(artworkRows.filter(x => !!x.is_for_sale).length);
+          featuredCountStat.textContent = String(artworkRows.filter(x => !!x.is_featured).length);
+
+          const combined = [
+            ...musicRows.map(row => ({ ...row, content_type: "music" })),
+            ...artworkRows.map(row => ({ ...row, content_type: "artwork" }))
+          ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+          if (!combined.length) {
+            feedGrid.innerHTML = `<div class="empty-box">No content yet.</div>`;
+            return;
+          }
+
+          feedGrid.innerHTML = combined.map(item => {
+            const isMusic = item.content_type === "music";
+            const cover = isMusic ? item.cover_url : item.image_url;
+
+            return `
+              <div class="card">
+                <div class="card-cover ${cover ? 'custom-bg' : ''}" style="${
+                  cover
+                    ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(cover).replace(/'/g, "%27")}');`
+                    : ''
+                }">
+                  <div class="card-pill-wrap">
+                    <span class="pill-green">${isMusic ? "MUSIC" : "STORE"}</span>
+                    ${
+                      !isMusic && item.is_for_sale
+                        ? `<span class="pill-gold">FOR SALE</span>`
+                        : ``
+                    }
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+                  <div class="card-text">
+                    ${
+                      isMusic
+                        ? escapeHtml(item.artist_name || "Artist track")
+                        : escapeHtml(item.description || "Storefront item")
+                    }
+                  </div>
+
+                  <div class="card-meta">
+                    Type: ${escapeHtml(item.content_type)}<br>
+                    ${
+                      isMusic
+                        ? `Genre: ${escapeHtml(item.genre || "--")}<br>`
+                        : `Category: ${escapeHtml(item.category || "art")}<br>`
+                    }
+                    Posted: ${escapeHtml(formatDate(item.created_at))}
+                  </div>
+
+                  <div class="card-actions">
+                    <button class="btn-green" type="button" onclick="openContent(${Number(item.id)}, '${item.content_type}')">
+                      Open
+                    </button>
+                    ${
+                      isMusic
+                        ? `<a class="btn-dark" href="music.html">Music</a>`
+                        : `<a class="btn-dark" href="gallery.html">Gallery</a>`
+                    }
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join("");
+        } catch (error) {
+          feedGrid.innerHTML = `<div class="empty-box">Feed load error: ${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      function renderWelcome() {
+        if (currentUser) {
+          const name =
+            currentProfile?.display_name ||
+            currentProfile?.username ||
+            currentUser?.email ||
+            "Rich Bizness Creator";
+
+          heroTitle.textContent = `Build music, gaming, sports, art, live, and monetization in one Rich Bizness platform.`;
+          welcomeText.textContent = `Welcome back ${name}. Your home base is synced to your creator profile, storefront, music lane, and content discovery flow.`;
+        } else {
+          heroTitle.textContent = `Build music, gaming, sports, art, live, and monetization in one Rich Bizness platform.`;
+          welcomeText.textContent = `Join Rich Bizness and turn your profile, uploads, store, and creator lane into one connected platform.`;
+        }
+      }
+
+      function renderPulse() {
+        pulseBox.textContent =
+          `Current User: ${currentUser?.email || "Guest mode"}\n` +
+          `Creators Loaded: ${creators.length}\n` +
+          `Music Loaded: ${musicRows.length}\n` +
+          `Store/Gallery Loaded: ${artworkRows.length}\n` +
+          `For Sale: ${artworkRows.filter(x => !!x.is_for_sale).length}\n` +
+          `Featured: ${artworkRows.filter(x => !!x.is_featured).length}`;
+      }
+
+      async function openStoreForCurrentUser() {
+        if (!currentUser) {
+          window.location.href = "auth.html?redirect=store.html";
+          return;
+        }
+
+        if (!currentProfile?.username) {
+          window.location.href = "store.html";
+          return;
+        }
+
+        window.location.href = `store.html?u=${encodeURIComponent(currentProfile.username)}`;
+      }
+
+      function goLive() {
+        window.location.href = "live.html";
+      }
+
+      function watchLive() {
+        window.location.href = "watch.html";
+      }
+
+      function openFeed() {
+        window.location.href = "feed.html";
+      }
+
+      function openMainUpload() {
+        window.location.href = "upload.html";
+      }
+
+      function openMusicUpload() {
+        window.location.href = "upload-music.html";
+      }
+
+      function openGamingUpload() {
+        window.location.href = "upload-gaming.html";
+      }
+
+      function openSportsUpload() {
+        window.location.href = "upload-sports.html";
+      }
+
+      window.openContent = function(id, type) {
+        if (type === "music") {
+          window.location.href = "music.html";
+          return;
+        }
+
+        if (type === "artwork") {
+          window.location.href = "gallery.html";
+          return;
+        }
+
+        window.location.href = "index.html";
+      };
+
+      async function loadHomePage() {
+        try {
+          setStatus("Loading Rich Bizness home...");
+          await loadSession();
+          await loadCurrentProfile();
+          await ensureProfile();
+          renderWelcome();
+          await loadCreators();
+          await loadFeed();
+          renderPulse();
+          setStatus("✅ Home fully polished and synced to your current setup.");
+        } catch (error) {
+          console.error("home load error:", error);
+          setStatus("❌ Home load error: " + error.message);
+        }
+      }
+
+      openFeedBtn.addEventListener("click", openFeed);
+      goLiveBtn.addEventListener("click", goLive);
+      watchLiveBtn.addEventListener("click", watchLive);
+      storeHeroBtn.addEventListener("click", openStoreForCurrentUser);
+      mainUploadBtn.addEventListener("click", openMainUpload);
+      uploadMusicBtn.addEventListener("click", openMusicUpload);
+      uploadGamingBtn.addEventListener("click", openGamingUpload);
+      uploadSportsBtn.addEventListener("click", openSportsUpload);
+
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        currentUser = session?.user || null;
+        userChip.textContent = currentUser?.email || "Guest mode";
+      });
+
+      loadHomePage();
+    } catch (error) {
+      document.body.innerHTML = `
+        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
+          <h1 style="color:#7dff71;">Home Startup Error</h1>
+          <p>${error.message}</p>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
