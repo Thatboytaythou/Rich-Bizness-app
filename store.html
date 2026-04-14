@@ -678,9 +678,27 @@
         return d.toLocaleString();
       }
 
-      function getUsernameFromUrl() {
+      async function getUsernameFromUrlOrSession() {
         const params = new URLSearchParams(window.location.search);
-        return params.get("u") || "";
+        let username = params.get("u");
+        if (username) return username;
+
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
+        const user = session?.user;
+        if (!user) throw new Error("Missing username in URL and no active session.");
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .single();
+
+        if (error) throw error;
+        if (!data?.username) throw new Error("No username found for logged in user.");
+
+        return data.username;
       }
 
       async function loadSession() {
@@ -701,10 +719,6 @@
       }
 
       async function loadCreatorProfile(username) {
-        if (!username) {
-          throw new Error("Missing username in URL. Use store.html?u=username");
-        }
-
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -1111,12 +1125,12 @@
           setStatus("Loading creator store...");
           await loadSession();
 
-          const username = getUsernameFromUrl();
+          const username = await getUsernameFromUrlOrSession();
           await loadCreatorProfile(username);
           await refreshAll();
           subscribeArtworkLive();
 
-          setStatus("✅ Creator store fully synced.");
+          setStatus("✅ Creator store fully synced with fallback.");
         } catch (error) {
           console.error("Creator store load error:", error);
           setStatus("❌ Creator store load error: " + error.message);
