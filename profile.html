@@ -1,816 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Profile</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rich Bizness | Profile</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    :root {
-      --green: #7dff71;
-      --green-2: #b8ff8d;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --blue: #67b7ff;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
-    }
+<style>
+body {
+  margin:0;
+  font-family:Arial;
+  background:
+    linear-gradient(rgba(0,0,0,.6), rgba(0,0,0,.95)),
+    url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed;
+  color:white;
+}
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
-    }
+.container {
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
 
-    .page {
-      max-width: 1720px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 60px;
-    }
+.card {
+  background:rgba(0,0,0,.6);
+  border:1px solid rgba(125,255,113,.2);
+  border-radius:20px;
+  padding:20px;
+  margin-bottom:20px;
+}
 
-    .topbar,
-    .hero,
-    .section,
-    .rail-shell,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
+h1 { color:#7dff71; }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
+input, textarea {
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  margin-bottom:16px;
+  border-radius:10px;
+  border:none;
+  background:#111;
+  color:white;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.9rem;
-      font-weight: 900;
-    }
+button {
+  padding:12px 16px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-    }
+.btn-green { background:#7dff71; color:black; }
+.btn-dark { background:#222; color:white; }
 
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section,
-    .rail-shell {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 260px 1fr 420px;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .avatar-box {
-      width: 260px;
-      height: 260px;
-      border-radius: 28px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: rgba(255,255,255,0.76);
-      font-weight: 900;
-      text-align: center;
-    }
-
-    .avatar-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 0.94;
-      color: var(--green);
-    }
-
-    .subtle,
-    .mini-text,
-    .card-text,
-    .card-meta,
-    .status-box {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green,
-    .pill-gold,
-    .pill-red,
-    .pill-blue {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
-    .pill-blue {
-      background: rgba(103,183,255,0.18);
-      border: 1px solid rgba(103,183,255,0.28);
-      color: var(--blue);
-    }
-
-    .hero-actions,
-    .actions,
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger,
-    .btn-blue {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-blue { background: var(--blue); color: black; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .mini-panel,
-    .panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 14px;
-    }
-
-    .mini-panel-title,
-    .panel h2,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.35rem;
-      font-weight: 900;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--green);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .section-header p {
-      margin: 0;
-      color: var(--text);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .item-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .item-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .item-title {
-      color: var(--gold);
-      font-size: 1.02rem;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .item-meta {
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 14px;
-      margin-bottom: 12px;
-    }
-
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    @media (max-width: 1500px) {
-      .hero-grid {
-        grid-template-columns: 220px 1fr;
-      }
-
-      .hero-side {
-        grid-column: 1 / -1;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 980px) {
-      .hero-grid,
-      .stats-row {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.25rem;
-      }
-
-      .avatar-box {
-        width: 100%;
-        max-width: 260px;
-        height: 260px;
-      }
-    }
-  </style>
+.avatar {
+  width:150px;
+  height:150px;
+  border-radius:20px;
+  object-fit:cover;
+  border:2px solid #7dff71;
+}
+</style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Profile</span>
-      </div>
+<div class="container">
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="music.html">Music</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="sports.html">Sports</a>
-        <a href="messages.html">Messages</a>
-        <a href="profile.html" class="active">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
+<h1>Profile Editor</h1>
 
-    <div class="hero">
-      <div class="hero-grid">
-        <div class="avatar-box" id="avatarBox">No Avatar</div>
+<div class="card">
+  <img id="avatarPreview" class="avatar" src="" alt="avatar">
+  <input type="file" id="avatarInput">
+</div>
 
-        <div>
-          <div>
-            <span class="hero-kicker">PROFILE IDENTITY HUB</span>
-            <span class="pill-blue">SPORTS STATS</span>
-            <span class="pill-green">LIVE PROFILE</span>
-          </div>
+<div class="card">
+  <label>Username</label>
+  <input id="username">
 
-          <h1 id="displayNameView">Loading profile...</h1>
-          <div id="usernameView" class="mini-text">@loading</div>
-          <div id="emailView" class="mini-text">loading@email.com</div>
-          <div id="favoriteTeamView" class="mini-text">Favorite Team: --</div>
-          <div id="bioView" class="subtle" style="margin-top:12px;">Loading bio...</div>
+  <label>Display Name</label>
+  <input id="displayName">
 
-          <div class="hero-actions">
-            <a class="btn-green" href="sports.html">Open Sports</a>
-            <a class="btn-blue" href="sports-picks.html">Top Picks</a>
-            <a class="btn-dark" href="sports-leaderboard.html">Leaderboard</a>
-            <a class="btn-dark" href="gaming-profile.html">Gaming Profile</a>
-          </div>
+  <label>Bio</label>
+  <textarea id="bio"></textarea>
 
-          <div id="statusBox" class="status-box">Loading profile...</div>
+  <label>Favorite Team</label>
+  <input id="team">
 
-          <div class="stats-row">
-            <div class="stat">
-              <div id="sportsPickStat" class="stat-value">0</div>
-              <div class="stat-label">Sports Picks</div>
-            </div>
-            <div class="stat">
-              <div id="sportsWinStat" class="stat-value">0</div>
-              <div class="stat-label">Wins</div>
-            </div>
-            <div class="stat">
-              <div id="sportsLossStat" class="stat-value">0</div>
-              <div class="stat-label">Losses</div>
-            </div>
-            <div class="stat">
-              <div id="sportsPointStat" class="stat-value">0</div>
-              <div class="stat-label">Points</div>
-            </div>
-            <div class="stat">
-              <div id="sportsAccuracyStat" class="stat-value">0%</div>
-              <div class="stat-label">Accuracy</div>
-            </div>
-          </div>
-        </div>
+  <button class="btn-green" onclick="saveProfile()">Save Profile</button>
+</div>
 
-        <div class="hero-side">
-          <div class="mini-panel">
-            <div class="mini-panel-title">Sports Summary</div>
-            <div id="sportsSummaryBox" class="mini-text">Loading sports summary...</div>
-          </div>
+<div class="card" id="statusBox">Loading...</div>
 
-          <div class="mini-panel">
-            <div class="mini-panel-title">Leaderboard Snapshot</div>
-            <div id="leaderboardSummaryBox" class="mini-text">Loading leaderboard snapshot...</div>
-          </div>
+</div>
 
-          <div class="mini-panel">
-            <div class="mini-panel-title">Quick Sports Links</div>
-            <div class="mini-text">
-              <a href="sports.html" style="color:var(--green);text-decoration:none;">Sports Hub</a><br>
-              <a href="sports-picks.html" style="color:var(--green);text-decoration:none;">Submit Picks</a><br>
-              <a href="sports-leaderboard.html" style="color:var(--green);text-decoration:none;">Sports Leaderboard</a><br>
-              <a href="upload-sports.html" style="color:var(--green);text-decoration:none;">Upload Sports</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+<script>
+const supabase = window.supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+);
 
-    <div class="grid-2">
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h2>Recent Sports Picks</h2>
-            <p>Latest picks and grading results tied to this profile.</p>
-          </div>
-        </div>
+let user;
+let profile = {};
 
-        <div id="recentPicksList" class="item-list">
-          <div class="empty-box">Loading recent picks...</div>
-        </div>
-      </div>
+const avatarPreview = document.getElementById("avatarPreview");
+const avatarInput = document.getElementById("avatarInput");
 
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <h2>Recent Sports Uploads</h2>
-            <p>Sports content posted from this profile.</p>
-          </div>
-        </div>
+async function init() {
+  const { data } = await supabase.auth.getSession();
+  user = data.session?.user;
 
-        <div id="recentUploadsList" class="item-list">
-          <div class="empty-box">Loading sports uploads...</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  if (!user) {
+    location.href = "auth.html";
+    return;
+  }
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  await loadProfile();
+}
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+async function loadProfile() {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
+  if (!data) {
+    // CREATE PROFILE IF MISSING
+    await supabase.from("profiles").insert([{
+      id: user.id,
+      username: "user_" + user.id.slice(0,6)
+    }]);
+    return loadProfile();
+  }
 
-      const avatarBox = document.getElementById("avatarBox");
-      const displayNameView = document.getElementById("displayNameView");
-      const usernameView = document.getElementById("usernameView");
-      const emailView = document.getElementById("emailView");
-      const favoriteTeamView = document.getElementById("favoriteTeamView");
-      const bioView = document.getElementById("bioView");
+  profile = data;
 
-      const sportsPickStat = document.getElementById("sportsPickStat");
-      const sportsWinStat = document.getElementById("sportsWinStat");
-      const sportsLossStat = document.getElementById("sportsLossStat");
-      const sportsPointStat = document.getElementById("sportsPointStat");
-      const sportsAccuracyStat = document.getElementById("sportsAccuracyStat");
+  document.getElementById("username").value = data.username || "";
+  document.getElementById("displayName").value = data.display_name || "";
+  document.getElementById("bio").value = data.bio || "";
+  document.getElementById("team").value = data.favorite_team || "";
 
-      const sportsSummaryBox = document.getElementById("sportsSummaryBox");
-      const leaderboardSummaryBox = document.getElementById("leaderboardSummaryBox");
-      const recentPicksList = document.getElementById("recentPicksList");
-      const recentUploadsList = document.getElementById("recentUploadsList");
+  if (data.avatar_url) avatarPreview.src = data.avatar_url;
 
-      let currentUser = null;
-      let currentProfile = null;
-      let sportsPicks = [];
-      let sportsPickResults = [];
-      let sportsUploads = [];
-      let leaderboardRows = [];
+  document.getElementById("statusBox").innerText = "Profile loaded";
+}
 
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
+avatarInput.addEventListener("change", async () => {
+  const file = avatarInput.files[0];
+  if (!file) return;
 
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
+  const path = `${user.id}/${Date.now()}_${file.name}`;
 
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
+  const { error } = await supabase.storage
+    .from("profile-images")
+    .upload(path, file);
 
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+  if (error) {
+    alert(error.message);
+    return;
+  }
 
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
+  const { data } = supabase.storage
+    .from("profile-images")
+    .getPublicUrl(path);
 
-        if (!currentUser) {
-          window.location.href = "auth.html";
-          return false;
-        }
+  avatarPreview.src = data.publicUrl;
+  profile.avatar_url = data.publicUrl;
+});
 
-        return true;
-      }
+async function saveProfile() {
+  try {
+    const username = document.getElementById("username").value.trim();
 
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
+    // CHECK USERNAME UNIQUE
+    const { data: existing } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .neq("id", user.id);
 
-      async function loadProfile() {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", currentUser.id)
-          .maybeSingle();
-
-        if (error && error.code !== "42P01") throw error;
-
-        currentProfile = data || null;
-
-        const displayName =
-          currentProfile?.display_name ||
-          currentProfile?.username ||
-          (currentUser.email ? currentUser.email.split("@")[0] : "Rich Bizness User");
-
-        displayNameView.textContent = displayName;
-        usernameView.textContent = `@${currentProfile?.username || "no_username"}`;
-        emailView.textContent = currentUser.email || "--";
-        favoriteTeamView.textContent = `Favorite Team: ${currentProfile?.favorite_team || "--"}`;
-        bioView.textContent = currentProfile?.bio || "No bio yet.";
-        
-        if (currentProfile?.avatar_url) {
-          avatarBox.innerHTML = `<img src="${escapeHtml(currentProfile.avatar_url)}" alt="Profile Avatar" />`;
-        } else {
-          avatarBox.textContent = "No Avatar";
-        }
-      }
-
-      async function loadSportsData() {
-        const [pickRes, resultRes, uploadRes, allPickRes, allResultRes] = await Promise.all([
-          supabase.from("sports_picks").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_pick_results").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_uploads").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("sports_picks").select("*"),
-          supabase.from("sports_pick_results").select("*")
-        ]);
-
-        if (pickRes.error && pickRes.error.code !== "42P01") throw pickRes.error;
-        if (resultRes.error && resultRes.error.code !== "42P01") throw resultRes.error;
-        if (uploadRes.error && uploadRes.error.code !== "42P01") throw uploadRes.error;
-        if (allPickRes.error && allPickRes.error.code !== "42P01") throw allPickRes.error;
-        if (allResultRes.error && allResultRes.error.code !== "42P01") throw allResultRes.error;
-
-        sportsPicks = pickRes.data || [];
-        sportsPickResults = resultRes.data || [];
-        sportsUploads = (uploadRes.data || []).map(row => ({
-          ...row,
-          sport_name: row.sport_name || row.sport || row.category || "Sports",
-          team_name: row.team_name || row.team || row.favorite_team || "",
-          is_featured: row.is_featured ?? row.featured ?? false
-        }));
-
-        buildLeaderboardSnapshot(allPickRes.data || [], allResultRes.data || []);
-      }
-
-      function buildLeaderboardSnapshot(allPicks, allResults) {
-        const resultMap = new Map(allResults.map(r => [r.pick_id, r]));
-        const grouped = new Map();
-
-        allPicks.forEach(pick => {
-          if (!grouped.has(pick.user_id)) {
-            grouped.set(pick.user_id, {
-              user_id: pick.user_id,
-              points: 0,
-              wins: 0,
-              losses: 0,
-              graded: 0
-            });
-          }
-
-          const row = grouped.get(pick.user_id);
-          const result = resultMap.get(pick.id);
-
-          if (result) {
-            row.points += Number(result.points || 0);
-            row.graded += 1;
-            const outcome = String(result.result || "").toLowerCase();
-            if (outcome === "win") row.wins += 1;
-            if (outcome === "loss") row.losses += 1;
-          }
-        });
-
-        leaderboardRows = Array.from(grouped.values())
-          .map(row => ({
-            ...row,
-            accuracy: row.graded ? Math.round((row.wins / row.graded) * 100) : 0
-          }))
-          .sort((a, b) => Number(b.points || 0) - Number(a.points || 0));
-      }
-
-      function renderSportsStats() {
-        const wins = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "win").length;
-        const losses = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "loss").length;
-        const pushes = sportsPickResults.filter(r => String(r.result || "").toLowerCase() === "push").length;
-        const points = sportsPickResults.reduce((sum, r) => sum + Number(r.points || 0), 0);
-        const graded = sportsPickResults.length;
-        const accuracy = graded ? Math.round((wins / graded) * 100) : 0;
-
-        sportsPickStat.textContent = String(sportsPicks.length);
-        sportsWinStat.textContent = String(wins);
-        sportsLossStat.textContent = String(losses);
-        sportsPointStat.textContent = String(points);
-        sportsAccuracyStat.textContent = `${accuracy}%`;
-
-        sportsSummaryBox.textContent =
-          `Favorite Team: ${currentProfile?.favorite_team || "--"}\n` +
-          `Total Picks: ${sportsPicks.length}\n` +
-          `Wins: ${wins}\n` +
-          `Losses: ${losses}\n` +
-          `Pushes: ${pushes}\n` +
-          `Points: ${points}\n` +
-          `Accuracy: ${accuracy}%\n` +
-          `Sports Uploads: ${sportsUploads.length}`;
-
-        const rankIndex = leaderboardRows.findIndex(row => row.user_id === currentUser.id);
-        const myLeaderboard = leaderboardRows[rankIndex] || null;
-
-        leaderboardSummaryBox.textContent =
-          `Current Rank: ${rankIndex >= 0 ? `#${rankIndex + 1}` : "Unranked"}\n` +
-          `Leaderboard Points: ${myLeaderboard?.points ?? 0}\n` +
-          `Leaderboard Wins: ${myLeaderboard?.wins ?? 0}\n` +
-          `Leaderboard Accuracy: ${myLeaderboard?.accuracy ?? 0}%`;
-      }
-
-      function renderRecentPicks() {
-        if (!sportsPicks.length) {
-          recentPicksList.innerHTML = `<div class="empty-box">No sports picks yet.</div>`;
-          return;
-        }
-
-        recentPicksList.innerHTML = sportsPicks.slice(0, 10).map(pick => {
-          const result = sportsPickResults.find(r => Number(r.pick_id) === Number(pick.id));
-          const outcome = result?.result || "pending";
-          const points = result?.points ?? 0;
-
-          return `
-            <div class="item-card">
-              <div class="item-title">${escapeHtml(pick.match || "Match")}</div>
-              <div class="item-meta">
-                Pick: ${escapeHtml(pick.pick || "--")}<br>
-                Confidence: ${escapeHtml(pick.confidence || "--")}<br>
-                Take: ${escapeHtml(pick.take || "--")}<br>
-                Result: ${escapeHtml(outcome)} • ${escapeHtml(points)} pts<br>
-                Submitted: ${escapeHtml(formatDate(pick.created_at))}
-              </div>
-              <div class="card-actions">
-                <a class="btn-dark" href="sports-picks.html">More Picks</a>
-                <a class="btn-dark" href="sports-leaderboard.html">Leaderboard</a>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderRecentUploads() {
-        if (!sportsUploads.length) {
-          recentUploadsList.innerHTML = `<div class="empty-box">No sports uploads yet.</div>`;
-          return;
-        }
-
-        recentUploadsList.innerHTML = sportsUploads.slice(0, 10).map(row => `
-          <div class="item-card">
-            <div class="item-title">${escapeHtml(row.title || "Sports Upload")}</div>
-            <div class="item-meta">
-              Sport: ${escapeHtml(row.sport_name || "--")}<br>
-              Team: ${escapeHtml(row.team_name || "--")}<br>
-              Featured: ${row.is_featured ? "YES" : "NO"}<br>
-              Posted: ${escapeHtml(formatDate(row.created_at))}
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="${row.video_url || row.file_url || 'sports.html'}" ${String(row.video_url || row.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
-              <a class="btn-dark" href="sports.html">Sports Hub</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      async function loadProfilePage() {
-        try {
-          setStatus("Loading profile...");
-          const ok = await loadSession();
-          if (!ok) return;
-
-          await loadProfile();
-          await loadSportsData();
-
-          renderSportsStats();
-          renderRecentPicks();
-          renderRecentUploads();
-
-          setStatus("✅ Profile fully synced with sports stats.");
-        } catch (error) {
-          console.error("Profile load error:", error);
-          setStatus("❌ Profile load error: " + error.message);
-          recentPicksList.innerHTML = `<div class="empty-box">Could not load recent picks.</div>`;
-          recentUploadsList.innerHTML = `<div class="empty-box">Could not load recent sports uploads.</div>`;
-        }
-      }
-
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadProfilePage();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Profile Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+    if (existing.length) {
+      alert("Username taken");
+      return;
     }
-  </script>
+
+    const updates = {
+      username,
+      display_name: document.getElementById("displayName").value,
+      bio: document.getElementById("bio").value,
+      favorite_team: document.getElementById("team").value,
+      avatar_url: profile.avatar_url || null,
+      updated_at: new Date()
+    };
+
+    const { error } = await supabase
+      .from("profiles")
+      .update(updates)
+      .eq("id", user.id);
+
+    if (error) throw error;
+
+    document.getElementById("statusBox").innerText = "✅ Profile updated across app";
+
+  } catch (err) {
+    document.getElementById("statusBox").innerText = "❌ " + err.message;
+  }
+}
+
+init();
+</script>
 </body>
 </html>
