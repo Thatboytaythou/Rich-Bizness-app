@@ -348,13 +348,18 @@
       return new Date(value).toLocaleString();
     }
 
-    async function requireSession() {
+    async function getSessionUser() {
       const { data, error } = await supabase.auth.getSession();
       if (error) throw error;
-      const user = data?.session?.user;
+      return data?.session?.user || null;
+    }
+
+    async function requireSession() {
+      const user = await getSessionUser();
       if (!user) {
-        window.location.href = "auth.html";
-        throw new Error("No active session.");
+        setStatus("❌ No active session. Go log in first.", "error");
+        viewerEmail.textContent = "Not signed in";
+        return null;
       }
       currentUser = user;
       viewerEmail.textContent = user.email || "Signed in";
@@ -368,7 +373,7 @@
       const { data, error } = await supabase
         .from("profiles")
         .select("id, username, display_name, email")
-        .eq("username", clean)
+        .ilike("username", clean)
         .maybeSingle();
 
       if (error) throw error;
@@ -379,7 +384,7 @@
     async function loadThreads() {
       const { data: memberships, error: membershipsError } = await supabase
         .from("dm_thread_members")
-        .select("thread_id, user_id")
+        .select("thread_id, user_id, created_at")
         .eq("user_id", currentUser.id);
 
       if (membershipsError) throw membershipsError;
@@ -533,7 +538,12 @@
 
     async function startChat() {
       try {
+        if (!currentUser) {
+          throw new Error("You must log in first.");
+        }
+
         setStatus("Starting chat...", "loading");
+
         const searchText = String(targetUsername.value || "").trim();
         if (!searchText) throw new Error("Enter a username first.");
 
@@ -573,34 +583,34 @@
         const { data: newThread, error: threadError } = await supabase
           .from("dm_threads")
           .insert([{ created_by: currentUser.id }])
-          .select()
+          .select("id")
           .single();
 
         if (threadError) throw threadError;
-
-        const threadId = newThread.id;
+        if (!newThread?.id) throw new Error("Thread was not created.");
 
         const { error: memberError } = await supabase
           .from("dm_thread_members")
           .insert([
-            { thread_id: threadId, user_id: currentUser.id },
-            { thread_id: threadId, user_id: target.id }
+            { thread_id: newThread.id, user_id: currentUser.id },
+            { thread_id: newThread.id, user_id: target.id }
           ]);
 
         if (memberError) throw memberError;
 
         targetUsername.value = "";
         await loadThreads();
-        await openThread(threadId);
+        await openThread(newThread.id);
         setStatus(`✅ Chat started with ${target.display_name || target.username || target.email}.`, "ok");
       } catch (error) {
-        console.error("start chat error:", error);
-        setStatus("❌ Start thread error: " + error.message, "error");
+        console.error("startChat error:", error);
+        setStatus("❌ Start thread error: " + (error.message || "Unknown error"), "error");
       }
     }
 
     async function sendMessage() {
       try {
+        if (!currentUser) throw new Error("You must log in first.");
         if (!currentThreadId) throw new Error("Select or start a thread first.");
 
         const body = String(messageBody.value || "").trim();
@@ -621,39 +631,49 @@
         await loadThreads();
         setStatus("✅ Message sent.", "ok");
       } catch (error) {
-        console.error("send message error:", error);
-        setStatus("❌ Send message error: " + error.message, "error");
+        console.error("sendMessage error:", error);
+        setStatus("❌ Send message error: " + (error.message || "Unknown error"), "error");
       }
     }
 
     function subscribeToThread(threadId) {
-      if (realtimeChannel) {
-        supabase.removeChannel(realtimeChannel);
-        realtimeChannel = null;
-      }
+      try {
+        if (realtimeChannel) {
+          supabase.removeChannel(realtimeChannel);
+          realtimeChannel = null;
+        }
 
-      realtimeChannel = supabase
-        .channel(`dm-thread-${threadId}`)
-        .on("postgres_changes", {
-          event: "*",
-          schema: "public",
-          table: "dm_messages",
-          filter: `thread_id=eq.${threadId}`
-        }, async () => {
-          await loadMessages(threadId);
-          await loadThreads();
-        })
-        .subscribe();
+        realtimeChannel = supabase
+          .channel(`dm-thread-${threadId}`)
+          .on("postgres_changes", {
+            event: "*",
+            schema: "public",
+            table: "dm_messages",
+            filter: `thread_id=eq.${threadId}`
+          }, async () => {
+            try {
+              await loadMessages(threadId);
+              await loadThreads();
+            } catch (err) {
+              console.error("realtime reload error:", err);
+            }
+          })
+          .subscribe();
+      } catch (error) {
+        console.error("subscribe error:", error);
+      }
     }
 
     async function init() {
       try {
-        await requireSession();
+        setStatus("Loading messages...", "loading");
+        const user = await requireSession();
+        if (!user) return;
         await loadThreads();
         setStatus("✅ Messages loaded.", "ok");
       } catch (error) {
-        console.error("messages init error:", error);
-        setStatus("❌ Messages load error: " + error.message, "error");
+        console.error("init error:", error);
+        setStatus("❌ Messages load error: " + (error.message || "Unknown error"), "error");
       }
     }
 
@@ -676,12 +696,17 @@
 
     refreshBtn.addEventListener("click", async () => {
       try {
+        if (!currentUser) {
+          const user = await requireSession();
+          if (!user) return;
+        }
         setStatus("Refreshing inbox...", "loading");
         await loadThreads();
         if (currentThreadId) await loadMessages(currentThreadId);
         setStatus("✅ Inbox refreshed.", "ok");
       } catch (error) {
-        setStatus("❌ Refresh error: " + error.message, "error");
+        console.error("refresh error:", error);
+        setStatus("❌ Refresh error: " + (error.message || "Unknown error"), "error");
       }
     });
 
@@ -691,11 +716,12 @@
         if (error) throw error;
         window.location.href = "auth.html";
       } catch (error) {
-        setStatus("❌ Logout error: " + error.message, "error");
+        console.error("logout error:", error);
+        setStatus("❌ Logout error: " + (error.message || "Unknown error"), "error");
       }
     });
 
-    init();
+    window.addEventListener("load", init);
   </script>
 </body>
 </html>
