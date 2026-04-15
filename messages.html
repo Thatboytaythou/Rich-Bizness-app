@@ -7,593 +7,852 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+
+    :root{
+      --green:#7dff71;
+      --green2:#b8ff8d;
+      --gold:#f5d76e;
+      --blue:#67b7ff;
+      --danger:#ef5b55;
+      --bg:rgba(0,0,0,.58);
+      --soft:rgba(255,255,255,.08);
+      --soft2:rgba(255,255,255,.04);
+      --border:rgba(125,255,113,.18);
+      --text:#f3f3f3;
+      --muted:#cfcfcf;
+      --shadow:0 20px 50px rgba(0,0,0,.30);
+    }
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      color:white;
+      min-height:100vh;
       background:
-        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.94)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed;
+        linear-gradient(rgba(0,0,0,.42), rgba(0,0,0,.92)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
     }
-    .page { max-width: 1600px; margin: 0 auto; padding: 18px; }
-    .box {
-      background: rgba(0,0,0,.56);
-      border: 1px solid rgba(125,255,113,.18);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      padding: 20px;
-      margin-bottom: 18px;
+
+    .page{
+      max-width:1500px;
+      margin:0 auto;
+      padding:18px;
     }
-    .topbar {
-      display: flex; justify-content: space-between; align-items: center;
-      gap: 12px; flex-wrap: wrap;
+
+    .shell{
+      background:var(--bg);
+      border:1px solid var(--border);
+      border-radius:28px;
+      backdrop-filter:blur(10px);
+      box-shadow:var(--shadow);
+      padding:22px;
     }
-    .brand {
-      display: flex; align-items: center; gap: 12px;
-      color: #7dff71; font-size: 1.8rem; font-weight: 900;
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
     }
-    .brand img {
-      width: 58px; height: 58px; border-radius: 16px; object-fit: cover;
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:var(--green);
+      font-size:1.8rem;
+      font-weight:900;
     }
-    .nav { display: flex; gap: 10px; flex-wrap: wrap; }
-    .nav a, .nav button, .btn {
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+
+    .brand img{
+      width:58px;
+      height:58px;
+      border-radius:16px;
+      object-fit:cover;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.4);
     }
-    .btn-green { background: #7dff71; color: black; border: none; }
-    .btn-blue { background: #67b7ff; color: black; border: none; }
-    .grid {
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 18px;
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
-    .title {
-      color: #7dff71;
-      font-size: 2.6rem;
-      font-weight: 900;
-      line-height: .95;
-      margin: 0 0 12px;
+
+    .chip, .btn{
+      border:none;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      border-radius:14px;
+      transition:.18s ease;
     }
-    .status {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.45);
-      border: 1px solid rgba(125,255,113,.16);
-      white-space: pre-wrap;
+
+    .chip{
+      padding:12px 14px;
+      background:rgba(255,255,255,.08);
+      color:white;
+      border:1px solid rgba(255,255,255,.10);
     }
-    input, textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-      font-family: inherit;
+
+    .chip.active{
+      background:var(--green);
+      color:black;
+      border-color:transparent;
     }
-    textarea { min-height: 100px; resize: vertical; }
-    .threads, .messages {
-      display: grid;
-      gap: 12px;
-      max-height: 65vh;
-      overflow: auto;
+
+    .email-pill{
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      font-weight:800;
     }
-    .thread, .message {
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.08);
+
+    .hero{
+      border:1px solid var(--border);
+      border-radius:24px;
+      background:rgba(0,0,0,.20);
+      padding:22px;
+      margin-bottom:18px;
     }
-    .thread.active {
-      border-color: rgba(125,255,113,.35);
-      box-shadow: 0 0 14px rgba(125,255,113,.14);
+
+    .hero h1{
+      margin:0 0 8px;
+      color:var(--green);
+      font-size:3.2rem;
+      line-height:.92;
     }
-    .message.mine {
-      border-color: rgba(103,183,255,.30);
+
+    .hero p{
+      margin:0;
+      color:var(--text);
+      font-size:1.05rem;
+      line-height:1.7;
     }
-    .meta {
-      color: #cfcfcf;
-      font-size: 13px;
-      line-height: 1.55;
-      margin-top: 6px;
+
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:16px 0 0;
     }
-    .composer { display: grid; gap: 12px; margin-top: 16px; }
-    .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
-    .empty {
-      padding: 18px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.82);
-      text-align: center;
+
+    .btn{
+      padding:13px 18px;
+      font-size:14px;
     }
-    @media (max-width: 980px) {
-      .grid { grid-template-columns: 1fr; }
-      .title { font-size: 2rem; }
+
+    .btn-green{ background:var(--green); color:black; }
+    .btn-dark{
+      background:rgba(255,255,255,.08);
+      color:white;
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .status{
+      margin:14px 0 18px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(0,0,0,.38);
+      border:1px solid rgba(255,255,255,.08);
+      white-space:pre-wrap;
+      line-height:1.6;
+    }
+
+    .status.error{
+      border-color:rgba(239,91,85,.35);
+      color:#ffd8d6;
+    }
+
+    .status.ok{
+      border-color:rgba(125,255,113,.26);
+      color:#dfffd8;
+    }
+
+    .chat-shell{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:18px;
+    }
+
+    .pane{
+      background:rgba(0,0,0,.26);
+      border:1px solid var(--border);
+      border-radius:22px;
+      padding:16px;
+      min-height:540px;
+    }
+
+    .section-title{
+      margin:0 0 10px;
+      font-size:1.5rem;
+      color:var(--green);
+      font-weight:900;
+    }
+
+    .start-chat{
+      display:grid;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .start-row{
+      display:grid;
+      grid-template-columns:1fr 180px;
+      gap:12px;
+      align-items:stretch;
+    }
+
+    input, textarea{
+      width:100%;
+      border-radius:16px;
+      border:1px solid #2d2d2d;
+      background:rgba(0,0,0,.72);
+      color:white;
+      outline:none;
+      font-size:16px;
+      font-family:inherit;
+    }
+
+    input{
+      padding:15px 16px;
+      min-height:54px;
+    }
+
+    textarea{
+      padding:16px;
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .start-btn{
+      min-height:54px;
+      width:100%;
+      font-size:16px;
+      border-radius:16px;
+      background:var(--blue);
+      color:black;
+      border:none;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .thread-list{
+      display:grid;
+      gap:10px;
+      margin-top:10px;
+    }
+
+    .thread-item{
+      width:100%;
+      text-align:left;
+      padding:14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      color:white;
+      cursor:pointer;
+    }
+
+    .thread-item.active{
+      border-color:rgba(125,255,113,.35);
+      background:rgba(125,255,113,.12);
+    }
+
+    .thread-title{
+      font-weight:900;
+      color:#fff;
+      margin-bottom:5px;
+    }
+
+    .thread-meta{
+      color:#d1d1d1;
+      font-size:.92rem;
+    }
+
+    .empty{
+      padding:18px;
+      border-radius:16px;
+      border:1px dashed rgba(255,255,255,.10);
+      color:#d1d1d1;
+      background:rgba(255,255,255,.03);
+    }
+
+    .conversation{
+      display:grid;
+      grid-template-rows:auto 1fr auto;
+      gap:14px;
+      min-height:508px;
+    }
+
+    .conv-head{
+      padding:14px 16px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .conv-head strong{
+      color:var(--green);
+      font-size:1.05rem;
+    }
+
+    .messages{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(0,0,0,.24);
+      padding:14px;
+      overflow:auto;
+      min-height:280px;
+      max-height:480px;
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
+    .msg{
+      max-width:80%;
+      padding:12px 14px;
+      border-radius:18px;
+      line-height:1.5;
+      word-break:break-word;
+    }
+
+    .msg.me{
+      justify-self:end;
+      background:rgba(125,255,113,.18);
+      border:1px solid rgba(125,255,113,.20);
+    }
+
+    .msg.them{
+      justify-self:start;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .msg-meta{
+      font-size:.78rem;
+      color:#d7d7d7;
+      margin-bottom:6px;
+      opacity:.9;
+    }
+
+    .composer{
+      display:grid;
+      gap:12px;
+    }
+
+    .send-btn{
+      min-height:52px;
+      border:none;
+      border-radius:16px;
+      background:var(--green);
+      color:black;
+      font-weight:900;
+      font-size:15px;
+      cursor:pointer;
+    }
+
+    @media (max-width: 980px){
+      .chat-shell{ grid-template-columns:1fr; }
+      .hero h1{ font-size:2.3rem; }
+      .start-row{ grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="box topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Messages</span>
-      </div>
-      <div class="nav">
-        <span id="userChip" class="btn">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="notifications.html">Notifications</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" type="button">Log Out</button>
-      </div>
-    </div>
+    <div class="shell">
+      <div class="topbar">
+        <div class="brand">
+          <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
+          <span>Messages</span>
+        </div>
 
-    <div class="box">
-      <div class="title">Message creators, fans, and collaborators from one real Rich Bizness inbox.</div>
-      <div>This is a real DM hub with threads, unread tracking, live updates, and username-based conversation starts.</div>
+        <div class="nav">
+          <div id="viewerEmail" class="email-pill">Loading...</div>
+          <a class="chip" href="index.html">Home</a>
+          <a class="chip" href="notifications.html">Notifications</a>
+          <a class="chip" href="profile.html">Profile</a>
+          <button id="logoutBtn" class="chip" type="button">Log Out</button>
+        </div>
+      </div>
 
-      <div class="actions">
-        <button id="refreshBtn" class="btn-green" type="button">Refresh Inbox</button>
-        <a class="btn" href="notifications.html">Notifications</a>
-        <a class="btn" href="profile.html">Profile</a>
+      <div class="hero">
+        <h1>Message creators, fans, and collaborators from one real Rich Bizness inbox.</h1>
+        <p>This is a real DM hub with threads, unread tracking, live updates, and username-based conversation starts.</p>
+        <div class="actions">
+          <button id="refreshBtn" class="btn btn-green" type="button">Refresh Inbox</button>
+          <a class="btn btn-dark" href="notifications.html">Notifications</a>
+          <a class="btn btn-dark" href="profile.html">Profile</a>
+        </div>
       </div>
 
       <div id="statusBox" class="status">Loading messages...</div>
-    </div>
 
-    <div class="box">
-      <div style="display:grid; gap:12px; margin-bottom:16px;">
-        <div style="color:#7dff71; font-size:1.3rem; font-weight:900;">Start New Chat</div>
-        <input id="startUsernameInput" type="text" placeholder="Enter username to message" />
-        <button id="startChatBtn" class="btn-blue" type="button">Start Chat</button>
-      </div>
-
-      <div class="grid">
-        <div>
-          <div style="color:#7dff71; font-size:1.2rem; font-weight:900; margin-bottom:12px;">Threads</div>
-          <div id="threadsList" class="threads">
-            <div class="empty">Loading threads...</div>
-          </div>
-        </div>
-
-        <div>
-          <div style="color:#7dff71; font-size:1.2rem; font-weight:900; margin-bottom:12px;">Conversation</div>
-          <div id="messagesList" class="messages">
-            <div class="empty">Select or start a thread.</div>
+      <div class="chat-shell">
+        <aside class="pane">
+          <h2 class="section-title">Start New Chat</h2>
+          <div class="start-chat">
+            <div class="start-row">
+              <input id="targetUsername" type="text" placeholder="Enter username to message" />
+              <button id="startChatBtn" class="start-btn" type="button">Start Chat</button>
+            </div>
           </div>
 
-          <div class="composer">
-            <textarea id="messageInput" placeholder="Write a message..."></textarea>
-            <button id="sendBtn" class="btn-green" type="button">Send Message</button>
+          <h2 class="section-title" style="font-size:1.35rem;">Threads</h2>
+          <div id="threadList" class="thread-list">
+            <div class="empty">No threads yet.</div>
           </div>
-        </div>
+        </aside>
+
+        <section class="pane">
+          <div class="conversation">
+            <div class="conv-head">
+              <strong id="conversationTitle">No thread selected.</strong>
+            </div>
+
+            <div id="messagesList" class="messages">
+              <div class="empty">No messages yet.</div>
+            </div>
+
+            <div class="composer">
+              <textarea id="messageBody" placeholder="Write a message..."></textarea>
+              <button id="sendBtn" class="send-btn" type="button">Send Message</button>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    });
+
+    const statusBox = document.getElementById("statusBox");
+    const viewerEmail = document.getElementById("viewerEmail");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const targetUsername = document.getElementById("targetUsername");
+    const startChatBtn = document.getElementById("startChatBtn");
+    const threadList = document.getElementById("threadList");
+    const conversationTitle = document.getElementById("conversationTitle");
+    const messagesList = document.getElementById("messagesList");
+    const messageBody = document.getElementById("messageBody");
+    const sendBtn = document.getElementById("sendBtn");
+
+    let currentUser = null;
+    let currentProfile = null;
+    let currentThreadId = null;
+    let threadsCache = [];
+    let messageChannel = null;
+
+    function setStatus(message, type = "") {
+      statusBox.textContent = message;
+      statusBox.className = "status";
+      if (type) statusBox.classList.add(type);
+    }
+
+    function formatTime(value) {
+      if (!value) return "";
+      const d = new Date(value);
+      return d.toLocaleString();
+    }
+
+    async function requireSession() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      const user = data?.session?.user;
+      if (!user) {
+        window.location.href = "auth.html";
+        throw new Error("No active session.");
+      }
+      currentUser = user;
+      viewerEmail.textContent = user.email || "Signed in";
+      return user;
+    }
+
+    async function loadMyProfile() {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", currentUser.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      currentProfile = data || null;
+      return data;
+    }
+
+    async function lookupProfileByUsername(username) {
+      const clean = String(username || "").trim().toLowerCase();
+      if (!clean) throw new Error("Enter a username first.");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, email")
+        .ilike("username", clean)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error("Username not found.");
+      return data;
+    }
+
+    async function loadThreads() {
+      const { data: memberships, error: memberError } = await supabase
+        .from("dm_thread_members")
+        .select("thread_id, user_id, created_at")
+        .eq("user_id", currentUser.id);
+
+      if (memberError) throw memberError;
+
+      if (!memberships || !memberships.length) {
+        threadsCache = [];
+        renderThreads();
+        return [];
+      }
+
+      const threadIds = memberships.map(x => x.thread_id);
+
+      const { data: allMembers, error: allMembersError } = await supabase
+        .from("dm_thread_members")
+        .select("thread_id, user_id")
+        .in("thread_id", threadIds);
+
+      if (allMembersError) throw allMembersError;
+
+      const otherUserIds = [...new Set(
+        allMembers
+          .filter(x => x.user_id !== currentUser.id)
+          .map(x => x.user_id)
+      )];
+
+      let profilesById = {};
+      if (otherUserIds.length) {
+        const { data: profiles, error: profileError } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, email")
+          .in("id", otherUserIds);
+
+        if (profileError) throw profileError;
+        profilesById = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      }
+
+      const { data: latestMessages, error: latestError } = await supabase
+        .from("dm_messages")
+        .select("id, thread_id, body, sender_id, created_at")
+        .in("thread_id", threadIds)
+        .order("created_at", { ascending: false });
+
+      if (latestError) throw latestError;
+
+      const lastByThread = {};
+      for (const msg of latestMessages || []) {
+        if (!lastByThread[msg.thread_id]) lastByThread[msg.thread_id] = msg;
+      }
+
+      threadsCache = threadIds.map(threadId => {
+        const others = allMembers.filter(x => x.thread_id === threadId && x.user_id !== currentUser.id);
+        const otherProfiles = others.map(x => profilesById[x.user_id]).filter(Boolean);
+        const lastMessage = lastByThread[threadId] || null;
+
+        return {
+          id: threadId,
+          otherProfiles,
+          lastMessage
+        };
+      }).sort((a, b) => {
+        const at = a.lastMessage?.created_at || "";
+        const bt = b.lastMessage?.created_at || "";
+        return bt.localeCompare(at);
       });
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const refreshBtn = document.getElementById("refreshBtn");
-      const statusBox = document.getElementById("statusBox");
-      const startUsernameInput = document.getElementById("startUsernameInput");
-      const startChatBtn = document.getElementById("startChatBtn");
-      const threadsList = document.getElementById("threadsList");
-      const messagesList = document.getElementById("messagesList");
-      const messageInput = document.getElementById("messageInput");
-      const sendBtn = document.getElementById("sendBtn");
+      renderThreads();
+      return threadsCache;
+    }
 
-      let currentUser = null;
-      let myProfile = null;
-      let memberships = [];
-      let threads = [];
-      let profiles = [];
-      let selectedThreadId = null;
-      let liveChannel = null;
-
-      function setStatus(message) {
-        statusBox.textContent = message;
+    function renderThreads() {
+      if (!threadsCache.length) {
+        threadList.innerHTML = `<div class="empty">No threads yet.</div>`;
+        return;
       }
 
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+      threadList.innerHTML = threadsCache.map(thread => {
+        const names = thread.otherProfiles.length
+          ? thread.otherProfiles.map(p => p.display_name || p.username || p.email || "User").join(", ")
+          : "Conversation";
+
+        const snippet = thread.lastMessage?.body || "No messages yet.";
+        const time = thread.lastMessage?.created_at ? formatTime(thread.lastMessage.created_at) : "";
+
+        return `
+          <button class="thread-item ${currentThreadId === thread.id ? "active" : ""}" data-thread-id="${thread.id}">
+            <div class="thread-title">${escapeHtml(names)}</div>
+            <div class="thread-meta">${escapeHtml(snippet)}</div>
+            <div class="thread-meta">${escapeHtml(time)}</div>
+          </button>
+        `;
+      }).join("");
+
+      threadList.querySelectorAll(".thread-item").forEach(btn => {
+        btn.addEventListener("click", () => openThread(btn.dataset.threadId));
+      });
+    }
+
+    async function openThread(threadId) {
+      currentThreadId = Number(threadId);
+      renderThreads();
+
+      const thread = threadsCache.find(t => Number(t.id) === Number(threadId));
+      const title = thread?.otherProfiles?.length
+        ? thread.otherProfiles.map(p => p.display_name || p.username || p.email || "User").join(", ")
+        : "Conversation";
+
+      conversationTitle.textContent = title;
+      await loadMessages(threadId);
+      subscribeToThread(threadId);
+    }
+
+    async function loadMessages(threadId) {
+      const { data, error } = await supabase
+        .from("dm_messages")
+        .select("id, thread_id, sender_id, body, created_at")
+        .eq("thread_id", threadId)
+        .order("created_at", { ascending: true });
+
+      if (error) throw error;
+
+      if (!data || !data.length) {
+        messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
+        return;
       }
 
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-        if (!currentUser) window.location.href = "auth.html?redirect=messages.html";
-      }
-
-      async function loadMyProfile() {
-        const { data, error } = await supabase
+      const senderIds = [...new Set(data.map(m => m.sender_id))];
+      let senderMap = {};
+      if (senderIds.length) {
+        const { data: profiles, error: profileError } = await supabase
           .from("profiles")
-          .select("*")
-          .eq("id", currentUser.id)
+          .select("id, username, display_name")
+          .in("id", senderIds);
+
+        if (profileError) throw profileError;
+        senderMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+      }
+
+      messagesList.innerHTML = data.map(msg => {
+        const mine = msg.sender_id === currentUser.id;
+        const sender = senderMap[msg.sender_id];
+        const senderName = mine
+          ? "You"
+          : (sender?.display_name || sender?.username || "User");
+
+        return `
+          <div class="msg ${mine ? "me" : "them"}">
+            <div class="msg-meta">${escapeHtml(senderName)} • ${escapeHtml(formatTime(msg.created_at))}</div>
+            <div>${escapeHtml(msg.body)}</div>
+          </div>
+        `;
+      }).join("");
+
+      messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    async function startChat() {
+      try {
+        setStatus("Starting chat...");
+        const username = String(targetUsername.value || "").trim();
+        if (!username) throw new Error("Enter a username first.");
+
+        const target = await lookupProfileByUsername(username);
+        if (!target?.id) throw new Error("Target user not found.");
+        if (target.id === currentUser.id) throw new Error("You cannot message yourself.");
+
+        const myThreadIds = threadsCache.map(t => t.id);
+        if (myThreadIds.length) {
+          const { data: existingMembers, error: existingError } = await supabase
+            .from("dm_thread_members")
+            .select("thread_id, user_id")
+            .in("thread_id", myThreadIds);
+
+          if (existingError) throw existingError;
+
+          const grouped = {};
+          for (const row of existingMembers || []) {
+            if (!grouped[row.thread_id]) grouped[row.thread_id] = [];
+            grouped[row.thread_id].push(row.user_id);
+          }
+
+          const existingThreadId = Object.keys(grouped).find(threadId => {
+            const ids = grouped[threadId];
+            return ids.length === 2 &&
+              ids.includes(currentUser.id) &&
+              ids.includes(target.id);
+          });
+
+          if (existingThreadId) {
+            await loadThreads();
+            await openThread(existingThreadId);
+            setStatus("✅ Existing thread opened.", "ok");
+            return;
+          }
+        }
+
+        const { data: insertedThread, error: threadError } = await supabase
+          .from("dm_threads")
+          .insert([{ created_by: currentUser.id }])
+          .select()
           .single();
 
-        if (error) throw error;
-        myProfile = data;
-      }
-
-      async function loadThreads() {
-        const { data: memberRows, error: memberError } = await supabase
-          .from("dm_thread_members")
-          .select("*")
-          .eq("user_id", currentUser.id)
-          .order("created_at", { ascending: false });
-
-        if (memberError) throw memberError;
-        memberships = memberRows || [];
-
-        if (!memberships.length) {
-          threads = [];
-          profiles = [];
-          renderThreads();
-          messagesList.innerHTML = `<div class="empty">No threads yet.</div>`;
-          return;
-        }
-
-        const threadIds = memberships.map(x => x.thread_id);
-
-        const { data: threadRows, error: threadError } = await supabase
-          .from("dm_threads")
-          .select("*")
-          .in("id", threadIds)
-          .order("created_at", { ascending: false });
-
         if (threadError) throw threadError;
-        threads = threadRows || [];
 
-        const { data: allMembers, error: allMembersError } = await supabase
+        const threadId = insertedThread.id;
+
+        const { error: membersError } = await supabase
           .from("dm_thread_members")
-          .select("*")
-          .in("thread_id", threadIds);
+          .insert([
+            { thread_id: threadId, user_id: currentUser.id },
+            { thread_id: threadId, user_id: target.id }
+          ]);
 
-        if (allMembersError) throw allMembersError;
+        if (membersError) throw membersError;
 
-        const otherUserIds = [...new Set(
-          (allMembers || [])
-            .filter(x => x.user_id !== currentUser.id)
-            .map(x => x.user_id)
-        )];
-
-        if (otherUserIds.length) {
-          const { data: profileRows, error: profileError } = await supabase
-            .from("profiles")
-            .select("*")
-            .in("id", otherUserIds);
-
-          if (profileError) throw profileError;
-          profiles = profileRows || [];
-        } else {
-          profiles = [];
-        }
-
-        renderThreads();
+        await loadThreads();
+        await openThread(threadId);
+        setStatus(`✅ Chat started with ${target.display_name || target.username || target.email}.`, "ok");
+      } catch (error) {
+        console.error("start chat error:", error);
+        setStatus("❌ Start thread error: " + error.message, "error");
       }
+    }
 
-      function getOtherProfileForThread(threadId) {
-        const threadMembers = membershipsByThreadCache[threadId] || [];
-        const otherMember = threadMembers.find(x => x.user_id !== currentUser.id);
-        if (!otherMember) return null;
-        return profiles.find(p => p.id === otherMember.user_id) || null;
-      }
+    async function sendMessage() {
+      try {
+        if (!currentThreadId) throw new Error("Select or start a thread first.");
 
-      let membershipsByThreadCache = {};
-
-      async function buildThreadMemberCache() {
-        if (!memberships.length) {
-          membershipsByThreadCache = {};
-          return;
-        }
-
-        const threadIds = memberships.map(x => x.thread_id);
-        const { data, error } = await supabase
-          .from("dm_thread_members")
-          .select("*")
-          .in("thread_id", threadIds);
-
-        if (error) throw error;
-
-        membershipsByThreadCache = {};
-        for (const row of data || []) {
-          if (!membershipsByThreadCache[row.thread_id]) membershipsByThreadCache[row.thread_id] = [];
-          membershipsByThreadCache[row.thread_id].push(row);
-        }
-      }
-
-      function renderThreads() {
-        if (!threads.length) {
-          threadsList.innerHTML = `<div class="empty">No threads yet.</div>`;
-          return;
-        }
-
-        threadsList.innerHTML = threads.map(thread => {
-          const other = getOtherProfileForThread(thread.id);
-          const label = other?.display_name || other?.username || "Conversation";
-          return `
-            <div class="thread ${Number(selectedThreadId) === Number(thread.id) ? "active" : ""}" data-id="${thread.id}">
-              <div style="font-weight:900;color:#7dff71;">${escapeHtml(label)}</div>
-              <div class="meta">
-                Username: ${escapeHtml(other?.username || "--")}<br>
-                Thread: #${escapeHtml(String(thread.id))}<br>
-                Started: ${escapeHtml(formatDate(thread.created_at))}
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        document.querySelectorAll(".thread").forEach(el => {
-          el.addEventListener("click", async () => {
-            selectedThreadId = Number(el.dataset.id);
-            renderThreads();
-            await loadMessages(selectedThreadId);
-            await markThreadRead(selectedThreadId);
-          });
-        });
-      }
-
-      async function loadMessages(threadId) {
-        const { data, error } = await supabase
-          .from("dm_messages")
-          .select("*")
-          .eq("thread_id", threadId)
-          .order("created_at", { ascending: true });
-
-        if (error) throw error;
-
-        const rows = data || [];
-        if (!rows.length) {
-          messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
-          return;
-        }
-
-        messagesList.innerHTML = rows.map(row => `
-          <div class="message ${row.sender_id === currentUser.id ? "mine" : ""}">
-            <div>${escapeHtml(row.body)}</div>
-            <div class="meta">
-              ${row.sender_id === currentUser.id ? "You" : "Them"} • ${escapeHtml(formatDate(row.created_at))}
-            </div>
-          </div>
-        `).join("");
-
-        messagesList.scrollTop = messagesList.scrollHeight;
-      }
-
-      async function markThreadRead(threadId) {
-        const membership = memberships.find(x => Number(x.thread_id) === Number(threadId) && x.user_id === currentUser.id);
-        if (!membership) return;
+        const body = String(messageBody.value || "").trim();
+        if (!body) throw new Error("Write a message first.");
 
         const { error } = await supabase
-          .from("dm_thread_members")
-          .update({ last_read_at: new Date().toISOString() })
-          .eq("id", membership.id);
+          .from("dm_messages")
+          .insert([{
+            thread_id: currentThreadId,
+            sender_id: currentUser.id,
+            body
+          }]);
 
         if (error) throw error;
+
+        messageBody.value = "";
+        await loadMessages(currentThreadId);
+        await loadThreads();
+        setStatus("✅ Message sent.", "ok");
+      } catch (error) {
+        console.error("send message error:", error);
+        setStatus("❌ Send message error: " + error.message, "error");
       }
-
-      async function startThreadByUsername() {
-        try {
-          const username = startUsernameInput.value.trim().toLowerCase();
-          if (!username) throw new Error("Enter a username first.");
-          if (username === (myProfile.username || "").toLowerCase()) throw new Error("You cannot message yourself.");
-
-          setStatus("Starting thread...");
-
-          const { data: targetProfile, error: targetError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("username", username)
-            .single();
-
-          if (targetError) throw new Error("Username not found.");
-
-          const myThreadIds = memberships.map(x => x.thread_id);
-
-          if (myThreadIds.length) {
-            const { data: allMembers, error: allMembersError } = await supabase
-              .from("dm_thread_members")
-              .select("*")
-              .in("thread_id", myThreadIds);
-
-            if (allMembersError) throw allMembersError;
-
-            const existingThread = myThreadIds.find(threadId => {
-              const rows = (allMembers || []).filter(x => Number(x.thread_id) === Number(threadId));
-              const ids = rows.map(x => x.user_id).sort();
-              return ids.length === 2 && ids.includes(currentUser.id) && ids.includes(targetProfile.id);
-            });
-
-            if (existingThread) {
-              selectedThreadId = Number(existingThread);
-              await buildThreadMemberCache();
-              renderThreads();
-              await loadMessages(selectedThreadId);
-              setStatus("✅ Existing thread opened.");
-              return;
-            }
-          }
-
-          const { data: newThread, error: threadError } = await supabase
-            .from("dm_threads")
-            .insert([{ created_by: currentUser.id }])
-            .select()
-            .single();
-
-          if (threadError) throw threadError;
-
-          const { error: membersError } = await supabase
-            .from("dm_thread_members")
-            .insert([
-              { thread_id: newThread.id, user_id: currentUser.id, last_read_at: new Date().toISOString() },
-              { thread_id: newThread.id, user_id: targetProfile.id }
-            ]);
-
-          if (membersError) throw membersError;
-
-          startUsernameInput.value = "";
-          await loadThreads();
-          await buildThreadMemberCache();
-          selectedThreadId = newThread.id;
-          renderThreads();
-          messagesList.innerHTML = `<div class="empty">Thread started. Send the first message.</div>`;
-          setStatus("✅ New thread created.");
-        } catch (error) {
-          setStatus("❌ Start thread error: " + error.message);
-        }
-      }
-
-      async function sendMessage() {
-        try {
-          if (!selectedThreadId) throw new Error("Select or start a thread first.");
-
-          const body = messageInput.value.trim();
-          if (!body) throw new Error("Write a message first.");
-
-          const { error } = await supabase
-            .from("dm_messages")
-            .insert([{
-              thread_id: selectedThreadId,
-              sender_id: currentUser.id,
-              body
-            }]);
-
-          if (error) throw error;
-
-          messageInput.value = "";
-          await loadMessages(selectedThreadId);
-          await markThreadRead(selectedThreadId);
-          setStatus("✅ Message sent.");
-        } catch (error) {
-          setStatus("❌ Send message error: " + error.message);
-        }
-      }
-
-      function subscribeLive() {
-        if (liveChannel) supabase.removeChannel(liveChannel);
-
-        liveChannel = supabase
-          .channel("dm-live")
-          .on("postgres_changes", { event: "*", schema: "public", table: "dm_threads" }, async () => {
-            await loadThreads();
-            await buildThreadMemberCache();
-            renderThreads();
-          })
-          .on("postgres_changes", { event: "*", schema: "public", table: "dm_thread_members" }, async () => {
-            await loadThreads();
-            await buildThreadMemberCache();
-            renderThreads();
-          })
-          .on("postgres_changes", { event: "*", schema: "public", table: "dm_messages" }, async payload => {
-            if (selectedThreadId && Number(payload.new?.thread_id || payload.old?.thread_id) === Number(selectedThreadId)) {
-              await loadMessages(selectedThreadId);
-            }
-            await loadThreads();
-            await buildThreadMemberCache();
-            renderThreads();
-          })
-          .subscribe();
-      }
-
-      async function refreshInbox() {
-        try {
-          setStatus("Refreshing inbox...");
-          await loadThreads();
-          await buildThreadMemberCache();
-          renderThreads();
-          if (selectedThreadId) await loadMessages(selectedThreadId);
-          setStatus("✅ Inbox refreshed.");
-        } catch (error) {
-          setStatus("❌ Refresh inbox error: " + error.message);
-        }
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("❌ Logout error: " + error.message);
-        }
-      }
-
-      async function loadMessagesPage() {
-        try {
-          setStatus("Loading messages...");
-          await loadSession();
-          await loadMyProfile();
-          await loadThreads();
-          await buildThreadMemberCache();
-          renderThreads();
-
-          const params = new URLSearchParams(window.location.search);
-          const startUsername = params.get("start");
-          if (startUsername) {
-            startUsernameInput.value = startUsername;
-          }
-
-          subscribeLive();
-          setStatus("✅ Messages loaded.");
-        } catch (error) {
-          console.error("messages load error:", error);
-          setStatus("❌ Messages load error: " + error.message);
-          threadsList.innerHTML = `<div class="empty">${escapeHtml(error.message || "Could not load messages.")}</div>`;
-        }
-      }
-
-      refreshBtn.addEventListener("click", refreshInbox);
-      startChatBtn.addEventListener("click", startThreadByUsername);
-      sendBtn.addEventListener("click", sendMessage);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadMessagesPage();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Messages Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
     }
+
+    function subscribeToThread(threadId) {
+      if (messageChannel) {
+        supabase.removeChannel(messageChannel);
+        messageChannel = null;
+      }
+
+      messageChannel = supabase
+        .channel(`dm-thread-${threadId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "dm_messages",
+            filter: `thread_id=eq.${threadId}`
+          },
+          async () => {
+            await loadMessages(threadId);
+            await loadThreads();
+          }
+        )
+        .subscribe();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function init() {
+      try {
+        await requireSession();
+        await loadMyProfile();
+        await loadThreads();
+        setStatus("✅ Messages loaded.", "ok");
+      } catch (error) {
+        console.error("messages init error:", error);
+        setStatus("❌ Messages load error: " + error.message, "error");
+      }
+    }
+
+    refreshBtn.addEventListener("click", async () => {
+      try {
+        await loadThreads();
+        if (currentThreadId) await loadMessages(currentThreadId);
+        setStatus("✅ Inbox refreshed.", "ok");
+      } catch (error) {
+        setStatus("❌ Refresh error: " + error.message, "error");
+      }
+    });
+
+    startChatBtn.addEventListener("click", startChat);
+    sendBtn.addEventListener("click", sendMessage);
+
+    targetUsername.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        startChat();
+      }
+    });
+
+    messageBody.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      try {
+        const { error } = await supabase.auth.signOut();
+        if (error) throw error;
+        window.location.href = "auth.html";
+      } catch (error) {
+        setStatus("❌ Logout error: " + error.message, "error");
+      }
+    });
+
+    init();
   </script>
 </body>
 </html>
