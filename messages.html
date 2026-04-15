@@ -7,145 +7,82 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-    :root{
-      --green:#8df56d;
-      --green2:#c7ffb0;
-      --blue:#7fb7ff;
-      --gold:#f2d976;
-      --danger:#ff5b5b;
-      --text:#f5f7f8;
-      --muted:#c9d1d5;
-      --bg:rgba(0,0,0,.62);
-      --card:rgba(0,0,0,.30);
-      --soft:rgba(255,255,255,.08);
-      --border:rgba(141,245,109,.16);
-      --shadow:0 24px 60px rgba(0,0,0,.35);
-    }
-
     body{
       margin:0;
       min-height:100vh;
       font-family:Arial,sans-serif;
-      color:var(--text);
+      color:#fff;
       background:
         linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.92)),
         url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
     }
-
-    .page{
-      max-width:1500px;
-      margin:0 auto;
-      padding:18px;
-    }
-
+    .page{ max-width:1400px; margin:0 auto; padding:18px; }
     .shell{
-      background:var(--bg);
-      border:1px solid var(--border);
+      background:rgba(0,0,0,.62);
+      border:1px solid rgba(141,245,109,.16);
       border-radius:28px;
-      backdrop-filter:blur(12px);
-      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
       padding:20px;
     }
-
     .topbar{
       display:flex;
-      flex-wrap:wrap;
-      align-items:center;
       justify-content:space-between;
-      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:12px;
       margin-bottom:18px;
     }
-
     .brand{
       display:flex;
-      align-items:center;
       gap:12px;
-      color:var(--green);
+      align-items:center;
+      color:#8df56d;
       font-size:1.8rem;
       font-weight:900;
     }
-
     .brand img{
-      width:56px;
-      height:56px;
-      object-fit:cover;
-      border-radius:16px;
+      width:56px; height:56px; border-radius:16px; object-fit:cover;
       border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.3);
     }
-
-    .nav{
-      display:flex;
-      flex-wrap:wrap;
-      gap:10px;
-      align-items:center;
+    .nav{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .pill,.chip,.btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      border-radius:14px; font-weight:900; text-decoration:none;
     }
-
-    .email-pill,
-    .chip,
-    .btn{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      text-decoration:none;
-      border-radius:14px;
-      font-weight:900;
-    }
-
-    .email-pill{
+    .pill,.chip{
       padding:12px 14px;
-      background:var(--soft);
+      background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.10);
       color:#fff;
     }
-
-    .chip{
-      padding:12px 14px;
-      background:var(--soft);
-      border:1px solid rgba(255,255,255,.10);
-      color:#fff;
-      cursor:pointer;
-    }
-
+    .chip{ cursor:pointer; }
     .btn{
+      padding:13px 18px;
       border:none;
       cursor:pointer;
-      padding:13px 18px;
       font-size:14px;
     }
-
-    .btn-green{ background:var(--green); color:#000; }
-    .btn-dark{ background:var(--soft); border:1px solid rgba(255,255,255,.10); color:#fff; }
-
+    .btn-green{ background:#8df56d; color:#000; }
+    .btn-dark{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+    }
     .hero{
-      border:1px solid var(--border);
+      border:1px solid rgba(141,245,109,.16);
       border-radius:24px;
       background:rgba(0,0,0,.24);
       padding:22px;
       margin-bottom:18px;
     }
-
     .hero h1{
       margin:0 0 8px;
-      line-height:.94;
       font-size:3rem;
-      color:var(--green);
+      line-height:.95;
+      color:#8df56d;
     }
-
-    .hero p{
-      margin:0;
-      line-height:1.7;
-      color:var(--text);
-      font-size:1.03rem;
-    }
-
-    .hero-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:16px;
-    }
-
+    .hero p{ margin:0; line-height:1.7; }
+    .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; }
     .status{
       margin:14px 0 18px;
       padding:14px 16px;
@@ -155,46 +92,35 @@
       white-space:pre-wrap;
       line-height:1.6;
     }
-
-    .status.ok{ border-color:rgba(141,245,109,.24); color:#eaffdc; }
-    .status.error{ border-color:rgba(255,91,91,.28); color:#ffe1e1; }
-    .status.loading{ border-color:rgba(127,183,255,.24); color:#dfeeff; }
+    .ok{ color:#eaffdc; border-color:rgba(141,245,109,.24); }
+    .error{ color:#ffe1e1; border-color:rgba(255,91,91,.28); }
+    .loading{ color:#dfeeff; border-color:rgba(127,183,255,.24); }
 
     .chat-grid{
       display:grid;
-      grid-template-columns:390px 1fr;
+      grid-template-columns:380px 1fr;
       gap:18px;
     }
-
     .pane{
-      background:var(--card);
-      border:1px solid var(--border);
+      background:rgba(0,0,0,.30);
+      border:1px solid rgba(141,245,109,.16);
       border-radius:24px;
       padding:16px;
       min-height:560px;
     }
-
     .section-title{
       margin:0 0 12px;
-      color:var(--green);
+      color:#8df56d;
       font-size:1.5rem;
       font-weight:900;
     }
-
-    .search-wrap{
-      position:relative;
-      display:grid;
-      gap:12px;
-      margin-bottom:14px;
-    }
-
     .search-row{
       display:grid;
       grid-template-columns:1fr 180px;
       gap:12px;
+      margin-bottom:16px;
     }
-
-    input, textarea{
+    input,textarea{
       width:100%;
       font-family:inherit;
       color:#fff;
@@ -203,65 +129,20 @@
       border-radius:16px;
       outline:none;
     }
-
-    input{
-      min-height:54px;
-      padding:14px 16px;
-      font-size:16px;
-    }
-
-    textarea{
-      min-height:110px;
-      padding:16px;
-      font-size:16px;
-      resize:vertical;
-    }
-
+    input{ min-height:54px; padding:14px 16px; font-size:16px; }
+    textarea{ min-height:110px; padding:16px; font-size:16px; resize:vertical; }
     .start-btn{
       min-height:54px;
       width:100%;
       border:none;
       border-radius:16px;
-      background:var(--blue);
+      background:#7fb7ff;
       color:#000;
       font-size:16px;
       font-weight:900;
       cursor:pointer;
     }
-
-    .suggestions{
-      display:none;
-      position:absolute;
-      left:0;
-      right:192px;
-      top:58px;
-      background:rgba(8,8,8,.96);
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      overflow:hidden;
-      z-index:25;
-      box-shadow:var(--shadow);
-    }
-
-    .suggestion-item{
-      width:100%;
-      border:none;
-      background:transparent;
-      color:#fff;
-      text-align:left;
-      padding:12px 14px;
-      cursor:pointer;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-
-    .suggestion-item:last-child{ border-bottom:none; }
-    .suggestion-item strong{ color:var(--green); }
-
-    .thread-list{
-      display:grid;
-      gap:10px;
-    }
-
+    .thread-list{ display:grid; gap:10px; }
     .thread-item{
       width:100%;
       text-align:left;
@@ -272,16 +153,13 @@
       padding:14px;
       cursor:pointer;
     }
-
     .thread-item.active{
       background:rgba(141,245,109,.12);
       border-color:rgba(141,245,109,.28);
     }
-
     .thread-title{ font-weight:900; margin-bottom:4px; }
-    .thread-preview{ color:var(--muted); font-size:.92rem; line-height:1.4; }
+    .thread-preview{ color:#c9d1d5; font-size:.92rem; }
     .thread-time{ margin-top:5px; color:#bcc6cb; font-size:.8rem; }
-
     .empty{
       background:rgba(255,255,255,.03);
       border:1px dashed rgba(255,255,255,.10);
@@ -289,32 +167,20 @@
       border-radius:16px;
       padding:16px;
     }
-
     .conversation{
       display:grid;
       grid-template-rows:auto 1fr auto;
       gap:14px;
       min-height:520px;
     }
-
     .conv-head{
       background:rgba(255,255,255,.05);
       border:1px solid rgba(255,255,255,.08);
       border-radius:16px;
       padding:14px 16px;
     }
-
-    .conv-head strong{
-      color:var(--green);
-      font-size:1.08rem;
-    }
-
-    .conv-sub{
-      color:var(--muted);
-      margin-top:4px;
-      font-size:.92rem;
-    }
-
+    .conv-head strong{ color:#8df56d; font-size:1.08rem; }
+    .conv-sub{ color:#c9d1d5; margin-top:4px; font-size:.92rem; }
     .messages{
       background:rgba(0,0,0,.22);
       border:1px solid rgba(255,255,255,.08);
@@ -327,7 +193,6 @@
       min-height:300px;
       max-height:520px;
     }
-
     .msg{
       max-width:80%;
       padding:12px 14px;
@@ -335,35 +200,27 @@
       line-height:1.5;
       word-break:break-word;
     }
-
     .msg.me{
       justify-self:end;
       background:rgba(141,245,109,.16);
       border:1px solid rgba(141,245,109,.22);
     }
-
     .msg.them{
       justify-self:start;
       background:rgba(255,255,255,.08);
       border:1px solid rgba(255,255,255,.10);
     }
-
     .msg-meta{
       font-size:.78rem;
       margin-bottom:6px;
       color:#d3dadd;
     }
-
-    .composer{
-      display:grid;
-      gap:12px;
-    }
-
+    .composer{ display:grid; gap:12px; }
     .send-btn{
       min-height:52px;
       border:none;
       border-radius:16px;
-      background:var(--green);
+      background:#8df56d;
       color:#000;
       font-size:15px;
       font-weight:900;
@@ -374,7 +231,6 @@
       .hero h1{ font-size:2.2rem; }
       .chat-grid{ grid-template-columns:1fr; }
       .search-row{ grid-template-columns:1fr; }
-      .suggestions{ right:0; top:58px; }
     }
   </style>
 </head>
@@ -386,9 +242,8 @@
           <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
           <span>Messages</span>
         </div>
-
         <div class="nav">
-          <div id="viewerEmail" class="email-pill">Loading...</div>
+          <div id="viewerEmail" class="pill">Loading...</div>
           <a class="chip" href="index.html">Home</a>
           <a class="chip" href="notifications.html">Notifications</a>
           <a class="chip" href="profile.html">Profile</a>
@@ -411,13 +266,9 @@
       <div class="chat-grid">
         <aside class="pane">
           <h2 class="section-title">Start New Chat</h2>
-
-          <div class="search-wrap">
-            <div class="search-row">
-              <input id="targetUsername" type="text" placeholder="Enter username" autocomplete="off" />
-              <button id="startChatBtn" class="start-btn" type="button">Start Chat</button>
-            </div>
-            <div id="suggestions" class="suggestions"></div>
+          <div class="search-row">
+            <input id="targetUsername" type="text" placeholder="Enter exact username" />
+            <button id="startChatBtn" class="start-btn" type="button">Start Chat</button>
           </div>
 
           <h2 class="section-title" style="font-size:1.35rem;">Threads</h2>
@@ -465,7 +316,6 @@
     const statusBox = document.getElementById("statusBox");
     const targetUsername = document.getElementById("targetUsername");
     const startChatBtn = document.getElementById("startChatBtn");
-    const suggestions = document.getElementById("suggestions");
     const threadList = document.getElementById("threadList");
     const conversationTitle = document.getElementById("conversationTitle");
     const conversationSub = document.getElementById("conversationSub");
@@ -476,7 +326,6 @@
     let currentUser = null;
     let currentThreadId = null;
     let threadsCache = [];
-    let suggestionCache = [];
     let realtimeChannel = null;
 
     function setStatus(message, type = "loading") {
@@ -512,51 +361,19 @@
       return user;
     }
 
-    async function searchProfiles(term) {
-      const clean = String(term || "").trim().toLowerCase();
-      if (!clean) return [];
+    async function lookupProfileByUsername(username) {
+      const clean = String(username || "").trim().toLowerCase();
+      if (!clean) throw new Error("Enter a username first.");
 
       const { data, error } = await supabase
         .from("profiles")
         .select("id, username, display_name, email")
-        .or(`username.ilike.%${clean}%,display_name.ilike.%${clean}%`)
-        .neq("id", currentUser.id)
-        .limit(6);
+        .eq("username", clean)
+        .maybeSingle();
 
       if (error) throw error;
-      return data || [];
-    }
-
-    async function lookupProfileByUsername(term) {
-      const matches = await searchProfiles(term);
-      if (!matches.length) throw new Error("User not found.");
-      return matches[0];
-    }
-
-    function renderSuggestions(list) {
-      suggestionCache = list || [];
-      if (!suggestionCache.length) {
-        suggestions.style.display = "none";
-        suggestions.innerHTML = "";
-        return;
-      }
-
-      suggestions.innerHTML = suggestionCache.map((item, index) => `
-        <button class="suggestion-item" data-index="${index}" type="button">
-          <strong>${escapeHtml(item.display_name || item.username || "User")}</strong><br />
-          <span>@${escapeHtml(item.username || "")}</span>
-        </button>
-      `).join("");
-
-      suggestions.style.display = "block";
-
-      suggestions.querySelectorAll(".suggestion-item").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const picked = suggestionCache[Number(btn.dataset.index)];
-          targetUsername.value = picked.username || "";
-          suggestions.style.display = "none";
-        });
-      });
+      if (!data) throw new Error("User not found. Use the exact username.");
+      return data;
     }
 
     async function loadThreads() {
@@ -704,7 +521,7 @@
         const senderName = mine ? "You" : (sender?.display_name || sender?.username || "User");
 
         return `
-          <div class="msg ${mine ? "me" : "them"}" data-message-id="${msg.id}">
+          <div class="msg ${mine ? "me" : "them"}">
             <div class="msg-meta">${escapeHtml(senderName)} • ${escapeHtml(formatDate(msg.created_at))}</div>
             <div>${escapeHtml(msg.body)}</div>
           </div>
@@ -773,8 +590,6 @@
         if (memberError) throw memberError;
 
         targetUsername.value = "";
-        renderSuggestions([]);
-
         await loadThreads();
         await openThread(threadId);
         setStatus(`✅ Chat started with ${target.display_name || target.username || target.email}.`, "ok");
@@ -842,28 +657,6 @@
       }
     }
 
-    let searchTimer = null;
-
-    targetUsername.addEventListener("input", () => {
-      clearTimeout(searchTimer);
-      const value = targetUsername.value.trim();
-
-      if (!value) {
-        renderSuggestions([]);
-        return;
-      }
-
-      searchTimer = setTimeout(async () => {
-        try {
-          const results = await searchProfiles(value);
-          renderSuggestions(results);
-        } catch (error) {
-          console.error("search error:", error);
-          renderSuggestions([]);
-        }
-      }, 220);
-    });
-
     targetUsername.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -899,12 +692,6 @@
         window.location.href = "auth.html";
       } catch (error) {
         setStatus("❌ Logout error: " + error.message, "error");
-      }
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!suggestions.contains(e.target) && e.target !== targetUsername) {
-        suggestions.style.display = "none";
       }
     });
 
