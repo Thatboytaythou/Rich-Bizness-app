@@ -680,25 +680,32 @@
 
       async function getUsernameFromUrlOrSession() {
         const params = new URLSearchParams(window.location.search);
-        let username = params.get("u");
-        if (username) return username;
+        const urlUsername = params.get("u");
 
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (urlUsername && urlUsername.trim()) {
+          return urlUsername.trim();
+        }
+
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
         if (sessionError) throw sessionError;
 
-        const user = session?.user;
-        if (!user) throw new Error("Missing username in URL and no active session.");
+        const user = sessionData?.session?.user;
+        if (!user) {
+          throw new Error("Missing username in URL and no active session.");
+        }
 
-        const { data, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("username")
           .eq("id", user.id)
           .single();
 
-        if (error) throw error;
-        if (!data?.username) throw new Error("No username found for logged in user.");
+        if (profileError) throw profileError;
+        if (!profile?.username) {
+          throw new Error("No username found for logged in user.");
+        }
 
-        return data.username;
+        return profile.username;
       }
 
       async function loadSession() {
