@@ -7,230 +7,491 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
+
+    :root{
+      --bg:#061109;
+      --panel:rgba(0,0,0,.63);
+      --panel2:rgba(8,14,10,.82);
+      --stroke:rgba(141,245,109,.18);
+      --soft:#b9c7b9;
+      --text:#ffffff;
+      --green:#8df56d;
+      --green2:#57d64d;
+      --blue:#7db4ff;
+      --yellow:#f3d25c;
+      --danger:#ff6b6b;
+      --shadow:0 20px 50px rgba(0,0,0,.35);
+    }
+
     body{
       margin:0;
       min-height:100vh;
-      font-family:Arial,sans-serif;
-      color:#fff;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.92)),
+        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.86)),
         url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
     }
-    .page{ max-width:1400px; margin:0 auto; padding:18px; }
+
+    .page{
+      width:min(1420px, 100%);
+      margin:0 auto;
+      padding:18px;
+    }
+
     .shell{
-      background:rgba(0,0,0,.62);
-      border:1px solid rgba(141,245,109,.16);
+      background:rgba(0,0,0,.48);
+      border:1px solid rgba(141,245,109,.12);
       border-radius:28px;
       backdrop-filter:blur(10px);
-      padding:20px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
+
     .topbar{
       display:flex;
       justify-content:space-between;
       align-items:center;
+      gap:14px;
+      padding:18px 20px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
       flex-wrap:wrap;
-      gap:12px;
-      margin-bottom:18px;
     }
+
     .brand{
       display:flex;
-      gap:12px;
       align-items:center;
-      color:#8df56d;
-      font-size:1.8rem;
-      font-weight:900;
+      gap:12px;
+      min-width:0;
     }
+
     .brand img{
-      width:56px; height:56px; border-radius:16px; object-fit:cover;
-      border:1px solid rgba(255,255,255,.10);
+      width:58px;
+      height:58px;
+      border-radius:50%;
+      object-fit:cover;
+      border:2px solid rgba(141,245,109,.25);
+      box-shadow:0 0 22px rgba(141,245,109,.15);
+      background:#09110a;
     }
-    .nav{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
-    .pill,.chip,.btn{
-      display:inline-flex; align-items:center; justify-content:center;
-      border-radius:14px; font-weight:900; text-decoration:none;
+
+    .brand h1{
+      margin:0;
+      font-size:2rem;
+      line-height:1;
+      color:var(--green);
+      text-shadow:0 0 18px rgba(141,245,109,.14);
     }
-    .pill,.chip{
-      padding:12px 14px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
+
+    .brand p{
+      margin:.25rem 0 0;
+      color:#d9e4d9;
+      opacity:.9;
+      font-size:.98rem;
+    }
+
+    .chipbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:44px;
+      padding:0 16px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05);
       color:#fff;
-    }
-    .chip{ cursor:pointer; }
-    .btn{
-      padding:13px 18px;
-      border:none;
+      text-decoration:none;
+      font-weight:800;
       cursor:pointer;
-      font-size:14px;
+      transition:.18s ease;
+      white-space:nowrap;
     }
-    .btn-green{ background:#8df56d; color:#000; }
-    .btn-dark{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      color:#fff;
+
+    .chip:hover{
+      transform:translateY(-1px);
+      border-color:rgba(141,245,109,.28);
+      box-shadow:0 10px 26px rgba(0,0,0,.2);
     }
+
+    .chip-green{
+      background:linear-gradient(180deg, var(--green), #74ea5c);
+      color:#071107;
+      border:none;
+    }
+
+    .chip-dark{
+      background:rgba(255,255,255,.05);
+    }
+
     .hero{
-      border:1px solid rgba(141,245,109,.16);
-      border-radius:24px;
-      background:rgba(0,0,0,.24);
+      margin:16px;
       padding:22px;
-      margin-bottom:18px;
+      border-radius:26px;
+      border:1px solid var(--stroke);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)),
+        rgba(0,0,0,.34);
     }
-    .hero h1{
-      margin:0 0 8px;
-      font-size:3rem;
+
+    .hero h2{
+      margin:0 0 10px;
+      font-size:clamp(2rem, 4vw, 4rem);
       line-height:.95;
-      color:#8df56d;
+      color:var(--green);
+      text-shadow:0 0 28px rgba(141,245,109,.16);
     }
-    .hero p{ margin:0; line-height:1.7; }
-    .hero-actions{ display:flex; flex-wrap:wrap; gap:12px; margin-top:16px; }
+
+    .hero p{
+      margin:0;
+      font-size:1.08rem;
+      color:#e6eee6;
+      opacity:.96;
+      max-width:900px;
+    }
+
+    .actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin:16px;
+      margin-top:0;
+      padding:0 0 4px;
+    }
+
     .status{
-      margin:14px 0 18px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(0,0,0,.34);
-      border:1px solid rgba(255,255,255,.10);
-      white-space:pre-wrap;
-      line-height:1.6;
+      margin:0 16px 16px;
+      padding:16px 18px;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(4,8,6,.84);
+      font-size:1.06rem;
+      min-height:58px;
+      display:flex;
+      align-items:center;
     }
-    .ok{ color:#eaffdc; border-color:rgba(141,245,109,.24); }
-    .error{ color:#ffe1e1; border-color:rgba(255,91,91,.28); }
-    .loading{ color:#dfeeff; border-color:rgba(127,183,255,.24); }
+
+    .status.loading{ color:#fff; }
+    .status.good{ color:#dbffd1; border-color:rgba(141,245,109,.3); }
+    .status.bad{ color:#ffd3d3; border-color:rgba(255,107,107,.3); }
 
     .chat-grid{
       display:grid;
-      grid-template-columns:380px 1fr;
+      grid-template-columns:400px minmax(0, 1fr);
       gap:18px;
+      padding:0 16px 18px;
     }
+
     .pane{
-      background:rgba(0,0,0,.30);
-      border:1px solid rgba(141,245,109,.16);
-      border-radius:24px;
-      padding:16px;
-      min-height:560px;
+      background:var(--panel2);
+      border:1px solid var(--stroke);
+      border-radius:26px;
+      padding:18px;
+      min-height:620px;
+      box-shadow:var(--shadow);
     }
+
     .section-title{
-      margin:0 0 12px;
-      color:#8df56d;
-      font-size:1.5rem;
-      font-weight:900;
+      margin:0 0 14px;
+      font-size:1.9rem;
+      color:var(--green);
+      text-shadow:0 0 18px rgba(141,245,109,.14);
     }
+
     .search-row{
       display:grid;
-      grid-template-columns:1fr 180px;
+      grid-template-columns:minmax(0,1fr) 180px;
       gap:12px;
-      margin-bottom:16px;
+      margin-bottom:18px;
     }
-    input,textarea{
+
+    input, textarea, select{
       width:100%;
-      font-family:inherit;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#030604;
       color:#fff;
-      border:1px solid #2b2b2b;
-      background:rgba(0,0,0,.72);
-      border-radius:16px;
+      padding:16px 16px;
+      font-size:1.06rem;
       outline:none;
+      transition:.16s ease;
     }
-    input{ min-height:54px; padding:14px 16px; font-size:16px; }
-    textarea{ min-height:110px; padding:16px; font-size:16px; resize:vertical; }
-    .start-btn{
-      min-height:54px;
-      width:100%;
+
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(141,245,109,.45);
+      box-shadow:0 0 0 3px rgba(141,245,109,.12);
+    }
+
+    textarea{
+      min-height:98px;
+      resize:vertical;
+      font-family:inherit;
+    }
+
+    .start-btn,
+    .send-btn{
       border:none;
-      border-radius:16px;
-      background:#7fb7ff;
-      color:#000;
-      font-size:16px;
+      border-radius:18px;
       font-weight:900;
+      font-size:1.06rem;
       cursor:pointer;
+      transition:.16s ease;
     }
-    .thread-list{ display:grid; gap:10px; }
-    .thread-item{
-      width:100%;
-      text-align:left;
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
-      border-radius:16px;
-      padding:14px;
-      cursor:pointer;
+
+    .start-btn{
+      background:var(--blue);
+      color:#08111f;
+      min-height:58px;
     }
-    .thread-item.active{
-      background:rgba(141,245,109,.12);
-      border-color:rgba(141,245,109,.28);
+
+    .send-btn{
+      background:linear-gradient(180deg, var(--green), #75e95d);
+      color:#071107;
+      min-height:58px;
     }
-    .thread-title{ font-weight:900; margin-bottom:4px; }
-    .thread-preview{ color:#c9d1d5; font-size:.92rem; }
-    .thread-time{ margin-top:5px; color:#bcc6cb; font-size:.8rem; }
-    .empty{
-      background:rgba(255,255,255,.03);
-      border:1px dashed rgba(255,255,255,.10);
-      color:#d6dde0;
-      border-radius:16px;
-      padding:16px;
+
+    .start-btn:hover,
+    .send-btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.02);
     }
-    .conversation{
-      display:grid;
-      grid-template-rows:auto 1fr auto;
-      gap:14px;
-      min-height:520px;
-    }
-    .conv-head{
-      background:rgba(255,255,255,.05);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:16px;
-      padding:14px 16px;
-    }
-    .conv-head strong{ color:#8df56d; font-size:1.08rem; }
-    .conv-sub{ color:#c9d1d5; margin-top:4px; font-size:.92rem; }
-    .messages{
-      background:rgba(0,0,0,.22);
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
-      padding:14px;
-      display:grid;
-      gap:12px;
-      align-content:start;
-      overflow:auto;
-      min-height:300px;
+
+    .thread-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
       max-height:520px;
+      overflow:auto;
+      padding-right:4px;
     }
-    .msg{
-      max-width:80%;
-      padding:12px 14px;
+
+    .thread-card{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
       border-radius:18px;
-      line-height:1.5;
+      padding:14px;
+      cursor:pointer;
+      transition:.16s ease;
+    }
+
+    .thread-card:hover{
+      border-color:rgba(141,245,109,.24);
+      transform:translateY(-1px);
+    }
+
+    .thread-card.active{
+      border-color:rgba(141,245,109,.4);
+      background:rgba(141,245,109,.08);
+      box-shadow:0 0 0 2px rgba(141,245,109,.08) inset;
+    }
+
+    .thread-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:6px;
+    }
+
+    .thread-name{
+      font-size:1.03rem;
+      font-weight:900;
+      color:#fff;
       word-break:break-word;
     }
-    .msg.me{
-      justify-self:end;
-      background:rgba(141,245,109,.16);
-      border:1px solid rgba(141,245,109,.22);
+
+    .thread-time{
+      color:#c7d0c7;
+      opacity:.82;
+      font-size:.86rem;
+      white-space:nowrap;
     }
-    .msg.them{
-      justify-self:start;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
+
+    .thread-preview{
+      color:#cfdbcf;
+      opacity:.92;
+      font-size:.96rem;
+      word-break:break-word;
     }
-    .msg-meta{
-      font-size:.78rem;
-      margin-bottom:6px;
-      color:#d3dadd;
+
+    .conv-head{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      border:1px solid rgba(141,245,109,.15);
+      border-radius:20px;
+      padding:14px 16px;
+      background:rgba(255,255,255,.03);
+      margin-bottom:14px;
+      flex-wrap:wrap;
     }
-    .composer{ display:grid; gap:12px; }
-    .send-btn{
-      min-height:52px;
+
+    .conv-head strong{
+      display:block;
+      font-size:1.35rem;
+      color:var(--green);
+      margin-bottom:4px;
+    }
+
+    .conv-sub{
+      color:#d7e3d7;
+      opacity:.94;
+    }
+
+    .messages{
+      height:430px;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      background:rgba(0,0,0,.25);
+      padding:16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .message-row{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      max-width:78%;
+    }
+
+    .message-row.mine{
+      align-self:flex-end;
+      align-items:flex-end;
+    }
+
+    .message-row.other{
+      align-self:flex-start;
+      align-items:flex-start;
+    }
+
+    .message-meta{
+      font-size:.85rem;
+      color:#d1d9d1;
+      opacity:.78;
+      padding:0 4px;
+    }
+
+    .bubble{
+      border-radius:20px;
+      padding:14px 16px;
+      line-height:1.45;
+      font-size:1rem;
+      word-break:break-word;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+
+    .mine .bubble{
+      background:linear-gradient(180deg, rgba(141,245,109,.95), rgba(116,234,92,.9));
+      color:#071107;
       border:none;
-      border-radius:16px;
-      background:#8df56d;
-      color:#000;
-      font-size:15px;
-      font-weight:900;
+    }
+
+    .other .bubble{
+      background:rgba(255,255,255,.06);
+      color:#fff;
+    }
+
+    .reactions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      padding:0 2px;
+    }
+
+    .reaction-pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      min-height:34px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.05);
+      font-size:.96rem;
       cursor:pointer;
     }
 
-    @media (max-width: 980px){
-      .hero h1{ font-size:2.2rem; }
-      .chat-grid{ grid-template-columns:1fr; }
-      .search-row{ grid-template-columns:1fr; }
+    .reaction-add{
+      min-height:34px;
+      padding:0 10px;
+      border-radius:999px;
+      border:1px dashed rgba(141,245,109,.34);
+      background:rgba(141,245,109,.08);
+      color:#dff8d7;
+      cursor:pointer;
+      font-weight:800;
+    }
+
+    .composer{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .empty{
+      border:1px dashed rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:20px;
+      color:#d2dcd2;
+      opacity:.9;
+      text-align:center;
+      background:rgba(255,255,255,.02);
+    }
+
+    .helper{
+      font-size:.94rem;
+      color:#cfe7cf;
+      opacity:.9;
+      margin-top:-6px;
+      margin-bottom:10px;
+    }
+
+    @media (max-width: 1080px){
+      .chat-grid{
+        grid-template-columns:1fr;
+      }
+
+      .pane{
+        min-height:auto;
+      }
+
+      .messages{
+        height:420px;
+      }
+    }
+
+    @media (max-width: 700px){
+      .page{ padding:10px; }
+      .hero{ margin:10px; }
+      .actions{ margin:10px; margin-top:0; }
+      .status{ margin:0 10px 10px; }
+      .chat-grid{ padding:0 10px 10px; gap:12px; }
+
+      .search-row{
+        grid-template-columns:1fr;
+      }
+
+      .message-row{
+        max-width:94%;
+      }
+
+      .brand h1{ font-size:1.6rem; }
+      .section-title{ font-size:1.6rem; }
+      .hero h2{ font-size:2.25rem; }
     }
   </style>
 </head>
@@ -239,26 +500,34 @@
     <div class="shell">
       <div class="topbar">
         <div class="brand">
-          <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-          <span>Messages</span>
+          <img src="rich-bizness-profile.jpg" alt="Rich Bizness" onerror="this.src='images/rich-bizness-profile.jpg';this.onerror=null;">
+          <div>
+            <h1>Messages</h1>
+            <p>Direct creator-to-fan DM hub</p>
+          </div>
         </div>
-        <div class="nav">
-          <div id="viewerEmail" class="pill">Loading...</div>
-          <a class="chip" href="index.html">Home</a>
-          <a class="chip" href="notifications.html">Notifications</a>
-          <a class="chip" href="profile.html">Profile</a>
-          <button id="logoutBtn" class="chip" type="button">Log Out</button>
+
+        <div class="chipbar">
+          <div id="userChip" class="chip chip-dark">Loading...</div>
+          <a class="chip chip-dark" href="index.html">Home</a>
+          <a class="chip chip-dark" href="notifications.html">Notifications</a>
+          <a class="chip chip-dark" href="profile.html">Profile</a>
+          <button id="logoutBtn" class="chip chip-dark" type="button">Log Out</button>
         </div>
       </div>
 
-      <div class="hero">
-        <h1>Message creators, fans, and collaborators from one real Rich Bizness inbox.</h1>
-        <p>This is a real DM hub with threads, unread tracking, live updates, and username-based conversation starts.</p>
-        <div class="hero-actions">
-          <button id="refreshBtn" class="btn btn-green" type="button">Refresh Inbox</button>
-          <a class="btn btn-dark" href="notifications.html">Notifications</a>
-          <a class="btn btn-dark" href="profile.html">Profile</a>
-        </div>
+      <section class="hero">
+        <h2>Message creators, fans, and collaborators from one real Rich Bizness inbox.</h2>
+        <p>
+          This is a real DM hub with threads, unread tracking, live updates, emoji reactions,
+          and username-based conversation starts.
+        </p>
+      </section>
+
+      <div class="actions">
+        <button id="refreshBtn" class="chip chip-green" type="button">Refresh Inbox</button>
+        <a class="chip chip-dark" href="notifications.html">Notifications</a>
+        <a class="chip chip-dark" href="profile.html">Profile</a>
       </div>
 
       <div id="statusBox" class="status loading">Loading messages...</div>
@@ -266,8 +535,11 @@
       <div class="chat-grid">
         <aside class="pane">
           <h2 class="section-title">Start New Chat</h2>
+
+          <div class="helper">Type the other user's username exactly as it appears in profiles.</div>
+
           <div class="search-row">
-            <input id="targetUsername" type="text" placeholder="Enter exact username" />
+            <input id="targetUsername" type="text" placeholder="Enter username" />
             <button id="startChatBtn" class="start-btn" type="button">Start Chat</button>
           </div>
 
@@ -280,8 +552,10 @@
         <section class="pane">
           <div class="conversation">
             <div class="conv-head">
-              <strong id="conversationTitle">No thread selected.</strong>
-              <div id="conversationSub" class="conv-sub">Pick or start a conversation.</div>
+              <div>
+                <strong id="conversationTitle">No thread selected.</strong>
+                <div id="conversationSub" class="conv-sub">Pick or start a conversation.</div>
+              </div>
             </div>
 
             <div id="messagesList" class="messages">
@@ -310,12 +584,14 @@
       }
     });
 
-    const viewerEmail = document.getElementById("viewerEmail");
+    const statusBox = document.getElementById("statusBox");
+    const userChip = document.getElementById("userChip");
     const logoutBtn = document.getElementById("logoutBtn");
     const refreshBtn = document.getElementById("refreshBtn");
-    const statusBox = document.getElementById("statusBox");
+
     const targetUsername = document.getElementById("targetUsername");
     const startChatBtn = document.getElementById("startChatBtn");
+
     const threadList = document.getElementById("threadList");
     const conversationTitle = document.getElementById("conversationTitle");
     const conversationSub = document.getElementById("conversationSub");
@@ -323,15 +599,18 @@
     const messageBody = document.getElementById("messageBody");
     const sendBtn = document.getElementById("sendBtn");
 
+    const QUICK_REACTIONS = ["🔥", "💨", "💯", "🎵", "🫡", "😂"];
+
     let currentUser = null;
-    let currentThreadId = null;
-    let threadsCache = [];
-    let realtimeChannel = null;
+    let myProfile = null;
+    let threads = [];
+    let activeThreadId = null;
+    let activeThreadPartner = null;
+    let poller = null;
 
     function setStatus(message, type = "loading") {
       statusBox.textContent = message;
-      statusBox.className = "status";
-      if (type) statusBox.classList.add(type);
+      statusBox.className = `status ${type}`;
     }
 
     function escapeHtml(value) {
@@ -343,159 +622,209 @@
         .replaceAll("'", "&#039;");
     }
 
-    function formatDate(value) {
+    function formatTime(value) {
       if (!value) return "";
-      return new Date(value).toLocaleString();
-    }
+      const d = new Date(value);
+      const now = new Date();
+      const sameDay =
+        d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate();
 
-    async function getSessionUser() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      return data?.session?.user || null;
-    }
-
-    async function requireSession() {
-      const user = await getSessionUser();
-      if (!user) {
-        setStatus("❌ No active session. Go log in first.", "error");
-        viewerEmail.textContent = "Not signed in";
-        return null;
+      if (sameDay) {
+        return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
       }
-      currentUser = user;
-      viewerEmail.textContent = user.email || "Signed in";
-      return user;
+      return d.toLocaleDateString([], { month: "short", day: "numeric" });
     }
 
-    async function lookupProfileByUsername(username) {
-      const clean = String(username || "").trim().toLowerCase();
-      if (!clean) throw new Error("Enter a username first.");
+    function sortThreadsNewest(items) {
+      return [...items].sort((a, b) => {
+        const aTime = new Date(a.last_message_at || a.updated_at || a.created_at || 0).getTime();
+        const bTime = new Date(b.last_message_at || b.updated_at || b.created_at || 0).getTime();
+        return bTime - aTime;
+      });
+    }
 
+    async function getCurrentUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      return data.user;
+    }
+
+    async function getMyProfile() {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, display_name, email")
-        .ilike("username", clean)
-        .maybeSingle();
+        .select("id, username, display_name, avatar_url, role, email")
+        .eq("id", currentUser.id)
+        .single();
 
       if (error) throw error;
-      if (!data) throw new Error("User not found. Use the exact username.");
       return data;
     }
 
     async function loadThreads() {
-      const { data: memberships, error: membershipsError } = await supabase
+      const { data: memberRows, error: memberError } = await supabase
         .from("dm_thread_members")
-        .select("thread_id, user_id, created_at")
+        .select("thread_id, user_id, last_read_at, created_at")
         .eq("user_id", currentUser.id);
 
-      if (membershipsError) throw membershipsError;
+      if (memberError) throw memberError;
 
-      if (!memberships || !memberships.length) {
-        threadsCache = [];
+      if (!memberRows || memberRows.length === 0) {
+        threads = [];
         renderThreads();
+        if (!activeThreadId) renderMessages([]);
         return;
       }
 
-      const threadIds = memberships.map(x => x.thread_id);
+      const threadIds = [...new Set(memberRows.map(row => row.thread_id))];
+
+      const { data: threadRows, error: threadError } = await supabase
+        .from("dm_threads")
+        .select("id, created_by, created_at, updated_at")
+        .in("id", threadIds);
+
+      if (threadError) throw threadError;
 
       const { data: allMembers, error: allMembersError } = await supabase
         .from("dm_thread_members")
-        .select("thread_id, user_id")
+        .select("thread_id, user_id, created_at")
         .in("thread_id", threadIds);
 
       if (allMembersError) throw allMembersError;
 
-      const otherIds = [...new Set(
-        (allMembers || [])
-          .filter(x => x.user_id !== currentUser.id)
-          .map(x => x.user_id)
-      )];
+      const memberUserIds = [...new Set((allMembers || []).map(row => row.user_id))];
 
-      let profileMap = {};
-      if (otherIds.length) {
-        const { data: profiles, error: profilesError } = await supabase
+      let profileRows = [];
+      if (memberUserIds.length) {
+        const { data: profilesData, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, username, display_name, email")
-          .in("id", otherIds);
+          .select("id, username, display_name, avatar_url")
+          .in("id", memberUserIds);
 
         if (profilesError) throw profilesError;
-        profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+        profileRows = profilesData || [];
       }
 
-      const { data: messageRows, error: messageError } = await supabase
+      const profileMap = new Map(profileRows.map(row => [row.id, row]));
+      const membersByThread = new Map();
+
+      (allMembers || []).forEach(row => {
+        if (!membersByThread.has(row.thread_id)) membersByThread.set(row.thread_id, []);
+        membersByThread.get(row.thread_id).push(row);
+      });
+
+      const { data: recentMessages, error: recentMessagesError } = await supabase
         .from("dm_messages")
         .select("id, thread_id, sender_id, body, created_at")
         .in("thread_id", threadIds)
         .order("created_at", { ascending: false });
 
-      if (messageError) throw messageError;
+      if (recentMessagesError) throw recentMessagesError;
 
-      const lastMessageByThread = {};
-      for (const row of messageRows || []) {
-        if (!lastMessageByThread[row.thread_id]) lastMessageByThread[row.thread_id] = row;
-      }
-
-      threadsCache = threadIds.map(threadId => {
-        const threadMembers = (allMembers || []).filter(x => x.thread_id === threadId && x.user_id !== currentUser.id);
-        const otherProfiles = threadMembers.map(x => profileMap[x.user_id]).filter(Boolean);
-        return {
-          id: threadId,
-          otherProfiles,
-          lastMessage: lastMessageByThread[threadId] || null
-        };
-      }).sort((a, b) => {
-        const at = a.lastMessage?.created_at || "";
-        const bt = b.lastMessage?.created_at || "";
-        return bt.localeCompare(at);
+      const latestMessageByThread = new Map();
+      (recentMessages || []).forEach(msg => {
+        if (!latestMessageByThread.has(msg.thread_id)) {
+          latestMessageByThread.set(msg.thread_id, msg);
+        }
       });
 
+      threads = sortThreadsNewest((threadRows || []).map(thread => {
+        const members = membersByThread.get(thread.id) || [];
+        const otherMembers = members.filter(m => m.user_id !== currentUser.id);
+        const partnerRow = otherMembers[0] ? profileMap.get(otherMembers[0].user_id) : null;
+        const latest = latestMessageByThread.get(thread.id);
+
+        return {
+          ...thread,
+          members,
+          partner: partnerRow,
+          last_message: latest?.body || "",
+          last_message_at: latest?.created_at || thread.updated_at || thread.created_at
+        };
+      }));
+
       renderThreads();
+
+      if (activeThreadId && !threads.find(t => t.id === activeThreadId)) {
+        activeThreadId = null;
+        activeThreadPartner = null;
+        conversationTitle.textContent = "No thread selected.";
+        conversationSub.textContent = "Pick or start a conversation.";
+        renderMessages([]);
+      }
     }
 
     function renderThreads() {
-      if (!threadsCache.length) {
+      if (!threads.length) {
         threadList.innerHTML = `<div class="empty">No threads yet.</div>`;
         return;
       }
 
-      threadList.innerHTML = threadsCache.map(thread => {
-        const title = thread.otherProfiles.length
-          ? thread.otherProfiles.map(p => p.display_name || p.username || p.email || "User").join(", ")
-          : "Conversation";
+      threadList.innerHTML = threads.map(thread => {
+        const partnerName =
+          thread.partner?.display_name ||
+          thread.partner?.username ||
+          "Unknown user";
 
-        const snippet = thread.lastMessage?.body || "No messages yet.";
-        const time = thread.lastMessage?.created_at ? formatDate(thread.lastMessage.created_at) : "";
+        const partnerHandle = thread.partner?.username ? `@${thread.partner.username}` : "";
+        const preview = thread.last_message || "Start the conversation.";
+        const activeClass = thread.id === activeThreadId ? "active" : "";
 
         return `
-          <button class="thread-item ${Number(currentThreadId) === Number(thread.id) ? "active" : ""}" data-thread-id="${thread.id}">
-            <div class="thread-title">${escapeHtml(title)}</div>
-            <div class="thread-preview">${escapeHtml(snippet)}</div>
-            <div class="thread-time">${escapeHtml(time)}</div>
-          </button>
+          <div class="thread-card ${activeClass}" data-thread-id="${thread.id}">
+            <div class="thread-top">
+              <div class="thread-name">${escapeHtml(partnerName)} ${partnerHandle ? `<span style="opacity:.72;font-weight:700;">${escapeHtml(partnerHandle)}</span>` : ""}</div>
+              <div class="thread-time">${escapeHtml(formatTime(thread.last_message_at))}</div>
+            </div>
+            <div class="thread-preview">${escapeHtml(preview)}</div>
+          </div>
         `;
       }).join("");
 
-      threadList.querySelectorAll(".thread-item").forEach(btn => {
-        btn.addEventListener("click", () => openThread(btn.dataset.threadId));
+      [...threadList.querySelectorAll(".thread-card")].forEach(card => {
+        card.addEventListener("click", async () => {
+          const threadId = Number(card.dataset.threadId);
+          await selectThread(threadId);
+        });
       });
     }
 
-    async function openThread(threadId) {
-      currentThreadId = Number(threadId);
+    async function selectThread(threadId) {
+      activeThreadId = threadId;
+      const found = threads.find(t => t.id === threadId);
+      activeThreadPartner = found?.partner || null;
+
+      conversationTitle.textContent =
+        activeThreadPartner?.display_name ||
+        activeThreadPartner?.username ||
+        "Conversation";
+
+      conversationSub.textContent =
+        activeThreadPartner?.username
+          ? `Chatting with @${activeThreadPartner.username}`
+          : "Direct message thread";
+
       renderThreads();
-
-      const selected = threadsCache.find(t => Number(t.id) === Number(threadId));
-      const title = selected?.otherProfiles?.length
-        ? selected.otherProfiles.map(p => p.display_name || p.username || p.email || "User").join(", ")
-        : "Conversation";
-
-      conversationTitle.textContent = title;
-      conversationSub.textContent = "Live thread open.";
+      await markThreadRead(threadId);
       await loadMessages(threadId);
-      subscribeToThread(threadId);
+    }
+
+    async function markThreadRead(threadId) {
+      await supabase
+        .from("dm_thread_members")
+        .update({ last_read_at: new Date().toISOString() })
+        .eq("thread_id", threadId)
+        .eq("user_id", currentUser.id);
     }
 
     async function loadMessages(threadId) {
-      const { data, error } = await supabase
+      if (!threadId) {
+        renderMessages([]);
+        return;
+      }
+
+      const { data: messages, error } = await supabase
         .from("dm_messages")
         .select("id, thread_id, sender_id, body, created_at")
         .eq("thread_id", threadId)
@@ -503,225 +832,377 @@
 
       if (error) throw error;
 
-      if (!data || !data.length) {
+      let reactions = [];
+      if ((messages || []).length) {
+        const messageIds = messages.map(m => m.id);
+        const { data: reactionRows, error: reactionError } = await supabase
+          .from("dm_message_reactions")
+          .select("id, message_id, user_id, emoji, created_at")
+          .in("message_id", messageIds);
+
+        if (reactionError) throw reactionError;
+        reactions = reactionRows || [];
+      }
+
+      renderMessages(messages || [], reactions);
+    }
+
+    function renderMessages(messages = [], reactions = []) {
+      if (!messages.length) {
         messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
         return;
       }
 
-      const senderIds = [...new Set((data || []).map(x => x.sender_id))];
-      let senderMap = {};
-      if (senderIds.length) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, username, display_name")
-          .in("id", senderIds);
+      const groupedReactions = new Map();
+      reactions.forEach(r => {
+        if (!groupedReactions.has(r.message_id)) groupedReactions.set(r.message_id, []);
+        groupedReactions.get(r.message_id).push(r);
+      });
 
-        if (profilesError) throw profilesError;
-        senderMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
-      }
-
-      messagesList.innerHTML = data.map(msg => {
+      messagesList.innerHTML = messages.map(msg => {
         const mine = msg.sender_id === currentUser.id;
-        const sender = senderMap[msg.sender_id];
-        const senderName = mine ? "You" : (sender?.display_name || sender?.username || "User");
+        const rowClass = mine ? "mine" : "other";
+        const senderName = mine
+          ? "You"
+          : (activeThreadPartner?.display_name || activeThreadPartner?.username || "Them");
+
+        const reactionRows = groupedReactions.get(msg.id) || [];
+        const reactionCountMap = new Map();
+
+        reactionRows.forEach(r => {
+          const key = r.emoji;
+          if (!reactionCountMap.has(key)) reactionCountMap.set(key, []);
+          reactionCountMap.get(key).push(r);
+        });
+
+        const reactionHtml = [...reactionCountMap.entries()].map(([emoji, rows]) => {
+          const mineReacted = rows.some(r => r.user_id === currentUser.id);
+          return `
+            <button class="reaction-pill" data-message-id="${msg.id}" data-emoji="${escapeHtml(emoji)}" type="button"
+              style="${mineReacted ? 'border-color: rgba(141,245,109,.34); background: rgba(141,245,109,.11);' : ''}">
+              <span>${escapeHtml(emoji)}</span>
+              <strong>${rows.length}</strong>
+            </button>
+          `;
+        }).join("");
+
+        const quickAdd = QUICK_REACTIONS.map(emoji => {
+          return `<button class="reaction-add" data-message-id="${msg.id}" data-emoji="${escapeHtml(emoji)}" type="button">${escapeHtml(emoji)}</button>`;
+        }).join("");
 
         return `
-          <div class="msg ${mine ? "me" : "them"}">
-            <div class="msg-meta">${escapeHtml(senderName)} • ${escapeHtml(formatDate(msg.created_at))}</div>
-            <div>${escapeHtml(msg.body)}</div>
+          <div class="message-row ${rowClass}">
+            <div class="message-meta">${escapeHtml(senderName)} • ${escapeHtml(formatTime(msg.created_at))}</div>
+            <div class="bubble">${escapeHtml(msg.body)}</div>
+            <div class="reactions">
+              ${reactionHtml}
+              ${quickAdd}
+            </div>
           </div>
         `;
       }).join("");
 
+      [...messagesList.querySelectorAll(".reaction-pill, .reaction-add")].forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const messageId = Number(btn.dataset.messageId);
+          const emoji = btn.dataset.emoji;
+          await addReaction(messageId, emoji);
+        });
+      });
+
       messagesList.scrollTop = messagesList.scrollHeight;
+    }
+
+    async function findUserByUsername(username) {
+      const clean = username.trim();
+      if (!clean) throw new Error("Enter a username first.");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, display_name, avatar_url")
+        .ilike("username", clean)
+        .limit(1);
+
+      if (error) throw error;
+
+      if (!data || !data.length) {
+        throw new Error("That username was not found in profiles.");
+      }
+
+      return data[0];
+    }
+
+    async function findExistingThreadWithUser(otherUserId) {
+      const myThreadIds = new Set(
+        (await supabase
+          .from("dm_thread_members")
+          .select("thread_id")
+          .eq("user_id", currentUser.id)
+        ).data?.map(r => r.thread_id) || []
+      );
+
+      if (!myThreadIds.size) return null;
+
+      const { data: otherRows, error } = await supabase
+        .from("dm_thread_members")
+        .select("thread_id")
+        .eq("user_id", otherUserId);
+
+      if (error) throw error;
+
+      const shared = (otherRows || []).find(row => myThreadIds.has(row.thread_id));
+      return shared ? shared.thread_id : null;
     }
 
     async function startChat() {
       try {
-        if (!currentUser) {
-          throw new Error("You must log in first.");
+        const username = targetUsername.value.trim();
+        if (!username) {
+          setStatus("Enter a username to start a chat.", "bad");
+          return;
         }
 
         setStatus("Starting chat...", "loading");
 
-        const searchText = String(targetUsername.value || "").trim();
-        if (!searchText) throw new Error("Enter a username first.");
+        const targetProfile = await findUserByUsername(username);
 
-        const target = await lookupProfileByUsername(searchText);
-        if (!target?.id) throw new Error("User not found.");
-        if (target.id === currentUser.id) throw new Error("You cannot message yourself.");
+        if (targetProfile.id === currentUser.id) {
+          throw new Error("You cannot start a chat with yourself.");
+        }
 
-        const myThreadIds = threadsCache.map(t => t.id);
-
-        if (myThreadIds.length) {
-          const { data: existingMembers, error: existingMembersError } = await supabase
-            .from("dm_thread_members")
-            .select("thread_id, user_id")
-            .in("thread_id", myThreadIds);
-
-          if (existingMembersError) throw existingMembersError;
-
-          const grouped = {};
-          for (const row of existingMembers || []) {
-            if (!grouped[row.thread_id]) grouped[row.thread_id] = [];
-            grouped[row.thread_id].push(row.user_id);
-          }
-
-          const existingThreadId = Object.keys(grouped).find(threadId => {
-            const ids = grouped[threadId];
-            return ids.length === 2 && ids.includes(currentUser.id) && ids.includes(target.id);
-          });
-
-          if (existingThreadId) {
-            await loadThreads();
-            await openThread(existingThreadId);
-            setStatus("✅ Existing conversation opened.", "ok");
-            return;
-          }
+        const existingThreadId = await findExistingThreadWithUser(targetProfile.id);
+        if (existingThreadId) {
+          await loadThreads();
+          await selectThread(existingThreadId);
+          setStatus(`Opened existing thread with @${targetProfile.username}.`, "good");
+          return;
         }
 
         const { data: newThread, error: threadError } = await supabase
           .from("dm_threads")
-          .insert([{ created_by: currentUser.id }])
-          .select("id")
+          .insert({
+            created_by: currentUser.id,
+            updated_at: new Date().toISOString()
+          })
+          .select()
           .single();
 
         if (threadError) throw threadError;
-        if (!newThread?.id) throw new Error("Thread was not created.");
 
         const { error: memberError } = await supabase
           .from("dm_thread_members")
           .insert([
-            { thread_id: newThread.id, user_id: currentUser.id },
-            { thread_id: newThread.id, user_id: target.id }
+            {
+              thread_id: newThread.id,
+              user_id: currentUser.id,
+              last_read_at: new Date().toISOString()
+            },
+            {
+              thread_id: newThread.id,
+              user_id: targetProfile.id
+            }
           ]);
 
         if (memberError) throw memberError;
 
         targetUsername.value = "";
         await loadThreads();
-        await openThread(newThread.id);
-        setStatus(`✅ Chat started with ${target.display_name || target.username || target.email}.`, "ok");
+        await selectThread(newThread.id);
+        setStatus(`Started new chat with @${targetProfile.username}.`, "good");
       } catch (error) {
-        console.error("startChat error:", error);
-        setStatus("❌ Start thread error: " + (error.message || "Unknown error"), "error");
+        console.error(error);
+        setStatus(`Start chat error: ${error.message}`, "bad");
       }
     }
 
     async function sendMessage() {
       try {
-        if (!currentUser) throw new Error("You must log in first.");
-        if (!currentThreadId) throw new Error("Select or start a thread first.");
+        const body = messageBody.value.trim();
 
-        const body = String(messageBody.value || "").trim();
-        if (!body) throw new Error("Write a message first.");
+        if (!activeThreadId) {
+          setStatus("Select or start a thread first.", "bad");
+          return;
+        }
+
+        if (!body) {
+          setStatus("Write a message first.", "bad");
+          return;
+        }
+
+        setStatus("Sending message...", "loading");
 
         const { error } = await supabase
           .from("dm_messages")
-          .insert([{
-            thread_id: currentThreadId,
+          .insert({
+            thread_id: activeThreadId,
             sender_id: currentUser.id,
             body
-          }]);
+          });
 
         if (error) throw error;
 
+        await supabase
+          .from("dm_threads")
+          .update({ updated_at: new Date().toISOString() })
+          .eq("id", activeThreadId);
+
         messageBody.value = "";
-        await loadMessages(currentThreadId);
         await loadThreads();
-        setStatus("✅ Message sent.", "ok");
+        await loadMessages(activeThreadId);
+        setStatus("Message sent.", "good");
       } catch (error) {
-        console.error("sendMessage error:", error);
-        setStatus("❌ Send message error: " + (error.message || "Unknown error"), "error");
+        console.error(error);
+        setStatus(`Send message error: ${error.message}`, "bad");
       }
     }
 
-    function subscribeToThread(threadId) {
+    async function addReaction(messageId, emoji) {
       try {
-        if (realtimeChannel) {
-          supabase.removeChannel(realtimeChannel);
-          realtimeChannel = null;
+        const { data: existing, error: existingError } = await supabase
+          .from("dm_message_reactions")
+          .select("id")
+          .eq("message_id", messageId)
+          .eq("user_id", currentUser.id)
+          .eq("emoji", emoji)
+          .maybeSingle();
+
+        if (existingError) throw existingError;
+
+        if (existing) {
+          const { error: deleteError } = await supabase
+            .from("dm_message_reactions")
+            .delete()
+            .eq("id", existing.id);
+
+          if (deleteError) throw deleteError;
+        } else {
+          const { error: insertError } = await supabase
+            .from("dm_message_reactions")
+            .insert({
+              message_id: messageId,
+              user_id: currentUser.id,
+              emoji
+            });
+
+          if (insertError) throw insertError;
         }
 
-        realtimeChannel = supabase
-          .channel(`dm-thread-${threadId}`)
-          .on("postgres_changes", {
-            event: "*",
-            schema: "public",
-            table: "dm_messages",
-            filter: `thread_id=eq.${threadId}`
-          }, async () => {
-            try {
-              await loadMessages(threadId);
-              await loadThreads();
-            } catch (err) {
-              console.error("realtime reload error:", err);
-            }
-          })
-          .subscribe();
+        await loadMessages(activeThreadId);
       } catch (error) {
-        console.error("subscribe error:", error);
+        console.error(error);
+        setStatus(`Reaction error: ${error.message}`, "bad");
       }
     }
 
-    async function init() {
+    async function logout() {
+      try {
+        await supabase.auth.signOut();
+        window.location.href = "auth.html";
+      } catch (error) {
+        console.error(error);
+        setStatus(`Logout error: ${error.message}`, "bad");
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      poller = setInterval(async () => {
+        try {
+          if (!currentUser) return;
+          await loadThreads();
+          if (activeThreadId) {
+            await loadMessages(activeThreadId);
+          }
+        } catch (error) {
+          console.error("Polling error:", error);
+        }
+      }, 4000);
+    }
+
+    function stopPolling() {
+      if (poller) {
+        clearInterval(poller);
+        poller = null;
+      }
+    }
+
+    async function boot() {
       try {
         setStatus("Loading messages...", "loading");
-        const user = await requireSession();
-        if (!user) return;
+
+        if (!SUPABASE_URL.includes("supabase.co")) {
+          throw new Error("SUPABASE_URL is not set correctly.");
+        }
+
+        if (
+          !SUPABASE_ANON_KEY ||
+          SUPABASE_ANON_KEY === "REPLACE_WITH_YOUR_PUBLISHABLE_OR_ANON_KEY"
+        ) {
+          throw new Error("Replace SUPABASE_ANON_KEY with your real publishable/anon key.");
+        }
+
+        currentUser = await getCurrentUser();
+
+        if (!currentUser) {
+          window.location.href = "auth.html";
+          return;
+        }
+
+        myProfile = await getMyProfile();
+
+        userChip.textContent =
+          myProfile?.username
+            ? `@${myProfile.username}`
+            : (currentUser.email || "Signed in");
+
         await loadThreads();
-        setStatus("✅ Messages loaded.", "ok");
+
+        if (threads.length && !activeThreadId) {
+          await selectThread(threads[0].id);
+        } else if (!threads.length) {
+          renderMessages([]);
+        }
+
+        setStatus("Messages loaded.", "good");
+        startPolling();
       } catch (error) {
-        console.error("init error:", error);
-        setStatus("❌ Messages load error: " + (error.message || "Unknown error"), "error");
+        console.error(error);
+        setStatus(`Messages load error: ${error.message}`, "bad");
       }
     }
-
-    targetUsername.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        startChat();
-      }
-    });
-
-    messageBody.addEventListener("keydown", (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
 
     startChatBtn.addEventListener("click", startChat);
     sendBtn.addEventListener("click", sendMessage);
-
     refreshBtn.addEventListener("click", async () => {
-      try {
-        if (!currentUser) {
-          const user = await requireSession();
-          if (!user) return;
-        }
-        setStatus("Refreshing inbox...", "loading");
-        await loadThreads();
-        if (currentThreadId) await loadMessages(currentThreadId);
-        setStatus("✅ Inbox refreshed.", "ok");
-      } catch (error) {
-        console.error("refresh error:", error);
-        setStatus("❌ Refresh error: " + (error.message || "Unknown error"), "error");
+      await loadThreads();
+      if (activeThreadId) await loadMessages(activeThreadId);
+      setStatus("Inbox refreshed.", "good");
+    });
+    logoutBtn.addEventListener("click", logout);
+
+    targetUsername.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        await startChat();
       }
     });
 
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
+    messageBody.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        await sendMessage();
+      }
+    });
+
+    window.addEventListener("beforeunload", stopPolling);
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!session && event === "SIGNED_OUT") {
         window.location.href = "auth.html";
-      } catch (error) {
-        console.error("logout error:", error);
-        setStatus("❌ Logout error: " + (error.message || "Unknown error"), "error");
       }
     });
 
-    window.addEventListener("load", init);
+    boot();
   </script>
 </body>
 </html>
