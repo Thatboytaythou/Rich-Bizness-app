@@ -16,6 +16,7 @@
       --danger: #ef5b55;
       --bg: rgba(0,0,0,0.56);
       --soft: rgba(255,255,255,0.08);
+      --soft2: rgba(255,255,255,0.04);
       --border: rgba(125,255,113,0.18);
       --text: #f3f3f3;
       --muted: #cfcfcf;
@@ -120,14 +121,14 @@
 
     .hero-grid {
       display: grid;
-      grid-template-columns: 260px 1fr 380px;
+      grid-template-columns: 280px 1fr 340px;
       gap: 20px;
       align-items: start;
     }
 
     .avatar-box {
-      width: 260px;
-      height: 260px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
       border-radius: 28px;
       overflow: hidden;
       background: rgba(255,255,255,0.06);
@@ -165,8 +166,7 @@
     .hero-kicker,
     .pill-green,
     .pill-gold,
-    .pill-blue,
-    .pill-red {
+    .pill-blue {
       display: inline-block;
       padding: 8px 12px;
       border-radius: 999px;
@@ -193,15 +193,9 @@
       color: var(--blue);
     }
 
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
     .hero-actions,
-    .card-actions,
-    .tab-row {
+    .filter-row,
+    .card-actions {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
@@ -258,7 +252,7 @@
 
     .stats-row {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
@@ -283,35 +277,21 @@
       font-weight: 700;
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
+    .filter-row {
+      margin-top: 0;
     }
 
-    .section-header p {
-      margin: 0;
-      color: var(--text);
-    }
-
-    .tabs {
-      margin-bottom: 16px;
-    }
-
-    .tab-btn {
-      padding: 12px 16px;
+    .chip {
+      padding: 10px 14px;
       border-radius: 12px;
       background: rgba(255,255,255,0.08);
       border: 1px solid rgba(255,255,255,0.08);
       color: white;
-      font-weight: 800;
       cursor: pointer;
+      font-weight: 800;
     }
 
-    .tab-btn.active {
+    .chip.active {
       background: var(--green);
       color: black;
       border-color: transparent;
@@ -319,7 +299,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 16px;
     }
 
@@ -334,7 +314,7 @@
     }
 
     .card-cover {
-      height: 240px;
+      height: 230px;
       background:
         linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
         url("images/brand/logo-music-label.png") center center / cover no-repeat;
@@ -369,51 +349,6 @@
       margin-bottom: 8px;
     }
 
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.55;
-    }
-
-    .price {
-      color: var(--green);
-      font-weight: 900;
-      font-size: 1.05rem;
-      margin-top: 10px;
-    }
-
-    .comment-box {
-      margin-top: 12px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .comment-input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .comment-preview {
-      margin-top: 12px;
-      font-size: 13px;
-      color: #cfcfcf;
-      display: grid;
-      gap: 6px;
-    }
-
-    .comment-item {
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.05);
-    }
-
     .empty-box {
       padding: 22px;
       text-align: center;
@@ -424,13 +359,9 @@
       grid-column: 1 / -1;
     }
 
-    .hidden {
-      display: none;
-    }
-
     @media (max-width: 1500px) {
       .hero-grid {
-        grid-template-columns: 220px 1fr;
+        grid-template-columns: 240px 1fr;
       }
 
       .hero-side {
@@ -456,12 +387,6 @@
       .hero h1 {
         font-size: 2.2rem;
       }
-
-      .avatar-box {
-        width: 100%;
-        max-width: 260px;
-        height: 260px;
-      }
     }
   </style>
 </head>
@@ -476,11 +401,8 @@
       <div class="nav">
         <span id="userChip" class="user-chip">Checking session...</span>
         <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
         <a href="music.html">Music</a>
-        <a href="gallery.html">Gallery</a>
         <a href="store.html">Store</a>
-        <a href="sports.html">Sports</a>
         <a href="artist.html" class="active">Artist</a>
         <a href="profile.html">Profile</a>
         <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
@@ -503,15 +425,14 @@
           <div id="artistHandle" class="mini-text">@loading</div>
           <div id="artistEmail" class="mini-text">loading@email.com</div>
           <div id="favoriteTeamView" class="mini-text">Favorite Team: --</div>
-          <div id="artistBio" class="subtle" style="margin-top:12px;">Loading bio...</div>
+          <div id="bioView" class="subtle" style="margin-top:12px;">Loading bio...</div>
 
           <div class="hero-actions">
             <a id="openStoreBtn" class="btn-green" href="store.html">Open Store</a>
-            <a id="openProfileBtn" class="btn-dark" href="profile.html">Profile</a>
-            <a id="messageArtistBtn" class="btn-dark" href="messages.html">Message Artist</a>
-            <a id="watchArtistBtn" class="btn-gold" href="watch.html">Watch</a>
-            <a id="liveArtistBtn" class="btn-dark" href="live.html">Live</a>
-            <button id="copyArtistBtn" class="btn-blue" type="button">Copy Artist Link</button>
+            <a id="profileBtn" class="btn-dark" href="profile.html">Profile</a>
+            <button id="messageArtistBtn" class="btn-dark" type="button">Message Artist</button>
+            <a class="btn-gold" href="watch.html">Watch</a>
+            <button id="copyArtistLinkBtn" class="btn-blue" type="button">Copy Artist Link</button>
           </div>
 
           <div id="statusBox" class="status-box">Loading artist page...</div>
@@ -526,20 +447,16 @@
               <div class="stat-label">Store Items</div>
             </div>
             <div class="stat">
-              <div id="saleStat" class="stat-value">0</div>
+              <div id="forSaleStat" class="stat-value">0</div>
               <div class="stat-label">For Sale</div>
             </div>
             <div class="stat">
               <div id="sportsStat" class="stat-value">0</div>
               <div class="stat-label">Sports Posts</div>
             </div>
-            <div id="featuredWrap" class="stat">
+            <div class="stat">
               <div id="featuredStat" class="stat-value">0</div>
               <div class="stat-label">Featured</div>
-            </div>
-            <div class="stat">
-              <div id="likesStat" class="stat-value">0</div>
-              <div class="stat-label">Store Likes</div>
             </div>
           </div>
         </div>
@@ -551,74 +468,48 @@
           </div>
 
           <div class="mini-panel">
-            <div class="mini-panel-title">Channel Links</div>
+            <div class="mini-panel-title">Channel Lane</div>
             <div class="mini-text">
-              This artist page bridges profile, store, music, sports, and live/watch in one synced creator hub.
+              This is the creator public hub for music, store, sports, and profile identity.
             </div>
           </div>
 
           <div class="mini-panel">
-            <div class="mini-panel-title">What Else Is Built In</div>
+            <div class="mini-panel-title">Current Sync</div>
             <div class="mini-text">
-              • auto username fallback
-              <br>• live store likes/comments
-              <br>• creator store links
-              <br>• artist share link
-              <br>• synced creator identity
+              Artist page now supports URL username or logged-in session fallback.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="section tabs">
+    <div class="section">
       <div class="section-header">
         <div>
-          <h2>Artist Lanes</h2>
-          <p>Switch between this creator’s music, store, and sports content.</p>
+          <h2>Artist Sections</h2>
+          <p>Switch between music, store, and sports content.</p>
         </div>
       </div>
 
-      <div class="tab-row">
-        <button class="tab-btn active" data-tab="music" type="button">Music</button>
-        <button class="tab-btn" data-tab="store" type="button">Store</button>
-        <button class="tab-btn" data-tab="sports" type="button">Sports</button>
+      <div class="filter-row" id="sectionFilterRow">
+        <button class="chip active" data-section="all" type="button">All</button>
+        <button class="chip" data-section="music" type="button">Music</button>
+        <button class="chip" data-section="store" type="button">Store</button>
+        <button class="chip" data-section="sports" type="button">Sports</button>
       </div>
     </div>
 
-    <div id="musicTab" class="section">
+    <div class="section">
       <div class="section-header">
         <div>
-          <h2>Music Uploads</h2>
-          <p>Tracks and artist music releases.</p>
+          <h2>Artist Content</h2>
+          <p>Public creator content from this artist lane.</p>
         </div>
       </div>
-      <div id="musicGrid" class="grid">
-        <div class="empty-box">Loading music uploads...</div>
-      </div>
-    </div>
 
-    <div id="storeTab" class="section hidden">
-      <div class="section-header">
-        <div>
-          <h2>Storefront Items</h2>
-          <p>Fashion, drops, and creator storefront items.</p>
-        </div>
-      </div>
-      <div id="storeGrid" class="grid">
-        <div class="empty-box">Loading store items...</div>
-      </div>
-    </div>
-
-    <div id="sportsTab" class="section hidden">
-      <div class="section-header">
-        <div>
-          <h2>Sports Content</h2>
-          <p>Sports uploads and creator takes.</p>
-        </div>
-      </div>
-      <div id="sportsGrid" class="grid">
-        <div class="empty-box">Loading sports posts...</div>
+      <div id="contentGrid" class="grid">
+        <div class="empty-box">Loading artist content...</div>
       </div>
     </div>
   </div>
@@ -638,42 +529,34 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
       const avatarBox = document.getElementById("avatarBox");
       const artistName = document.getElementById("artistName");
       const artistHandle = document.getElementById("artistHandle");
       const artistEmail = document.getElementById("artistEmail");
       const favoriteTeamView = document.getElementById("favoriteTeamView");
-      const artistBio = document.getElementById("artistBio");
-      const pulseBox = document.getElementById("pulseBox");
-
+      const bioView = document.getElementById("bioView");
       const openStoreBtn = document.getElementById("openStoreBtn");
-      const openProfileBtn = document.getElementById("openProfileBtn");
+      const profileBtn = document.getElementById("profileBtn");
       const messageArtistBtn = document.getElementById("messageArtistBtn");
-      const watchArtistBtn = document.getElementById("watchArtistBtn");
-      const liveArtistBtn = document.getElementById("liveArtistBtn");
-      const copyArtistBtn = document.getElementById("copyArtistBtn");
+      const copyArtistLinkBtn = document.getElementById("copyArtistLinkBtn");
+      const statusBox = document.getElementById("statusBox");
+      const pulseBox = document.getElementById("pulseBox");
 
       const musicStat = document.getElementById("musicStat");
       const storeStat = document.getElementById("storeStat");
-      const saleStat = document.getElementById("saleStat");
+      const forSaleStat = document.getElementById("forSaleStat");
       const sportsStat = document.getElementById("sportsStat");
       const featuredStat = document.getElementById("featuredStat");
-      const likesStat = document.getElementById("likesStat");
 
-      const musicGrid = document.getElementById("musicGrid");
-      const storeGrid = document.getElementById("storeGrid");
-      const sportsGrid = document.getElementById("sportsGrid");
+      const sectionFilterRow = document.getElementById("sectionFilterRow");
+      const contentGrid = document.getElementById("contentGrid");
 
       let currentUser = null;
-      let profile = null;
+      let currentSection = "all";
+      let creatorProfile = null;
       let musicRows = [];
       let storeRows = [];
       let sportsRows = [];
-      let artworkLikes = [];
-      let artworkComments = [];
-      let liveChannel = null;
 
       function setStatus(message) {
         statusBox.textContent = message;
@@ -695,36 +578,34 @@
         return d.toLocaleString();
       }
 
-      function money(value) {
-        const n = Number(value || 0);
-        return `$${n.toFixed(2)}`;
-      }
-
       async function getUsernameFromUrlOrSession() {
         const params = new URLSearchParams(window.location.search);
-        let username = params.get("u");
+        const urlUsername = params.get("u");
 
-        if (username) return username;
+        if (urlUsername && urlUsername.trim()) {
+          return urlUsername.trim();
+        }
 
-        const { data: { session } } = await supabase.auth.getSession();
-        const user = session?.user;
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
 
-        if (!user) throw new Error("No username and no session.");
+        const user = sessionData?.session?.user;
+        if (!user) {
+          throw new Error("Missing username in URL and no active session.");
+        }
 
-        const { data, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("username")
           .eq("id", user.id)
           .single();
 
-        if (error && error.code !== "42P01") throw error;
-        if (!data?.username) throw new Error("No username found for user.");
+        if (profileError) throw profileError;
+        if (!profile?.username) {
+          throw new Error("No username found for logged in user.");
+        }
 
-        return data.username;
-      }
-
-      function buildStoreUrl(username) {
-        return username ? `store.html?u=${encodeURIComponent(username)}` : "store.html";
+        return profile.username;
       }
 
       async function loadSession() {
@@ -744,7 +625,7 @@
         }
       }
 
-      async function loadArtistProfile(username) {
+      async function loadCreatorProfile(username) {
         const { data, error } = await supabase
           .from("profiles")
           .select("*")
@@ -754,389 +635,198 @@
         if (error && error.code !== "42P01") throw error;
         if (!data) throw new Error("Artist profile not found.");
 
-        profile = data;
+        creatorProfile = data;
 
-        const displayName = profile.display_name || profile.username || "Artist";
+        const displayName =
+          creatorProfile.display_name ||
+          creatorProfile.username ||
+          "Artist";
 
         artistName.textContent = displayName;
-        artistHandle.textContent = `@${profile.username || "unknown"}`;
-        artistEmail.textContent = profile.email || "--";
-        favoriteTeamView.textContent = `Favorite Team: ${profile.favorite_team || "--"}`;
-        artistBio.textContent = profile.bio || "No artist bio yet.";
+        artistHandle.textContent = `@${creatorProfile.username || "unknown"}`;
+        artistEmail.textContent = creatorProfile.email || "No email";
+        favoriteTeamView.textContent = `Favorite Team: ${creatorProfile.favorite_team || "--"}`;
+        bioView.textContent = creatorProfile.bio || "No artist bio yet.";
 
-        if (profile.avatar_url) {
-          avatarBox.innerHTML = `<img src="${escapeHtml(profile.avatar_url)}" alt="Artist Avatar" />`;
+        openStoreBtn.href = creatorProfile.username
+          ? `store.html?u=${encodeURIComponent(creatorProfile.username)}`
+          : "store.html";
+
+        profileBtn.href = currentUser && creatorProfile.id === currentUser.id
+          ? "profile.html"
+          : (creatorProfile.username ? `artist.html?u=${encodeURIComponent(creatorProfile.username)}` : "profile.html");
+
+        if (creatorProfile.avatar_url) {
+          avatarBox.innerHTML = `<img src="${escapeHtml(creatorProfile.avatar_url)}" alt="Artist Avatar" />`;
         } else {
           avatarBox.textContent = "No Avatar";
         }
-
-        openStoreBtn.href = buildStoreUrl(profile.username);
-        openProfileBtn.href = currentUser && currentUser.id === profile.id
-          ? "profile.html"
-          : buildStoreUrl(profile.username);
-        messageArtistBtn.href = "messages.html";
-        watchArtistBtn.href = "watch.html";
-        liveArtistBtn.href = "live.html";
       }
 
       async function loadArtistContent() {
         const [musicRes, storeRes, sportsRes] = await Promise.all([
-          supabase.from("music_uploads").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
-          supabase.from("artworks").select("*").eq("user_id", profile.id).order("created_at", { ascending: false }),
-          supabase.from("sports_uploads").select("*").eq("user_id", profile.id).order("created_at", { ascending: false })
+          supabase
+            .from("music_uploads")
+            .select("*")
+            .eq("user_id", creatorProfile.id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("artworks")
+            .select("*")
+            .eq("user_id", creatorProfile.id)
+            .order("created_at", { ascending: false }),
+          supabase
+            .from("sports_uploads")
+            .select("*")
+            .eq("user_id", creatorProfile.id)
+            .order("created_at", { ascending: false })
         ]);
 
         if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
         if (storeRes.error && storeRes.error.code !== "42P01") throw storeRes.error;
         if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
 
-        musicRows = musicRes.data || [];
-        storeRows = (storeRes.data || []).map(row => ({
-          ...row,
-          category: (row.category || "art").toLowerCase(),
-          price: Number(row.price || 0),
-          is_for_sale: !!row.is_for_sale,
-          is_featured: !!row.is_featured,
-          likes_count: Number(row.likes_count || 0),
-          comments_count: Number(row.comments_count || 0)
-        }));
-        sportsRows = (sportsRes.data || []).map(row => ({
-          ...row,
-          sport_name: row.sport_name || row.sport || row.category || "Sports",
-          team_name: row.team_name || row.team || row.favorite_team || "",
-          is_featured: row.is_featured ?? row.featured ?? false
-        }));
-      }
-
-      async function loadArtworkSocialData(artworkIds = []) {
-        if (!artworkIds.length) {
-          artworkLikes = [];
-          artworkComments = [];
-          return;
-        }
-
-        const { data: likesData, error: likesError } = await supabase
-          .from("artwork_likes")
-          .select("*")
-          .in("artwork_id", artworkIds);
-
-        if (likesError && likesError.code !== "42P01") throw likesError;
-
-        const { data: commentsData, error: commentsError } = await supabase
-          .from("comments")
-          .select("*")
-          .eq("content_type", "artwork")
-          .in("content_id", artworkIds)
-          .order("created_at", { ascending: false });
-
-        if (commentsError && commentsError.code !== "42P01") throw commentsError;
-
-        artworkLikes = likesData || [];
-        artworkComments = commentsData || [];
-      }
-
-      function getArtworkLikeCount(artworkId, fallback = 0) {
-        const count = artworkLikes.filter(x => Number(x.artwork_id) === Number(artworkId)).length;
-        return count || Number(fallback || 0);
-      }
-
-      function getArtworkCommentCount(artworkId, fallback = 0) {
-        const count = artworkComments.filter(x => Number(x.content_id) === Number(artworkId)).length;
-        return count || Number(fallback || 0);
-      }
-
-      function hasUserLikedArtwork(artworkId) {
-        return !!currentUser && artworkLikes.some(
-          x => Number(x.artwork_id) === Number(artworkId) && x.user_id === currentUser.id
-        );
-      }
-
-      async function toggleArtworkLike(artworkId) {
-        try {
-          if (!currentUser) throw new Error("Log in first.");
-
-          const liked = hasUserLikedArtwork(artworkId);
-
-          if (liked) {
-            const existing = artworkLikes.find(
-              x => Number(x.artwork_id) === Number(artworkId) && x.user_id === currentUser.id
-            );
-
-            if (existing) {
-              const { error } = await supabase
-                .from("artwork_likes")
-                .delete()
-                .eq("id", existing.id);
-
-              if (error) throw error;
-            }
-          } else {
-            const { error } = await supabase
-              .from("artwork_likes")
-              .insert([{
-                artwork_id: artworkId,
-                user_id: currentUser.id
-              }]);
-
-            if (error) throw error;
-          }
-        } catch (error) {
-          setStatus("Like error: " + error.message);
-        }
-      }
-
-      async function addArtworkComment(artworkId) {
-        try {
-          if (!currentUser) throw new Error("Log in first.");
-
-          const input = document.getElementById(`comment-input-${artworkId}`);
-          if (!input) throw new Error("Comment input not found.");
-
-          const body = input.value.trim();
-          if (!body) throw new Error("Write a comment first.");
-
-          const { error } = await supabase
-            .from("comments")
-            .insert([{
-              user_id: currentUser.id,
-              content_type: "artwork",
-              content_id: artworkId,
-              body
-            }]);
-
-          if (error) throw error;
-
-          input.value = "";
-        } catch (error) {
-          setStatus("Comment error: " + error.message);
-        }
-      }
-
-      function getArtworkCommentsPreview(artworkId, limit = 3) {
-        return artworkComments
-          .filter(x => Number(x.content_id) === Number(artworkId))
-          .slice(0, limit);
-      }
-
-      function updateStats() {
-        const totalLikes = storeRows.reduce((sum, row) => sum + getArtworkLikeCount(row.id, row.likes_count), 0);
+        musicRows = (musicRes.data || []).map(row => ({ ...row, content_type: "music" }));
+        storeRows = (storeRes.data || []).map(row => ({ ...row, content_type: "store" }));
+        sportsRows = (sportsRes.data || []).map(row => ({ ...row, content_type: "sports" }));
 
         musicStat.textContent = String(musicRows.length);
         storeStat.textContent = String(storeRows.length);
-        saleStat.textContent = String(storeRows.filter(x => x.is_for_sale).length);
+        forSaleStat.textContent = String(storeRows.filter(x => !!x.is_for_sale).length);
         sportsStat.textContent = String(sportsRows.length);
-        featuredStat.textContent = String(
-          storeRows.filter(x => x.is_featured).length + sportsRows.filter(x => x.is_featured).length
-        );
-        likesStat.textContent = String(totalLikes);
+        featuredStat.textContent = String(storeRows.filter(x => !!x.is_featured).length);
 
         pulseBox.textContent =
-          `Artist: ${profile.display_name || profile.username || "Artist"}\n` +
-          `Music Uploads: ${musicRows.length}\n` +
+          `Artist: ${creatorProfile.display_name || creatorProfile.username || "Artist"}\n` +
+          `Music: ${musicRows.length}\n` +
           `Store Items: ${storeRows.length}\n` +
-          `For Sale: ${storeRows.filter(x => x.is_for_sale).length}\n` +
+          `For Sale: ${storeRows.filter(x => !!x.is_for_sale).length}\n` +
           `Sports Posts: ${sportsRows.length}\n` +
-          `Store Likes: ${totalLikes}\n` +
-          `Featured Content: ${storeRows.filter(x => x.is_featured).length + sportsRows.filter(x => x.is_featured).length}`;
+          `Featured: ${storeRows.filter(x => !!x.is_featured).length}`;
       }
 
-      function renderMusic() {
-        if (!musicRows.length) {
-          musicGrid.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
+      function getFilteredContent() {
+        const all = [...musicRows, ...storeRows, ...sportsRows].sort(
+          (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
+        );
+
+        if (currentSection === "music") return musicRows;
+        if (currentSection === "store") return storeRows;
+        if (currentSection === "sports") return sportsRows;
+        return all;
+      }
+
+      function renderContent() {
+        const rows = getFilteredContent();
+
+        if (!rows.length) {
+          contentGrid.innerHTML = `<div class="empty-box">No content found for this artist section.</div>`;
           return;
         }
 
-        musicGrid.innerHTML = musicRows.map(track => `
-          <div class="card">
-            <div class="card-cover ${track.cover_url ? 'custom-bg' : ''}" style="${
-              track.cover_url
-                ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(track.cover_url).replace(/'/g, "%27")}');`
-                : ''
-            }">
-              <div class="card-pill-wrap">
-                <span class="pill-green">MUSIC</span>
-                ${track.is_locked ? `<span class="pill-red">LOCKED</span>` : `<span class="pill-blue">OPEN</span>`}
+        contentGrid.innerHTML = rows.map(item => {
+          const isMusic = item.content_type === "music";
+          const isStore = item.content_type === "store";
+          const isSports = item.content_type === "sports";
+
+          const cover = isMusic
+            ? item.cover_url
+            : isStore
+              ? item.image_url
+              : item.thumbnail_url || item.image_url || "";
+
+          const coverStyle = cover
+            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(cover).replace(/'/g, "%27")}');`
+            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
+
+          return `
+            <div class="card">
+              <div class="card-cover custom-bg" style="${coverStyle}">
+                <div class="card-pill-wrap">
+                  ${
+                    isMusic ? `<span class="pill-green">MUSIC</span>` :
+                    isStore ? `<span class="pill-blue">STORE</span>` :
+                    `<span class="pill-gold">SPORTS</span>`
+                  }
+                  ${
+                    isStore && item.is_for_sale ? `<span class="pill-gold">FOR SALE</span>` : ``
+                  }
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-title">${escapeHtml(item.title || "Untitled")}</div>
+                <div class="card-text">
+                  ${
+                    isMusic
+                      ? escapeHtml(item.artist_name || creatorProfile.display_name || "Artist track")
+                      : isStore
+                        ? escapeHtml(item.description || "Store item")
+                        : escapeHtml(item.description || item.caption || "Sports post")
+                  }
+                </div>
+
+                <div class="card-meta">
+                  Type: ${escapeHtml(item.content_type)}<br>
+                  ${
+                    isMusic
+                      ? `Genre: ${escapeHtml(item.genre || "--")}<br>`
+                      : isStore
+                        ? `Category: ${escapeHtml(item.category || "art")}<br>`
+                        : `Team: ${escapeHtml(item.team_name || item.team || "--")}<br>`
+                  }
+                  Posted: ${escapeHtml(formatDate(item.created_at))}
+                </div>
+
+                <div class="card-actions">
+                  ${
+                    isMusic
+                      ? `<a class="btn-green" href="music.html">Open Music</a>`
+                      : isStore
+                        ? `<a class="btn-green" href="store.html?u=${encodeURIComponent(creatorProfile.username || "")}">Open Store</a>`
+                        : `<a class="btn-green" href="sports.html">Open Sports</a>`
+                  }
+                  <a class="btn-dark" href="${
+                    isStore
+                      ? `gallery.html`
+                      : isMusic
+                        ? `playlist.html`
+                        : `sports.html`
+                  }">Open Lane</a>
+                </div>
               </div>
             </div>
-            <div class="card-body">
-              <div class="card-title">${escapeHtml(track.title || "Track")}</div>
-              <div class="card-text">${escapeHtml(track.artist_name || profile.display_name || "Artist")} • ${escapeHtml(track.album_name || "Single")}</div>
-              ${track.is_locked ? `<div class="price">${money((Number(track.price_cents || 0) / 100) || 0)}</div>` : ``}
-              <div class="card-meta">
-                Genre: ${escapeHtml(track.genre || "--")}<br>
-                Posted: ${escapeHtml(formatDate(track.created_at))}
-              </div>
-              <div class="card-actions">
-                <a class="btn-green" href="${track.file_url || 'music.html'}" ${String(track.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open Track</a>
-                <a class="btn-dark" href="music.html">Music</a>
-              </div>
-            </div>
-          </div>
-        `).join("");
+          `;
+        }).join("");
       }
 
-      function renderStore() {
-        if (!storeRows.length) {
-          storeGrid.innerHTML = `<div class="empty-box">No store items yet.</div>`;
-          return;
-        }
-
-        storeGrid.innerHTML = storeRows.map(item => `
-          <div class="card">
-            <div class="card-cover ${item.image_url ? 'custom-bg' : ''}" style="${
-              item.image_url
-                ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(item.image_url).replace(/'/g, "%27")}');`
-                : ''
-            }">
-              <div class="card-pill-wrap">
-                <span class="pill-green">${escapeHtml(String(item.category || "art").toUpperCase())}</span>
-                ${item.is_featured ? `<span class="pill-gold">FEATURED</span>` : ``}
-                ${item.is_for_sale ? `<span class="pill-blue">FOR SALE</span>` : `<span class="pill-red">SHOWCASE</span>`}
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="card-title">${escapeHtml(item.title || "Store Item")}</div>
-              <div class="card-text">${escapeHtml(item.description || "Creator storefront item.")}</div>
-              ${item.is_for_sale ? `<div class="price">${money(item.price || 0)}</div>` : ``}
-              <div class="card-meta">
-                Posted: ${escapeHtml(formatDate(item.created_at))}<br>
-                Likes: ${getArtworkLikeCount(item.id, item.likes_count)} • Comments: ${getArtworkCommentCount(item.id, item.comments_count)}
-              </div>
-              <div class="card-actions">
-                <a class="btn-green" href="${item.image_url || buildStoreUrl(profile.username)}" ${String(item.image_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
-                <a class="btn-dark" href="${buildStoreUrl(profile.username)}">Store</a>
-                <button class="btn-blue like-artwork-btn" data-id="${item.id}" type="button">
-                  ${hasUserLikedArtwork(item.id) ? "Unlike" : "Like"}
-                </button>
-              </div>
-              <div class="comment-box">
-                <input class="comment-input" id="comment-input-${item.id}" type="text" placeholder="Add comment..." />
-                <button class="btn-dark comment-artwork-btn" data-id="${item.id}" type="button">Comment</button>
-              </div>
-              <div class="comment-preview">
-                ${
-                  getArtworkCommentsPreview(item.id).map(c => `
-                    <div class="comment-item">${escapeHtml(c.body)}</div>
-                  `).join("") || `<div>No comments yet.</div>`
-                }
-              </div>
-            </div>
-          </div>
-        `).join("");
-
-        mountArtworkSocialHandlers();
-      }
-
-      function renderSports() {
-        if (!sportsRows.length) {
-          sportsGrid.innerHTML = `<div class="empty-box">No sports posts yet.</div>`;
-          return;
-        }
-
-        sportsGrid.innerHTML = sportsRows.map(post => `
-          <div class="card">
-            <div class="card-cover ${post.thumbnail_url ? 'custom-bg' : ''}" style="${
-              post.thumbnail_url
-                ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(post.thumbnail_url).replace(/'/g, "%27")}');`
-                : ''
-            }">
-              <div class="card-pill-wrap">
-                <span class="pill-green">${escapeHtml(String(post.sport_name || "SPORTS").toUpperCase())}</span>
-                ${post.team_name ? `<span class="pill-blue">${escapeHtml(String(post.team_name).toUpperCase())}</span>` : ``}
-                ${post.is_featured ? `<span class="pill-gold">FEATURED</span>` : ``}
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="card-title">${escapeHtml(post.title || "Sports Post")}</div>
-              <div class="card-text">${escapeHtml(post.caption || "Sports content.")}</div>
-              <div class="card-meta">
-                Posted: ${escapeHtml(formatDate(post.created_at))}<br>
-                Team: ${escapeHtml(post.team_name || "--")}
-              </div>
-              <div class="card-actions">
-                <a class="btn-green" href="${post.video_url || post.file_url || 'sports.html'}" ${String(post.video_url || post.file_url || "").startsWith("http") ? 'target="_blank"' : ""}>Open</a>
-                <a class="btn-dark" href="sports.html">Sports</a>
-              </div>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function mountArtworkSocialHandlers() {
-        document.querySelectorAll(".like-artwork-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await toggleArtworkLike(Number(btn.dataset.id));
-            await refreshAll();
-          });
+      function setSection(section) {
+        currentSection = section;
+        document.querySelectorAll(".chip").forEach(chip => {
+          chip.classList.toggle("active", chip.dataset.section === section);
         });
-
-        document.querySelectorAll(".comment-artwork-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await addArtworkComment(Number(btn.dataset.id));
-            await refreshAll();
-          });
-        });
-      }
-
-      function setTab(tab) {
-        document.querySelectorAll(".tab-btn").forEach(btn => {
-          btn.classList.toggle("active", btn.dataset.tab === tab);
-        });
-
-        document.getElementById("musicTab").classList.toggle("hidden", tab !== "music");
-        document.getElementById("storeTab").classList.toggle("hidden", tab !== "store");
-        document.getElementById("sportsTab").classList.toggle("hidden", tab !== "sports");
+        renderContent();
       }
 
       async function copyArtistLink() {
         try {
-          await navigator.clipboard.writeText(window.location.href);
-          setStatus("Artist link copied.");
-        } catch {
-          setStatus("Could not copy artist link.");
+          const url = creatorProfile?.username
+            ? `${window.location.origin}/artist.html?u=${encodeURIComponent(creatorProfile.username)}`
+            : `${window.location.origin}/artist.html`;
+
+          await navigator.clipboard.writeText(url);
+          setStatus("✅ Artist link copied.");
+        } catch (error) {
+          setStatus("❌ Copy link error: " + error.message);
         }
       }
 
-      function subscribeArtworkLive() {
-        if (liveChannel) {
-          supabase.removeChannel(liveChannel);
+      function openMessageArtist() {
+        if (!creatorProfile?.username) {
+          setStatus("Artist username missing.");
+          return;
         }
-
-        liveChannel = supabase
-          .channel("artist-artworks-live")
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "artworks" },
-            async () => {
-              await refreshAll();
-            }
-          )
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "artwork_likes" },
-            async () => {
-              await refreshAll();
-            }
-          )
-          .on(
-            "postgres_changes",
-            { event: "*", schema: "public", table: "comments" },
-            async payload => {
-              if (payload.new?.content_type === "artwork" || payload.old?.content_type === "artwork") {
-                await refreshAll();
-              }
-            }
-          )
-          .subscribe();
-      }
-
-      async function refreshAll() {
-        await loadArtistContent();
-        await loadArtworkSocialData(storeRows.map(item => item.id));
-        updateStats();
-        renderMusic();
-        renderStore();
-        renderSports();
+        window.location.href = `messages.html?start=${encodeURIComponent(creatorProfile.username)}`;
       }
 
       async function loadArtistPage() {
@@ -1145,26 +835,25 @@
           await loadSession();
 
           const username = await getUsernameFromUrlOrSession();
-          await loadArtistProfile(username);
-          await refreshAll();
-          subscribeArtworkLive();
+          await loadCreatorProfile(username);
+          await loadArtistContent();
+          renderContent();
 
-          setStatus("✅ Artist page fully synced with store, music, sports, likes, comments, and live updates.");
+          setStatus("✅ Artist page fully synced with fallback.");
         } catch (error) {
-          console.error("artist page load error:", error);
+          console.error("artist load error:", error);
           setStatus("❌ Artist page load error: " + error.message);
-          musicGrid.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load artist.")}</div>`;
-          storeGrid.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load artist store.")}</div>`;
-          sportsGrid.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load sports posts.")}</div>`;
+          contentGrid.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load artist page.")}</div>`;
         }
       }
 
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => setTab(btn.dataset.tab));
+      sectionFilterRow.querySelectorAll(".chip").forEach(chip => {
+        chip.addEventListener("click", () => setSection(chip.dataset.section));
       });
 
+      copyArtistLinkBtn.addEventListener("click", copyArtistLink);
+      messageArtistBtn.addEventListener("click", openMessageArtist);
       logoutBtn.addEventListener("click", logOut);
-      copyArtistBtn.addEventListener("click", copyArtistLink);
 
       supabase.auth.onAuthStateChange((_event, session) => {
         currentUser = session?.user || null;
