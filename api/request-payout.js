@@ -1,115 +1,214 @@
+import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-function toCents(value) {
-  const num = Number(value || 0);
-  return Math.round(num);
+function json(res, status, payload) {
+  return res.status(status).json(payload);
+}
+
+function toCents(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return 0;
+  return Math.round(n * 100);
 }
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return json(res, 405, {
+      ok: false,
+      error: "Method not allowed. Use POST."
+    });
   }
 
   try {
-    const {
-      artistUserId,
-      amountCents,
-      currency = "usd",
-      note = ""
-    } = req.body || {};
-
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return res.status(500).json({ error: "Missing Supabase server env vars." });
-    }
-
-    if (!artistUserId) {
-      return res.status(400).json({ error: "Missing artistUserId." });
-    }
-
-    const cents = toCents(amountCents);
-    if (!cents || cents <= 0) {
-      return res.status(400).json({ error: "Invalid amountCents." });
-    }
-
-    const safeCurrency = String(currency || "usd").trim().toLowerCase();
-    const safeNote = String(note || "").slice(0, 500);
-
-    const payoutAccountRes = await supabase
-      .from("artist_payout_accounts")
-      .select("*")
-      .eq("user_id", artistUserId)
-      .maybeSingle();
-
-    if (payoutAccountRes.error) throw payoutAccountRes.error;
-
-    const payoutAccount = payoutAccountRes.data;
-    if (!payoutAccount) {
-      return res.status(400).json({ error: "No payout account found." });
-    }
-
-    if (!payoutAccount.payouts_enabled) {
-      return res.status(400).json({ error: "Payout account is not ready yet." });
-    }
-
-    const balanceRes = await supabase
-      .from("creator_available_balances")
-      .select("*")
-      .eq("artist_user_id", artistUserId)
-      .maybeSingle();
-
-    if (balanceRes.error) throw balanceRes.error;
-
-    const availableCents = Number(balanceRes.data?.available_cents || 0);
-    if (cents > availableCents) {
-      return res.status(400).json({ error: "Amount exceeds available balance." });
-    }
-
-    const pendingRes = await supabase
-      .from("payout_requests")
-      .select("amount_cents,status")
-      .eq("artist_user_id", artistUserId)
-      .in("status", ["pending", "submitted"]);
-
-    if (pendingRes.error) throw pendingRes.error;
-
-    const pendingTotal = (pendingRes.data || []).reduce(
-      (sum, row) => sum + Number(row.amount_cents || 0),
-      0
-    );
-
-    if (cents > Math.max(availableCents - pendingTotal, 0)) {
-      return res.status(400).json({
-        error: "Amount exceeds remaining balance after pending payouts."
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return json(res, 500, {
+        ok: false,
+        error: "Missing STRIPE_SECRET_KEY."
       });
     }
 
-    const insertRes = await supabase
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return json(res, 500, {
+        ok: false,
+        error: "Missing Supabase server environment variables."
+      });
+    }
+
+    const {
+      userId,
+      amount,
+      currency = "usd",
+      note = "",
+      destinationAccountId = "",
+      autoApprove
+    } = req.body || {};
+
+    if (!userId) {
+      return json(res, 400, {
+        ok: false,
+        error: "Missing userId."
+      });
+    }
+
+    const amountCents = toCents(amount);
+    if (!amountCents) {
+      return json(res, 400, {
+        ok: false,
+        error: "Amount must be greater than 0."
+      });
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .or(`id.eq.${userId},user_id.eq.${userId}`)
+      .limit(1)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error("request-payout profile lookup error:", profileError);
+      return json(res, 500, {
+        ok: false,
+        error: "Failed to load profile."
+      });
+    }
+
+    if (!profile) {
+      return json(res, 404, {
+        ok: false,
+        error: "Profile not found."
+      });
+    }
+
+    const stripeAccountId =
+      destinationAccountId ||
+      profile.stripe_account_id ||
+      "";
+
+    if (!stripeAccountId) {
+      return json(res, 400, {
+        ok: false,
+        error: "This user does not have a connected Stripe account yet."
+      });
+    }
+
+    const normalizedCurrency = String(currency || "usd").toLowerCase();
+    const shouldAutoApprove =
+      autoApprove === true ||
+      String(process.env.AUTO_APPROVE_PAYOUTS || "").toLowerCase() === "true";
+
+    const payoutRequestPayload = {
+      user_id: profile.user_id || profile.id,
+      profile_id: profile.id,
+      stripe_account_id: stripeAccountId,
+      amount_cents: amountCents,
+      currency: normalizedCurrency,
+      status: shouldAutoApprove ? "processing" : "pending",
+      note: note || "",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const { data: payoutRequest, error: payoutInsertError } = await supabase
       .from("payout_requests")
-      .insert({
-        artist_user_id: artistUserId,
-        amount_cents: cents,
-        currency: safeCurrency,
-        status: "pending",
-        stripe_destination_account_id: payoutAccount.stripe_account_id,
-        note: safeNote
-      })
+      .insert(payoutRequestPayload)
       .select()
       .single();
 
-    if (insertRes.error) throw insertRes.error;
+    if (payoutInsertError) {
+      console.error("request-payout insert error:", payoutInsertError);
+      return json(res, 500, {
+        ok: false,
+        error: "Failed to create payout request record."
+      });
+    }
 
-    return res.status(200).json({
+    if (!shouldAutoApprove) {
+      return json(res, 200, {
+        ok: true,
+        mode: "manual_review",
+        message: "Payout request created and waiting for approval.",
+        payoutRequestId: payoutRequest.id,
+        status: payoutRequest.status,
+        amount_cents: payoutRequest.amount_cents,
+        currency: payoutRequest.currency
+      });
+    }
+
+    let transfer;
+    try {
+      transfer = await stripe.transfers.create({
+        amount: amountCents,
+        currency: normalizedCurrency,
+        destination: stripeAccountId,
+        description: `Rich Bizness payout for ${profile.display_name || profile.username || profile.email || profile.id}`,
+        metadata: {
+          rich_bizness_user_id: String(profile.user_id || profile.id),
+          profile_id: String(profile.id || ""),
+          payout_request_id: String(payoutRequest.id || ""),
+          username: String(profile.username || "")
+        }
+      });
+    } catch (stripeError) {
+      console.error("request-payout stripe transfer error:", stripeError);
+
+      await supabase
+        .from("payout_requests")
+        .update({
+          status: "failed",
+          failure_reason: stripeError?.message || "Stripe transfer failed.",
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", payoutRequest.id);
+
+      return json(res, 500, {
+        ok: false,
+        error: stripeError?.message || "Stripe transfer failed.",
+        payoutRequestId: payoutRequest.id
+      });
+    }
+
+    const { error: payoutUpdateError } = await supabase
+      .from("payout_requests")
+      .update({
+        status: "paid",
+        stripe_transfer_id: transfer.id,
+        paid_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", payoutRequest.id);
+
+    if (payoutUpdateError) {
+      console.error("request-payout update after transfer error:", payoutUpdateError);
+      return json(res, 500, {
+        ok: false,
+        error: "Transfer succeeded but failed to update payout request record.",
+        payoutRequestId: payoutRequest.id,
+        transferId: transfer.id
+      });
+    }
+
+    return json(res, 200, {
       ok: true,
-      payout_request: insertRes.data
+      mode: "auto_approved",
+      message: "Payout sent to connected account.",
+      payoutRequestId: payoutRequest.id,
+      transferId: transfer.id,
+      amount_cents: amountCents,
+      currency: normalizedCurrency,
+      destination: stripeAccountId
     });
   } catch (error) {
-    console.error("request-payout error", error);
-    return res.status(500).json({
+    console.error("request-payout fatal error:", error);
+    return json(res, 500, {
+      ok: false,
       error: error?.message || "Failed to request payout."
     });
   }
