@@ -7,565 +7,698 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
-
-    :root{
-      --bg:#07110a;
-      --panel:rgba(0,0,0,.62);
-      --panel-2:rgba(0,0,0,.78);
-      --line:rgba(145,245,109,.18);
-      --line-2:rgba(145,245,109,.3);
-      --green:#9af06a;
-      --green-2:#76df49;
-      --text:#f3fff0;
-      --muted:#bdd9b4;
-      --blue:#7db4ff;
-      --danger:#ff6868;
-      --yellow:#ffd85e;
-      --shadow:0 18px 50px rgba(0,0,0,.35);
+    :root {
+      --bg: #06110a;
+      --panel: rgba(3, 10, 7, 0.84);
+      --panel-2: rgba(7, 17, 11, 0.82);
+      --line: rgba(141, 245, 109, 0.18);
+      --line-2: rgba(141, 245, 109, 0.28);
+      --text: #eef6ee;
+      --muted: #c6d4c6;
+      --green: #8df56d;
+      --green-dark: #61cf40;
+      --blue: #8fbbff;
+      --yellow: #efd96e;
+      --red: #ff6e6e;
+      --card-shadow: 0 18px 44px rgba(0, 0, 0, 0.34);
     }
 
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:Arial, Helvetica, sans-serif;
-      color:var(--text);
+    html, body {
+      margin: 0;
+      min-height: 100%;
       background:
-        linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.88)),
+        linear-gradient(rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.74)),
+        radial-gradient(circle at top, rgba(47, 97, 53, 0.16), transparent 36%),
         url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed no-repeat;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    .page{
-      width:min(1400px, calc(100% - 24px));
-      margin:18px auto 40px;
+    a { color: inherit; text-decoration: none; }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px;
     }
 
-    .shell{
-      background:rgba(2,10,6,.64);
-      border:1px solid var(--line);
-      border-radius:28px;
-      overflow:hidden;
-      backdrop-filter:blur(10px);
-      box-shadow:var(--shadow);
+    .shell,
+    .hero,
+    .status,
+    .pane,
+    .composer,
+    .thread-item,
+    .message-bubble,
+    .member-chip,
+    .reaction-btn,
+    .empty,
+    .search-wrap,
+    .stat-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--card-shadow);
+      border-radius: 28px;
     }
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
-      padding:18px 20px;
-      border-bottom:1px solid var(--line);
-      flex-wrap:wrap;
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 18px;
+      margin-bottom: 16px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:280px;
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
     }
 
-    .brand-logo{
-      width:78px;
-      height:78px;
-      border-radius:50%;
-      border:2px solid rgba(145,245,109,.2);
-      object-fit:cover;
-      background:#000;
-      box-shadow:0 0 0 6px rgba(145,245,109,.05);
+    .brand-avatar {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      border: 2px solid rgba(141, 245, 109, 0.25);
+      background: #040b06 center/cover no-repeat;
+      flex: 0 0 auto;
+      box-shadow: inset 0 0 0 8px rgba(141, 245, 109, 0.04);
     }
 
-    .brand h1{
-      margin:0;
-      font-size:3rem;
-      line-height:1;
-      color:var(--green);
+    .brand-title {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 0.95;
+      font-weight: 900;
+      color: var(--green);
+      margin: 0 0 8px;
     }
 
-    .brand p{
-      margin:6px 0 0;
-      font-size:1rem;
-      color:var(--muted);
+    .brand-sub {
+      margin: 0;
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--muted);
     }
 
-    .nav{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 12px;
+      align-items: center;
     }
 
-    .chip{
-      padding:12px 18px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.08);
-      color:#fff;
-      font-weight:700;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:48px;
+    .chip,
+    .btn,
+    .nav a,
+    .tab-btn {
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 52px;
+      padding: 0 18px;
+      font-size: 1rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.18s ease;
     }
 
-    .chip-green{
-      background:var(--green);
-      color:#081006;
-      border:0;
+    .chip,
+    .nav a,
+    .tab-btn,
+    .btn-dark {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
     }
 
-    .chip-yellow{
-      background:var(--yellow);
-      color:#1a1400;
-      border:0;
+    .btn-green {
+      background: var(--green);
+      color: #041007;
+      border-color: transparent;
     }
 
-    .hero{
-      margin:18px;
-      padding:26px;
-      border-radius:26px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(0,0,0,.36), rgba(0,0,0,.46));
+    .btn-blue {
+      background: #7fb0f6;
+      color: #07111b;
+      border-color: transparent;
     }
 
-    .hero h2{
-      margin:0 0 12px;
-      font-size:clamp(2.2rem, 5vw, 4.6rem);
-      line-height:.95;
-      color:var(--green);
-      letter-spacing:-.03em;
-      max-width:900px;
+    .btn-yellow {
+      background: var(--yellow);
+      color: #171103;
+      border-color: transparent;
     }
 
-    .hero p{
-      margin:0;
-      color:#eef7ea;
-      font-size:1.05rem;
-      line-height:1.5;
-      max-width:960px;
+    .btn-red {
+      background: rgba(255, 110, 110, 0.16);
+      color: #ffd1d1;
+      border: 1px solid rgba(255, 110, 110, 0.26);
     }
 
-    .hero-actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:12px;
-      margin-top:24px;
+    .btn:hover,
+    .nav a:hover,
+    .tab-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
     }
 
-    .status{
-      margin:0 18px 18px;
-      padding:16px 18px;
-      border-radius:20px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(0,0,0,.55);
-      font-size:1rem;
+    .hero {
+      padding: 26px;
+      margin-bottom: 16px;
     }
 
-    .status.loading{ color:#fff; }
-    .status.ok{ color:#cbffc3; }
-    .status.error{ color:#ffd1d1; border-color:rgba(255,104,104,.28); }
-
-    .grid{
-      display:grid;
-      grid-template-columns:360px minmax(0,1fr);
-      gap:18px;
-      padding:0 18px 18px;
+    .eyebrow-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
 
-    .panel{
-      background:var(--panel);
-      border:1px solid var(--line);
-      border-radius:26px;
-      padding:18px;
-      min-height:200px;
+    .eyebrow {
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.83rem;
+      font-weight: 900;
+      border: 1px solid var(--line);
+      background: rgba(141, 245, 109, 0.08);
+      color: #dfffd5;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
     }
 
-    .section-title{
-      margin:0 0 10px;
-      color:var(--green);
-      font-size:1.1rem;
-      font-weight:900;
-      letter-spacing:.01em;
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.4rem, 6vw, 5rem);
+      line-height: 0.95;
+      color: var(--green);
+      letter-spacing: -0.04em;
     }
 
-    .section-copy{
-      margin:0 0 16px;
-      color:var(--muted);
-      line-height:1.45;
-      font-size:1rem;
+    .hero p {
+      margin: 0;
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      max-width: 980px;
+      line-height: 1.5;
+      color: #eef4ee;
     }
 
-    .search-row{
-      display:grid;
-      grid-template-columns:1fr 140px;
-      gap:10px;
-      margin-bottom:16px;
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 18px;
     }
 
-    input, textarea{
-      width:100%;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.08);
-      background:#020703;
-      color:#fff;
-      padding:18px 16px;
-      font-size:1rem;
-      outline:none;
+    .status {
+      padding: 18px 20px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #fff;
     }
 
-    textarea{
-      min-height:140px;
-      resize:vertical;
+    .status.loading { color: #f5f5f5; }
+    .status.ok {
+      color: #d7ffd0;
+      border-color: rgba(141, 245, 109, 0.28);
+      background: rgba(11, 25, 11, 0.86);
+    }
+    .status.err {
+      color: #ffd0d0;
+      border-color: rgba(255, 110, 110, 0.35);
+      background: rgba(27, 8, 8, 0.84);
     }
 
-    input:focus, textarea:focus{
-      border-color:var(--line-2);
-      box-shadow:0 0 0 3px rgba(145,245,109,.08);
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 16px;
     }
 
-    button{
-      border:0;
-      cursor:pointer;
-      border-radius:18px;
-      font-weight:900;
-      font-size:1rem;
-      min-height:58px;
-      transition:transform .12s ease, opacity .12s ease;
+    .stat-card {
+      padding: 18px;
+      text-align: center;
     }
 
-    button:hover{ transform:translateY(-1px); }
-    button:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-
-    .start-btn{
-      background:var(--blue);
-      color:#07131f;
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      margin-bottom: 6px;
     }
 
-    .send-btn{
-      background:var(--green);
-      color:#081006;
-      width:100%;
-      margin-top:12px;
+    .stat-label {
+      color: var(--muted);
+      font-weight: 700;
     }
 
-    .thread-list{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-top:12px;
+    .chat-grid {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 16px;
+      align-items: start;
     }
 
-    .thread-item{
-      width:100%;
-      text-align:left;
-      padding:14px;
-      border-radius:18px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      color:#fff;
-      min-height:auto;
+    .pane {
+      padding: 18px;
+      min-height: 640px;
     }
 
-    .thread-item.active{
-      border-color:rgba(145,245,109,.34);
-      background:rgba(145,245,109,.08);
+    .section-title {
+      margin: 0 0 12px;
+      color: var(--green);
+      font-size: 1.35rem;
+      line-height: 1;
     }
 
-    .thread-top{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      margin-bottom:6px;
+    .section-copy {
+      color: var(--muted);
+      line-height: 1.45;
+      margin: 0 0 14px;
+      font-size: 0.98rem;
     }
 
-    .thread-name{
-      font-size:1rem;
-      font-weight:900;
-      color:#fff;
+    .search-wrap {
+      padding: 12px;
+      margin-bottom: 14px;
+      background: var(--panel-2);
     }
 
-    .thread-time{
-      font-size:.82rem;
-      color:#adc7a5;
-      white-space:nowrap;
+    .search-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      gap: 12px;
+      align-items: center;
     }
 
-    .thread-meta{
-      font-size:.9rem;
-      color:#dce9d8;
-      opacity:.88;
-      margin-bottom:6px;
+    input,
+    textarea,
+    select {
+      width: 100%;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      background: #040607;
+      color: #fff;
+      padding: 16px 18px;
+      outline: none;
+      font-size: 1rem;
+      box-shadow: inset 0 0 0 1px rgba(141, 245, 109, 0.04);
     }
 
-    .thread-preview{
-      font-size:.9rem;
-      color:#cfdccb;
-      opacity:.85;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: rgba(141, 245, 109, 0.34);
+      box-shadow: 0 0 0 4px rgba(141, 245, 109, 0.08);
     }
 
-    .badge{
-      display:inline-flex;
-      min-width:24px;
-      height:24px;
-      padding:0 8px;
-      align-items:center;
-      justify-content:center;
-      border-radius:999px;
-      background:var(--green);
-      color:#081006;
-      font-weight:900;
-      font-size:.8rem;
+    .thread-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
-    .conversation{
-      display:flex;
-      flex-direction:column;
-      min-height:720px;
+    .thread-item {
+      padding: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: 0.16s ease;
+      background: rgba(255, 255, 255, 0.04);
     }
 
-    .conv-head{
-      padding:16px 18px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      margin-bottom:14px;
+    .thread-item:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-2);
     }
 
-    .conv-title{
-      margin:0;
-      color:var(--green);
-      font-size:1.2rem;
-      font-weight:900;
+    .thread-item.active {
+      border-color: rgba(141, 245, 109, 0.36);
+      background: rgba(141, 245, 109, 0.08);
     }
 
-    .conv-sub{
-      margin-top:6px;
-      color:var(--muted);
-      font-size:.98rem;
+    .thread-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
     }
 
-    .messages{
-      flex:1;
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.08);
-      background:var(--panel-2);
-      padding:14px;
-      overflow:auto;
-      min-height:360px;
+    .thread-name {
+      font-weight: 900;
+      font-size: 1rem;
+      color: #fff;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .empty{
-      border:1px dashed rgba(255,255,255,.1);
-      border-radius:18px;
-      padding:24px 18px;
-      text-align:center;
-      color:#d5e2d0;
-      font-size:1rem;
+    .thread-time {
+      color: var(--muted);
+      font-size: 0.82rem;
+      flex: 0 0 auto;
     }
 
-    .message{
-      max-width:82%;
-      padding:14px 16px;
-      border-radius:18px;
-      margin-bottom:12px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      box-shadow:0 6px 20px rgba(0,0,0,.18);
+    .thread-preview {
+      color: #dbe4db;
+      font-size: 0.95rem;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
     }
 
-    .message.mine{
-      margin-left:auto;
-      background:rgba(145,245,109,.11);
-      border-color:rgba(145,245,109,.24);
+    .conv-head {
+      padding: 14px;
+      margin-bottom: 12px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(141, 245, 109, 0.04);
     }
 
-    .message-header{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      margin-bottom:8px;
-      font-size:.84rem;
-      color:#d7e8d1;
+    .conv-title {
+      font-size: 1.65rem;
+      line-height: 1;
+      color: var(--green);
+      font-weight: 900;
+      margin-bottom: 6px;
     }
 
-    .message-name{
-      font-weight:900;
-      color:#fff;
+    .conv-sub {
+      color: var(--muted);
+      font-size: 1rem;
+      margin-bottom: 14px;
     }
 
-    .message-time{
-      opacity:.8;
-      white-space:nowrap;
+    .member-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .message-body{
-      font-size:1rem;
-      line-height:1.45;
-      color:#fff;
-      white-space:pre-wrap;
-      word-break:break-word;
+    .member-chip {
+      padding: 10px 12px;
+      border-radius: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: none;
     }
 
-    .reactions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:12px;
+    .member-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #09110a center/cover no-repeat;
+      border: 1px solid rgba(141, 245, 109, 0.18);
+      flex: 0 0 auto;
     }
 
-    .reaction{
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.1);
-      background:rgba(255,255,255,.05);
-      color:#fff;
-      font-size:.92rem;
-      cursor:pointer;
+    .member-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
-    .reaction.active{
-      border-color:rgba(145,245,109,.34);
-      background:rgba(145,245,109,.12);
+    .member-name {
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .reaction-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin-top:10px;
+    .member-user {
+      color: var(--muted);
+      font-size: 0.85rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    .composer{
-      margin-top:14px;
-      padding:14px;
-      border-radius:22px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.03);
+    .messages {
+      min-height: 360px;
+      max-height: 560px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 8px 4px 8px;
+      margin-bottom: 14px;
     }
 
-    .composer-actions{
-      display:flex;
-      gap:10px;
-      margin-top:12px;
-      flex-wrap:wrap;
+    .message-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 78%;
     }
 
-    .mini-btn{
-      min-height:42px;
-      padding:0 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.08);
-      cursor:pointer;
+    .message-row.mine {
+      align-self: flex-end;
+      align-items: flex-end;
     }
 
-    .muted{
-      color:var(--muted);
-      font-size:.95rem;
+    .message-row.theirs {
+      align-self: flex-start;
+      align-items: flex-start;
     }
 
-    .hidden{ display:none !important; }
+    .message-meta {
+      font-size: 0.83rem;
+      color: var(--muted);
+      padding: 0 8px;
+    }
 
-    @media (max-width: 980px){
-      .grid{ grid-template-columns:1fr; }
-      .conversation{ min-height:auto; }
-      .message{ max-width:100%; }
+    .message-bubble {
+      padding: 14px 16px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.05);
+      width: fit-content;
+      max-width: 100%;
+    }
+
+    .message-row.mine .message-bubble {
+      background: rgba(141, 245, 109, 0.15);
+      border-color: rgba(141, 245, 109, 0.22);
+    }
+
+    .message-text {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #fff;
+    }
+
+    .message-reactions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 6px;
+    }
+
+    .reaction-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 34px;
+      border-radius: 999px;
+      padding: 0 12px;
+      background: rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      box-shadow: none;
+      font-size: 0.92rem;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .reaction-btn.active {
+      background: rgba(141, 245, 109, 0.14);
+      border-color: rgba(141, 245, 109, 0.34);
+    }
+
+    .composer {
+      padding: 14px;
+      background: var(--panel-2);
+    }
+
+    .composer textarea {
+      min-height: 124px;
+      resize: vertical;
+      margin-bottom: 12px;
+      font-family: inherit;
+    }
+
+    .composer-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .reaction-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .emoji-pick {
+      border-radius: 16px;
+      min-width: 48px;
+      min-height: 42px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: #ced6ce;
+      background: rgba(255, 255, 255, 0.03);
+      border-style: dashed;
+      box-shadow: none;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 1120px) {
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .chat-grid { grid-template-columns: 1fr; }
+      .pane { min-height: auto; }
+      .messages { max-height: 420px; }
+    }
+
+    @media (max-width: 720px) {
+      .page { padding: 10px; }
+      .topbar, .hero, .pane, .status { border-radius: 24px; }
+      .brand-avatar { width: 74px; height: 74px; }
+      .search-row { grid-template-columns: 1fr; }
+      .stats { grid-template-columns: 1fr; }
+      .message-row { max-width: 100%; }
+      .composer-actions { align-items: stretch; }
+      .composer-actions .btn { width: 100%; }
+      .nav { justify-content: flex-start; }
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="shell">
-      <div class="topbar">
-        <div class="brand">
-          <img
-            class="brand-logo"
-            src="rich-bizness-profile.jpg"
-            alt="Rich Bizness"
-            onerror="this.src='images/rich-bizness-profile.jpg'; this.onerror=null;"
-          />
-          <div>
-            <h1>Messages</h1>
-            <p>Direct creator-to-fan DM hub</p>
-          </div>
-        </div>
-
-        <div class="nav">
-          <div id="userChip" class="chip">Loading...</div>
-          <a class="chip" href="index.html">Home</a>
-          <a class="chip" href="notifications.html">Notifications</a>
-          <a class="chip" href="profile.html">Profile</a>
-          <button id="logoutBtn" class="chip">Log Out</button>
+    <div class="shell topbar">
+      <div class="brand-wrap">
+        <div id="brandAvatar" class="brand-avatar" style="background-image:url('rich-bizness-profile.jpg');"></div>
+        <div>
+          <h1 class="brand-title">Messages</h1>
+          <p class="brand-sub">Direct creator-to-fan DM hub</p>
         </div>
       </div>
 
-      <section class="hero">
-        <h2>Message creators, fans, and collaborators from one real Rich Bizness inbox.</h2>
-        <p>
-          This is a real DM hub with threads, unread tracking, live updates, emoji reactions,
-          and username-based conversation starts.
-        </p>
-        <div class="hero-actions">
-          <button id="refreshBtn" class="chip chip-green" type="button">Refresh Inbox</button>
-          <a class="chip" href="notifications.html">Notifications</a>
-          <a class="chip" href="profile.html">Profile</a>
+      <div class="nav">
+        <div id="userChip" class="chip">Loading...</div>
+        <a href="index.html">Home</a>
+        <a href="notifications.html">Notifications</a>
+        <a href="profile.html">Profile</a>
+        <button id="logoutBtn" class="btn btn-dark" type="button">Log Out</button>
+      </div>
+    </div>
+
+    <section class="hero">
+      <div class="eyebrow-row">
+        <div class="eyebrow">Inbox</div>
+        <div class="eyebrow">Realtime Ready</div>
+        <div class="eyebrow">Emoji Reactions</div>
+      </div>
+      <h1>Message creators, fans, and collaborators from one real Rich Bizness inbox.</h1>
+      <p>This is a real DM hub with threads, unread tracking, live updates, emoji reactions, and username-based conversation starts.</p>
+      <div class="hero-actions">
+        <button id="refreshInboxBtn" class="btn btn-green" type="button">Refresh Inbox</button>
+        <a class="btn btn-dark" href="notifications.html">Notifications</a>
+        <a class="btn btn-dark" href="profile.html">Profile</a>
+      </div>
+    </section>
+
+    <div id="statusBox" class="status loading">Loading messages...</div>
+
+    <section class="stats">
+      <div class="stat-card">
+        <div id="threadCount" class="stat-value">0</div>
+        <div class="stat-label">Threads</div>
+      </div>
+      <div class="stat-card">
+        <div id="messageCount" class="stat-value">0</div>
+        <div class="stat-label">Messages in open chat</div>
+      </div>
+      <div class="stat-card">
+        <div id="memberCount" class="stat-value">0</div>
+        <div class="stat-label">Members in open chat</div>
+      </div>
+      <div class="stat-card">
+        <div id="reactionCount" class="stat-value">0</div>
+        <div class="stat-label">Reactions in open chat</div>
+      </div>
+    </section>
+
+    <div class="chat-grid">
+      <aside class="pane">
+        <h2 class="section-title">Start New Chat</h2>
+        <p class="section-copy">Type the other user's username exactly as it appears in profiles.</p>
+
+        <div class="search-wrap">
+          <div class="search-row">
+            <input id="targetUsername" type="text" placeholder="Enter username" autocomplete="off" />
+            <button id="startChatBtn" class="btn btn-blue" type="button">Start Chat</button>
+          </div>
+        </div>
+
+        <h2 class="section-title" style="margin-top:18px;">Threads</h2>
+        <div id="threadList" class="thread-list">
+          <div class="empty">No threads yet.</div>
+        </div>
+      </aside>
+
+      <section class="pane">
+        <div class="conv-head">
+          <div id="conversationTitle" class="conv-title">No thread selected.</div>
+          <div id="conversationSub" class="conv-sub">Pick or start a conversation.</div>
+          <div id="conversationMembers" class="member-row"></div>
+        </div>
+
+        <div id="messagesList" class="messages">
+          <div class="empty">No messages yet.</div>
+        </div>
+
+        <div class="composer">
+          <textarea id="messageBody" placeholder="Write a message..."></textarea>
+          <div class="composer-actions">
+            <div class="reaction-picker">
+              <button class="emoji-pick" type="button" data-emoji="🔥">🔥</button>
+              <button class="emoji-pick" type="button" data-emoji="💸">💸</button>
+              <button class="emoji-pick" type="button" data-emoji="🎵">🎵</button>
+              <button class="emoji-pick" type="button" data-emoji="💯">💯</button>
+            </div>
+            <button id="sendBtn" class="btn btn-green" type="button">Send Message</button>
+          </div>
         </div>
       </section>
-
-      <div id="statusBox" class="status loading">Loading messages...</div>
-
-      <div class="grid">
-        <aside class="panel">
-          <h2 class="section-title" style="font-size:1.35rem;">Start New Chat</h2>
-          <p class="section-copy">
-            Type the other user's username exactly as it appears in profiles.
-          </p>
-
-          <div class="search-row">
-            <input id="targetUsername" type="text" placeholder="Enter username" />
-            <button id="startChatBtn" class="start-btn" type="button">Start Chat</button>
-          </div>
-
-          <h2 class="section-title" style="font-size:1.35rem;">Threads</h2>
-          <div id="threadList" class="thread-list">
-            <div class="empty">No threads yet.</div>
-          </div>
-        </aside>
-
-        <section class="panel conversation">
-          <div class="conv-head">
-            <div id="conversationTitle" class="conv-title">No thread selected.</div>
-            <div id="conversationSub" class="conv-sub">Pick or start a conversation.</div>
-          </div>
-
-          <div id="messagesList" class="messages">
-            <div class="empty">No messages yet.</div>
-          </div>
-
-          <div class="composer">
-            <textarea id="messageBody" placeholder="Write a message..."></textarea>
-            <div class="composer-actions">
-              <button id="sendBtn" class="send-btn" type="button">Send Message</button>
-            </div>
-          </div>
-        </section>
-      </div>
     </div>
   </div>
 
   <script>
     try {
-      // KEEP YOUR CURRENT VALUES HERE
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_URL = "https://ksvdequymkceeovocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -576,50 +709,54 @@
         }
       });
 
+      const REACTION_EMOJIS = ["🔥", "💸", "🎵", "💯"];
+
       const statusBox = document.getElementById("statusBox");
       const userChip = document.getElementById("userChip");
-      const refreshBtn = document.getElementById("refreshBtn");
       const logoutBtn = document.getElementById("logoutBtn");
-      const targetUsername = document.getElementById("targetUsername");
+      const refreshInboxBtn = document.getElementById("refreshInboxBtn");
+      const targetUsernameInput = document.getElementById("targetUsername");
       const startChatBtn = document.getElementById("startChatBtn");
       const threadList = document.getElementById("threadList");
       const conversationTitle = document.getElementById("conversationTitle");
       const conversationSub = document.getElementById("conversationSub");
+      const conversationMembers = document.getElementById("conversationMembers");
       const messagesList = document.getElementById("messagesList");
       const messageBody = document.getElementById("messageBody");
       const sendBtn = document.getElementById("sendBtn");
+      const threadCount = document.getElementById("threadCount");
+      const messageCount = document.getElementById("messageCount");
+      const memberCount = document.getElementById("memberCount");
+      const reactionCount = document.getElementById("reactionCount");
+      const emojiButtons = [...document.querySelectorAll(".emoji-pick")];
 
       let currentUser = null;
-      let currentProfile = null;
-      let threads = [];
-      let membersByThread = new Map();
-      let profilesByUserId = new Map();
-      let selectedThreadId = null;
-      let messagesByThread = new Map();
-      let reactionsByMessageId = new Map();
-      let reactionMineSet = new Set();
-
-      const QUICK_REACTIONS = ["🔥", "💯", "😂", "❤️", "👀", "🎵"];
+      let currentThreadId = null;
+      let currentThreadMembers = [];
+      let profilesById = new Map();
+      let threadMembersByThread = new Map();
+      let latestMessagesByThread = new Map();
+      let reactionsByMessage = new Map();
 
       function setStatus(message, type = "loading") {
-        statusBox.className = "status " + type;
         statusBox.textContent = message;
+        statusBox.className = `status ${type}`;
       }
 
       function escapeHtml(value) {
-        return String(value ?? "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
-      function formatTime(value) {
-        if (!value) return "";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "";
-        return d.toLocaleString([], {
+      function formatTime(dateValue) {
+        if (!dateValue) return "";
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return "";
+        return date.toLocaleString([], {
           month: "short",
           day: "numeric",
           hour: "numeric",
@@ -627,356 +764,360 @@
         });
       }
 
-      function slugifyUsername(value) {
-        return String(value || "")
-          .trim()
-          .replace(/^@+/, "")
-          .toLowerCase();
+      function normalizeUsername(value) {
+        return String(value || "").trim().toLowerCase();
       }
 
-      async function requireUser() {
-        const { data, error } = await supabase.auth.getUser();
+      function updateStats({ threadTotal = 0, messageTotal = 0, memberTotal = 0, reactionTotal = 0 } = {}) {
+        threadCount.textContent = String(threadTotal);
+        messageCount.textContent = String(messageTotal);
+        memberCount.textContent = String(memberTotal);
+        reactionCount.textContent = String(reactionTotal);
+      }
+
+      async function requireSession() {
+        const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
-        if (!data?.user) {
-          window.location.href = "auth.html";
-          return null;
-        }
-        currentUser = data.user;
+        const session = data?.session || null;
+        if (!session?.user) throw new Error("No active session. Log in first.");
+        currentUser = session.user;
         return currentUser;
       }
 
-      async function loadCurrentProfile() {
+      async function loadCurrentUserProfile() {
+        await requireSession();
+
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, user_id, username, display_name, email, avatar_url")
-          .eq("user_id", currentUser.id)
+          .select("id, username, display_name, avatar_url, email")
+          .eq("id", currentUser.id)
           .maybeSingle();
 
         if (error) throw error;
 
-        currentProfile = data || null;
-
-        const chipLabel =
-          currentProfile?.username ||
-          currentProfile?.display_name ||
-          currentUser.email ||
-          "Signed in";
-
-        userChip.textContent = chipLabel;
+        const display = data?.display_name || data?.username || currentUser.email || "Rich Bizness User";
+        userChip.textContent = display;
+        profilesById.set(currentUser.id, {
+          id: currentUser.id,
+          username: data?.username || "",
+          display_name: data?.display_name || display,
+          avatar_url: data?.avatar_url || "",
+          email: data?.email || currentUser.email || ""
+        });
       }
 
-      async function refreshInbox() {
-        setStatus("Loading messages...", "loading");
+      async function loadProfilesByIds(ids) {
+        const safeIds = [...new Set((ids || []).filter(Boolean))];
+        const missingIds = safeIds.filter(id => !profilesById.has(id));
+        if (!missingIds.length) return;
 
-        try {
-          await requireUser();
-          await loadCurrentProfile();
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, email")
+          .in("id", missingIds);
 
-          const { data: myMemberships, error: myMembershipsError } = await supabase
-            .from("dm_thread_members")
-            .select("id, thread_id, user_id, last_read_at, created_at")
-            .eq("user_id", currentUser.id)
-            .order("created_at", { ascending: false });
+        if (error) throw error;
 
-          if (myMembershipsError) throw myMembershipsError;
-
-          const threadIds = [...new Set((myMemberships || []).map(row => row.thread_id).filter(Boolean))];
-
-          if (!threadIds.length) {
-            threads = [];
-            membersByThread = new Map();
-            profilesByUserId = new Map();
-            messagesByThread = new Map();
-            reactionsByMessageId = new Map();
-            reactionMineSet = new Set();
-            selectedThreadId = null;
-            renderThreads();
-            renderConversation();
-            setStatus("Inbox synced. No threads yet.", "ok");
-            return;
-          }
-
-          const { data: threadRows, error: threadsError } = await supabase
-            .from("dm_threads")
-            .select("id, created_by, created_at, updated_at")
-            .in("id", threadIds)
-            .order("updated_at", { ascending: false });
-
-          if (threadsError) throw threadsError;
-
-          const { data: allMembers, error: allMembersError } = await supabase
-            .from("dm_thread_members")
-            .select("id, thread_id, user_id, last_read_at, created_at")
-            .in("thread_id", threadIds)
-            .order("created_at", { ascending: true });
-
-          if (allMembersError) throw allMembersError;
-
-          const memberUserIds = [...new Set((allMembers || []).map(row => row.user_id).filter(Boolean))];
-
-          let profileRows = [];
-          if (memberUserIds.length) {
-            const { data: profilesData, error: profilesError } = await supabase
-              .from("profiles")
-              .select("id, user_id, username, display_name, avatar_url, email")
-              .in("user_id", memberUserIds);
-
-            if (profilesError) throw profilesError;
-            profileRows = profilesData || [];
-          }
-
-          profilesByUserId = new Map(profileRows.map(row => [row.user_id, row]));
-          membersByThread = new Map();
-
-          (allMembers || []).forEach(row => {
-            if (!membersByThread.has(row.thread_id)) membersByThread.set(row.thread_id, []);
-            membersByThread.get(row.thread_id).push(row);
-          });
-
-          const { data: recentMessages, error: recentMessagesError } = await supabase
-            .from("dm_messages")
-            .select("id, thread_id, sender_id, body, created_at")
-            .in("thread_id", threadIds)
-            .order("created_at", { ascending: false });
-
-          if (recentMessagesError) throw recentMessagesError;
-
-          const messageIds = [...new Set((recentMessages || []).map(row => row.id).filter(Boolean))];
-
-          let reactionRows = [];
-          if (messageIds.length) {
-            const { data, error } = await supabase
-              .from("dm_message_reactions")
-              .select("id, message_id, user_id, emoji, created_at")
-              .in("message_id", messageIds);
-
-            if (error) throw error;
-            reactionRows = data || [];
-          }
-
-          reactionsByMessageId = new Map();
-          reactionMineSet = new Set();
-
-          reactionRows.forEach(row => {
-            if (!reactionsByMessageId.has(row.message_id)) reactionsByMessageId.set(row.message_id, []);
-            reactionsByMessageId.get(row.message_id).push(row);
-            if (row.user_id === currentUser.id) {
-              reactionMineSet.add(`${row.message_id}__${row.emoji}`);
-            }
-          });
-
-          const latestMessageByThread = new Map();
-          const groupedMessages = new Map();
-
-          [...(recentMessages || [])]
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))
-            .forEach(msg => {
-              if (!groupedMessages.has(msg.thread_id)) groupedMessages.set(msg.thread_id, []);
-              groupedMessages.get(msg.thread_id).push(msg);
-
-              const currentLatest = latestMessageByThread.get(msg.thread_id);
-              if (!currentLatest || new Date(msg.created_at) > new Date(currentLatest.created_at)) {
-                latestMessageByThread.set(msg.thread_id, msg);
-              }
-            });
-
-          messagesByThread = groupedMessages;
-
-          threads = (threadRows || [])
-            .map(thread => {
-              const members = membersByThread.get(thread.id) || [];
-              const otherMembers = members.filter(m => m.user_id !== currentUser.id);
-
-              const otherProfiles = otherMembers.map(m => profilesByUserId.get(m.user_id)).filter(Boolean);
-              const names = otherProfiles.map(p => p.display_name || p.username || p.email).filter(Boolean);
-
-              const title =
-                names.length ? names.join(", ") : "Conversation";
-
-              const usernames =
-                otherProfiles
-                  .map(p => p.username)
-                  .filter(Boolean)
-                  .map(v => "@" + v)
-                  .join(", ") || "No username";
-
-              const latest = latestMessageByThread.get(thread.id);
-
-              return {
-                ...thread,
-                members,
-                otherMembers,
-                otherProfiles,
-                title,
-                subtitle: usernames,
-                latest
-              };
-            })
-            .sort((a, b) => {
-              const aTime = a.latest?.created_at || a.updated_at || a.created_at;
-              const bTime = b.latest?.created_at || b.updated_at || b.created_at;
-              return new Date(bTime) - new Date(aTime);
-            });
-
-          if (!selectedThreadId || !threads.some(t => t.id === selectedThreadId)) {
-            selectedThreadId = threads[0]?.id || null;
-          }
-
-          renderThreads();
-          renderConversation();
-          setStatus("Messages synced.", "ok");
-        } catch (error) {
-          console.error(error);
-          renderThreads();
-          renderConversation();
-          setStatus(`Message load error: ${error.message || error}`, "error");
-        }
+        (data || []).forEach(row => profilesById.set(row.id, row));
       }
 
-      async function findExistingThreadWithUser(targetUserId) {
-        const myThreadIds = threads.map(t => t.id);
+      function getProfileName(userId) {
+        const profile = profilesById.get(userId);
+        return profile?.display_name || profile?.username || "User";
+      }
+
+      function getProfileUsername(userId) {
+        const profile = profilesById.get(userId);
+        return profile?.username || "user";
+      }
+
+      function getProfileAvatar(userId) {
+        const profile = profilesById.get(userId);
+        return profile?.avatar_url || "";
+      }
+
+      async function resolveTargetProfile(rawInput) {
+        const normalized = normalizeUsername(rawInput);
+        if (!normalized) throw new Error("Enter a username first.");
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id, username, display_name, avatar_url, email")
+          .ilike("username", normalized);
+
+        if (error) throw error;
+
+        const match = (data || []).find(row => normalizeUsername(row.username) === normalized);
+        if (!match) throw new Error("Username not found in profiles.");
+        return match;
+      }
+
+      async function findExistingDirectThread(targetUserId) {
+        const { data: myMemberships, error: myMembershipError } = await supabase
+          .from("dm_thread_members")
+          .select("thread_id")
+          .eq("user_id", currentUser.id);
+
+        if (myMembershipError) throw myMembershipError;
+
+        const myThreadIds = (myMemberships || []).map(row => row.thread_id);
         if (!myThreadIds.length) return null;
 
-        const candidate = threads.find(thread =>
-          (membersByThread.get(thread.id) || []).some(m => m.user_id === targetUserId)
-        );
+        const { data: targetMemberships, error: targetMembershipError } = await supabase
+          .from("dm_thread_members")
+          .select("thread_id")
+          .eq("user_id", targetUserId)
+          .in("thread_id", myThreadIds);
 
-        return candidate || null;
+        if (targetMembershipError) throw targetMembershipError;
+
+        const overlapIds = (targetMemberships || []).map(row => row.thread_id);
+        if (!overlapIds.length) return null;
+
+        const { data: allRows, error: allRowsError } = await supabase
+          .from("dm_thread_members")
+          .select("thread_id, user_id")
+          .in("thread_id", overlapIds);
+
+        if (allRowsError) throw allRowsError;
+
+        const grouped = new Map();
+        (allRows || []).forEach(row => {
+          if (!grouped.has(row.thread_id)) grouped.set(row.thread_id, []);
+          grouped.get(row.thread_id).push(row.user_id);
+        });
+
+        for (const [threadId, userIds] of grouped.entries()) {
+          const uniqueIds = [...new Set(userIds)];
+          const exactDirect = uniqueIds.length === 2 && uniqueIds.includes(currentUser.id) && uniqueIds.includes(targetUserId);
+          if (exactDirect) return threadId;
+        }
+
+        return null;
       }
 
       async function startChat() {
         try {
-          const raw = targetUsername.value.trim();
-          const username = slugifyUsername(raw);
+          await requireSession();
+          const targetProfile = await resolveTargetProfile(targetUsernameInput.value);
 
-          if (!username) {
-            setStatus("Enter a username first.", "error");
-            return;
+          if (targetProfile.id === currentUser.id) {
+            throw new Error("You cannot start a chat with yourself.");
           }
 
-          if (!currentUser) await requireUser();
-          if (!currentProfile) await loadCurrentProfile();
+          profilesById.set(targetProfile.id, targetProfile);
 
-          if (currentProfile?.username && slugifyUsername(currentProfile.username) === username) {
-            setStatus("You cannot start a chat with yourself.", "error");
-            return;
+          let threadId = await findExistingDirectThread(targetProfile.id);
+
+          if (!threadId) {
+            const nowIso = new Date().toISOString();
+
+            const { data: newThread, error: newThreadError } = await supabase
+              .from("dm_threads")
+              .insert({
+                created_by: currentUser.id,
+                created_at: nowIso,
+                updated_at: nowIso
+              })
+              .select("id")
+              .single();
+
+            if (newThreadError) throw newThreadError;
+            threadId = newThread.id;
+
+            const { error: memberInsertError } = await supabase
+              .from("dm_thread_members")
+              .insert([
+                {
+                  thread_id: threadId,
+                  user_id: currentUser.id,
+                  last_read_at: nowIso,
+                  created_at: nowIso
+                },
+                {
+                  thread_id: threadId,
+                  user_id: targetProfile.id,
+                  last_read_at: nowIso,
+                  created_at: nowIso
+                }
+              ]);
+
+            if (memberInsertError) throw memberInsertError;
           }
 
-          setStatus("Starting chat...", "loading");
-          startChatBtn.disabled = true;
-
-          const { data: targetProfile, error: targetProfileError } = await supabase
-            .from("profiles")
-            .select("id, user_id, username, display_name, avatar_url, email")
-            .eq("username", username)
-            .maybeSingle();
-
-          if (targetProfileError) throw targetProfileError;
-          if (!targetProfile || !targetProfile.user_id) {
-            throw new Error("Username not found in profiles.");
-          }
-
-          const existing = await findExistingThreadWithUser(targetProfile.user_id);
-
-          if (existing) {
-            selectedThreadId = existing.id;
-            renderThreads();
-            renderConversation();
-            setStatus("Opened existing thread.", "ok");
-            return;
-          }
-
-          const { data: newThread, error: newThreadError } = await supabase
-            .from("dm_threads")
-            .insert({
-              created_by: currentUser.id,
-              updated_at: new Date().toISOString()
-            })
-            .select("id, created_by, created_at, updated_at")
-            .single();
-
-          if (newThreadError) throw newThreadError;
-
-          const membersToInsert = [
-            { thread_id: newThread.id, user_id: currentUser.id, last_read_at: new Date().toISOString() },
-            { thread_id: newThread.id, user_id: targetProfile.user_id, last_read_at: null }
-          ];
-
-          const { error: insertMembersError } = await supabase
-            .from("dm_thread_members")
-            .insert(membersToInsert);
-
-          if (insertMembersError) throw insertMembersError;
-
-          targetUsername.value = "";
-          await refreshInbox();
-          selectedThreadId = newThread.id;
-          renderThreads();
-          renderConversation();
-          setStatus("New chat created.", "ok");
+          targetUsernameInput.value = "";
+          setStatus(`Chat ready with @${targetProfile.username}`, "ok");
+          await loadThreads();
+          await openThread(threadId);
         } catch (error) {
-          console.error(error);
-          setStatus(`Start chat error: ${error.message || error}`, "error");
-        } finally {
-          startChatBtn.disabled = false;
+          console.error("startChat error", error);
+          setStatus(`Start chat error: ${error.message}`, "err");
         }
       }
 
-      function getSelectedThread() {
-        return threads.find(t => t.id === selectedThreadId) || null;
-      }
+      async function loadThreads() {
+        await requireSession();
+        setStatus("Loading messages...", "loading");
 
-      function renderThreads() {
-        if (!threads.length) {
+        const { data: myMemberships, error: myMembershipError } = await supabase
+          .from("dm_thread_members")
+          .select("thread_id, user_id, last_read_at, created_at")
+          .eq("user_id", currentUser.id);
+
+        if (myMembershipError) throw myMembershipError;
+
+        const threadIds = (myMemberships || []).map(row => row.thread_id);
+        updateStats({ threadTotal: threadIds.length, messageTotal: 0, memberTotal: 0, reactionTotal: 0 });
+
+        if (!threadIds.length) {
+          threadMembersByThread = new Map();
+          latestMessagesByThread = new Map();
           threadList.innerHTML = `<div class="empty">No threads yet.</div>`;
+          conversationTitle.textContent = "No thread selected.";
+          conversationSub.textContent = "Pick or start a conversation.";
+          conversationMembers.innerHTML = "";
+          messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
+          setStatus("Messages ready.", "ok");
           return;
         }
 
-        threadList.innerHTML = threads.map(thread => {
-          const latestPreview = thread.latest?.body ? escapeHtml(thread.latest.body) : "No messages yet.";
-          const unreadCount = getUnreadCount(thread.id);
+        const { data: allMembers, error: allMembersError } = await supabase
+          .from("dm_thread_members")
+          .select("thread_id, user_id, last_read_at, created_at")
+          .in("thread_id", threadIds);
+
+        if (allMembersError) throw allMembersError;
+
+        threadMembersByThread = new Map();
+        (allMembers || []).forEach(row => {
+          if (!threadMembersByThread.has(row.thread_id)) threadMembersByThread.set(row.thread_id, []);
+          threadMembersByThread.get(row.thread_id).push(row);
+        });
+
+        await loadProfilesByIds((allMembers || []).map(row => row.user_id));
+
+        const { data: threadMessages, error: threadMessagesError } = await supabase
+          .from("dm_messages")
+          .select("id, thread_id, sender_id, body, created_at")
+          .in("thread_id", threadIds)
+          .order("created_at", { ascending: false });
+
+        if (threadMessagesError) throw threadMessagesError;
+
+        latestMessagesByThread = new Map();
+        (threadMessages || []).forEach(msg => {
+          if (!latestMessagesByThread.has(msg.thread_id)) latestMessagesByThread.set(msg.thread_id, msg);
+        });
+
+        const sortedThreads = [...threadIds].sort((a, b) => {
+          const aDate = latestMessagesByThread.get(a)?.created_at || "1970-01-01T00:00:00.000Z";
+          const bDate = latestMessagesByThread.get(b)?.created_at || "1970-01-01T00:00:00.000Z";
+          return new Date(bDate) - new Date(aDate);
+        });
+
+        threadList.innerHTML = sortedThreads.map(threadId => {
+          const members = threadMembersByThread.get(threadId) || [];
+          const others = members.filter(m => m.user_id !== currentUser.id);
+          const title = others.length
+            ? others.map(m => getProfileName(m.user_id)).join(", ")
+            : "Just you";
+          const preview = latestMessagesByThread.get(threadId)?.body || "No messages yet.";
+          const time = formatTime(latestMessagesByThread.get(threadId)?.created_at);
+          const activeClass = Number(currentThreadId) === Number(threadId) ? "active" : "";
 
           return `
-            <button class="thread-item ${thread.id === selectedThreadId ? "active" : ""}" data-thread-id="${thread.id}">
+            <button class="thread-item ${activeClass}" data-thread-id="${threadId}" type="button">
               <div class="thread-top">
-                <div class="thread-name">${escapeHtml(thread.title)}</div>
-                <div style="display:flex; align-items:center; gap:8px;">
-                  ${unreadCount > 0 ? `<span class="badge">${unreadCount}</span>` : ""}
-                  <div class="thread-time">${escapeHtml(formatTime(thread.latest?.created_at || thread.updated_at || thread.created_at))}</div>
-                </div>
+                <div class="thread-name">${escapeHtml(title)}</div>
+                <div class="thread-time">${escapeHtml(time)}</div>
               </div>
-              <div class="thread-meta">${escapeHtml(thread.subtitle)}</div>
-              <div class="thread-preview">${latestPreview}</div>
+              <div class="thread-preview">${escapeHtml(preview)}</div>
             </button>
           `;
         }).join("");
 
-        threadList.querySelectorAll(".thread-item").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            selectedThreadId = Number(btn.dataset.threadId);
-            renderThreads();
-            renderConversation();
-            await markCurrentThreadRead();
-          });
+        [...threadList.querySelectorAll(".thread-item")].forEach(button => {
+          button.addEventListener("click", () => openThread(button.dataset.threadId));
         });
+
+        setStatus("Messages ready.", "ok");
       }
 
-      function getUnreadCount(threadId) {
-        const memberRows = membersByThread.get(threadId) || [];
-        const me = memberRows.find(m => m.user_id === currentUser?.id);
-        const lastRead = me?.last_read_at ? new Date(me.last_read_at) : null;
-        const msgs = messagesByThread.get(threadId) || [];
-        if (!msgs.length) return 0;
+      async function openThread(threadId) {
+        try {
+          await requireSession();
+          currentThreadId = Number(threadId);
 
-        return msgs.filter(msg => {
-          if (msg.sender_id === currentUser?.id) return false;
-          if (!lastRead) return true;
-          return new Date(msg.created_at) > lastRead;
-        }).length;
+          const members = threadMembersByThread.get(currentThreadId) || [];
+          currentThreadMembers = members;
+
+          const others = members.filter(m => m.user_id !== currentUser.id);
+          const title = others.length ? others.map(m => getProfileName(m.user_id)).join(", ") : "Conversation";
+          const sub = others.length
+            ? others.map(m => `@${getProfileUsername(m.user_id)}`).join(" • ")
+            : "Pick or start a conversation.";
+
+          conversationTitle.textContent = title;
+          conversationSub.textContent = sub;
+
+          conversationMembers.innerHTML = members.map(member => {
+            const name = getProfileName(member.user_id);
+            const username = getProfileUsername(member.user_id);
+            const avatar = getProfileAvatar(member.user_id);
+            return `
+              <div class="member-chip">
+                <div class="member-avatar" style="background-image:url('${escapeHtml(avatar)}')"></div>
+                <div class="member-meta">
+                  <div class="member-name">${escapeHtml(name)}${member.user_id === currentUser.id ? " (You)" : ""}</div>
+                  <div class="member-user">@${escapeHtml(username)}</div>
+                </div>
+              </div>
+            `;
+          }).join("");
+
+          const { data: messages, error: messagesError } = await supabase
+            .from("dm_messages")
+            .select("id, thread_id, sender_id, body, created_at")
+            .eq("thread_id", currentThreadId)
+            .order("created_at", { ascending: true });
+
+          if (messagesError) throw messagesError;
+
+          const messageIds = (messages || []).map(msg => msg.id);
+          reactionsByMessage = new Map();
+
+          if (messageIds.length) {
+            const { data: reactionRows, error: reactionError } = await supabase
+              .from("dm_message_reactions")
+              .select("id, message_id, user_id, emoji, created_at")
+              .in("message_id", messageIds);
+
+            if (reactionError) throw reactionError;
+
+            (reactionRows || []).forEach(row => {
+              if (!reactionsByMessage.has(row.message_id)) reactionsByMessage.set(row.message_id, []);
+              reactionsByMessage.get(row.message_id).push(row);
+            });
+          }
+
+          renderMessages(messages || []);
+          updateStats({
+            threadTotal: threadMembersByThread.size,
+            messageTotal: (messages || []).length,
+            memberTotal: members.length,
+            reactionTotal: [...reactionsByMessage.values()].reduce((sum, rows) => sum + rows.length, 0)
+          });
+
+          await markThreadRead(currentThreadId);
+          await loadThreads();
+        } catch (error) {
+          console.error("openThread error", error);
+          setStatus(`Open thread error: ${error.message}`, "err");
+        }
       }
 
       function buildReactionSummary(messageId) {
-        const rows = reactionsByMessageId.get(messageId) || [];
+        const rows = reactionsByMessage.get(messageId) || [];
         const grouped = new Map();
 
         rows.forEach(row => {
@@ -984,261 +1125,228 @@
           grouped.get(row.emoji).push(row);
         });
 
-        return QUICK_REACTIONS.map(emoji => {
-          const entries = grouped.get(emoji) || [];
-          return {
-            emoji,
-            count: entries.length,
-            active: reactionMineSet.has(`${messageId}__${emoji}`)
-          };
-        });
+        return REACTION_EMOJIS.map(emoji => {
+          const set = grouped.get(emoji) || [];
+          const active = set.some(row => row.user_id === currentUser.id);
+          const count = set.length;
+          return `
+            <button class="reaction-btn ${active ? "active" : ""}" data-message-id="${messageId}" data-emoji="${emoji}" type="button">
+              <span>${emoji}</span>
+              <span>${count}</span>
+            </button>
+          `;
+        }).join("");
       }
 
-      function renderConversation() {
-        const thread = getSelectedThread();
-
-        if (!thread) {
-          conversationTitle.textContent = "No thread selected.";
-          conversationSub.textContent = "Pick or start a conversation.";
+      function renderMessages(messages) {
+        if (!messages.length) {
           messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
+          bindReactionButtons();
           return;
         }
 
-        conversationTitle.textContent = thread.title;
-        conversationSub.textContent = thread.subtitle || "Conversation";
-
-        const msgs = messagesByThread.get(thread.id) || [];
-
-        if (!msgs.length) {
-          messagesList.innerHTML = `<div class="empty">No messages yet.</div>`;
-          return;
-        }
-
-        messagesList.innerHTML = msgs.map(msg => {
-          const mine = msg.sender_id === currentUser.id;
-          const senderProfile = profilesByUserId.get(msg.sender_id);
-          const senderName =
-            senderProfile?.display_name ||
-            senderProfile?.username ||
-            senderProfile?.email ||
-            (mine ? "You" : "User");
-
-          const reactions = buildReactionSummary(msg.id);
-
+        messagesList.innerHTML = messages.map(message => {
+          const mine = message.sender_id === currentUser.id;
+          const senderName = mine ? "You" : getProfileName(message.sender_id);
+          const senderUser = mine ? `@${getProfileUsername(currentUser.id)}` : `@${getProfileUsername(message.sender_id)}`;
           return `
-            <div class="message ${mine ? "mine" : ""}">
-              <div class="message-header">
-                <div class="message-name">${escapeHtml(senderName)}</div>
-                <div class="message-time">${escapeHtml(formatTime(msg.created_at))}</div>
+            <div class="message-row ${mine ? "mine" : "theirs"}">
+              <div class="message-meta">${escapeHtml(senderName)} • ${escapeHtml(senderUser)} • ${escapeHtml(formatTime(message.created_at))}</div>
+              <div class="message-bubble">
+                <div class="message-text">${escapeHtml(message.body)}</div>
               </div>
-              <div class="message-body">${escapeHtml(msg.body)}</div>
-              <div class="reaction-row">
-                ${reactions.map(r => `
-                  <button
-                    class="reaction ${r.active ? "active" : ""}"
-                    data-message-id="${msg.id}"
-                    data-emoji="${r.emoji}"
-                    type="button"
-                  >${r.emoji} ${r.count > 0 ? r.count : ""}</button>
-                `).join("")}
-              </div>
+              <div class="message-reactions">${buildReactionSummary(message.id)}</div>
             </div>
           `;
         }).join("");
 
-        messagesList.querySelectorAll(".reaction").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const messageId = Number(btn.dataset.messageId);
-            const emoji = btn.dataset.emoji;
-            await toggleReaction(messageId, emoji);
-          });
-        });
-
         messagesList.scrollTop = messagesList.scrollHeight;
+        bindReactionButtons();
       }
 
-      async function markCurrentThreadRead() {
+      function bindReactionButtons() {
+        [...document.querySelectorAll(".reaction-btn")].forEach(button => {
+          button.addEventListener("click", () => toggleReaction(button.dataset.messageId, button.dataset.emoji));
+        });
+      }
+
+      async function toggleReaction(messageId, emoji) {
         try {
-          const thread = getSelectedThread();
-          if (!thread || !currentUser) return;
+          await requireSession();
+          const mid = Number(messageId);
 
-          const myMembership = (membersByThread.get(thread.id) || []).find(m => m.user_id === currentUser.id);
-          if (!myMembership) return;
+          const { data: existing, error: existingError } = await supabase
+            .from("dm_message_reactions")
+            .select("id")
+            .eq("message_id", mid)
+            .eq("user_id", currentUser.id)
+            .eq("emoji", emoji)
+            .maybeSingle();
 
-          const nowIso = new Date().toISOString();
+          if (existingError) throw existingError;
 
-          const { error } = await supabase
-            .from("dm_thread_members")
-            .update({ last_read_at: nowIso })
-            .eq("id", myMembership.id);
+          if (existing?.id) {
+            const { error: deleteError } = await supabase
+              .from("dm_message_reactions")
+              .delete()
+              .eq("id", existing.id);
+            if (deleteError) throw deleteError;
+          } else {
+            const { error: insertError } = await supabase
+              .from("dm_message_reactions")
+              .insert({
+                message_id: mid,
+                user_id: currentUser.id,
+                emoji,
+                created_at: new Date().toISOString()
+              });
+            if (insertError) throw insertError;
+          }
 
-          if (error) throw error;
-
-          myMembership.last_read_at = nowIso;
-          renderThreads();
+          if (currentThreadId) await openThread(currentThreadId);
+          setStatus("Reaction updated.", "ok");
         } catch (error) {
-          console.error(error);
+          console.error("toggleReaction error", error);
+          setStatus(`Reaction error: ${error.message}`, "err");
+        }
+      }
+
+      async function markThreadRead(threadId) {
+        if (!threadId) return;
+        const { error } = await supabase
+          .from("dm_thread_members")
+          .update({ last_read_at: new Date().toISOString() })
+          .eq("thread_id", Number(threadId))
+          .eq("user_id", currentUser.id);
+
+        if (error) {
+          console.error("markThreadRead error", error);
         }
       }
 
       async function sendMessage() {
         try {
-          const thread = getSelectedThread();
-          if (!thread) {
-            setStatus("Select or start a thread first.", "error");
-            return;
-          }
-
+          await requireSession();
           const body = messageBody.value.trim();
-          if (!body) {
-            setStatus("Write a message first.", "error");
-            return;
-          }
+          if (!currentThreadId) throw new Error("Select or start a conversation first.");
+          if (!body) throw new Error("Write a message first.");
 
-          sendBtn.disabled = true;
-          setStatus("Sending message...", "loading");
-
-          const payload = {
-            thread_id: thread.id,
-            sender_id: currentUser.id,
-            body
-          };
+          const nowIso = new Date().toISOString();
 
           const { error: insertError } = await supabase
             .from("dm_messages")
-            .insert(payload);
+            .insert({
+              thread_id: currentThreadId,
+              sender_id: currentUser.id,
+              body,
+              created_at: nowIso
+            });
 
           if (insertError) throw insertError;
 
-          const { error: updateThreadError } = await supabase
+          const { error: threadUpdateError } = await supabase
             .from("dm_threads")
-            .update({ updated_at: new Date().toISOString() })
-            .eq("id", thread.id);
+            .update({ updated_at: nowIso })
+            .eq("id", currentThreadId);
 
-          if (updateThreadError) throw updateThreadError;
+          if (threadUpdateError) throw threadUpdateError;
 
-          const myMembership = (membersByThread.get(thread.id) || []).find(m => m.user_id === currentUser.id);
-          if (myMembership) {
-            const nowIso = new Date().toISOString();
-            await supabase
-              .from("dm_thread_members")
-              .update({ last_read_at: nowIso })
-              .eq("id", myMembership.id);
-            myMembership.last_read_at = nowIso;
-          }
+          const { error: readUpdateError } = await supabase
+            .from("dm_thread_members")
+            .update({ last_read_at: nowIso })
+            .eq("thread_id", currentThreadId)
+            .eq("user_id", currentUser.id);
+
+          if (readUpdateError) throw readUpdateError;
 
           messageBody.value = "";
-          await refreshInbox();
-          selectedThreadId = thread.id;
-          renderThreads();
-          renderConversation();
+          await openThread(currentThreadId);
+          await loadThreads();
           setStatus("Message sent.", "ok");
         } catch (error) {
-          console.error(error);
-          setStatus(`Send message error: ${error.message || error}`, "error");
-        } finally {
-          sendBtn.disabled = false;
+          console.error("sendMessage error", error);
+          setStatus(`Send message error: ${error.message}`, "err");
         }
       }
 
-      async function toggleReaction(messageId, emoji) {
+      async function refreshInbox() {
         try {
-          const mineKey = `${messageId}__${emoji}`;
-          const currentRows = reactionsByMessageId.get(messageId) || [];
-          const myExisting = currentRows.find(r => r.user_id === currentUser.id && r.emoji === emoji);
-
-          if (myExisting) {
-            const { error } = await supabase
-              .from("dm_message_reactions")
-              .delete()
-              .eq("id", myExisting.id);
-
-            if (error) throw error;
-          } else {
-            const { error } = await supabase
-              .from("dm_message_reactions")
-              .insert({
-                message_id: messageId,
-                user_id: currentUser.id,
-                emoji
-              });
-
-            if (error) throw error;
-          }
-
-          const { data, error } = await supabase
-            .from("dm_message_reactions")
-            .select("id, message_id, user_id, emoji, created_at")
-            .eq("message_id", messageId);
-
-          if (error) throw error;
-
-          reactionsByMessageId.set(messageId, data || []);
-          reactionMineSet.delete(mineKey);
-
-          (data || []).forEach(row => {
-            if (row.user_id === currentUser.id) {
-              reactionMineSet.add(`${row.message_id}__${row.emoji}`);
-            }
-          });
-
-          renderConversation();
+          await loadThreads();
+          if (currentThreadId) await openThread(currentThreadId);
         } catch (error) {
-          console.error(error);
-          setStatus(`Reaction error: ${error.message || error}`, "error");
+          console.error("refreshInbox error", error);
+          setStatus(`Refresh error: ${error.message}`, "err");
         }
-      }
-
-      async function logout() {
-        try {
-          await supabase.auth.signOut();
-          window.location.href = "auth.html";
-        } catch (error) {
-          console.error(error);
-          setStatus(`Logout error: ${error.message || error}`, "error");
-        }
-      }
-
-      function bindEvents() {
-        refreshBtn.addEventListener("click", refreshInbox);
-        logoutBtn.addEventListener("click", logout);
-        startChatBtn.addEventListener("click", startChat);
-        sendBtn.addEventListener("click", sendMessage);
-
-        targetUsername.addEventListener("keydown", e => {
-          if (e.key === "Enter") startChat();
-        });
-
-        messageBody.addEventListener("keydown", e => {
-          if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-            sendMessage();
-          }
-        });
       }
 
       async function boot() {
-        bindEvents();
-        await requireUser();
-        await refreshInbox();
+        try {
+          setStatus("Loading messages...", "loading");
+          await requireSession();
+          await loadCurrentUserProfile();
+          await loadThreads();
+          setStatus("Messages ready.", "ok");
 
-        supabase.auth.onAuthStateChange(async (_event, session) => {
-          if (!session?.user) {
-            window.location.href = "auth.html";
-            return;
-          }
-          currentUser = session.user;
-          await refreshInbox();
-        });
+          const channel = supabase
+            .channel(`dm-live-${currentUser.id}`)
+            .on("postgres_changes", { event: "*", schema: "public", table: "dm_messages" }, async () => {
+              await loadThreads();
+              if (currentThreadId) await openThread(currentThreadId);
+            })
+            .on("postgres_changes", { event: "*", schema: "public", table: "dm_thread_members", filter: `user_id=eq.${currentUser.id}` }, async () => {
+              await loadThreads();
+              if (currentThreadId) await openThread(currentThreadId);
+            })
+            .on("postgres_changes", { event: "*", schema: "public", table: "dm_message_reactions" }, async () => {
+              if (currentThreadId) await openThread(currentThreadId);
+            })
+            .subscribe();
+
+          window.__rbMessagesChannel = channel;
+        } catch (error) {
+          console.error("boot error", error);
+          setStatus(error.message, "err");
+        }
       }
 
-      boot();
+      refreshInboxBtn.addEventListener("click", refreshInbox);
+      startChatBtn.addEventListener("click", startChat);
+      sendBtn.addEventListener("click", sendMessage);
+      logoutBtn.addEventListener("click", async () => {
+        await supabase.auth.signOut();
+        window.location.href = "auth.html";
+      });
+
+      targetUsernameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          startChat();
+        }
+      });
+
+      messageBody.addEventListener("keydown", (event) => {
+        if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+          event.preventDefault();
+          sendMessage();
+        }
+      });
+
+      emojiButtons.forEach(button => {
+        button.addEventListener("click", () => {
+          const emoji = button.dataset.emoji;
+          const start = messageBody.selectionStart || messageBody.value.length;
+          const end = messageBody.selectionEnd || messageBody.value.length;
+          const before = messageBody.value.slice(0, start);
+          const after = messageBody.value.slice(end);
+          messageBody.value = `${before}${emoji} ${after}`;
+          messageBody.focus();
+        });
+      });
+
+      window.addEventListener("load", boot);
     } catch (error) {
       console.error(error);
-      const statusBox = document.getElementById("statusBox");
-      if (statusBox) {
-        statusBox.className = "status error";
-        statusBox.textContent = "Fatal page error: " + (error.message || error);
-      }
+      alert(error.message || "Messages page failed to start.");
     }
   </script>
 </body>
