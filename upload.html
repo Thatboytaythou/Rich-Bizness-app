@@ -5,77 +5,69 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness | Upload</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     * { box-sizing: border-box; }
 
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --blue: #67b7ff;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
-    }
-
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
       min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #fff;
       background:
-        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.93)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.9)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
     }
 
     .page {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 18px;
-      padding-bottom: 60px;
     }
 
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
+    .shell {
+      background: rgba(0,0,0,.58);
+      border: 1px solid rgba(144, 255, 110, .18);
+      border-radius: 28px;
       backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset, 0 24px 80px rgba(0,0,0,.45);
     }
 
     .topbar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid rgba(144,255,110,.12);
       flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.9rem;
-      font-weight: 900;
+      gap: 14px;
     }
 
     .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
       object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
+      border: 2px solid rgba(144,255,110,.35);
+      background: #111;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 2rem;
+      color: #9dff6b;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: #d8e8d2;
+      font-size: 1rem;
     }
 
     .nav {
@@ -85,344 +77,418 @@
       align-items: center;
     }
 
-    .nav a,
-    .nav button {
+    .chip,
+    .btn,
+    .nav a {
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.06);
+      color: #fff;
+      border-radius: 18px;
       text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
       font-weight: 700;
+      padding: 12px 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    .nav a.active,
+    .btn-primary {
+      background: #98f063;
+      color: #081108;
+      border-color: transparent;
     }
 
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
+    .btn-secondary {
+      background: rgba(255,255,255,.08);
+      color: #fff;
     }
 
-    .hero,
-    .section {
+    .hero {
+      padding: 22px 18px 10px;
+    }
+
+    .hero-card {
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(144,255,110,.14);
+      border-radius: 26px;
       padding: 24px;
-      margin-bottom: 18px;
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 2.9rem;
-      line-height: 0.95;
-      color: var(--green);
-    }
-
-    .hero-kicker,
-    .pill-green,
-    .pill-blue,
-    .pill-gold {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-    }
-
-    .hero-kicker,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-blue {
-      background: rgba(103,183,255,0.18);
-      border: 1px solid rgba(103,183,255,0.28);
-      color: var(--blue);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
-    }
-
-    .subtle,
-    .status-box {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-actions,
-    .actions {
-      display: flex;
+    .eyebrow {
+      display: inline-flex;
+      gap: 8px;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
+      margin-bottom: 12px;
     }
 
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-blue {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-blue { background: var(--blue); color: black; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
+    .eyebrow span {
+      background: rgba(152,240,99,.12);
+      color: #baff98;
+      border: 1px solid rgba(152,240,99,.18);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: .82rem;
       font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
     }
 
-    .upload-grid {
+    .hero h2 {
+      margin: 0 0 10px;
+      font-size: clamp(2rem, 5vw, 4rem);
+      line-height: 1.02;
+      color: #98f063;
+      max-width: 900px;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #eef5ea;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      max-width: 900px;
+    }
+
+    .content {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 1.15fr .85fr;
       gap: 18px;
+      padding: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
     }
 
     .panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,.35);
+      border: 1px solid rgba(144,255,110,.14);
+      border-radius: 24px;
+      padding: 20px;
     }
 
-    .panel h2 {
-      color: var(--green);
-      margin: 0 0 12px;
-      font-size: 1.35rem;
-      font-weight: 900;
+    .section-title {
+      margin: 0 0 8px;
+      color: #98f063;
+      font-size: 2rem;
+      line-height: 1;
     }
 
-    .stack {
+    .section-sub {
+      margin: 0 0 18px;
+      color: #dfe9d8;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .grid-2 {
       display: grid;
-      gap: 12px;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    @media (max-width: 640px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 700;
+      color: #c8f3b4;
     }
 
     input,
     select,
     textarea {
       width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.72);
+      color: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 1rem;
       outline: none;
-      font-family: inherit;
     }
 
     textarea {
-      min-height: 150px;
+      min-height: 120px;
       resize: vertical;
     }
 
-    .preview-box {
-      min-height: 420px;
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(152,240,99,.5);
+      box-shadow: 0 0 0 3px rgba(152,240,99,.12);
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .file-box {
+      border: 1px dashed rgba(152,240,99,.3);
+      border-radius: 22px;
+      background: rgba(255,255,255,.03);
+      padding: 16px;
+    }
+
+    .preview {
+      width: 100%;
+      min-height: 260px;
       border-radius: 20px;
-      overflow: hidden;
-      background: rgba(0,0,0,0.38);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,.48);
+      border: 1px solid rgba(255,255,255,.08);
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.7);
+      overflow: hidden;
+      color: #d5dfcf;
       text-align: center;
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    .preview img,
+    .preview video {
+      width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      border-radius: 16px;
+      display: block;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn {
+      min-width: 160px;
+      font-size: 1rem;
+    }
+
+    .btn:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 16px;
+      border-radius: 18px;
+      padding: 14px 16px;
+      font-weight: 700;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+    }
+
+    .status.ok {
+      color: #b6ff97;
+      border-color: rgba(152,240,99,.25);
+      background: rgba(152,240,99,.08);
+    }
+
+    .status.err {
+      color: #ffb7b7;
+      border-color: rgba(255,92,92,.25);
+      background: rgba(255,92,92,.08);
+    }
+
+    .stats {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 22px;
       padding: 20px;
     }
 
-    .preview-box img {
-      width: 100%;
-      height: 100%;
-      max-height: 560px;
-      object-fit: cover;
-      border-radius: 18px;
+    .stat strong {
+      display: block;
+      color: #98f063;
+      font-size: 2rem;
+      margin-bottom: 6px;
     }
 
-    .note {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    .mini-cards {
+    .meta {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
       margin-top: 18px;
     }
 
-    .mini-card {
+    .meta-box {
       padding: 16px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.38);
-      border: 1px solid rgba(125,255,113,0.12);
-      text-align: center;
+      border-radius: 18px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
     }
 
-    .mini-card strong {
-      display: block;
-      color: var(--green);
-      font-size: 1.4rem;
-      margin-bottom: 6px;
+    .meta-box h4 {
+      margin: 0 0 8px;
+      color: #baff98;
     }
 
-    @media (max-width: 980px) {
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .upload-grid,
-      .mini-cards {
-        grid-template-columns: 1fr;
-      }
+    .muted {
+      color: #d5e0cf;
+      opacity: .92;
     }
   </style>
 </head>
 <body>
   <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Upload</span>
-      </div>
-
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="store.html">Store</a>
-        <a href="artist.html">Artist</a>
-        <a href="profile.html">Profile</a>
-        <a href="upload.html" class="active">Upload</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
-
-    <div class="hero">
-      <div>
-        <span class="hero-kicker">FULL CONTENT UPLOAD</span>
-        <span class="pill-green">ART</span>
-        <span class="pill-blue">FASHION</span>
-        <span class="pill-gold">STORE READY</span>
-      </div>
-
-      <h1>Upload gallery content, storefront items, and creator drops with likes and comments support already built in.</h1>
-
-      <div class="subtle">
-        This upload page saves directly into your <strong>artworks</strong> table and your <strong>artworks</strong> storage bucket. Every new upload starts with like and comment counts ready for gallery, store, and artist pages.
-      </div>
-
-      <div class="hero-actions">
-        <a class="btn-green" href="gallery.html">Open Gallery</a>
-        <a class="btn-dark" href="store.html">Open Store</a>
-        <a class="btn-dark" href="profile.html">Open Profile</a>
-      </div>
-
-      <div id="statusBox" class="status-box">Ready to upload.</div>
-
-      <div class="mini-cards">
-        <div class="mini-card">
-          <strong>0</strong>
-          Starts with likes
-        </div>
-        <div class="mini-card">
-          <strong>0</strong>
-          Starts with comments
-        </div>
-        <div class="mini-card">
-          <strong>1</strong>
-          Upload pushes to gallery/store
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="upload-grid">
-        <div class="panel">
-          <h2>Upload Details</h2>
-
-          <div class="stack">
-            <input id="titleInput" type="text" placeholder="Title" />
-            <textarea id="descriptionInput" placeholder="Description, drop details, fit info, custom details, art notes..."></textarea>
-
-            <select id="categoryInput">
-              <option value="fashion">Fashion</option>
-              <option value="sneakers">Sneakers</option>
-              <option value="custom">Custom</option>
-              <option value="art">Art</option>
-              <option value="tattoo">Tattoo</option>
-              <option value="3d">3D</option>
-            </select>
-
-            <input id="priceInput" type="number" min="0" step="0.01" placeholder="Price (49.99)" />
-
-            <select id="saleInput">
-              <option value="true">For Sale</option>
-              <option value="false">Showcase Only</option>
-            </select>
-
-            <select id="featuredInput">
-              <option value="false">Normal Item</option>
-              <option value="true">Featured Item</option>
-            </select>
-
-            <input id="imageInput" type="file" accept="image/*" />
-
-            <div class="actions">
-              <button id="uploadBtn" class="btn-green" type="button">Upload Now</button>
-              <button id="resetBtn" class="btn-dark" type="button">Reset</button>
-            </div>
-
-            <div class="note">
-              Upload target:
-              <br>• table: <strong>public.artworks</strong>
-              <br>• bucket: <strong>artworks</strong>
-              <br>• counts: <strong>likes_count = 0</strong>, <strong>comments_count = 0</strong>
-            </div>
+    <div class="shell">
+      <div class="topbar">
+        <div class="brand">
+          <img id="brandAvatar" src="rich-bizness-profile.jpg" alt="Rich Bizness" onerror="this.src='rich-bizness-profile.jpg'" />
+          <div>
+            <h1>Upload</h1>
+            <p>Drop music, art, photos, videos, and creator content into one real Rich Bizness lane.</p>
           </div>
         </div>
 
-        <div class="panel">
-          <h2>Preview</h2>
-          <div id="previewBox" class="preview-box">Image preview will show here.</div>
+        <div class="nav">
+          <span id="userChip" class="chip">Loading...</span>
+          <a href="index.html">Home</a>
+          <a href="feed.html">Feed</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="artist.html">Artist</a>
+          <a href="profile.html">Profile</a>
+          <a href="upload.html" class="active">Upload</a>
+          <button id="logoutBtn" class="btn btn-secondary" type="button">Log Out</button>
         </div>
       </div>
+
+      <section class="hero">
+        <div class="hero-card">
+          <div class="eyebrow">
+            <span>FULL UPLOAD CORE</span>
+            <span>SUPABASE SYNC</span>
+            <span>IMAGE + VIDEO</span>
+          </div>
+          <h2>Upload creator content and keep the whole platform in sync.</h2>
+          <p>
+            This upgraded uploader pulls your account session, syncs your profile data,
+            stores the file in Supabase Storage, and writes the upload record into your
+            main <strong>uploads</strong> table so your home, feed, gallery, and profile can read it.
+          </p>
+        </div>
+      </section>
+
+      <section class="content">
+        <div class="panel">
+          <h2 class="section-title">Main Upload</h2>
+          <p class="section-sub">
+            Keep the bucket name the same if you already use <strong>artworks</strong>.
+            If your storage bucket is different, change only the <strong>UPLOAD_BUCKET</strong> value in the script.
+          </p>
+
+          <form id="uploadForm">
+            <div class="grid-2">
+              <div class="field">
+                <label for="artistName">Artist / Creator Name</label>
+                <input id="artistName" type="text" placeholder="Auto-filled from profile" />
+              </div>
+
+              <div class="field">
+                <label for="category">Category</label>
+                <select id="category">
+                  <option value="art">Art</option>
+                  <option value="music">Music</option>
+                  <option value="gaming">Gaming</option>
+                  <option value="sports">Sports</option>
+                  <option value="photo">Photo</option>
+                  <option value="video">Video</option>
+                  <option value="creator">Creator</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="caption">Caption</label>
+              <textarea id="caption" placeholder="Say something about this upload..."></textarea>
+            </div>
+
+            <div class="field file-box">
+              <label for="fileInput">Choose Image or Video</label>
+              <input id="fileInput" type="file" accept="image/*,video/*" />
+              <div id="previewBox" class="preview">Your image or video preview will show here.</div>
+            </div>
+
+            <div class="btn-row">
+              <button id="uploadBtn" class="btn btn-primary" type="submit">Upload Now</button>
+              <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
+            </div>
+
+            <div id="statusBox" class="status">Ready.</div>
+          </form>
+        </div>
+
+        <div class="panel">
+          <h2 class="section-title">Sync Status</h2>
+          <p class="section-sub">
+            These pull from your current session and profile so your uploader stays locked into the rest of the app.
+          </p>
+
+          <div class="stats">
+            <div class="stat">
+              <strong id="uploadCount">0</strong>
+              <span>Total uploads found for your account</span>
+            </div>
+            <div class="stat">
+              <strong id="sessionState">...</strong>
+              <span>Session state</span>
+            </div>
+          </div>
+
+          <div class="meta">
+            <div class="meta-box">
+              <h4>Current Username</h4>
+              <div id="metaUsername" class="muted">Loading...</div>
+            </div>
+            <div class="meta-box">
+              <h4>Display Name</h4>
+              <div id="metaDisplayName" class="muted">Loading...</div>
+            </div>
+            <div class="meta-box">
+              <h4>Email</h4>
+              <div id="metaEmail" class="muted">Loading...</div>
+            </div>
+            <div class="meta-box">
+              <h4>Bucket</h4>
+              <div class="muted">artworks</div>
+            </div>
+            <div class="meta-box">
+              <h4>Table</h4>
+              <div class="muted">uploads</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <script>
     try {
+      // KEEP THESE AS YOUR CURRENT VALUES
       const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const ARTWORKS_BUCKET = "artworks";
+
+      // CHANGE THIS ONLY IF YOUR STORAGE BUCKET HAS A DIFFERENT NAME
+      const UPLOAD_BUCKET = "artworks";
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
@@ -434,168 +500,301 @@
 
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
 
-      const titleInput = document.getElementById("titleInput");
-      const descriptionInput = document.getElementById("descriptionInput");
-      const categoryInput = document.getElementById("categoryInput");
-      const priceInput = document.getElementById("priceInput");
-      const saleInput = document.getElementById("saleInput");
-      const featuredInput = document.getElementById("featuredInput");
-      const imageInput = document.getElementById("imageInput");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const resetBtn = document.getElementById("resetBtn");
+      const artistNameInput = document.getElementById("artistName");
+      const categoryInput = document.getElementById("category");
+      const captionInput = document.getElementById("caption");
+      const fileInput = document.getElementById("fileInput");
       const previewBox = document.getElementById("previewBox");
 
-      let currentUser = null;
+      const uploadForm = document.getElementById("uploadForm");
+      const uploadBtn = document.getElementById("uploadBtn");
+      const resetBtn = document.getElementById("resetBtn");
+      const statusBox = document.getElementById("statusBox");
 
-      function setStatus(message) {
+      const uploadCount = document.getElementById("uploadCount");
+      const sessionState = document.getElementById("sessionState");
+      const metaUsername = document.getElementById("metaUsername");
+      const metaDisplayName = document.getElementById("metaDisplayName");
+      const metaEmail = document.getElementById("metaEmail");
+      const brandAvatar = document.getElementById("brandAvatar");
+
+      let currentUser = null;
+      let currentProfile = null;
+
+      function setStatus(message, type = "") {
         statusBox.textContent = message;
+        statusBox.className = "status";
+        if (type) statusBox.classList.add(type);
       }
 
-      function slugify(text) {
-        return String(text || "")
-          .toLowerCase()
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function resetFormUI() {
+        captionInput.value = "";
+        fileInput.value = "";
+        previewBox.innerHTML = "Your image or video preview will show here.";
+      }
+
+      function slugifyName(value) {
+        return String(value || "")
           .trim()
+          .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-+|-+$/g, "");
       }
 
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-
-        if (!currentUser) {
-          window.location.href = "auth.html";
-        }
+      function fileExt(name) {
+        const parts = String(name || "").split(".");
+        return parts.length > 1 ? parts.pop().toLowerCase() : "";
       }
 
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
+      function isVideo(file) {
+        return file && String(file.type || "").startsWith("video/");
       }
 
-      function resetForm() {
-        titleInput.value = "";
-        descriptionInput.value = "";
-        categoryInput.value = "fashion";
-        priceInput.value = "";
-        saleInput.value = "true";
-        featuredInput.value = "false";
-        imageInput.value = "";
-        previewBox.innerHTML = "Image preview will show here.";
-        setStatus("Form reset.");
+      function isImage(file) {
+        return file && String(file.type || "").startsWith("image/");
       }
 
-      function updatePreview() {
-        const file = imageInput.files?.[0];
+      function renderPreview(file) {
         if (!file) {
-          previewBox.innerHTML = "Image preview will show here.";
+          previewBox.innerHTML = "Your image or video preview will show here.";
           return;
         }
 
-        const reader = new FileReader();
-        reader.onload = () => {
-          previewBox.innerHTML = `<img src="${reader.result}" alt="Preview" />`;
-        };
-        reader.readAsDataURL(file);
+        const objectUrl = URL.createObjectURL(file);
+
+        if (isImage(file)) {
+          previewBox.innerHTML = `<img src="${objectUrl}" alt="Preview" />`;
+          return;
+        }
+
+        if (isVideo(file)) {
+          previewBox.innerHTML = `<video controls src="${objectUrl}"></video>`;
+          return;
+        }
+
+        previewBox.innerHTML = `Selected file: ${escapeHtml(file.name)}`;
       }
 
-      async function uploadArtwork() {
-        try {
-          if (!currentUser) throw new Error("You must be logged in.");
+      async function requireSession() {
+        const { data, error } = await supabase.auth.getUser();
+        if (error) throw error;
+        if (!data?.user) {
+          window.location.href = "auth.html";
+          return null;
+        }
+        return data.user;
+      }
 
-          const title = titleInput.value.trim();
-          const description = descriptionInput.value.trim();
-          const category = categoryInput.value;
-          const isForSale = saleInput.value === "true";
-          const isFeatured = featuredInput.value === "true";
-          const rawPrice = Number(priceInput.value || 0);
-          const imageFile = imageInput.files?.[0];
+      async function loadProfile(user) {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+          .limit(1)
+          .maybeSingle();
 
-          if (!title) throw new Error("Title is required.");
-          if (!imageFile) throw new Error("Image file is required.");
-          if (isForSale && (!Number.isFinite(rawPrice) || rawPrice <= 0)) {
-            throw new Error("Sale items need a valid price.");
-          }
+        if (error) throw error;
+        return data || null;
+      }
 
-          const price = isForSale ? rawPrice : 0;
+      async function ensureProfile(user) {
+        let profile = await loadProfile(user);
+        if (profile) return profile;
 
-          setStatus("Uploading image to artworks bucket...");
+        const email = user.email || "";
+        const baseUsername = slugifyName(email.split("@")[0] || "user");
+        const payload = {
+          id: user.id,
+          user_id: user.id,
+          email,
+          username: baseUsername,
+          display_name: baseUsername,
+          role: "creator",
+          onboarding_complete: true
+        };
 
-          const ext = (imageFile.name.split(".").pop() || "jpg").toLowerCase();
-          const safeSlug = slugify(`${title}-${Date.now()}`);
-          const storagePath = `${currentUser.id}/${safeSlug}.${ext}`;
+        const { error: insertError } = await supabase.from("profiles").upsert(payload);
+        if (insertError) throw insertError;
 
-          const { error: uploadError } = await supabase.storage
-            .from(ARTWORKS_BUCKET)
-            .upload(storagePath, imageFile, {
-              upsert: false,
-              contentType: imageFile.type || "image/jpeg"
-            });
+        profile = await loadProfile(user);
+        return profile;
+      }
 
-          if (uploadError) throw uploadError;
+      async function refreshCounts(user) {
+        const { count, error } = await supabase
+          .from("uploads")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
 
-          const { data: publicUrlData } = supabase.storage
-            .from(ARTWORKS_BUCKET)
-            .getPublicUrl(storagePath);
+        if (error) throw error;
+        uploadCount.textContent = count || 0;
+      }
 
-          const imageUrl = publicUrlData?.publicUrl || "";
-          if (!imageUrl) throw new Error("Could not generate public image URL.");
+      async function syncTopbar(user, profile) {
+        const email = user.email || "Signed in";
+        const username = profile?.username || "no-username";
+        const displayName = profile?.display_name || profile?.username || email.split("@")[0] || "Creator";
 
-          setStatus("Saving artwork row...");
+        userChip.textContent = email;
+        sessionState.textContent = "LIVE";
+        metaUsername.textContent = username;
+        metaDisplayName.textContent = displayName;
+        metaEmail.textContent = email;
 
-          const { error: insertError } = await supabase
-            .from("artworks")
-            .insert([{
-              user_id: currentUser.id,
-              title,
-              description,
-              image_url: imageUrl,
-              category,
-              price,
-              is_for_sale: isForSale,
-              is_featured: isFeatured,
-              likes_count: 0,
-              comments_count: 0
-            }]);
+        artistNameInput.value = profile?.display_name || profile?.username || email.split("@")[0] || "";
 
-          if (insertError) throw insertError;
-
-          setStatus("✅ Upload complete. Item now has likes/comments support and should show in gallery, store, and artist pages.");
-          resetForm();
-        } catch (error) {
-          console.error("upload error:", error);
-          setStatus("❌ Upload error: " + error.message);
+        if (profile?.avatar_url) {
+          brandAvatar.src = profile.avatar_url;
         }
       }
 
-      imageInput.addEventListener("change", updatePreview);
-      uploadBtn.addEventListener("click", uploadArtwork);
-      resetBtn.addEventListener("click", resetForm);
-      logoutBtn.addEventListener("click", logOut);
+      async function boot() {
+        setStatus("Checking session...");
+        const user = await requireSession();
+        if (!user) return;
 
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
+        currentUser = user;
+        const profile = await ensureProfile(user);
+        currentProfile = profile;
+
+        await syncTopbar(user, profile);
+        await refreshCounts(user);
+
+        setStatus("Uploader fully synced and ready.", "ok");
+      }
+
+      async function uploadFileToStorage(file, user, profile) {
+        const ext = fileExt(file.name) || (isVideo(file) ? "mp4" : "png");
+        const mediaType = isVideo(file) ? "video" : isImage(file) ? "image" : "file";
+        const username = profile?.username || slugifyName(user.email?.split("@")[0] || "user");
+        const safeCategory = slugifyName(categoryInput.value || "creator");
+        const path = `${username}/${safeCategory}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+        const { error: storageError } = await supabase
+          .storage
+          .from(UPLOAD_BUCKET)
+          .upload(path, file, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (storageError) throw storageError;
+
+        const { data: publicData } = supabase
+          .storage
+          .from(UPLOAD_BUCKET)
+          .getPublicUrl(path);
+
+        return {
+          mediaType,
+          storagePath: path,
+          publicUrl: publicData?.publicUrl || ""
+        };
+      }
+
+      async function insertUploadRow({ user, profile, file, uploadInfo }) {
+        const artistName =
+          artistNameInput.value.trim() ||
+          profile?.display_name ||
+          profile?.username ||
+          user.email?.split("@")[0] ||
+          "Rich Bizness Creator";
+
+        const category = categoryInput.value.trim() || "creator";
+        const caption = captionInput.value.trim();
+
+        const row = {
+          user_id: user.id,
+          artist_name: artistName,
+          category,
+          caption,
+          media_type: uploadInfo.mediaType,
+          image_url: uploadInfo.mediaType === "image" ? uploadInfo.publicUrl : null,
+          file_url: uploadInfo.publicUrl,
+          likes: 0
+        };
+
+        const { data, error } = await supabase
+          .from("uploads")
+          .insert(row)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+
+      async function handleUpload(event) {
+        event.preventDefault();
+
+        try {
+          uploadBtn.disabled = true;
+          setStatus("Preparing upload...");
+
+          const user = await requireSession();
+          if (!user) return;
+
+          const profile = await ensureProfile(user);
+          currentUser = user;
+          currentProfile = profile;
+
+          const file = fileInput.files?.[0];
+          if (!file) throw new Error("Choose an image or video first.");
+
+          if (!isImage(file) && !isVideo(file)) {
+            throw new Error("Only image or video uploads are supported here.");
+          }
+
+          setStatus("Uploading file to Supabase Storage...");
+          const uploadInfo = await uploadFileToStorage(file, user, profile);
+
+          setStatus("Saving upload record...");
+          await insertUploadRow({ user, profile, file, uploadInfo });
+
+          await refreshCounts(user);
+          setStatus("Upload complete and synced across your app.", "ok");
+          resetFormUI();
+        } catch (error) {
+          console.error(error);
+          setStatus(`Upload error: ${error.message || error}`, "err");
+        } finally {
+          uploadBtn.disabled = false;
+        }
+      }
+
+      async function handleLogout() {
+        await supabase.auth.signOut();
+        window.location.href = "auth.html";
+      }
+
+      fileInput.addEventListener("change", () => renderPreview(fileInput.files?.[0] || null));
+      uploadForm.addEventListener("submit", handleUpload);
+      resetBtn.addEventListener("click", resetFormUI);
+      logoutBtn.addEventListener("click", handleLogout);
+
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        if (!session?.user) return;
+        currentUser = session.user;
       });
 
-      loadSession();
+      boot();
     } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+      console.error(error);
+      const box = document.getElementById("statusBox");
+      if (box) {
+        box.textContent = `Boot error: ${error.message || error}`;
+        box.className = "status err";
+      }
     }
   </script>
 </body>
