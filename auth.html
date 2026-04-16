@@ -4,642 +4,986 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness | Auth</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * { box-sizing: border-box; }
 
     :root{
-      --green:#7dff71;
-      --gold:#f5d76e;
-      --bg:rgba(0,0,0,.58);
-      --soft:rgba(255,255,255,.08);
-      --border:rgba(125,255,113,.18);
-      --text:#f3f3f3;
-      --shadow:0 20px 50px rgba(0,0,0,.30);
+      --bg:#06110a;
+      --panel:rgba(0,0,0,.62);
+      --panel2:rgba(8,17,11,.88);
+      --line:rgba(141,245,109,.18);
+      --text:#f4fff1;
+      --muted:#bfd4bf;
+      --green:#99f06a;
+      --green2:#72d84c;
+      --yellow:#f3d96d;
+      --red:#ff6b6b;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
     }
 
     body{
       margin:0;
-      font-family:Arial,sans-serif;
-      color:white;
       min-height:100vh;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.44), rgba(0,0,0,.94)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,.52), rgba(0,0,0,.78)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed,
+        var(--bg);
     }
 
     .page{
-      max-width:1500px;
+      max-width:1180px;
       margin:0 auto;
       padding:18px;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
     }
 
     .shell{
-      width:100%;
-      display:grid;
-      grid-template-columns:1.05fr .95fr;
-      gap:20px;
+      background:rgba(4,10,7,.60);
+      border:1px solid var(--line);
+      border-radius:28px;
+      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
 
-    .panel{
-      background:var(--bg);
-      border:1px solid var(--border);
-      border-radius:28px;
-      backdrop-filter:blur(10px);
-      box-shadow:var(--shadow);
-      padding:26px;
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      flex-wrap:wrap;
     }
 
     .brand{
       display:flex;
       align-items:center;
-      gap:12px;
-      margin-bottom:18px;
-      color:var(--green);
-      font-size:1.9rem;
-      font-weight:900;
+      gap:14px;
+      min-width:0;
     }
 
-    .brand img{
-      width:64px;
-      height:64px;
-      border-radius:18px;
+    .brand-logo{
+      width:76px;
+      height:76px;
+      border-radius:50%;
       object-fit:cover;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.35);
+      background:#000;
+      border:2px solid rgba(141,245,109,.25);
+      box-shadow:0 0 24px rgba(141,245,109,.15);
     }
 
-    .kicker{
-      display:inline-block;
+    .brand h1{
+      margin:0;
+      font-size:2.15rem;
+      line-height:1;
+      color:var(--green);
+      letter-spacing:.3px;
+    }
+
+    .brand p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:1.08rem;
+    }
+
+    .chip-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .chip, .nav-btn, .tab-btn, .btn{
+      border:none;
+      border-radius:18px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+
+    .chip{
+      padding:12px 16px;
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.08);
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+    }
+
+    .chip:hover, .tab-btn:hover, .btn:hover, .nav-btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.04);
+    }
+
+    .hero{
+      padding:20px;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .hero-card, .auth-card{
+      border:1px solid var(--line);
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(0,0,0,.48), rgba(6,18,11,.82));
+      padding:28px;
+      min-width:0;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
       padding:8px 12px;
       border-radius:999px;
-      font-weight:900;
+      background:rgba(141,245,109,.08);
+      color:#d5ffc6;
+      border:1px solid rgba(141,245,109,.12);
       font-size:.82rem;
-      background:rgba(125,255,113,.13);
-      border:1px solid rgba(125,255,113,.18);
-      color:var(--green);
-      margin-bottom:14px;
-    }
-
-    .hero-title{
-      margin:0 0 14px;
-      font-size:3rem;
-      line-height:.93;
-      color:var(--green);
       font-weight:900;
+      letter-spacing:.5px;
+      text-transform:uppercase;
+      margin-bottom:12px;
     }
 
-    .hero-copy{
-      color:var(--text);
-      line-height:1.8;
-      font-size:1.05rem;
+    .hero h2{
+      margin:0 0 12px;
+      font-size:4rem;
+      line-height:.95;
+      color:var(--green);
+      letter-spacing:-1.6px;
+    }
+
+    .hero p{
+      margin:0;
+      color:#eef7ec;
+      font-size:1.2rem;
+      line-height:1.65;
     }
 
     .tabs{
       display:flex;
       gap:10px;
       flex-wrap:wrap;
-      margin-bottom:18px;
+      margin-bottom:20px;
     }
 
     .tab-btn{
-      background:var(--soft);
-      color:white;
+      padding:16px 20px;
+      background:rgba(255,255,255,.07);
+      color:#fff;
       border:1px solid rgba(255,255,255,.08);
-      padding:10px 14px;
-      border-radius:12px;
-      font-weight:800;
-      cursor:pointer;
+      font-size:1.02rem;
     }
 
     .tab-btn.active{
       background:var(--green);
-      color:black;
-      border-color:transparent;
+      color:#071108;
+      box-shadow:0 0 0 1px rgba(0,0,0,.15) inset;
     }
 
-    .tab-pane{ display:none; }
-    .tab-pane.active{ display:block; }
-
-    .form-grid{
-      display:grid;
-      gap:12px;
+    .panel{
+      display:none;
+      margin-top:8px;
     }
 
-    .two{
+    .panel.active{
+      display:block;
+    }
+
+    .grid{
       display:grid;
       grid-template-columns:1fr 1fr;
-      gap:12px;
+      gap:14px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    label{
+      font-size:.96rem;
+      font-weight:800;
+      color:#dff9d0;
     }
 
     input, textarea, select{
       width:100%;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid #2c2c2c;
-      background:rgba(0,0,0,.72);
-      color:white;
-      font-size:16px;
+      background:#030805;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:18px 18px;
+      font-size:1.05rem;
       outline:none;
-      font-family:inherit;
     }
 
     textarea{
-      min-height:100px;
       resize:vertical;
+      min-height:120px;
+    }
+
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(141,245,109,.45);
+      box-shadow:0 0 0 3px rgba(141,245,109,.10);
     }
 
     .btn-row{
       display:flex;
       gap:12px;
       flex-wrap:wrap;
-      margin-top:12px;
+      margin-top:8px;
     }
 
     .btn{
-      display:inline-block;
-      text-decoration:none;
-      text-align:center;
-      padding:12px 16px;
-      border-radius:14px;
-      font-weight:900;
-      border:none;
-      cursor:pointer;
-      font-size:14px;
+      padding:16px 22px;
+      font-size:1.02rem;
+      min-width:170px;
     }
 
-    .btn-green{ background:var(--green); color:black; }
+    .btn-green{
+      background:var(--green);
+      color:#081108;
+    }
+
     .btn-dark{
       background:rgba(255,255,255,.08);
-      color:white;
-      border:1px solid rgba(255,255,255,.10);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.09);
     }
-    .btn-gold{ background:var(--gold); color:black; }
+
+    .btn-yellow{
+      background:var(--yellow);
+      color:#161204;
+    }
+
+    .quick-links{
+      display:flex;
+      gap:20px;
+      flex-wrap:wrap;
+      margin-top:12px;
+      font-weight:800;
+    }
+
+    .quick-links a{
+      color:var(--green);
+      text-decoration:none;
+    }
 
     .status{
-      margin-top:16px;
-      padding:14px;
-      border-radius:16px;
-      background:rgba(0,0,0,.45);
-      border:1px solid rgba(125,255,113,.16);
+      margin-top:18px;
+      padding:16px 18px;
+      border-radius:20px;
+      font-size:1.02rem;
+      line-height:1.55;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      min-height:64px;
       white-space:pre-wrap;
-      word-break:break-word;
-      line-height:1.7;
     }
 
-    .switch-links{
-      display:flex;
-      gap:14px;
-      flex-wrap:wrap;
-      margin-top:8px;
-      font-size:14px;
+    .status.ok{
+      color:#d9ffd1;
+      border-color:rgba(141,245,109,.22);
+      background:rgba(141,245,109,.08);
     }
 
-    .switch-links button{
-      background:none;
-      border:none;
+    .status.err{
+      color:#ffd6d6;
+      border-color:rgba(255,107,107,.28);
+      background:rgba(255,107,107,.08);
+    }
+
+    .status.warn{
+      color:#fff0c4;
+      border-color:rgba(243,217,109,.26);
+      background:rgba(243,217,109,.08);
+    }
+
+    .status.loading{
+      color:#f8fff5;
+      border-color:rgba(255,255,255,.10);
+      background:rgba(255,255,255,.05);
+    }
+
+    .session-box{
+      margin-top:18px;
+      padding:16px 18px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:rgba(141,245,109,.05);
+    }
+
+    .session-title{
+      margin:0 0 8px;
       color:var(--green);
-      font-weight:800;
-      cursor:pointer;
-      padding:0;
+      font-size:1.1rem;
+      font-weight:900;
     }
 
-    @media (max-width: 1050px){
-      .shell{ grid-template-columns:1fr; }
-      .hero-title{ font-size:2.3rem; }
-      .two{ grid-template-columns:1fr; }
+    .session-meta{
+      color:#ebf7e5;
+      font-size:.98rem;
+      line-height:1.5;
+    }
+
+    .footer-note{
+      padding:16px 20px 22px;
+      color:#bcd3bd;
+      font-size:.95rem;
+    }
+
+    @media (max-width: 980px){
+      .hero{
+        grid-template-columns:1fr;
+      }
+      .hero h2{
+        font-size:2.85rem;
+      }
+    }
+
+    @media (max-width: 720px){
+      .brand h1{
+        font-size:1.7rem;
+      }
+      .hero-card, .auth-card{
+        padding:18px;
+      }
+      .hero h2{
+        font-size:2.4rem;
+      }
+      .grid{
+        grid-template-columns:1fr;
+      }
+      .btn{
+        width:100%;
+      }
+      .btn-row{
+        flex-direction:column;
+      }
     }
   </style>
 </head>
 <body>
   <div class="page">
     <div class="shell">
-      <section class="panel">
+      <div class="topbar">
         <div class="brand">
-          <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-          <span>Rich Bizness Auth</span>
-        </div>
-        <div class="kicker">FULL AUTH CORE</div>
-        <h1 class="hero-title">Sign up, sign in, reset, and session sync for one real Rich Bizness platform.</h1>
-        <div class="hero-copy">
-          This version keeps auth stable first. Signup and login work directly with Supabase. Profile sync happens only after a session exists.
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="tabs">
-          <button class="tab-btn active" id="loginTab" type="button">Login</button>
-          <button class="tab-btn" id="signUpTab" type="button">Sign Up</button>
-          <button class="tab-btn" id="forgotTab" type="button">Forgot Password</button>
-          <button class="tab-btn" id="resetTab" type="button">Reset Password</button>
+          <img
+            class="brand-logo"
+            src="rich-bizness-profile.jpg"
+            alt="Rich Bizness"
+            onerror="this.src='images/rich-bizness-profile.jpg'; this.onerror=null;"
+          />
+          <div>
+            <h1>Rich Bizness Auth</h1>
+            <p>Sign up, sign in, reset, and session sync for one real Rich Bizness platform.</p>
+          </div>
         </div>
 
-        <div class="tab-pane active" id="loginPane">
-          <div class="form-grid">
-            <input id="loginEmail" type="email" placeholder="Email" />
-            <input id="loginPassword" type="password" placeholder="Password" />
+        <div class="chip-row">
+          <a class="chip" href="index.html">Home</a>
+          <a class="chip" href="profile.html">Profile</a>
+          <a class="chip" href="messages.html">Messages</a>
+          <a class="chip" href="notifications.html">Notifications</a>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="hero-card">
+          <div class="eyebrow">Full Auth Core</div>
+          <h2>Sign up, sign in, reset, and session sync for one real Rich Bizness platform.</h2>
+          <p>
+            This version keeps auth stable first. Signup and login work directly with Supabase.
+            Profile sync happens only after a session exists.
+          </p>
+        </div>
+
+        <div class="auth-card">
+          <div class="tabs">
+            <button id="loginTab" class="tab-btn active" type="button">Login</button>
+            <button id="signupTab" class="tab-btn" type="button">Sign Up</button>
+            <button id="forgotTab" class="tab-btn" type="button">Forgot Password</button>
+            <button id="resetTab" class="tab-btn" type="button">Reset Password</button>
+          </div>
+
+          <!-- LOGIN -->
+          <div id="loginPanel" class="panel active">
+            <div class="field">
+              <label for="loginEmail">Email</label>
+              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+            </div>
+
+            <div class="field">
+              <label for="loginPassword">Password</label>
+              <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
+            </div>
+
             <div class="btn-row">
               <button id="loginBtn" class="btn btn-green" type="button">Sign In</button>
               <button id="sessionCheckBtn" class="btn btn-dark" type="button">Check Session</button>
-              <button id="continueBtn" class="btn btn-gold" type="button">Continue Into App</button>
+              <button id="continueBtn" class="btn btn-yellow" type="button">Continue Into App</button>
               <button id="logoutBtn" class="btn btn-dark" type="button">Log Out</button>
             </div>
-          </div>
-          <div class="switch-links">
-            <button id="goSignUp" type="button">Go to Sign Up</button>
-            <button id="goForgot" type="button">Forgot Password</button>
-          </div>
-        </div>
 
-        <div class="tab-pane" id="signUpPane">
-          <div class="form-grid">
-            <div class="two">
-              <input id="signupDisplayName" type="text" placeholder="Display name" />
-              <input id="signupUsername" type="text" placeholder="Username" />
+            <div class="quick-links">
+              <a href="#" id="goSignup">Go to Sign Up</a>
+              <a href="#" id="goForgot">Forgot Password</a>
             </div>
-            <input id="signupEmail" type="email" placeholder="Email" />
-            <input id="signupPassword" type="password" placeholder="Password (6+ chars)" />
-            <textarea id="signupBio" placeholder="Short bio"></textarea>
-            <div class="two">
-              <input id="signupFavoriteTeam" type="text" placeholder="Favorite team" />
-              <select id="signupRole">
-                <option value="user">User</option>
-                <option value="creator">Creator</option>
-                <option value="artist">Artist</option>
-              </select>
+          </div>
+
+          <!-- SIGNUP -->
+          <div id="signupPanel" class="panel">
+            <div class="grid">
+              <div class="field">
+                <label for="signupUsername">Username</label>
+                <input id="signupUsername" type="text" placeholder="thatboytay3d" />
+              </div>
+
+              <div class="field">
+                <label for="signupDisplayName">Display Name</label>
+                <input id="signupDisplayName" type="text" placeholder="ThatBoyTayThou" />
+              </div>
+
+              <div class="field full">
+                <label for="signupEmail">Email</label>
+                <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+              </div>
+
+              <div class="field full">
+                <label for="signupPassword">Password</label>
+                <input id="signupPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password" />
+              </div>
+
+              <div class="field full">
+                <label for="signupBio">Short Bio</label>
+                <textarea id="signupBio" placeholder="Short bio"></textarea>
+              </div>
+
+              <div class="field">
+                <label for="signupFavoriteTeam">Favorite Team</label>
+                <input id="signupFavoriteTeam" type="text" placeholder="Favorite team" />
+              </div>
+
+              <div class="field">
+                <label for="signupRole">Role</label>
+                <select id="signupRole">
+                  <option value="creator">Creator</option>
+                  <option value="user">User</option>
+                  <option value="artist">Artist</option>
+                  <option value="fan">Fan</option>
+                </select>
+              </div>
             </div>
+
             <div class="btn-row">
               <button id="signupBtn" class="btn btn-green" type="button">Create Account</button>
             </div>
-          </div>
-          <div class="switch-links">
-            <button id="goLogin" type="button">Go to Login</button>
-            <button id="goForgot2" type="button">Forgot Password</button>
-          </div>
-        </div>
 
-        <div class="tab-pane" id="forgotPane">
-          <div class="form-grid">
-            <input id="forgotEmail" type="email" placeholder="Email for password reset" />
+            <div class="quick-links">
+              <a href="#" id="goLogin">Go to Login</a>
+              <a href="#" id="goForgotFromSignup">Forgot Password</a>
+            </div>
+          </div>
+
+          <!-- FORGOT -->
+          <div id="forgotPanel" class="panel">
+            <div class="field">
+              <label for="forgotEmail">Email</label>
+              <input id="forgotEmail" type="email" placeholder="Enter your account email" />
+            </div>
+
             <div class="btn-row">
               <button id="forgotBtn" class="btn btn-green" type="button">Send Reset Email</button>
             </div>
           </div>
-          <div class="switch-links">
-            <button id="goLogin2" type="button">Go to Login</button>
-            <button id="goSignUp2" type="button">Go to Sign Up</button>
-          </div>
-        </div>
 
-        <div class="tab-pane" id="resetPane">
-          <div class="form-grid">
-            <input id="resetPassword" type="password" placeholder="New password" />
-            <input id="resetPasswordConfirm" type="password" placeholder="Confirm new password" />
+          <!-- RESET -->
+          <div id="resetPanel" class="panel">
+            <div class="field">
+              <label for="resetPassword">New Password</label>
+              <input id="resetPassword" type="password" placeholder="New password" />
+            </div>
+
+            <div class="field">
+              <label for="resetPasswordConfirm">Confirm New Password</label>
+              <input id="resetPasswordConfirm" type="password" placeholder="Confirm new password" />
+            </div>
+
             <div class="btn-row">
               <button id="resetBtn" class="btn btn-green" type="button">Update Password</button>
             </div>
           </div>
-        </div>
 
-        <div id="statusBox" class="status">Ready.</div>
-      </section>
+          <div id="statusBox" class="status loading">Ready.</div>
+
+          <div class="session-box">
+            <div class="session-title">Session</div>
+            <div id="sessionMeta" class="session-meta">No active session.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        Use your project URL and your public publishable key only. Keep secret keys off this page.
+      </div>
     </div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <script>
+    try {
+      // KEEP THESE TWO VALUES
+      const SUPABASE_URL = "https://ksvdequymkceevoCGPDJ.supabase.co".toLowerCase();
+      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    });
-
-    const statusBox = document.getElementById("statusBox");
-
-    const tabs = {
-      login: document.getElementById("loginTab"),
-      signup: document.getElementById("signUpTab"),
-      forgot: document.getElementById("forgotTab"),
-      reset: document.getElementById("resetTab")
-    };
-
-    const panes = {
-      login: document.getElementById("loginPane"),
-      signup: document.getElementById("signUpPane"),
-      forgot: document.getElementById("forgotPane"),
-      reset: document.getElementById("resetPane")
-    };
-
-    const loginEmail = document.getElementById("loginEmail");
-    const loginPassword = document.getElementById("loginPassword");
-    const loginBtn = document.getElementById("loginBtn");
-    const sessionCheckBtn = document.getElementById("sessionCheckBtn");
-    const continueBtn = document.getElementById("continueBtn");
-    const logoutBtn = document.getElementById("logoutBtn");
-
-    const signupDisplayName = document.getElementById("signupDisplayName");
-    const signupUsername = document.getElementById("signupUsername");
-    const signupEmail = document.getElementById("signupEmail");
-    const signupPassword = document.getElementById("signupPassword");
-    const signupBio = document.getElementById("signupBio");
-    const signupFavoriteTeam = document.getElementById("signupFavoriteTeam");
-    const signupRole = document.getElementById("signupRole");
-    const signupBtn = document.getElementById("signupBtn");
-
-    const forgotEmail = document.getElementById("forgotEmail");
-    const forgotBtn = document.getElementById("forgotBtn");
-
-    const resetPassword = document.getElementById("resetPassword");
-    const resetPasswordConfirm = document.getElementById("resetPasswordConfirm");
-    const resetBtn = document.getElementById("resetBtn");
-
-    document.getElementById("goLogin").onclick = () => openTab("login");
-    document.getElementById("goLogin2").onclick = () => openTab("login");
-    document.getElementById("goSignUp").onclick = () => openTab("signup");
-    document.getElementById("goSignUp2").onclick = () => openTab("signup");
-    document.getElementById("goForgot").onclick = () => openTab("forgot");
-    document.getElementById("goForgot2").onclick = () => openTab("forgot");
-
-    tabs.login.onclick = () => openTab("login");
-    tabs.signup.onclick = () => openTab("signup");
-    tabs.forgot.onclick = () => openTab("forgot");
-    tabs.reset.onclick = () => openTab("reset");
-
-    function setStatus(message) {
-      statusBox.textContent = message;
-      console.log(message);
-    }
-
-    function openTab(name) {
-      Object.entries(tabs).forEach(([key, el]) => el.classList.toggle("active", key === name));
-      Object.entries(panes).forEach(([key, el]) => el.classList.toggle("active", key === name));
-    }
-
-    function slugifyUsername(value) {
-      return String(value || "")
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9_]/g, "_")
-        .replace(/^_+|_+$/g, "")
-        .slice(0, 30);
-    }
-
-    async function usernameExists(username) {
-      if (!username) return false;
-
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, username")
-        .eq("username", username)
-        .limit(1);
-
-      if (error && error.code !== "42P01") throw error;
-      return !!(data && data.length);
-    }
-
-    async function ensureProfileForCurrentSession() {
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
-
-      const user = sessionData?.session?.user;
-      if (!user) throw new Error("No active session.");
-
-      const email = (user.email || "").toLowerCase();
-      let username = slugifyUsername(
-        user.user_metadata?.username ||
-        email.split("@")[0] ||
-        `user_${String(user.id).slice(0, 6)}`
-      );
-
-      const displayName =
-        user.user_metadata?.display_name ||
-        username ||
-        "Rich Bizness User";
-
-      const bio = user.user_metadata?.bio || "";
-      const favoriteTeam = user.user_metadata?.favorite_team || "";
-      const role = user.user_metadata?.role || "user";
-
-      const { data: existing, error: existingError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (existingError && existingError.code !== "42P01") throw existingError;
-
-      if (!existing) {
-        let tryCount = 0;
-        const base = username || "user";
-        while (await usernameExists(username)) {
-          tryCount += 1;
-          username = `${base}_${tryCount}`;
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
         }
+      });
+
+      const loginTab = document.getElementById("loginTab");
+      const signupTab = document.getElementById("signupTab");
+      const forgotTab = document.getElementById("forgotTab");
+      const resetTab = document.getElementById("resetTab");
+
+      const loginPanel = document.getElementById("loginPanel");
+      const signupPanel = document.getElementById("signupPanel");
+      const forgotPanel = document.getElementById("forgotPanel");
+      const resetPanel = document.getElementById("resetPanel");
+
+      const loginEmail = document.getElementById("loginEmail");
+      const loginPassword = document.getElementById("loginPassword");
+      const loginBtn = document.getElementById("loginBtn");
+
+      const signupUsername = document.getElementById("signupUsername");
+      const signupDisplayName = document.getElementById("signupDisplayName");
+      const signupEmail = document.getElementById("signupEmail");
+      const signupPassword = document.getElementById("signupPassword");
+      const signupBio = document.getElementById("signupBio");
+      const signupFavoriteTeam = document.getElementById("signupFavoriteTeam");
+      const signupRole = document.getElementById("signupRole");
+      const signupBtn = document.getElementById("signupBtn");
+
+      const forgotEmail = document.getElementById("forgotEmail");
+      const forgotBtn = document.getElementById("forgotBtn");
+
+      const resetPassword = document.getElementById("resetPassword");
+      const resetPasswordConfirm = document.getElementById("resetPasswordConfirm");
+      const resetBtn = document.getElementById("resetBtn");
+
+      const sessionCheckBtn = document.getElementById("sessionCheckBtn");
+      const continueBtn = document.getElementById("continueBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+
+      const goSignup = document.getElementById("goSignup");
+      const goForgot = document.getElementById("goForgot");
+      const goLogin = document.getElementById("goLogin");
+      const goForgotFromSignup = document.getElementById("goForgotFromSignup");
+
+      const statusBox = document.getElementById("statusBox");
+      const sessionMeta = document.getElementById("sessionMeta");
+
+      const tabs = [
+        { btn: loginTab, panel: loginPanel },
+        { btn: signupTab, panel: signupPanel },
+        { btn: forgotTab, panel: forgotPanel },
+        { btn: resetTab, panel: resetPanel }
+      ];
+
+      function setStatus(message, kind = "loading") {
+        statusBox.textContent = message;
+        statusBox.className = `status ${kind}`;
+      }
+
+      function openTab(name) {
+        tabs.forEach(({ btn, panel }) => {
+          const active =
+            (name === "login" && btn === loginTab) ||
+            (name === "signup" && btn === signupTab) ||
+            (name === "forgot" && btn === forgotTab) ||
+            (name === "reset" && btn === resetTab);
+
+          btn.classList.toggle("active", active);
+          panel.classList.toggle("active", active);
+        });
+      }
+
+      function slugifyUsername(value) {
+        return String(value || "")
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[^a-z0-9_]/g, "");
+      }
+
+      async function updateSessionMeta() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) {
+          sessionMeta.textContent = "Session check failed.";
+          return null;
+        }
+
+        const session = data?.session || null;
+        if (!session?.user) {
+          sessionMeta.textContent = "No active session.";
+          return null;
+        }
+
+        const user = session.user;
+        const username = user.user_metadata?.username || "not set";
+        const displayName = user.user_metadata?.display_name || "not set";
+
+        sessionMeta.innerHTML =
+          `<strong>Email:</strong> ${user.email || "unknown"}<br>` +
+          `<strong>Username:</strong> ${username}<br>` +
+          `<strong>Display:</strong> ${displayName}`;
+
+        return session;
+      }
+
+      async function usernameExists(username) {
+        const clean = slugifyUsername(username);
+        if (!clean) return false;
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("username", clean)
+          .limit(1);
+
+        if (error) throw error;
+        return Array.isArray(data) && data.length > 0;
+      }
+
+      async function ensureProfileForUser(user, seed = {}) {
+        if (!user?.id) throw new Error("Missing user id.");
+
+        const email = user.email || seed.email || "";
+        let username = slugifyUsername(
+          seed.username ||
+          user.user_metadata?.username ||
+          (email ? email.split("@")[0] : "user")
+        );
+
+        const displayName =
+          seed.display_name ||
+          user.user_metadata?.display_name ||
+          username ||
+          "Rich Bizness User";
+
+        const existing = await supabase
+          .from("profiles")
+          .select("id, username")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (existing.error && existing.error.code !== "PGRST116") {
+          throw existing.error;
+        }
+
+        if (existing.data?.id) return existing.data;
+
+        let finalUsername = username || "user";
+        let count = 0;
+
+        while (await usernameExists(finalUsername)) {
+          count += 1;
+          finalUsername = `${username || "user"}_${count}`;
+        }
+
+        const payload = {
+          id: user.id,
+          user_id: user.id,
+          email,
+          username: finalUsername,
+          display_name: displayName,
+          bio: seed.bio || user.user_metadata?.bio || "",
+          favorite_team: seed.favorite_team || user.user_metadata?.favorite_team || "",
+          role: seed.role || user.user_metadata?.role || "user",
+          onboarding_complete: true
+        };
 
         const { error: insertError } = await supabase
           .from("profiles")
-          .insert([{
-            id: user.id,
-            email,
-            username,
-            display_name: displayName,
-            bio,
-            avatar_url: "",
-            favorite_team: favoriteTeam,
-            website_url: "",
-            instagram_url: "",
-            youtube_url: "",
-            role,
-            onboarding_complete: false
-          }]);
+          .upsert(payload, { onConflict: "id" });
 
         if (insertError) throw insertError;
-      } else {
-        const { error: updateError } = await supabase
-          .from("profiles")
-          .update({
+
+        return payload;
+      }
+
+      async function login() {
+        try {
+          const email = loginEmail.value.trim();
+          const password = loginPassword.value;
+
+          if (!email) throw new Error("Email is required.");
+          if (!password) throw new Error("Password is required.");
+
+          setStatus("Signing in...", "loading");
+
+          const { data, error } = await supabase.auth.signInWithPassword({
             email,
-            display_name: existing.display_name || displayName,
-            bio: existing.bio ?? bio,
-            favorite_team: existing.favorite_team ?? favoriteTeam,
-            role: existing.role || role
-          })
-          .eq("id", user.id);
+            password
+          });
 
-        if (updateError) throw updateError;
-      }
-    }
+          if (error) throw error;
+          if (!data?.user) throw new Error("No user returned.");
 
-    async function signUpUser() {
-      try {
-        const displayName = (signupDisplayName.value || "").trim();
-        const username = slugifyUsername(signupUsername.value);
-        const email = (signupEmail.value || "").trim().toLowerCase();
-        const password = (signupPassword.value || "").trim();
-        const bio = (signupBio.value || "").trim();
-        const favoriteTeam = (signupFavoriteTeam.value || "").trim();
-        const role = (signupRole.value || "user").trim();
+          await ensureProfileForUser(data.user);
+          await updateSessionMeta();
 
-        if (!username) throw new Error("Username is required.");
-        if (!email) throw new Error("Email is required.");
-        if (!password || password.length < 6) throw new Error("Password must be at least 6 characters.");
-
-        if (await usernameExists(username)) {
-          throw new Error("Username already taken.");
+          setStatus(`✅ Session found for ${data.user.email}`, "ok");
+        } catch (err) {
+          setStatus(`❌ Login error: ${err.message || err}`, "err");
         }
+      }
 
-        setStatus("Creating account...");
+      async function signup() {
+        try {
+          const email = signupEmail.value.trim();
+          const password = signupPassword.value;
+          const username = slugifyUsername(signupUsername.value);
+          const displayName = signupDisplayName.value.trim() || username;
+          const bio = signupBio.value.trim();
+          const favorite_team = signupFavoriteTeam.value.trim();
+          const role = signupRole.value || "creator";
 
-        const redirectTo = `${window.location.origin}/auth.html`;
+          if (!username) throw new Error("Username is required.");
+          if (!email) throw new Error("Email is required.");
+          if (!password || password.length < 6) throw new Error("Password must be at least 6 characters.");
 
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: redirectTo,
-            data: {
-              display_name: displayName || username,
-              username,
-              bio,
-              favorite_team: favoriteTeam,
-              role
-            }
+          if (await usernameExists(username)) {
+            throw new Error("Username already taken.");
           }
-        });
 
-        if (error) throw error;
+          setStatus("Creating account...", "loading");
 
-        setStatus("✅ Account created. Go log in with the new account.");
-        openTab("login");
-        return data;
-      } catch (error) {
-        console.error("sign up error:", error);
-        setStatus("❌ Sign up error: " + error.message);
-      }
-    }
+          const redirectTo = `${window.location.origin}/auth.html`;
 
-    async function loginUser() {
-      try {
-        const email = (loginEmail.value || "").trim().toLowerCase();
-        const password = (loginPassword.value || "").trim();
+          const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+              emailRedirectTo: redirectTo,
+              data: {
+                username,
+                display_name: displayName,
+                bio,
+                favorite_team,
+                role
+              }
+            }
+          });
 
-        if (!email) throw new Error("Email is required.");
-        if (!password) throw new Error("Password is required.");
+          if (error) throw error;
 
-        setStatus("Signing in...");
+          if (data?.user && data?.session) {
+            await ensureProfileForUser(data.user, {
+              email,
+              username,
+              display_name: displayName,
+              bio,
+              favorite_team,
+              role
+            });
+            await updateSessionMeta();
+            setStatus("✅ Account created and signed in.", "ok");
+            openTab("login");
+            loginEmail.value = email;
+            loginPassword.value = password;
+            return;
+          }
 
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password
-        });
-
-        if (error) throw error;
-
-        setStatus("✅ Login successful.");
-      } catch (error) {
-        console.error("login error:", error);
-        setStatus("❌ Login error: " + error.message);
-      }
-    }
-
-    async function checkSession() {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        const user = data?.session?.user;
-        if (!user) {
-          setStatus("No active session.");
-          return;
+          setStatus("✅ Account created. Check your email if confirmation is enabled, then log in.", "ok");
+          openTab("login");
+          loginEmail.value = email;
+          loginPassword.value = password;
+        } catch (err) {
+          setStatus(`❌ Sign up error: ${err.message || err}`, "err");
         }
-
-        setStatus(`✅ Session found for ${user.email}`);
-      } catch (error) {
-        console.error("session error:", error);
-        setStatus("❌ Session check error: " + error.message);
       }
+
+      async function sendReset() {
+        try {
+          const email = forgotEmail.value.trim();
+          if (!email) throw new Error("Email is required.");
+
+          setStatus("Sending password reset email...", "loading");
+
+          const redirectTo = `${window.location.origin}/auth.html`;
+
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo
+          });
+
+          if (error) throw error;
+
+          setStatus("✅ Reset email sent. Open it, then come back to this page to set a new password.", "ok");
+        } catch (err) {
+          setStatus(`❌ Forgot password error: ${err.message || err}`, "err");
+        }
+      }
+
+      async function updatePassword() {
+        try {
+          const pw = resetPassword.value;
+          const confirm = resetPasswordConfirm.value;
+
+          if (!pw || pw.length < 6) throw new Error("New password must be at least 6 characters.");
+          if (pw !== confirm) throw new Error("Passwords do not match.");
+
+          setStatus("Updating password...", "loading");
+
+          const { error } = await supabase.auth.updateUser({
+            password: pw
+          });
+
+          if (error) throw error;
+
+          setStatus("✅ Password updated. You can now log in with the new password.", "ok");
+          openTab("login");
+        } catch (err) {
+          setStatus(`❌ Reset password error: ${err.message || err}`, "err");
+        }
+      }
+
+      async function checkSession() {
+        try {
+          setStatus("Checking session...", "loading");
+          const session = await updateSessionMeta();
+
+          if (session?.user) {
+            setStatus(`✅ Session found for ${session.user.email}`, "ok");
+          } else {
+            setStatus("⚠️ No active session.", "warn");
+          }
+        } catch (err) {
+          setStatus(`❌ Session check error: ${err.message || err}`, "err");
+        }
+      }
+
+      async function continueIntoApp() {
+        try {
+          const { data, error } = await supabase.auth.getSession();
+          if (error) throw error;
+
+          const session = data?.session;
+          if (!session?.user) throw new Error("No active session.");
+
+          await ensureProfileForUser(session.user);
+          window.location.href = "index.html";
+        } catch (err) {
+          setStatus(`❌ Continue error: ${err.message || err}`, "err");
+        }
+      }
+
+      async function logout() {
+        try {
+          setStatus("Signing out...", "loading");
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+
+          await updateSessionMeta();
+          setStatus("✅ Logged out.", "ok");
+        } catch (err) {
+          setStatus(`❌ Logout error: ${err.message || err}`, "err");
+        }
+      }
+
+      loginTab.addEventListener("click", () => openTab("login"));
+      signupTab.addEventListener("click", () => openTab("signup"));
+      forgotTab.addEventListener("click", () => openTab("forgot"));
+      resetTab.addEventListener("click", () => openTab("reset"));
+
+      goSignup.addEventListener("click", (e) => { e.preventDefault(); openTab("signup"); });
+      goForgot.addEventListener("click", (e) => { e.preventDefault(); openTab("forgot"); });
+      goLogin.addEventListener("click", (e) => { e.preventDefault(); openTab("login"); });
+      goForgotFromSignup.addEventListener("click", (e) => { e.preventDefault(); openTab("forgot"); });
+
+      loginBtn.addEventListener("click", login);
+      signupBtn.addEventListener("click", signup);
+      forgotBtn.addEventListener("click", sendReset);
+      resetBtn.addEventListener("click", updatePassword);
+      sessionCheckBtn.addEventListener("click", checkSession);
+      continueBtn.addEventListener("click", continueIntoApp);
+      logoutBtn.addEventListener("click", logout);
+
+      loginPassword.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") login();
+      });
+
+      signupPassword.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") signup();
+      });
+
+      window.addEventListener("load", async () => {
+        try {
+          setStatus("Loading auth...", "loading");
+          const session = await updateSessionMeta();
+
+          const hash = window.location.hash || "";
+          if (hash.includes("type=recovery")) {
+            openTab("reset");
+            setStatus("⚠️ Recovery session detected. Set your new password below.", "warn");
+            return;
+          }
+
+          if (session?.user) {
+            setStatus(`✅ Session found for ${session.user.email}`, "ok");
+          } else {
+            setStatus("Ready.", "loading");
+          }
+        } catch (err) {
+          setStatus(`❌ Startup error: ${err.message || err}`, "err");
+        }
+      });
+
+      supabase.auth.onAuthStateChange(async (event, session) => {
+        try {
+          if (session?.user) {
+            await ensureProfileForUser(session.user);
+          }
+          await updateSessionMeta();
+
+          if (event === "SIGNED_IN" && session?.user) {
+            setStatus(`✅ Session found for ${session.user.email}`, "ok");
+          }
+        } catch (err) {
+          setStatus(`❌ Auth state error: ${err.message || err}`, "err");
+        }
+      });
+
+    } catch (err) {
+      const body = document.body || document.documentElement;
+      const box = document.createElement("div");
+      box.style.maxWidth = "900px";
+      box.style.margin = "40px auto";
+      box.style.padding = "20px";
+      box.style.borderRadius = "20px";
+      box.style.color = "#fff";
+      box.style.background = "rgba(255,0,0,.15)";
+      box.style.border = "1px solid rgba(255,120,120,.35)";
+      box.textContent = "Fatal auth page error: " + (err.message || err);
+      body.appendChild(box);
     }
-
-    async function continueIntoApp() {
-      try {
-        await ensureProfileForCurrentSession();
-        window.location.href = "index.html";
-      } catch (error) {
-        console.error("continue error:", error);
-        setStatus("❌ Continue error: " + error.message);
-      }
-    }
-
-    async function sendForgotPassword() {
-      try {
-        const email = (forgotEmail.value || "").trim().toLowerCase();
-        if (!email) throw new Error("Email is required.");
-
-        const redirectTo = `${window.location.origin}/auth.html`;
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo
-        });
-
-        if (error) throw error;
-        setStatus("✅ Password reset email sent.");
-      } catch (error) {
-        console.error("forgot password error:", error);
-        setStatus("❌ Forgot password error: " + error.message);
-      }
-    }
-
-    async function updatePassword() {
-      try {
-        const pass1 = (resetPassword.value || "").trim();
-        const pass2 = (resetPasswordConfirm.value || "").trim();
-
-        if (!pass1 || pass1.length < 6) throw new Error("Password must be at least 6 characters.");
-        if (pass1 !== pass2) throw new Error("Passwords do not match.");
-
-        const { error } = await supabase.auth.updateUser({
-          password: pass1
-        });
-
-        if (error) throw error;
-        setStatus("✅ Password updated.");
-        openTab("login");
-      } catch (error) {
-        console.error("reset password error:", error);
-        setStatus("❌ Reset password error: " + error.message);
-      }
-    }
-
-    loginBtn.addEventListener("click", loginUser);
-    signupBtn.addEventListener("click", signUpUser);
-    forgotBtn.addEventListener("click", sendForgotPassword);
-    resetBtn.addEventListener("click", updatePassword);
-    sessionCheckBtn.addEventListener("click", checkSession);
-    continueBtn.addEventListener("click", continueIntoApp);
-    logoutBtn.addEventListener("click", async () => {
-      try {
-        const { error } = await supabase.auth.signOut();
-        if (error) throw error;
-        setStatus("✅ Logged out.");
-      } catch (error) {
-        console.error("logout error:", error);
-        setStatus("❌ Logout error: " + error.message);
-      }
-    });
-
-    supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        openTab("reset");
-        setStatus("Recovery session detected. Set your new password.");
-      }
-    });
   </script>
 </body>
 </html>
