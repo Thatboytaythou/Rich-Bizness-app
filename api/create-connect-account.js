@@ -19,6 +19,21 @@ export default async function handler(req, res) {
   }
 
   try {
+    const {
+      userId,
+      email,
+      country = "US",
+      businessType = "individual",
+      createOnboardingLink = true,
+    } = req.body || {};
+
+    if (!userId) {
+      return res.status(400).json({
+        ok: false,
+        error: "Missing userId.",
+      });
+    }
+
     if (!process.env.STRIPE_SECRET_KEY) {
       return res.status(500).json({
         ok: false,
@@ -33,18 +48,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const {
-      userId,
-      email,
-      country = "US",
-      businessType = "individual",
-      metadata = {},
-    } = req.body || {};
-
-    if (!userId) {
-      return res.status(400).json({
+    if (!process.env.APP_URL) {
+      return res.status(500).json({
         ok: false,
-        error: "Missing userId.",
+        error: "Missing APP_URL.",
       });
     }
 
@@ -55,14 +62,7 @@ export default async function handler(req, res) {
       .limit(1)
       .maybeSingle();
 
-    if (profileError) {
-      console.error("profile lookup error:", profileError);
-      return res.status(500).json({
-        ok: false,
-        error: "Failed to load profile.",
-      });
-    }
-
+    if (profileError) throw profileError;
     if (!profile) {
       return res.status(404).json({
         ok: false,
@@ -70,73 +70,75 @@ export default async function handler(req, res) {
       });
     }
 
-    if (profile.stripe_account_id) {
-      const existingAccount = await stripe.accounts.retrieve(profile.stripe_account_id);
+    let accountId = profile.stripe_account_id;
 
-      return res.status(200).json({
-        ok: true,
-        reused: true,
-        accountId: existingAccount.id,
-        charges_enabled: existingAccount.charges_enabled,
-        payouts_enabled: existingAccount.payouts_enabled,
-        details_submitted: existingAccount.details_submitted,
+    if (!accountId) {
+      const account = await stripe.accounts.create({
+        type: "express",
+        country,
+        email: email || profile.email || undefined,
+        business_type: businessType,
+        capabilities: {
+          transfers: { requested: true },
+          card_payments: { requested: true },
+        },
+        metadata: {
+          rich_bizness_user_id: String(userId),
+          username: String(profile.username || ""),
+          display_name: String(profile.display_name || ""),
+        },
       });
+
+      accountId = account.id;
+
+      const { error: updateError } = await supabase
+        .from("profiles")
+        .update({
+          stripe_account_id: accountId,
+          updated_at: new Date().toISOString(),
+        })
+        .or(`id.eq.${userId},user_id.eq.${userId}`);
+
+      if (updateError) {
+        return res.status(500).json({
+          ok: false,
+          error: "Created Stripe account but failed to save it to profile.",
+          accountId,
+        });
+      }
     }
 
-    const accountEmail = email || profile.email || null;
+    let onboardingUrl = null;
 
-    const account = await stripe.accounts.create({
-      type: "express",
-      country,
-      email: accountEmail,
-      business_type: businessType,
-      capabilities: {
-        transfers: { requested: true },
-        card_payments: { requested: true },
-      },
-      metadata: {
-        rich_bizness_user_id: String(userId),
-        profile_id: String(profile.id || ""),
-        username: String(profile.username || ""),
-        display_name: String(profile.display_name || ""),
-        ...Object.fromEntries(
-          Object.entries(metadata || {}).map(([key, value]) => [key, String(value)])
-        ),
-      },
-    });
+    if (createOnboardingLink) {
+      const baseUrl = process.env.APP_URL.replace(/\/$/, "");
 
-    const { error: updateError } = await supabase
-      .from("profiles")
-      .update({
-        stripe_account_id: account.id,
-        updated_at: new Date().toISOString(),
-      })
-      .or(`id.eq.${userId},user_id.eq.${userId}`);
-
-    if (updateError) {
-      console.error("profile stripe_account_id update error:", updateError);
-
-      return res.status(500).json({
-        ok: false,
-        error: "Stripe account created but failed to save it to profile.",
-        accountId: account.id,
+      const accountLink = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${baseUrl}/monetization.html?stripe=refresh`,
+        return_url: `${baseUrl}/monetization.html?stripe=return`,
+        type: "account_onboarding",
       });
+
+      onboardingUrl = accountLink.url;
     }
+
+    const freshAccount = await stripe.accounts.retrieve(accountId);
 
     return res.status(200).json({
       ok: true,
-      reused: false,
-      accountId: account.id,
-      charges_enabled: account.charges_enabled,
-      payouts_enabled: account.payouts_enabled,
-      details_submitted: account.details_submitted,
+      accountId,
+      onboardingUrl,
+      charges_enabled: freshAccount.charges_enabled,
+      payouts_enabled: freshAccount.payouts_enabled,
+      details_submitted: freshAccount.details_submitted,
     });
   } catch (error) {
-    console.error("create-connect-account error:", error);
+    console.error("create-connect-account advanced error:", error);
 
     return res.status(500).json({
       ok: false,
-      error: error?.message || "Failed to create Stripe Connect account.",
+      error: error?.message || "Failed to create Stripe Connect flow.",
     });
   }
 }
