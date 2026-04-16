@@ -8,402 +8,608 @@
   <style>
     * { box-sizing: border-box; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      color: #fff;
+    :root{
+      --bg:#07110a;
+      --panel:rgba(0,0,0,.62);
+      --panel-2:rgba(5,15,9,.84);
+      --line:rgba(141,245,109,.18);
+      --line-strong:rgba(141,245,109,.28);
+      --text:#f6fff3;
+      --muted:#b9cdb8;
+      --green:#99f06a;
+      --green-dark:#75d74d;
+      --blue:#7bb2ff;
+      --yellow:#f2d66b;
+      --red:#ff7575;
+      --shadow:0 18px 50px rgba(0,0,0,.45);
+    }
+
+    html, body {
+      margin:0;
+      min-height:100%;
+      font-family:Arial, Helvetica, sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.60), rgba(0,0,0,.84)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
+        linear-gradient(rgba(0,0,0,.52), rgba(0,0,0,.80)),
+        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed,
+        var(--bg);
     }
 
-    a { text-decoration: none; color: inherit; }
+    a { color:inherit; text-decoration:none; }
 
-    .page {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 18px;
+    .page{
+      max-width:1400px;
+      margin:0 auto;
+      padding:18px;
     }
 
-    .shell {
-      background: rgba(0,0,0,.52);
-      border: 1px solid rgba(141,245,109,.16);
-      border-radius: 26px;
-      overflow: hidden;
-      box-shadow: 0 0 35px rgba(0,0,0,.28);
-      backdrop-filter: blur(10px);
+    .shell{
+      border:1px solid var(--line);
+      border-radius:28px;
+      overflow:hidden;
+      background:rgba(4,10,7,.60);
+      backdrop-filter:blur(12px);
+      box-shadow:var(--shadow);
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 18px;
-      flex-wrap: wrap;
-      border-bottom: 1px solid rgba(141,245,109,.12);
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      flex-wrap:wrap;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 220px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
     }
 
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(141,245,109,.28);
-      box-shadow: 0 0 18px rgba(141,245,109,.18);
-      background: #111;
+    .brand-logo{
+      width:74px;
+      height:74px;
+      border-radius:50%;
+      border:2px solid rgba(141,245,109,.22);
+      object-fit:cover;
+      background:#000;
+      box-shadow:0 0 26px rgba(141,245,109,.16);
+      flex-shrink:0;
     }
 
-    .brand-text h1 {
-      margin: 0;
-      font-size: 1.9rem;
-      color: #9afc6b;
-      line-height: 1;
+    .brand h1{
+      margin:0;
+      font-size:2rem;
+      color:var(--green);
+      letter-spacing:.3px;
+      line-height:1;
     }
 
-    .brand-text p {
-      margin: 6px 0 0;
-      color: #d7e8d0;
-      opacity: .9;
-      font-size: .96rem;
+    .brand p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:1.03rem;
     }
 
-    .chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: #fff;
-      font-weight: 700;
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
 
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: flex-end;
+    .user-chip, .nav-btn, .pill, .btn{
+      border-radius:18px;
+      font-weight:800;
+      border:1px solid rgba(255,255,255,.08);
+      transition:.18s ease;
     }
 
-    .btn, button {
-      border: none;
-      cursor: pointer;
-      font-weight: 800;
-      border-radius: 18px;
-      transition: .18s ease;
-      font-size: 1rem;
+    .user-chip{
+      padding:12px 16px;
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      min-height:48px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    .btn:hover, button:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
+    .nav-btn{
+      padding:12px 16px;
+      min-height:48px;
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
     }
 
-    .btn-green {
-      background: #95f168;
-      color: #041304;
-      padding: 14px 20px;
+    .nav-btn:hover, .btn:hover, .pill:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.04);
     }
 
-    .btn-dark {
-      background: rgba(255,255,255,.08);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.12);
-      padding: 14px 18px;
+    .hero{
+      padding:18px;
+      border-bottom:1px solid var(--line);
     }
 
-    .btn-blue {
-      background: #7db6ff;
-      color: #08131f;
-      padding: 14px 18px;
+    .hero-card{
+      border:1px solid var(--line);
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(6,18,11,.82));
+      padding:28px;
     }
 
-    .hero {
-      padding: 18px;
-      border-bottom: 1px solid rgba(141,245,109,.10);
+    .pill-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
     }
 
-    .hero-box {
-      background: rgba(0,0,0,.34);
-      border: 1px solid rgba(141,245,109,.13);
-      border-radius: 24px;
-      padding: 22px;
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      font-size:.82rem;
+      text-transform:uppercase;
+      letter-spacing:.45px;
+      background:rgba(141,245,109,.08);
+      color:#ddffd1;
+      border:1px solid rgba(141,245,109,.14);
     }
 
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
+    .pill.blue{
+      background:rgba(123,178,255,.10);
+      border-color:rgba(123,178,255,.20);
+      color:#dce9ff;
     }
 
-    .pill {
-      display: inline-block;
-      padding: 7px 10px;
-      border-radius: 999px;
-      font-size: .78rem;
-      font-weight: 800;
-      letter-spacing: .3px;
-      background: rgba(141,245,109,.13);
-      border: 1px solid rgba(141,245,109,.25);
-      color: #b9ff96;
+    .pill.yellow{
+      background:rgba(242,214,107,.10);
+      border-color:rgba(242,214,107,.20);
+      color:#fff2c1;
     }
 
-    .pill.alt {
-      background: rgba(125,182,255,.13);
-      border-color: rgba(125,182,255,.25);
-      color: #9bcbff;
+    .hero-title{
+      margin:0;
+      color:var(--green);
+      font-size:4rem;
+      line-height:.95;
+      letter-spacing:-1.8px;
     }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 18px;
-      align-items: start;
+    .hero-sub{
+      margin:14px 0 0;
+      color:#eef7ec;
+      font-size:1.18rem;
+      line-height:1.65;
+      max-width:980px;
     }
 
-    .avatar-card {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 22px;
-      padding: 16px;
+    .main{
+      padding:18px;
+      display:grid;
+      grid-template-columns:360px minmax(0,1fr);
+      gap:18px;
     }
 
-    .avatar-preview {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 20px;
-      object-fit: cover;
-      border: 2px solid rgba(141,245,109,.18);
-      background: rgba(255,255,255,.04);
-      display: block;
-      margin-bottom: 12px;
+    .panel{
+      border:1px solid var(--line);
+      border-radius:28px;
+      background:linear-gradient(180deg, rgba(0,0,0,.46), rgba(6,18,11,.86));
+      overflow:hidden;
+      min-width:0;
     }
 
-    .profile-main h2 {
-      margin: 0;
-      font-size: 3rem;
-      line-height: .98;
-      color: #9afc6b;
-      word-break: break-word;
+    .panel-inner{
+      padding:20px;
     }
 
-    .subline {
-      margin-top: 8px;
-      color: #dbe7d5;
-      font-size: 1rem;
-      opacity: .95;
+    .avatar-card{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      align-items:center;
+      text-align:center;
     }
 
-    .meta {
-      margin-top: 8px;
-      color: #dbe7d5;
-      display: grid;
-      gap: 6px;
+    .avatar-wrap{
+      width:220px;
+      height:220px;
+      border-radius:28px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      background:
+        linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)),
+        url("rich-bizness-profile.jpg") center/cover no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 0 24px rgba(141,245,109,.08);
     }
 
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
+    .avatar-img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      background:#030805;
     }
 
-    .status {
-      margin-top: 14px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      background: rgba(0,0,0,.42);
-      border: 1px solid rgba(141,245,109,.12);
-      min-height: 52px;
-      font-size: 1rem;
+    .avatar-empty{
+      font-size:1.2rem;
+      font-weight:900;
+      color:#ffffffcc;
+      padding:14px;
     }
 
-    .status.ok { color: #b8ff9c; }
-    .status.err { color: #ff9d9d; }
-    .status.loading { color: #fff2a3; }
-
-    .content {
-      padding: 18px;
+    .section-title{
+      margin:0 0 10px;
+      color:var(--green);
+      font-size:1.35rem;
+      line-height:1.05;
     }
 
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 18px;
+    .subtext{
+      color:var(--muted);
+      font-size:.97rem;
+      line-height:1.55;
+      margin:0;
     }
 
-    .panel {
-      background: rgba(0,0,0,.36);
-      border: 1px solid rgba(141,245,109,.12);
-      border-radius: 24px;
-      padding: 18px;
+    .file-input{
+      width:100%;
+      background:#040906;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:16px;
+      padding:12px;
     }
 
-    .panel h3 {
-      margin: 0 0 14px;
-      font-size: 1.6rem;
-      color: #9afc6b;
+    .btn{
+      border:none;
+      cursor:pointer;
+      padding:16px 18px;
+      min-height:52px;
+      font-size:1rem;
+      width:100%;
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
+    .btn.green{
+      background:var(--green);
+      color:#081108;
     }
 
-    .field.full { grid-column: 1 / -1; }
-
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #dce7d7;
-      font-weight: 700;
-      font-size: .96rem;
+    .btn.dark{
+      background:rgba(255,255,255,.06);
+      color:#fff;
     }
 
-    input, textarea, select {
-      width: 100%;
-      background: rgba(0,0,0,.62);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,.14);
-      border-radius: 16px;
-      padding: 14px 14px;
-      outline: none;
-      font-size: 1rem;
+    .btn.blue{
+      background:var(--blue);
+      color:#05101f;
     }
 
-    textarea {
-      min-height: 120px;
-      resize: vertical;
+    .btn.yellow{
+      background:var(--yellow);
+      color:#171304;
     }
 
-    input:focus, textarea:focus, select:focus {
-      border-color: rgba(141,245,109,.55);
-      box-shadow: 0 0 0 3px rgba(141,245,109,.12);
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:14px;
+      margin-top:14px;
     }
 
-    .progress-wrap {
-      margin-top: 14px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 14px;
+    .stat{
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(255,255,255,.03);
+      padding:18px;
+      text-align:center;
+      min-width:0;
     }
 
-    .progress-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
+    .stat-value{
+      font-size:2rem;
+      font-weight:900;
+      color:var(--green);
+      line-height:1;
+      margin-bottom:8px;
     }
 
-    .progress-bar {
-      width: 100%;
-      height: 14px;
-      border-radius: 999px;
-      overflow: hidden;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.08);
+    .stat-label{
+      color:#e7f5e4;
+      font-weight:800;
+      font-size:.96rem;
     }
 
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, #95f168, #6dd0ff);
-      transition: width .25s ease;
+    .status{
+      margin-top:14px;
+      padding:16px 18px;
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      white-space:pre-wrap;
+      line-height:1.55;
+      min-height:64px;
     }
 
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 14px;
+    .status.ok{
+      background:rgba(141,245,109,.08);
+      border-color:rgba(141,245,109,.22);
+      color:#ddffd2;
     }
 
-    .stat {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 18px;
-      padding: 16px;
-      text-align: center;
+    .status.err{
+      background:rgba(255,117,117,.08);
+      border-color:rgba(255,117,117,.22);
+      color:#ffd8d8;
     }
 
-    .stat strong {
-      display: block;
-      font-size: 2rem;
-      color: #9afc6b;
-      margin-bottom: 6px;
+    .status.warn{
+      background:rgba(242,214,107,.08);
+      border-color:rgba(242,214,107,.22);
+      color:#fff1c7;
     }
 
-    .list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
+    .status.loading{
+      background:rgba(255,255,255,.04);
+      color:#fff;
     }
 
-    .list-card {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 16px;
-      padding: 14px;
+    .form-head{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
 
-    .list-card h4 {
-      margin: 0 0 8px;
-      color: #fff;
-      font-size: 1.05rem;
+    .profile-name{
+      margin:0;
+      font-size:3.35rem;
+      line-height:.95;
+      color:var(--green);
+      letter-spacing:-1.4px;
+      word-break:break-word;
     }
 
-    .list-card p {
-      margin: 0;
-      color: #d5dfd0;
-      opacity: .92;
-      font-size: .95rem;
+    .profile-meta{
+      margin-top:8px;
+      color:#ebf7e5;
+      line-height:1.65;
+      font-size:1rem;
     }
 
-    .empty-box {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px dashed rgba(255,255,255,.14);
-      background: rgba(255,255,255,.02);
-      color: #d2ddd0;
-      text-align: center;
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin:14px 0;
     }
 
-    .muted {
-      color: #d2ddd0;
-      opacity: .88;
+    .action-link{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:48px;
+      padding:12px 18px;
+      border-radius:18px;
+      font-weight:900;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.06);
+      color:#fff;
     }
 
-    @media (max-width: 1100px) {
-      .hero-grid,
-      .content-grid {
-        grid-template-columns: 1fr;
+    .action-link.green{ background:var(--green); color:#091107; }
+    .action-link.blue{ background:var(--blue); color:#08111d; }
+    .action-link.yellow{ background:var(--yellow); color:#161204; }
+
+    .progress-box{
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px;
+      background:rgba(255,255,255,.03);
+      margin-bottom:14px;
+    }
+
+    .progress-meta{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+      font-weight:800;
+    }
+
+    .progress-track{
+      width:100%;
+      height:14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .progress-fill{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:linear-gradient(90deg, var(--green), #c2ff95);
+      transition:width .25s ease;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      margin-bottom:2px;
+      min-width:0;
+    }
+
+    .field.full{
+      grid-column:1 / -1;
+    }
+
+    .field label{
+      color:#dff9d0;
+      font-size:.95rem;
+      font-weight:800;
+    }
+
+    input, textarea, select{
+      width:100%;
+      background:#030805;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:16px 16px;
+      font-size:1.02rem;
+      outline:none;
+    }
+
+    textarea{
+      min-height:128px;
+      resize:vertical;
+    }
+
+    input:focus, textarea:focus, select:focus{
+      border-color:rgba(141,245,109,.45);
+      box-shadow:0 0 0 3px rgba(141,245,109,.10);
+    }
+
+    .save-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .save-row .btn{
+      width:auto;
+      min-width:190px;
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:14px;
+      margin-top:16px;
+    }
+
+    .mini-card{
+      border:1px solid var(--line);
+      border-radius:22px;
+      background:rgba(255,255,255,.03);
+      padding:18px;
+    }
+
+    .mini-card h3{
+      margin:0 0 8px;
+      color:var(--green);
+      font-size:1.12rem;
+    }
+
+    .mini-card p{
+      margin:0;
+      color:#e5f3e0;
+      line-height:1.55;
+    }
+
+    .recent-list{
+      margin-top:14px;
+      display:grid;
+      gap:12px;
+    }
+
+    .recent-item{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      background:rgba(255,255,255,.03);
+    }
+
+    .recent-item strong{
+      display:block;
+      color:#f6fff3;
+      margin-bottom:6px;
+    }
+
+    .recent-item span{
+      color:#cfe2cd;
+      font-size:.96rem;
+    }
+
+    .empty-box{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:18px;
+      padding:18px;
+      text-align:center;
+      color:#d7e7d2;
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width: 1120px){
+      .main{
+        grid-template-columns:1fr;
       }
     }
 
-    @media (max-width: 780px) {
-      .form-grid,
-      .stats {
-        grid-template-columns: 1fr;
+    @media (max-width: 780px){
+      .hero-title{
+        font-size:2.7rem;
       }
 
-      .profile-main h2 {
-        font-size: 2.35rem;
+      .profile-name{
+        font-size:2.45rem;
+      }
+
+      .stats-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .grid{
+        grid-template-columns:1fr;
+      }
+
+      .mini-grid{
+        grid-template-columns:1fr;
+      }
+
+      .save-row .btn{
+        width:100%;
+      }
+    }
+
+    @media (max-width: 560px){
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
+
+      .avatar-wrap{
+        width:180px;
+        height:180px;
+      }
+
+      .brand h1{
+        font-size:1.65rem;
       }
     }
   </style>
@@ -413,100 +619,135 @@
     <div class="shell">
       <div class="topbar">
         <div class="brand">
-          <img id="brandLogo" src="rich-bizness-profile.jpg" alt="Rich Bizness logo" onerror="this.src='images/rich-bizness-profile.jpg';" />
-          <div class="brand-text">
+          <img
+            class="brand-logo"
+            src="rich-bizness-profile.jpg"
+            alt="Rich Bizness"
+            onerror="this.src='images/rich-bizness-profile.jpg'; this.onerror=null;"
+          />
+          <div>
             <h1>Profile Editor</h1>
-            <p>Advanced profile control for Rich Bizness creators and fans</p>
+            <p>Advanced profile control, store sync, artist sync, and platform identity in one place.</p>
           </div>
         </div>
 
-        <div class="nav">
-          <div class="chip" id="userChip">Loading...</div>
-          <a class="btn btn-dark" href="index.html">Home</a>
-          <a class="btn btn-dark" href="artist.html">Artist</a>
-          <a class="btn btn-dark" href="store.html">Store</a>
-          <a class="btn btn-dark" href="gallery.html">Gallery</a>
-          <a class="btn btn-dark" href="messages.html">Messages</a>
-          <a class="btn btn-dark" href="notifications.html">Notifications</a>
-          <a class="btn btn-dark" href="analytics.html">Analytics</a>
-          <button class="btn btn-dark" id="logoutBtn" type="button">Log Out</button>
+        <div class="top-actions">
+          <div id="userChip" class="user-chip">Loading...</div>
+          <a class="nav-btn" href="index.html">Home</a>
+          <a class="nav-btn" href="artist.html">Artist</a>
+          <a class="nav-btn" href="store.html">Store</a>
+          <a class="nav-btn" href="gallery.html">Gallery</a>
+          <a class="nav-btn" href="messages.html">Messages</a>
+          <a class="nav-btn" href="notifications.html">Notifications</a>
+          <a class="nav-btn" href="analytics.html">Analytics</a>
+          <button id="logoutBtn" class="nav-btn" type="button">Log Out</button>
         </div>
       </div>
 
       <div class="hero">
-        <div class="hero-box">
-          <div class="hero-grid">
+        <div class="hero-card">
+          <div class="pill-row">
+            <div class="pill">Advanced Profile Control</div>
+            <div class="pill blue">Identity</div>
+            <div class="pill blue">Store Sync</div>
+            <div class="pill yellow">Artist Sync</div>
+          </div>
+          <h2 class="hero-title">Build one polished Rich Bizness identity that syncs across your app.</h2>
+          <p class="hero-sub">
+            This page keeps your username, display name, email, artist bio, links, favorite team,
+            role, avatar, and profile completion in sync with the rest of the platform.
+          </p>
+        </div>
+      </div>
+
+      <div class="main">
+        <!-- LEFT -->
+        <div class="panel">
+          <div class="panel-inner">
             <div class="avatar-card">
-              <img id="avatarBox" class="avatar-preview" src="" alt="Avatar preview" />
-              <input id="avatarInput" type="file" accept="image/*" />
-              <div style="height:10px;"></div>
-              <button id="uploadAvatarBtn" class="btn btn-green" type="button" style="width:100%;">Upload Avatar</button>
+              <div class="avatar-wrap" id="avatarWrap">
+                <img id="avatarImg" class="avatar-img" alt="Avatar" style="display:none;" />
+                <div id="avatarEmpty" class="avatar-empty">No Avatar Yet</div>
+              </div>
+
+              <div style="width:100%;">
+                <h2 class="section-title">Avatar</h2>
+                <p class="subtext">Upload a profile image to keep your profile, artist page, and inbox identity in sync.</p>
+              </div>
+
+              <input id="avatarInput" class="file-input" type="file" accept="image/*" />
+              <button id="uploadAvatarBtn" class="btn green" type="button">Upload Avatar</button>
             </div>
 
-            <div class="profile-main">
-              <div class="pill-row">
-                <span class="pill">ADVANCED PROFILE CONTROL</span>
-                <span class="pill alt">IDENTITY</span>
-                <span class="pill alt">STORE SYNC</span>
-                <span class="pill alt">ARTIST SYNC</span>
+            <div class="status loading" id="avatarStatus">Avatar ready.</div>
+
+            <div class="stats-grid">
+              <div class="stat">
+                <div id="storeStat" class="stat-value">0</div>
+                <div class="stat-label">Store Items</div>
               </div>
-
-              <h2 id="profileHeading">Loading...</h2>
-              <div class="subline" id="profileSub">Checking your Rich Bizness account...</div>
-
-              <div class="meta">
-                <div id="metaEmail">Email: --</div>
-                <div id="metaTeam">Favorite Team: --</div>
-                <div id="metaRole">Role: --</div>
+              <div class="stat">
+                <div id="musicStat" class="stat-value">0</div>
+                <div class="stat-label">Music Uploads</div>
               </div>
-
-              <div class="action-row">
-                <a href="artist.html" class="btn btn-dark">Open Artist</a>
-                <a href="store.html" class="btn btn-dark">Open Store</a>
-                <a href="upload.html" class="btn btn-dark">Upload</a>
-                <a href="analytics.html" class="btn btn-blue">Analytics</a>
+              <div class="stat">
+                <div id="playlistStat" class="stat-value">0</div>
+                <div class="stat-label">Playlists</div>
               </div>
-
-              <div id="statusBox" class="status loading">Loading profile...</div>
-
-              <div class="progress-wrap">
-                <div class="progress-head">
-                  <strong>Profile Completion</strong>
-                  <span id="completionText">0% complete</span>
-                </div>
-                <div class="progress-bar">
-                  <div id="completionFill" class="progress-fill"></div>
-                </div>
+              <div class="stat">
+                <div id="sportsStat" class="stat-value">0</div>
+                <div class="stat-label">Sports Posts</div>
               </div>
-
-              <div class="stats">
-                <div class="stat">
-                  <strong id="storeCount">0</strong>
-                  <span>Store Items</span>
-                </div>
-                <div class="stat">
-                  <strong id="musicCount">0</strong>
-                  <span>Music Uploads</span>
-                </div>
-                <div class="stat">
-                  <strong id="playlistCount">0</strong>
-                  <span>Playlists</span>
-                </div>
+              <div class="stat">
+                <div id="galleryStat" class="stat-value">0</div>
+                <div class="stat-label">Gallery / Art</div>
+              </div>
+              <div class="stat">
+                <div id="followerStat" class="stat-value">0</div>
+                <div class="stat-label">Followers</div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="content">
-        <div class="content-grid">
-          <section class="panel">
-            <h3>Edit Identity</h3>
+        <!-- RIGHT -->
+        <div class="panel">
+          <div class="panel-inner">
+            <div class="form-head">
+              <div>
+                <div class="pill-row" style="margin-bottom:10px;">
+                  <div class="pill">Synced Identity</div>
+                  <div class="pill blue">Creator Lane</div>
+                </div>
+                <h2 id="profileHeading" class="profile-name">Loading profile...</h2>
+                <div id="profileMeta" class="profile-meta">Checking session...</div>
+              </div>
+            </div>
 
-            <div class="form-grid">
+            <div class="action-row">
+              <a class="action-link green" id="openArtistBtn" href="artist.html">Open Artist</a>
+              <a class="action-link" id="openStoreBtn" href="store.html">Open Store</a>
+              <a class="action-link" id="openGalleryBtn" href="gallery.html">Open Gallery</a>
+              <a class="action-link blue" id="openMessagesBtn" href="messages.html">Messages</a>
+              <a class="action-link yellow" id="openAnalyticsBtn" href="analytics.html">Analytics</a>
+            </div>
+
+            <div class="status loading" id="statusBox">Loading profile...</div>
+
+            <div class="progress-box">
+              <div class="progress-meta">
+                <div><strong>Profile Completion</strong></div>
+                <div id="completionText">0% complete</div>
+              </div>
+              <div class="progress-track">
+                <div id="completionFill" class="progress-fill"></div>
+              </div>
+            </div>
+
+            <div class="grid">
               <div class="field">
                 <label for="usernameInput">Username</label>
-                <input id="usernameInput" type="text" placeholder="thatboytaythou" />
+                <input id="usernameInput" type="text" placeholder="thatboytay3d" />
               </div>
 
               <div class="field">
@@ -515,8 +756,8 @@
               </div>
 
               <div class="field full">
-                <label for="bioInput">Bio</label>
-                <textarea id="bioInput" placeholder="Tell Rich Bizness who you are..."></textarea>
+                <label for="emailInput">Email</label>
+                <input id="emailInput" type="email" placeholder="you@example.com" />
               </div>
 
               <div class="field">
@@ -527,49 +768,58 @@
               <div class="field">
                 <label for="roleInput">Role</label>
                 <select id="roleInput">
-                  <option value="user">User</option>
                   <option value="creator">Creator</option>
                   <option value="artist">Artist</option>
+                  <option value="user">User</option>
                   <option value="fan">Fan</option>
-                  <option value="admin">Admin</option>
                 </select>
               </div>
 
-              <div class="field">
-                <label for="websiteInput">Website</label>
-                <input id="websiteInput" type="text" placeholder="https://yourwebsite.com" />
+              <div class="field full">
+                <label for="bioInput">Bio</label>
+                <textarea id="bioInput" placeholder="Tell people who you are, what you build, and what your lane is."></textarea>
               </div>
 
               <div class="field">
-                <label for="instagramInput">Instagram</label>
-                <input id="instagramInput" type="text" placeholder="https://instagram.com/thatboytaythou" />
+                <label for="websiteInput">Website URL</label>
+                <input id="websiteInput" type="text" placeholder="https://your-site.com" />
+              </div>
+
+              <div class="field">
+                <label for="instagramInput">Instagram URL</label>
+                <input id="instagramInput" type="text" placeholder="https://instagram.com/yourname" />
               </div>
 
               <div class="field full">
-                <label for="youtubeInput">YouTube</label>
-                <input id="youtubeInput" type="text" placeholder="https://youtube.com/..." />
+                <label for="youtubeInput">YouTube URL</label>
+                <input id="youtubeInput" type="text" placeholder="https://youtube.com/@yourchannel" />
               </div>
             </div>
 
-            <div class="action-row" style="margin-top:16px;">
-              <button id="saveProfileBtn" class="btn btn-green" type="button">Save Profile</button>
-              <button id="refreshProfileBtn" class="btn btn-dark" type="button">Refresh Profile</button>
-            </div>
-          </section>
-
-          <aside class="panel">
-            <h3>Profile Sync</h3>
-            <p class="muted">This panel pulls from your current Supabase setup so your profile, artist lane, and platform identity stay connected.</p>
-
-            <div class="list" id="syncList">
-              <div class="empty-box">Loading sync data...</div>
+            <div class="save-row">
+              <button id="saveProfileBtn" class="btn green" type="button">Save Profile</button>
+              <button id="refreshProfileBtn" class="btn dark" type="button">Refresh Profile</button>
+              <button id="syncFromSessionBtn" class="btn blue" type="button">Sync From Session</button>
             </div>
 
-            <h3 style="margin-top:20px;">Recent Music</h3>
-            <div id="recentMusicList" class="list">
-              <div class="empty-box">Loading music...</div>
+            <div class="mini-grid">
+              <div class="mini-card">
+                <h3>Artist Sync</h3>
+                <p>Your artist page can read your username, display name, avatar, role, email, team, and bio from here.</p>
+              </div>
+              <div class="mini-card">
+                <h3>Messages Sync</h3>
+                <p>Your inbox and message composer can use your profile identity so people can search you by username.</p>
+              </div>
             </div>
-          </aside>
+
+            <div style="margin-top:16px;">
+              <h2 class="section-title">Recent Music</h2>
+              <div id="recentMusicList" class="recent-list">
+                <div class="empty-box">Loading music...</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -577,7 +827,7 @@
 
   <script>
     try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+      const SUPABASE_URL = "https://ksvdequymkceevoCGPDJ.supabase.co".toLowerCase();
       const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
       const PROFILE_BUCKET = "profile-images";
 
@@ -592,153 +842,142 @@
       const userChip = document.getElementById("userChip");
       const logoutBtn = document.getElementById("logoutBtn");
 
-      const avatarBox = document.getElementById("avatarBox");
+      const avatarImg = document.getElementById("avatarImg");
+      const avatarEmpty = document.getElementById("avatarEmpty");
       const avatarInput = document.getElementById("avatarInput");
       const uploadAvatarBtn = document.getElementById("uploadAvatarBtn");
+      const avatarStatus = document.getElementById("avatarStatus");
 
       const profileHeading = document.getElementById("profileHeading");
-      const profileSub = document.getElementById("profileSub");
-      const metaEmail = document.getElementById("metaEmail");
-      const metaTeam = document.getElementById("metaTeam");
-      const metaRole = document.getElementById("metaRole");
+      const profileMeta = document.getElementById("profileMeta");
       const statusBox = document.getElementById("statusBox");
 
       const usernameInput = document.getElementById("usernameInput");
       const displayNameInput = document.getElementById("displayNameInput");
-      const bioInput = document.getElementById("bioInput");
+      const emailInput = document.getElementById("emailInput");
       const favoriteTeamInput = document.getElementById("favoriteTeamInput");
       const roleInput = document.getElementById("roleInput");
+      const bioInput = document.getElementById("bioInput");
       const websiteInput = document.getElementById("websiteInput");
       const instagramInput = document.getElementById("instagramInput");
       const youtubeInput = document.getElementById("youtubeInput");
 
       const saveProfileBtn = document.getElementById("saveProfileBtn");
       const refreshProfileBtn = document.getElementById("refreshProfileBtn");
+      const syncFromSessionBtn = document.getElementById("syncFromSessionBtn");
 
       const completionText = document.getElementById("completionText");
       const completionFill = document.getElementById("completionFill");
 
-      const storeCount = document.getElementById("storeCount");
-      const musicCount = document.getElementById("musicCount");
-      const playlistCount = document.getElementById("playlistCount");
+      const storeStat = document.getElementById("storeStat");
+      const musicStat = document.getElementById("musicStat");
+      const playlistStat = document.getElementById("playlistStat");
+      const sportsStat = document.getElementById("sportsStat");
+      const galleryStat = document.getElementById("galleryStat");
+      const followerStat = document.getElementById("followerStat");
 
-      const syncList = document.getElementById("syncList");
       const recentMusicList = document.getElementById("recentMusicList");
 
+      let currentSession = null;
       let currentUser = null;
       let currentProfile = null;
 
-      function setStatus(message, type = "loading") {
-        statusBox.className = `status ${type}`;
+      function setStatus(message, kind = "loading") {
         statusBox.textContent = message;
+        statusBox.className = `status ${kind}`;
       }
 
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
+      function setAvatarStatus(message, kind = "loading") {
+        avatarStatus.textContent = message;
+        avatarStatus.className = `status ${kind}`;
       }
 
       function slugifyUsername(value) {
         return String(value || "")
-          .toLowerCase()
           .trim()
-          .replace(/[^a-z0-9_]/g, "")
-          .replace(/_{2,}/g, "_")
-          .replace(/^_+|_+$/g, "")
-          .slice(0, 30);
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .replace(/[^a-z0-9_]/g, "");
       }
 
-      function buildAvatarFallback(name = "Rich Bizness") {
-        return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(`
-          <svg xmlns="http://www.w3.org/2000/svg" width="800" height="800">
-            <defs>
-              <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-                <stop offset="0%" stop-color="#071007"/>
-                <stop offset="100%" stop-color="#193319"/>
-              </linearGradient>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#g)"/>
-            <circle cx="400" cy="400" r="260" fill="rgba(149,241,104,.08)" stroke="rgba(149,241,104,.35)" stroke-width="8"/>
-            <text x="50%" y="48%" dominant-baseline="middle" text-anchor="middle" fill="#9afc6b" font-size="90" font-family="Arial" font-weight="700">${name.slice(0, 1).toUpperCase()}</text>
-            <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" fill="#d8e5d0" font-size="32" font-family="Arial">No Avatar Yet</text>
-          </svg>
-        `);
+      function safeUrl(value) {
+        const raw = String(value || "").trim();
+        if (!raw) return "";
+        if (/^https?:\/\//i.test(raw)) return raw;
+        return "https://" + raw;
       }
 
-      function applyProfileToUI(profile) {
-        currentProfile = profile || {};
+      function setAvatar(url) {
+        if (url) {
+          avatarImg.src = url;
+          avatarImg.style.display = "block";
+          avatarEmpty.style.display = "none";
+        } else {
+          avatarImg.removeAttribute("src");
+          avatarImg.style.display = "none";
+          avatarEmpty.style.display = "flex";
+        }
+      }
 
-        const username = profile?.username || "";
-        const displayName = profile?.display_name || username || "Rich Bizness User";
-        const email = profile?.email || currentUser?.email || "--";
-        const favoriteTeam = profile?.favorite_team || "--";
-        const role = profile?.role || "user";
-        const bio = profile?.bio || "No bio yet.";
+      function setUserChip(text) {
+        userChip.textContent = text || "No session";
+      }
+
+      function renderHeader(profile, user) {
+        const displayName =
+          profile?.display_name ||
+          user?.user_metadata?.display_name ||
+          profile?.username ||
+          user?.user_metadata?.username ||
+          (user?.email ? user.email.split("@")[0] : "Rich Bizness User");
+
+        const username =
+          profile?.username ||
+          user?.user_metadata?.username ||
+          "not-set";
+
+        const email = profile?.email || user?.email || "no-email";
+        const role = profile?.role || user?.user_metadata?.role || "creator";
+        const favoriteTeam = profile?.favorite_team || "—";
 
         profileHeading.textContent = displayName;
-        profileSub.textContent = username ? `@${username}` : "Set your username to lock in your identity.";
-        metaEmail.textContent = `Email: ${email}`;
-        metaTeam.textContent = `Favorite Team: ${favoriteTeam}`;
-        metaRole.textContent = `Role: ${role}`;
+        profileMeta.innerHTML =
+          `<strong>@${username}</strong><br>` +
+          `${email}<br>` +
+          `Favorite Team: ${favoriteTeam}<br>` +
+          `Role: ${role}`;
+      }
 
-        userChip.textContent = currentUser?.email || displayName || "Rich Bizness";
+      function fillForm(profile, user) {
+        const username =
+          profile?.username ||
+          user?.user_metadata?.username ||
+          (user?.email ? user.email.split("@")[0] : "");
+
+        const displayName =
+          profile?.display_name ||
+          user?.user_metadata?.display_name ||
+          username;
 
         usernameInput.value = username || "";
-        displayNameInput.value = profile?.display_name || "";
-        bioInput.value = profile?.bio || "";
-        favoriteTeamInput.value = profile?.favorite_team || "";
-        roleInput.value = role || "user";
+        displayNameInput.value = displayName || "";
+        emailInput.value = profile?.email || user?.email || "";
+        favoriteTeamInput.value = profile?.favorite_team || user?.user_metadata?.favorite_team || "";
+        roleInput.value = profile?.role || user?.user_metadata?.role || "creator";
+        bioInput.value = profile?.bio || user?.user_metadata?.bio || "";
         websiteInput.value = profile?.website_url || "";
         instagramInput.value = profile?.instagram_url || "";
         youtubeInput.value = profile?.youtube_url || "";
-
-        avatarBox.src = profile?.avatar_url || buildAvatarFallback(displayName);
-        avatarBox.onerror = () => {
-          avatarBox.src = buildAvatarFallback(displayName);
-        };
-
-        renderSyncCards(profile, bio);
-        updateCompletion(profile);
       }
 
-      function renderSyncCards(profile, bio) {
-        const cards = [
-          {
-            title: "Identity",
-            text: `${profile?.display_name || "No display name"} • @${profile?.username || "no-username"}`
-          },
-          {
-            title: "Role Lane",
-            text: `${profile?.role || "user"} lane ready for profile, artist, and discovery sync`
-          },
-          {
-            title: "Favorite Team",
-            text: profile?.favorite_team || "No favorite team added yet"
-          },
-          {
-            title: "Bio Status",
-            text: bio || "No bio yet."
-          }
-        ];
-
-        syncList.innerHTML = cards.map(card => `
-          <div class="list-card">
-            <h4>${escapeHtml(card.title)}</h4>
-            <p>${escapeHtml(card.text)}</p>
-          </div>
-        `).join("");
-      }
-
-      function updateCompletion(profile) {
+      function updateCompletion(profile, user) {
         const checks = [
-          !!profile?.username,
-          !!profile?.display_name,
+          !!(profile?.username || user?.user_metadata?.username),
+          !!(profile?.display_name || user?.user_metadata?.display_name),
+          !!(profile?.email || user?.email),
           !!profile?.bio,
           !!profile?.favorite_team,
+          !!profile?.role,
           !!profile?.avatar_url,
           !!profile?.website_url,
           !!profile?.instagram_url,
@@ -747,299 +986,413 @@
 
         const done = checks.filter(Boolean).length;
         const percent = Math.round((done / checks.length) * 100);
-
         completionText.textContent = `${percent}% complete`;
         completionFill.style.width = `${percent}%`;
       }
 
+      async function getSessionOrThrow() {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        if (!data?.session?.user) throw new Error("No active session. Log in first.");
+        currentSession = data.session;
+        currentUser = data.session.user;
+        return data.session;
+      }
+
       async function usernameTakenElsewhere(username) {
-        if (!username) return false;
+        const clean = slugifyUsername(username);
+        if (!clean) return false;
 
         const { data, error } = await supabase
           .from("profiles")
-          .select("id, user_id")
-          .eq("username", username)
-          .limit(5);
+          .select("id")
+          .eq("username", clean);
 
         if (error) throw error;
 
-        return (data || []).some(row =>
-          row.id !== currentUser.id && row.user_id !== currentUser.id
-        );
+        return (data || []).some(row => row.id !== currentUser.id);
       }
 
-      async function ensureProfile(user) {
-        const { data: existing, error: existingError } = await supabase
+      async function ensureProfileExists() {
+        const session = await getSessionOrThrow();
+        const user = session.user;
+
+        const existingRes = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
           .maybeSingle();
 
-        if (existingError && existingError.code !== "PGRST116") {
-          throw existingError;
+        if (existingRes.error && existingRes.error.code !== "PGRST116") {
+          throw existingRes.error;
         }
 
-        if (existing) return existing;
+        let row = existingRes.data;
 
-        const baseUsername = slugifyUsername(
-          (user.email || "").split("@")[0] || "richbizness"
-        ) || "richbizness";
+        if (!row) {
+          let username = slugifyUsername(
+            user.user_metadata?.username ||
+            (user.email ? user.email.split("@")[0] : "user")
+          );
 
-        let username = baseUsername;
-        let count = 0;
-        while (await usernameTakenElsewhere(username)) {
-          count += 1;
-          username = `${baseUsername}_${count}`;
+          if (!username) username = "user";
+
+          let finalUsername = username;
+          let count = 0;
+
+          while (await usernameTakenElsewhere(finalUsername)) {
+            count += 1;
+            finalUsername = `${username}_${count}`;
+          }
+
+          const payload = {
+            id: user.id,
+            user_id: user.id,
+            email: user.email || "",
+            username: finalUsername,
+            display_name: user.user_metadata?.display_name || finalUsername,
+            bio: user.user_metadata?.bio || "",
+            avatar_url: user.user_metadata?.avatar_url || "",
+            favorite_team: user.user_metadata?.favorite_team || "",
+            role: user.user_metadata?.role || "creator",
+            website_url: "",
+            instagram_url: "",
+            youtube_url: "",
+            onboarding_complete: true
+          };
+
+          const insertRes = await supabase
+            .from("profiles")
+            .upsert(payload, { onConflict: "id" })
+            .select()
+            .single();
+
+          if (insertRes.error) throw insertRes.error;
+          row = insertRes.data;
         }
 
-        const payload = {
-          id: user.id,
-          user_id: user.id,
-          email: user.email || "",
-          username,
-          display_name: username,
-          bio: "",
-          avatar_url: "",
-          favorite_team: "",
-          website_url: "",
-          instagram_url: "",
-          youtube_url: "",
-          role: "user",
-          onboarding_complete: false,
-          updated_at: new Date().toISOString()
-        };
-
-        const { error: insertError } = await supabase.from("profiles").insert(payload);
-        if (insertError) throw insertError;
-
-        const { data: created, error: createdError } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (createdError) throw createdError;
-        return created;
+        currentProfile = row;
+        return row;
       }
 
       async function loadProfile() {
-        setStatus("Loading profile...", "loading");
-
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-
-        currentUser = sessionData?.session?.user || null;
-
-        if (!currentUser) {
-          setStatus("No active session. Please log in first.", "err");
-          setTimeout(() => {
-            window.location.href = "auth.html";
-          }, 900);
-          return;
-        }
-
-        const profile = await ensureProfile(currentUser);
-        applyProfileToUI(profile);
-
-        await loadCounts(currentUser.id);
-        await loadRecentMusic(currentUser.id);
-
-        setStatus("Profile editor fully synced.", "ok");
-      }
-
-      async function loadCounts(userId) {
-        const safeCount = async (tableName, field = "id") => {
-          try {
-            const { count, error } = await supabase
-              .from(tableName)
-              .select(field, { count: "exact", head: true })
-              .eq("user_id", userId);
-
-            if (error) return 0;
-            return count || 0;
-          } catch {
-            return 0;
-          }
-        };
-
-        const [products, musicUploads, playlists] = await Promise.all([
-          safeCount("products"),
-          safeCount("music_uploads"),
-          safeCount("playlists")
-        ]);
-
-        storeCount.textContent = String(products);
-        musicCount.textContent = String(musicUploads);
-        playlistCount.textContent = String(playlists);
-      }
-
-      async function loadRecentMusic(userId) {
         try {
-          const { data, error } = await supabase
-            .from("music_uploads")
-            .select("id, title, artist_name, genre, created_at")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false })
-            .limit(3);
+          setStatus("Loading profile...", "loading");
+          setAvatarStatus("Avatar ready.", "loading");
 
-          if (error) throw error;
+          await getSessionOrThrow();
+          setUserChip(currentUser.email || "Logged in");
 
-          const rows = data || [];
-          if (!rows.length) {
-            recentMusicList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
-            return;
-          }
+          const profile = await ensureProfileExists();
+          fillForm(profile, currentUser);
+          renderHeader(profile, currentUser);
+          setAvatar(profile.avatar_url || "");
+          updateCompletion(profile, currentUser);
 
-          recentMusicList.innerHTML = rows.map(row => `
-            <div class="list-card">
-              <h4>${escapeHtml(row.title || "Untitled Track")}</h4>
-              <p>${escapeHtml(row.artist_name || "Rich Bizness Artist")} • ${escapeHtml(row.genre || "No genre")}</p>
-            </div>
-          `).join("");
-        } catch {
-          recentMusicList.innerHTML = `<div class="empty-box">Music panel could not load yet.</div>`;
+          setStatus("✅ Profile editor fully synced.", "ok");
+
+          await Promise.allSettled([
+            loadStats(),
+            loadRecentMusic()
+          ]);
+        } catch (err) {
+          setStatus(`❌ Profile load error: ${err.message || err}`, "err");
+          setUserChip("No session");
+        }
+      }
+
+      async function syncFromSession() {
+        try {
+          await getSessionOrThrow();
+
+          usernameInput.value = currentProfile?.username || currentUser?.user_metadata?.username || usernameInput.value;
+          displayNameInput.value = currentUser?.user_metadata?.display_name || displayNameInput.value;
+          emailInput.value = currentUser?.email || emailInput.value;
+          favoriteTeamInput.value = currentUser?.user_metadata?.favorite_team || favoriteTeamInput.value;
+          roleInput.value = currentUser?.user_metadata?.role || roleInput.value;
+          bioInput.value = currentUser?.user_metadata?.bio || bioInput.value;
+
+          setStatus("✅ Form synced from current session metadata.", "ok");
+        } catch (err) {
+          setStatus(`❌ Sync error: ${err.message || err}`, "err");
         }
       }
 
       async function saveProfile() {
-        if (!currentUser) {
-          setStatus("No active session.", "err");
-          return;
-        }
-
         try {
-          setStatus("Saving profile...", "loading");
+          await getSessionOrThrow();
 
           const username = slugifyUsername(usernameInput.value);
           const displayName = displayNameInput.value.trim();
-          const bio = bioInput.value.trim();
+          const email = emailInput.value.trim();
           const favoriteTeam = favoriteTeamInput.value.trim();
           const role = roleInput.value;
-          const websiteUrl = websiteInput.value.trim();
-          const instagramUrl = instagramInput.value.trim();
-          const youtubeUrl = youtubeInput.value.trim();
+          const bio = bioInput.value.trim();
+          const websiteUrl = safeUrl(websiteInput.value);
+          const instagramUrl = safeUrl(instagramInput.value);
+          const youtubeUrl = safeUrl(youtubeInput.value);
 
-          if (!username) {
-            throw new Error("Username is required.");
-          }
+          if (!username) throw new Error("Username is required.");
+          if (!displayName) throw new Error("Display name is required.");
+          if (!email) throw new Error("Email is required.");
 
           if (await usernameTakenElsewhere(username)) {
-            throw new Error("That username is already taken.");
+            throw new Error("Username already taken by another profile.");
           }
 
+          setStatus("Saving profile...", "loading");
+
+          const avatarUrl = currentProfile?.avatar_url || "";
+
           const payload = {
+            id: currentUser.id,
+            user_id: currentUser.id,
+            email,
             username,
-            display_name: displayName || username,
+            display_name: displayName,
             bio,
+            avatar_url: avatarUrl,
             favorite_team: favoriteTeam,
             role,
             website_url: websiteUrl,
             instagram_url: instagramUrl,
             youtube_url: youtubeUrl,
-            email: currentUser.email || currentProfile?.email || "",
-            user_id: currentUser.id,
             onboarding_complete: true,
             updated_at: new Date().toISOString()
           };
 
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from("profiles")
-            .update(payload)
-            .eq("id", currentUser.id);
+            .upsert(payload, { onConflict: "id" })
+            .select()
+            .single();
 
           if (error) throw error;
 
-          const { data: fresh, error: freshError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", currentUser.id)
-            .single();
+          currentProfile = data;
 
-          if (freshError) throw freshError;
+          await supabase.auth.updateUser({
+            data: {
+              username,
+              display_name: displayName,
+              bio,
+              favorite_team: favoriteTeam,
+              role,
+              avatar_url: avatarUrl
+            }
+          });
 
-          applyProfileToUI(fresh);
-          setStatus("Profile saved successfully.", "ok");
+          fillForm(currentProfile, currentUser);
+          renderHeader(currentProfile, currentUser);
+          updateCompletion(currentProfile, currentUser);
+          setAvatar(currentProfile.avatar_url || "");
+
+          setStatus("✅ Profile saved and synced.", "ok");
         } catch (err) {
-          setStatus(`Save error: ${err.message}`, "err");
+          setStatus(`❌ Save error: ${err.message || err}`, "err");
         }
       }
 
       async function uploadAvatar() {
-        if (!currentUser) {
-          setStatus("No active session.", "err");
-          return;
-        }
-
         try {
+          await getSessionOrThrow();
+
           const file = avatarInput.files?.[0];
-          if (!file) {
-            throw new Error("Choose an image first.");
-          }
+          if (!file) throw new Error("Choose an image first.");
 
-          setStatus("Uploading avatar...", "loading");
+          setAvatarStatus("Uploading avatar...", "loading");
 
-          const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-          const filePath = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
+          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+          const path = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
 
-          const { error: uploadError } = await supabase.storage
+          const uploadRes = await supabase.storage
             .from(PROFILE_BUCKET)
-            .upload(filePath, file, {
-              upsert: true
+            .upload(path, file, {
+              upsert: true,
+              cacheControl: "3600"
             });
 
-          if (uploadError) throw uploadError;
+          if (uploadRes.error) throw uploadRes.error;
 
-          const { data: publicUrlData } = supabase.storage
+          const publicRes = supabase.storage
             .from(PROFILE_BUCKET)
-            .getPublicUrl(filePath);
+            .getPublicUrl(path);
 
-          const avatarUrl = publicUrlData?.publicUrl || "";
+          const avatarUrl = publicRes?.data?.publicUrl;
+          if (!avatarUrl) throw new Error("Could not get avatar public URL.");
 
-          const { error: updateError } = await supabase
+          const { data, error } = await supabase
             .from("profiles")
-            .update({
+            .upsert({
+              id: currentUser.id,
+              user_id: currentUser.id,
+              email: currentProfile?.email || currentUser.email || "",
+              username: currentProfile?.username || slugifyUsername(currentUser.email?.split("@")[0] || "user"),
+              display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || "Rich Bizness User",
+              bio: currentProfile?.bio || "",
               avatar_url: avatarUrl,
+              favorite_team: currentProfile?.favorite_team || "",
+              role: currentProfile?.role || "creator",
+              website_url: currentProfile?.website_url || "",
+              instagram_url: currentProfile?.instagram_url || "",
+              youtube_url: currentProfile?.youtube_url || "",
+              onboarding_complete: true,
               updated_at: new Date().toISOString()
-            })
-            .eq("id", currentUser.id);
-
-          if (updateError) throw updateError;
-
-          avatarBox.src = avatarUrl;
-
-          const { data: fresh, error: freshError } = await supabase
-            .from("profiles")
-            .select("*")
-            .eq("id", currentUser.id)
+            }, { onConflict: "id" })
+            .select()
             .single();
 
-          if (freshError) throw freshError;
+          if (error) throw error;
 
-          applyProfileToUI(fresh);
-          setStatus("Avatar uploaded successfully.", "ok");
+          currentProfile = data;
+
+          await supabase.auth.updateUser({
+            data: {
+              avatar_url: avatarUrl
+            }
+          });
+
+          setAvatar(avatarUrl);
+          renderHeader(currentProfile, currentUser);
+          updateCompletion(currentProfile, currentUser);
+          setAvatarStatus("✅ Avatar uploaded and synced.", "ok");
+          setStatus("✅ Profile synced with new avatar.", "ok");
         } catch (err) {
-          setStatus(`Avatar upload error: ${err.message}`, "err");
+          setAvatarStatus(`❌ Avatar upload error: ${err.message || err}`, "err");
         }
+      }
+
+      async function countSafe(table, column = "user_id") {
+        try {
+          const { count, error } = await supabase
+            .from(table)
+            .select("*", { count: "exact", head: true })
+            .eq(column, currentUser.id);
+
+          if (error) return 0;
+          return count || 0;
+        } catch {
+          return 0;
+        }
+      }
+
+      async function loadStats() {
+        try {
+          if (!currentUser) return;
+
+          const [
+            storeCount,
+            musicCount,
+            playlistCount,
+            sportsCount,
+            galleryCount,
+            followersCount
+          ] = await Promise.all([
+            countSafe("products", "user_id"),
+            countSafe("music_uploads", "user_id"),
+            countSafe("playlists", "user_id"),
+            countSafe("sports_uploads", "user_id"),
+            countSafe("artworks", "user_id"),
+            countSafe("followers", "following_id")
+          ]);
+
+          storeStat.textContent = storeCount;
+          musicStat.textContent = musicCount;
+          playlistStat.textContent = playlistCount;
+          sportsStat.textContent = sportsCount;
+          galleryStat.textContent = galleryCount;
+          followerStat.textContent = followersCount;
+        } catch {
+          storeStat.textContent = "0";
+          musicStat.textContent = "0";
+          playlistStat.textContent = "0";
+          sportsStat.textContent = "0";
+          galleryStat.textContent = "0";
+          followerStat.textContent = "0";
+        }
+      }
+
+      async function loadRecentMusic() {
+        try {
+          if (!currentUser) return;
+
+          const { data, error } = await supabase
+            .from("music_uploads")
+            .select("id, title, artist_name, album_name, genre, created_at")
+            .eq("user_id", currentUser.id)
+            .order("created_at", { ascending: false })
+            .limit(3);
+
+          if (error || !data || !data.length) {
+            recentMusicList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
+            return;
+          }
+
+          recentMusicList.innerHTML = data.map(row => `
+            <div class="recent-item">
+              <strong>${escapeHtml(row.title || "Untitled Track")}</strong>
+              <span>
+                Artist: ${escapeHtml(row.artist_name || currentProfile?.display_name || "Unknown")}<br>
+                Album: ${escapeHtml(row.album_name || "—")}<br>
+                Genre: ${escapeHtml(row.genre || "—")}
+              </span>
+            </div>
+          `).join("");
+        } catch {
+          recentMusicList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
       }
 
       async function logout() {
-        await supabase.auth.signOut();
-        window.location.href = "auth.html";
+        try {
+          const { error } = await supabase.auth.signOut();
+          if (error) throw error;
+          window.location.href = "auth.html";
+        } catch (err) {
+          setStatus(`❌ Logout error: ${err.message || err}`, "err");
+        }
       }
 
+      uploadAvatarBtn.addEventListener("click", uploadAvatar);
       saveProfileBtn.addEventListener("click", saveProfile);
       refreshProfileBtn.addEventListener("click", loadProfile);
-      uploadAvatarBtn.addEventListener("click", uploadAvatar);
+      syncFromSessionBtn.addEventListener("click", syncFromSession);
       logoutBtn.addEventListener("click", logout);
 
-      loadProfile();
+      window.addEventListener("load", async () => {
+        await loadProfile();
+      });
+
+      supabase.auth.onAuthStateChange(async (_event, session) => {
+        currentSession = session || null;
+        currentUser = session?.user || null;
+
+        if (currentUser) {
+          setUserChip(currentUser.email || "Logged in");
+        } else {
+          setUserChip("No session");
+        }
+      });
     } catch (err) {
-      const fallback = document.getElementById("statusBox");
-      if (fallback) {
-        fallback.className = "status err";
-        fallback.textContent = "Profile boot error: " + err.message;
-      }
-      console.error(err);
+      const box = document.createElement("div");
+      box.style.maxWidth = "1000px";
+      box.style.margin = "30px auto";
+      box.style.padding = "20px";
+      box.style.borderRadius = "20px";
+      box.style.color = "#fff";
+      box.style.background = "rgba(255,0,0,.12)";
+      box.style.border = "1px solid rgba(255,110,110,.35)";
+      box.textContent = "Fatal profile page error: " + (err.message || err);
+      document.body.appendChild(box);
     }
   </script>
 </body>
