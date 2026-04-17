@@ -161,10 +161,6 @@
       background:linear-gradient(135deg,#ffe08c,var(--gold));
       color:#221400;
     }
-    .btn-danger{
-      background:linear-gradient(135deg,#ff7b8b,var(--danger));
-      color:#fff;
-    }
 
     .hero{
       margin-top:18px;
@@ -646,9 +642,9 @@
       <div class="brand">
         <img
           class="brand-logo"
-          src="rich-bizness-profile.jpg"
+          src="images/brand/logo-music-label.png"
           alt="Rich Bizness"
-          onerror="this.src='https://placehold.co/140x140/0b160f/ffffff?text=RB';"
+          onerror="this.src='images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png';"
         />
         <div>
           <div class="brand-title">Rich Bizness Watch</div>
@@ -867,8 +863,8 @@
     import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     import { Room, RoomEvent, Track } from "https://esm.sh/livekit-client@2.15.3";
 
-    const SUPABASE_URL = window.SUPABASE_URL || "ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -1054,49 +1050,68 @@
       els.infoCreator.textContent =
         hostProfile?.display_name ||
         hostProfile?.username ||
+        stream?.hostId ||
         stream?.host_id ||
         "Unknown";
       els.infoCategory.textContent = stream?.category || "--";
-      els.infoAccess.textContent = stream?.access_type || "--";
+      els.infoAccess.textContent = stream?.accessType || stream?.access_type || "--";
       els.infoDescription.textContent = stream?.description || "No description yet.";
 
-      els.statusBadge.textContent = stream?.status ? String(stream.status).toUpperCase() : "OFFLINE";
-      els.statusBadge.className = stream?.status === "live" ? "tag live" : "tag";
+      const statusValue = stream?.status || "offline";
+      const accessValue = stream?.accessType || stream?.access_type || "--";
 
-      const accessClass = getAccessTagClass(stream?.access_type);
-      els.accessBadge.textContent = `Access: ${stream?.access_type || "--"}`;
+      els.statusBadge.textContent = String(statusValue).toUpperCase();
+      els.statusBadge.className = statusValue === "live" ? "tag live" : "tag";
+
+      const accessClass = getAccessTagClass(accessValue);
+      els.accessBadge.textContent = `Access: ${accessValue}`;
       els.accessBadge.className = `tag ${accessClass}`;
       els.viewerBadge.textContent = `Viewers: ${Number(stream?.total_views || 0)}`;
     }
 
-    async function loadStreams() {
+    async function loadLiveRail() {
+      const rail = els.streamList;
+      if (!rail) return;
+
+      rail.innerHTML = `<div class="muted tiny">Loading live rooms...</div>`;
+
       const { data, error } = await supabase
         .from("live_streams")
         .select("*")
-        .in("status", ["scheduled", "live"])
+        .in("status", ["live", "scheduled"])
         .order("created_at", { ascending: false })
-        .limit(14);
+        .limit(12);
 
       if (error) {
-        els.streamList.innerHTML = `<div class="muted tiny">Could not load streams. ${escapeHtml(error.message)}</div>`;
+        rail.innerHTML = `<div class="muted tiny">Could not load live rooms: ${escapeHtml(error.message)}</div>`;
         return;
       }
 
       els.statLiveCount.textContent = String(data?.length || 0);
 
       if (!data || !data.length) {
-        els.streamList.innerHTML = `<div class="muted tiny">No live rooms yet.</div>`;
+        rail.innerHTML = `<div class="muted tiny">No live rooms loaded yet.</div>`;
         return;
       }
 
-      els.streamList.innerHTML = "";
+      rail.innerHTML = "";
 
       data.forEach((stream) => {
-        const item = document.createElement("div");
-        item.className = "stream-item";
-        const accessClass = getAccessTagClass(stream.access_type);
+        const card = document.createElement("div");
+        card.className = "stream-item";
 
-        item.innerHTML = `
+        const badgeClass =
+          stream.status === "live"
+            ? "live"
+            : stream.access_type === "paid"
+            ? "paid"
+            : stream.access_type === "vip"
+            ? "vip"
+            : stream.access_type === "followers"
+            ? "followers"
+            : "free";
+
+        card.innerHTML = `
           <div class="stream-top">
             <div>
               <div class="stream-title">${escapeHtml(stream.title || "Untitled Stream")}</div>
@@ -1105,38 +1120,48 @@
                 <span>${escapeHtml(stream.room_name || "no-room")}</span>
               </div>
             </div>
-            <div class="tag ${stream.status === "live" ? "live" : accessClass}">
+            <div class="tag ${badgeClass}">
               ${escapeHtml(String(stream.status || "scheduled").toUpperCase())}
             </div>
           </div>
-          <div class="muted tiny">${escapeHtml(stream.description || "No description yet.")}</div>
-          <div class="stream-meta">
-            <span class="tag ${accessClass}">${escapeHtml(stream.access_type || "free")}</span>
-            <span class="tag">Views ${Number(stream.total_views || 0)}</span>
-            <span class="tag">Guests ${Number(stream.max_guests || 0)}</span>
+
+          <div class="muted tiny">
+            ${escapeHtml(stream.description || "No description yet.")}
           </div>
-          <div class="grid2" style="margin-top:6px;">
-            <button class="btn btn-primary use-stream-btn" data-stream-id="${stream.id}">Watch</button>
-            <button class="btn btn-dark fill-stream-btn" data-stream-id="${stream.id}" data-room-name="${escapeHtml(stream.room_name || "")}">Load</button>
+
+          <div class="stream-meta">
+            <span class="tag ${badgeClass}">${escapeHtml(stream.access_type || "free")}</span>
+            <span class="tag">Views ${Number(stream.total_views || 0)}</span>
+          </div>
+
+          <div class="grid2" style="margin-top:8px;">
+            <button class="btn btn-primary rail-join-btn" data-stream-id="${stream.id}">Watch</button>
+            <button class="btn btn-dark rail-load-btn" data-stream-id="${stream.id}" data-room-name="${escapeHtml(stream.room_name || "")}">Load</button>
           </div>
         `;
 
-        els.streamList.appendChild(item);
+        rail.appendChild(card);
       });
 
-      document.querySelectorAll(".use-stream-btn").forEach((btn) => {
+      document.querySelectorAll(".rail-join-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           els.joinStreamId.value = btn.dataset.streamId || "";
-          hideStatus(els.joinStatus);
+          els.joinRoomName.value = "";
           await joinStream();
         });
       });
 
-      document.querySelectorAll(".fill-stream-btn").forEach((btn) => {
+      document.querySelectorAll(".rail-load-btn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           els.joinStreamId.value = btn.dataset.streamId || "";
           els.joinRoomName.value = btn.dataset.roomName || "";
-          const stream = data.find((s) => s.id === btn.dataset.streamId);
+
+          const { data: stream } = await supabase
+            .from("live_streams")
+            .select("*")
+            .eq("id", btn.dataset.streamId)
+            .maybeSingle();
+
           const host = stream ? await loadHostProfile(stream.host_id) : null;
           setStreamInfo(stream, host);
           showStatus(els.joinStatus, "Stream loaded into watch panel.", "ok");
@@ -1326,16 +1351,38 @@
       }
 
       try {
+        let preloadStream = null;
+
+        if (streamId) {
+          const { data } = await supabase
+            .from("live_streams")
+            .select("*")
+            .eq("id", streamId)
+            .maybeSingle();
+
+          preloadStream = data || null;
+        } else if (roomName) {
+          const { data } = await supabase
+            .from("live_streams")
+            .select("*")
+            .eq("room_name", roomName)
+            .maybeSingle();
+
+          preloadStream = data || null;
+        }
+
+        if (preloadStream) {
+          const preloadHost = await loadHostProfile(preloadStream.host_id);
+          setStreamInfo(preloadStream, preloadHost);
+        }
+
         const payload = await requestLivekitToken({ streamId, roomName });
         const hostProfile = await loadHostProfile(payload?.stream?.hostId || payload?.stream?.host_id);
         setStreamInfo(payload.stream, hostProfile);
         await connectToRoom(payload);
+        showStatus(els.joinStatus, "Joined stream.", "ok");
       } catch (err) {
-        const hostProfile = currentStream?.host_id ? await loadHostProfile(currentStream.host_id) : null;
-        if (currentStream) {
-          setStreamInfo(currentStream, hostProfile);
-        }
-        handleAccessError(err, currentStream?.access_type);
+        handleAccessError(err, currentStream?.access_type || currentStream?.accessType);
       }
     }
 
@@ -1343,19 +1390,20 @@
       const user = await requireUser();
       if (!user) return;
 
-      if (!currentStream?.host_id) {
+      const hostId = currentStream?.host_id || currentStream?.hostId;
+      if (!hostId) {
         showStatus(els.watchStatus, "No creator selected yet.", "err");
         return;
       }
 
-      if (currentStream.host_id === user.id) {
+      if (hostId === user.id) {
         showStatus(els.watchStatus, "You are the creator of this stream.", "info");
         return;
       }
 
       const payload = {
         follower_id: user.id,
-        following_id: currentStream.host_id
+        following_id: hostId
       };
 
       const { error } = await supabase
@@ -1365,7 +1413,7 @@
       if (error) {
         showStatus(
           els.watchStatus,
-          "Could not follow creator.\n\nIf followers table is missing, run the smaller live SQL first.\n\n" + error.message,
+          "Could not follow creator.\n\n" + error.message,
           "err"
         );
         return;
@@ -1430,34 +1478,11 @@
         return;
       }
 
-      const accessType = currentStream.access_type || "free";
-      const title = currentStream.title || "this stream";
-
       showStatus(
         els.watchStatus,
-        `Tip UI opened for "${title}".\n\nNext step is wiring this button to your Stripe checkout flow for tips.`,
+        `Tip UI opened for "${currentStream.title || "this stream"}".\n\nNext step is wiring this button to your Stripe checkout flow for tips.`,
         "info"
       );
-
-      const amount = prompt(`Send a tip to the creator for "${title}".\n\nEnter amount in dollars:`, "5");
-      if (amount) {
-        showStatus(
-          els.watchStatus,
-          `Tip started for $${amount}.\n\nStripe tip checkout route is the next file to connect.`,
-          "ok"
-        );
-      }
-    }
-
-    async function loadStreamByIdForDisplay(streamId) {
-      if (!streamId) return null;
-      const { data } = await supabase
-        .from("live_streams")
-        .select("*")
-        .eq("id", streamId)
-        .maybeSingle();
-
-      return data || null;
     }
 
     function bootPlaceholders() {
@@ -1467,7 +1492,7 @@
 
     async function boot() {
       await requireUser();
-      await loadStreams();
+      await loadLiveRail();
       bootPlaceholders();
     }
 
@@ -1475,7 +1500,7 @@
     els.jumpBrowseBtn.addEventListener("click", () => scrollToId("browseSection"));
     els.jumpWatchBtn.addEventListener("click", () => scrollToId("watchSection"));
     els.joinBtn.addEventListener("click", joinStream);
-    els.refreshBtn.addEventListener("click", loadStreams);
+    els.refreshBtn.addEventListener("click", loadLiveRail);
     els.connectBtn.addEventListener("click", joinStream);
     els.disconnectBtn.addEventListener("click", disconnectRoom);
     els.followBtn.addEventListener("click", followCurrentCreator);
