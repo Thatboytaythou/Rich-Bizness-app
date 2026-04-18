@@ -6,1468 +6,621 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   />
-  <title>Rich Bizness Watch</title>
+  <title>Rich Bizness — Watch Live</title>
 
   <style>
-    :root{
-      --bg:#061009;
-      --bg2:#0b1710;
-      --panel:#0f1f15;
-      --panel2:#13251a;
-      --text:#f5fff7;
-      --muted:#9fb8a7;
-      --line:rgba(255,255,255,.08);
-      --green:#2cff73;
-      --green2:#14b95a;
-      --gold:#ffc857;
-      --danger:#ff6378;
-      --blue:#7fd5ff;
-      --shadow:0 20px 48px rgba(0,0,0,.35);
-      --radius:22px;
+    :root {
+      --bg: #07110c;
+      --bg-soft: #0d1a14;
+      --panel: rgba(10, 22, 16, 0.92);
+      --panel-2: rgba(15, 30, 22, 0.92);
+      --line: rgba(105, 255, 170, 0.18);
+      --line-strong: rgba(105, 255, 170, 0.34);
+      --text: #ecfff4;
+      --muted: #97b8a6;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --yellow: #ffd86a;
+      --red: #ff6b7a;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 22px;
     }
 
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      padding:0;
-      min-height:100%;
-      color:var(--text);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
       background:
-        radial-gradient(circle at top left, rgba(44,255,115,.14), transparent 26%),
-        radial-gradient(circle at top right, rgba(127,213,255,.10), transparent 20%),
-        linear-gradient(180deg,var(--bg),#040805 65%, #020402 100%);
+        radial-gradient(circle at top, rgba(67, 245, 155, 0.12), transparent 32%),
+        linear-gradient(180deg, #050b08 0%, #09140f 45%, #07110c 100%);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-height: 100%;
     }
 
-    a{text-decoration:none;color:inherit}
-    button,input,select,textarea{font:inherit}
-
-    .app{
-      max-width:1520px;
-      margin:0 auto;
-      padding:18px;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      padding:16px 18px;
-      border-radius:24px;
-      border:1px solid var(--line);
-      background:rgba(10,19,13,.84);
-      backdrop-filter:blur(12px);
-      box-shadow:var(--shadow);
-      position:sticky;
-      top:12px;
-      z-index:40;
-      flex-wrap:wrap;
+    .page {
+      width: min(1400px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 20px 0 34px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      background: rgba(8, 18, 13, 0.74);
+      backdrop-filter: blur(12px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
     }
 
-    .brand-logo{
-      width:54px;
-      height:54px;
-      border-radius:16px;
-      object-fit:cover;
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow:0 0 30px rgba(44,255,115,.22);
-      background:#0c1710;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .brand-title{
-      font-size:1.1rem;
-      font-weight:900;
-      letter-spacing:.03em;
+    .brand-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(67,245,155,0.3), rgba(24,201,114,0.15));
+      border: 1px solid var(--line-strong);
+      font-weight: 800;
+      color: var(--green);
+      box-shadow: 0 0 22px rgba(67, 245, 155, 0.18);
     }
 
-    .brand-sub{
-      color:var(--muted);
-      font-size:.9rem;
-      max-width:420px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+    .brand h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
     }
 
-    .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
+    .brand p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
-    .nav a{
-      padding:10px 14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.06);
-      color:#dff7e7;
-      font-weight:800;
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
-    .nav a.active{
-      background:linear-gradient(135deg,var(--green),var(--green2));
-      color:#031007;
-      box-shadow:0 0 20px rgba(44,255,115,.25);
+    .link-btn,
+    .btn {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      border-radius: 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
+      font-weight: 700;
     }
 
-    .userbar{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
+    .btn:hover,
+    .link-btn:hover {
+      transform: translateY(-1px);
     }
 
-    .pill{
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      color:var(--muted);
-      font-size:.9rem;
-      font-weight:800;
+    .btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    .btn{
-      appearance:none;
-      border:none;
-      cursor:pointer;
-      border-radius:14px;
-      padding:12px 16px;
-      font-weight:900;
-      transition:.18s ease;
+    .link-btn {
+      color: var(--text);
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
     }
 
-    .btn:hover{transform:translateY(-1px)}
-    .btn-primary{
-      background:linear-gradient(135deg,var(--green),var(--green2));
-      color:#041108;
-      box-shadow:0 12px 24px rgba(44,255,115,.18);
-    }
-    .btn-dark{
-      background:#0e1911;
-      color:#fff;
-      border:1px solid var(--line);
-    }
-    .btn-gold{
-      background:linear-gradient(135deg,#ffe08c,var(--gold));
-      color:#221400;
-    }
-    .btn-danger{
-      background:linear-gradient(135deg,#ff7b8b,var(--danger));
-      color:#fff;
+    .btn {
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #062312;
+      box-shadow: 0 10px 25px rgba(24, 201, 114, 0.28);
     }
 
-    .hero{
-      margin-top:18px;
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      gap:18px;
+    .btn.secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid var(--line);
+      box-shadow: none;
     }
 
-    .card{
-      background:linear-gradient(180deg, rgba(17,32,22,.94), rgba(11,20,14,.97));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
     }
 
-    .hero-main{
-      padding:28px;
-      position:relative;
-      overflow:hidden;
+    .panel {
+      background: linear-gradient(180deg, rgba(12,24,18,0.92), rgba(9,18,14,0.92));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .hero-main::after{
-      content:"";
-      position:absolute;
-      right:-50px;
-      bottom:-70px;
-      width:220px;
-      height:220px;
-      background:radial-gradient(circle, rgba(44,255,115,.16), transparent 72%);
-      pointer-events:none;
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.015);
     }
 
-    .kicker{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      border:1px solid rgba(44,255,115,.18);
-      background:rgba(44,255,115,.10);
-      color:#c7ffd8;
-      font-size:.82rem;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.04em;
+    .panel-header h2,
+    .panel-header h3 {
+      margin: 0;
+      font-size: 15px;
+      letter-spacing: 0.01em;
     }
 
-    .hero-main h1{
-      margin:14px 0 10px;
-      font-size:clamp(2rem,3.4vw,3.6rem);
-      line-height:1.04;
+    .panel-body {
+      padding: 18px;
     }
 
-    .hero-main p{
-      margin:0;
-      color:var(--muted);
-      line-height:1.6;
-      font-size:1.03rem;
-      max-width:820px;
+    .hero-stage {
+      display: grid;
+      gap: 16px;
     }
 
-    .hero-actions{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:20px;
-    }
-
-    .hero-side{
-      padding:22px;
-      display:grid;
-      gap:12px;
-      align-content:center;
-    }
-
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
-      gap:12px;
-    }
-
-    .stat{
-      padding:16px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.05);
-    }
-
-    .stat .num{
-      font-size:1.55rem;
-      font-weight:900;
-      margin-bottom:6px;
-    }
-
-    .stat .label{
-      font-size:.88rem;
-      color:var(--muted);
-      font-weight:800;
-    }
-
-    .watch-grid{
-      display:grid;
-      grid-template-columns:340px minmax(0,1fr) 340px;
-      gap:18px;
-      margin-top:18px;
-      align-items:start;
-    }
-
-    .section{
-      padding:18px;
-      margin-bottom:18px;
-    }
-
-    .section h2{
-      margin:0 0 14px;
-      font-size:1.06rem;
-    }
-
-    .label{
-      display:block;
-      margin-bottom:8px;
-      font-size:.9rem;
-      font-weight:800;
-      color:#ddf7e5;
-    }
-
-    .input,.textarea{
-      width:100%;
-      border:none;
-      outline:none;
-      border-radius:14px;
-      padding:13px 14px;
-      background:#09150e;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-    }
-
-    .textarea{
-      resize:vertical;
-      min-height:92px;
-    }
-
-    .grid2{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:12px;
-    }
-
-    .tag{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:7px 10px;
-      border-radius:999px;
-      font-size:.78rem;
-      font-weight:900;
-      border:1px solid rgba(255,255,255,.06);
-      background:rgba(255,255,255,.04);
-    }
-
-    .tag.live{
-      background:rgba(255,99,120,.12);
-      color:#ffd4dc;
-      border-color:rgba(255,99,120,.22);
-    }
-    .tag.free{
-      background:rgba(44,255,115,.10);
-      color:#c8ffd8;
-      border-color:rgba(44,255,115,.18);
-    }
-    .tag.vip{
-      background:rgba(255,200,87,.12);
-      color:#ffeab7;
-      border-color:rgba(255,200,87,.22);
-    }
-    .tag.followers{
-      background:rgba(127,213,255,.12);
-      color:#d8f4ff;
-      border-color:rgba(127,213,255,.22);
-    }
-    .tag.paid{
-      background:rgba(255,200,87,.14);
-      color:#ffeab7;
-      border-color:rgba(255,200,87,.25);
-    }
-
-    .stream-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .stream-item{
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.06);
-      display:grid;
-      gap:8px;
-    }
-
-    .stream-top{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
-    }
-
-    .stream-title{
-      font-weight:900;
-      font-size:1rem;
-    }
-
-    .stream-meta{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      color:var(--muted);
-      font-size:.84rem;
-    }
-
-    .stage-wrap{
-      overflow:hidden;
-      border-radius:24px;
-      border:1px solid var(--line);
-      background:#040805;
-      min-height:560px;
-      display:flex;
-      flex-direction:column;
-    }
-
-    .stage-header{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      padding:14px 16px;
-      border-bottom:1px solid var(--line);
-      background:rgba(255,255,255,.03);
-      flex-wrap:wrap;
-    }
-
-    .stage-title{
-      font-size:1.1rem;
-      font-weight:900;
-    }
-
-    .stage-sub{
-      color:var(--muted);
-      font-size:.9rem;
-      margin-top:4px;
-    }
-
-    .stage{
-      min-height:420px;
-      display:grid;
-      place-items:center;
-      padding:18px;
+    .video-box {
       background:
-        radial-gradient(circle at center, rgba(44,255,115,.08), transparent 28%),
-        linear-gradient(180deg,#07100b,#030604);
-      position:relative;
+        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 40%),
+        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      min-height: 560px;
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
     }
 
-    #roomContainer{
-      width:100%;
-      min-height:390px;
-      display:grid;
-      place-items:center;
-      text-align:center;
-      color:var(--muted);
-      border-radius:18px;
-      border:1px dashed rgba(255,255,255,.1);
-      padding:24px;
-      overflow:hidden;
+    .video-box video,
+    .video-box audio {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
-    #roomContainer video{
-      width:100%;
-      max-height:500px;
-      object-fit:cover;
-      border-radius:18px;
-      background:#000;
+    .placeholder {
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      padding: 18px;
     }
 
-    .stage-controls{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      padding:14px 16px;
-      border-top:1px solid var(--line);
-      background:rgba(255,255,255,.02);
+    .stream-meta {
+      display: grid;
+      gap: 14px;
     }
 
-    .reactions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:12px;
+    .headline h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 42px);
+      line-height: 1.03;
     }
 
-    .emoji-btn{
-      border:none;
-      cursor:pointer;
-      border-radius:14px;
-      padding:10px 12px;
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      font-size:1rem;
-      border:1px solid rgba(255,255,255,.08);
+    .headline p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 900px;
     }
 
-    .info-grid{
-      display:grid;
-      gap:12px;
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
     }
 
-    .info-box{
-      padding:14px;
-      border-radius:18px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.06);
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    .info-box strong{
-      display:block;
-      margin-bottom:6px;
-      font-size:.92rem;
+    .badge[data-tone="live"] {
+      color: white;
+      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
+      border-color: transparent;
+      box-shadow: 0 10px 24px rgba(255, 94, 114, 0.22);
     }
 
-    .chat-box{
-      min-height:760px;
-      display:flex;
-      flex-direction:column;
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
     }
 
-    .chat-messages{
-      flex:1;
-      overflow:auto;
-      padding:16px;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-      min-height:420px;
-      max-height:560px;
+    .stat {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
     }
 
-    .msg{
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(255,255,255,.04);
-      border:1px solid rgba(255,255,255,.05);
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
     }
 
-    .msg-top{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:6px;
-      font-size:.83rem;
+    .stat strong {
+      font-size: 20px;
+      line-height: 1;
     }
 
-    .msg-name{
-      font-weight:900;
-      color:#ebfff0;
+    .notice {
+      display: none;
+      padding: 13px 14px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      border: 1px solid transparent;
     }
 
-    .msg-time{
-      color:var(--muted);
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
     }
 
-    .msg-body{
-      color:#d8efe0;
-      line-height:1.46;
-      white-space:pre-wrap;
-      word-break:break-word;
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
     }
 
-    .chat-form{
-      border-top:1px solid var(--line);
-      padding:14px;
-      display:grid;
-      gap:10px;
+    .gate {
+      display: none;
+      padding: 26px;
     }
 
-    .status{
-      margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
-      font-size:.92rem;
-      font-weight:800;
-      border:1px solid transparent;
-      display:none;
-      white-space:pre-wrap;
+    .gate-card {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      border-radius: 22px;
+      padding: 24px;
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
     }
 
-    .status.show{display:block}
-    .status.ok{
-      background:rgba(44,255,115,.10);
-      color:#caffd9;
-      border-color:rgba(44,255,115,.16);
-    }
-    .status.err{
-      background:rgba(255,99,120,.10);
-      color:#ffd1d8;
-      border-color:rgba(255,99,120,.16);
-    }
-    .status.info{
-      background:rgba(127,213,255,.10);
-      color:#def6ff;
-      border-color:rgba(127,213,255,.16);
+    .gate-card h3 {
+      margin: 0 0 10px;
+      font-size: 30px;
     }
 
-    .footer-space{height:44px}
-    .tiny{font-size:.84rem}
-    .muted{color:var(--muted)}
+    .gate-card p {
+      color: var(--muted);
+      margin: 0 0 18px;
+      font-size: 15px;
+    }
 
-    @media (max-width:1230px){
-      .watch-grid{
-        grid-template-columns:1fr;
+    .chat-shell {
+      display: grid;
+      grid-template-rows: 1fr auto;
+      min-height: 760px;
+    }
+
+    .chat-list {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+      max-height: 620px;
+    }
+
+    .live-chat-message {
+      padding: 12px 13px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .live-chat-message__author {
+      font-size: 12px;
+      color: var(--green);
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .live-chat-message__body {
+      font-size: 14px;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .chat-input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    .chat-input-row input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    .chat-input-row input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-item {
+      padding: 12px 13px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .mini-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .mini-item span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 1180px) {
+      .shell {
+        grid-template-columns: 1fr;
       }
-      .chat-box{
-        min-height:unset;
+
+      .video-box {
+        min-height: 360px;
+      }
+
+      .chat-shell {
+        min-height: unset;
       }
     }
 
-    @media (max-width:900px){
-      .hero{
-        grid-template-columns:1fr;
+    @media (max-width: 760px) {
+      .page {
+        width: min(100% - 18px, 100%);
       }
-      .topbar{
-        position:static;
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
       }
-      .grid2{
-        grid-template-columns:1fr;
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chat-input-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn,
+      .link-btn {
+        width: 100%;
+      }
+
+      .topbar-actions {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .stats {
+        grid-template-columns: 1fr;
       }
     }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="page">
     <header class="topbar">
       <div class="brand">
-        <img
-          class="brand-logo"
-          src="images/brand/logo-music-label.png"
-          alt="Rich Bizness"
-          onerror="this.src='images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png';"
-        />
+        <div class="brand-badge">RB</div>
         <div>
-          <div class="brand-title">Rich Bizness Watch</div>
-          <div class="brand-sub">Premium live viewing for music, gaming, sports, gallery and creator rooms</div>
+          <h1>Rich Bizness Watch Live</h1>
+          <p>Viewer experience • Live Foundation V1</p>
         </div>
       </div>
 
-      <nav class="nav">
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="music.html">Music</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="sports.html">Sports</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="live.html">Live</a>
-        <a href="watch.html" class="active">Watch</a>
-      </nav>
-
-      <div class="userbar">
-        <div id="userPill" class="pill">Not signed in</div>
-        <button id="signOutBtn" class="btn btn-dark" type="button">Sign Out</button>
+      <div class="topbar-actions">
+        <a class="link-btn" href="/index.html">Homepage</a>
+        <a class="link-btn" href="/live.html">Go Live</a>
+        <a class="link-btn" href="/profile.html">Profile</a>
       </div>
     </header>
 
-    <section class="hero">
-      <div class="card hero-main">
-        <div class="kicker">Viewer Mode</div>
-        <h1>Watch streams, react live, support creators.</h1>
-        <p>
-          Join active Rich Bizness live rooms, watch music and gaming sessions,
-          react in real time, follow the creator, and tap into paid or VIP access when unlocked.
-        </p>
-        <div class="hero-actions">
-          <button id="jumpBrowseBtn" class="btn btn-primary" type="button">Browse Live Rail</button>
-          <button id="jumpWatchBtn" class="btn btn-dark" type="button">Open Viewer</button>
-        </div>
+    <div id="live-error" class="notice error"></div>
+    <div id="live-success" class="notice success"></div>
+
+    <div id="watch-gate" class="gate">
+      <div class="gate-card">
+        <h3 id="watch-gate-title">Access blocked</h3>
+        <p id="watch-gate-subtitle">You cannot join this stream right now.</p>
+        <button id="watch-unlock-btn" class="btn" type="button">Unlock Stream</button>
       </div>
+    </div>
 
-      <div class="card hero-side">
-        <div class="stats">
-          <div class="stat">
-            <div id="statLiveCount" class="num">0</div>
-            <div class="label">Live / scheduled rooms</div>
-          </div>
-          <div class="stat">
-            <div id="statAccessLabel" class="num">--</div>
-            <div class="label">Current access</div>
-          </div>
-          <div class="stat">
-            <div id="statViewerCount" class="num">0</div>
-            <div class="label">Viewer count</div>
-          </div>
-          <div class="stat">
-            <div class="num">Chat</div>
-            <div class="label">Realtime data reactions</div>
-          </div>
+    <main id="watch-live-shell" class="shell" style="display:none;">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Live Viewer Stage</h2>
+          <div id="live-status-badge" class="badge" data-tone="default">LIVE</div>
         </div>
-        <div class="muted tiny">
-          This page pulls from `live_streams` and joins through your `/api/livekit-token` route as a viewer.
-        </div>
-      </div>
-    </section>
 
-    <div class="watch-grid">
-      <aside>
-        <section class="card section" id="browseSection">
-          <h2>Join a Room</h2>
-
-          <label class="label" for="joinStreamId">Stream ID</label>
-          <input id="joinStreamId" class="input" type="text" placeholder="Paste stream id here" />
-
-          <label class="label" for="joinRoomName" style="margin-top:12px;">Or Room Name</label>
-          <input id="joinRoomName" class="input" type="text" placeholder="richbiz-live-room-123" />
-
-          <div class="grid2" style="margin-top:14px;">
-            <button id="joinBtn" class="btn btn-primary" type="button">Join Stream</button>
-            <button id="refreshBtn" class="btn btn-dark" type="button">Refresh</button>
-          </div>
-
-          <div id="joinStatus" class="status info"></div>
-        </section>
-
-        <section class="card section">
-          <h2>Live Rail</h2>
-          <div id="streamList" class="stream-list">
-            <div class="muted tiny">No live rooms loaded yet.</div>
-          </div>
-        </section>
-      </aside>
-
-      <main id="watchSection">
-        <section class="card stage-wrap">
-          <div class="stage-header">
-            <div>
-              <div id="activeTitle" class="stage-title">No stream joined yet</div>
-              <div id="activeSub" class="stage-sub">Select a stream from the rail or paste a stream id / room name.</div>
+        <div class="panel-body">
+          <div class="hero-stage">
+            <div class="video-box">
+              <div id="watch-remote-media" style="width:100%;height:100%;"></div>
+              <div class="placeholder">
+                Live video will appear here once the stream connects.
+              </div>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-              <span id="statusBadge" class="tag">Offline</span>
-              <span id="roleBadge" class="tag">Access: --</span>
-              <span id="countBadge" class="tag">Viewers: 0</span>
-            </div>
-          </div>
 
-          <div class="stage">
-            <div id="roomContainer">
-              <div>
-                <h3 style="margin:0 0 10px;">Viewer stage not connected yet</h3>
-                <div class="muted">
-                  Join a room to watch the live stream, chat, react, and support the creator.
+            <div class="stream-meta">
+              <div class="headline">
+                <h2 id="watch-stream-title">Live Stream</h2>
+                <p id="watch-stream-description">Stream description will appear here.</p>
+              </div>
+
+              <div class="chip-row">
+                <div class="badge">Category: <strong id="watch-stream-category">general</strong></div>
+                <div class="badge">Access: <strong id="watch-stream-access">free</strong></div>
+                <div class="badge">Viewers: <strong id="live-viewer-count">0</strong></div>
+              </div>
+
+              <div class="stats">
+                <div class="stat">
+                  <span>Status</span>
+                  <strong>Live</strong>
+                </div>
+                <div class="stat">
+                  <span>Delivery</span>
+                  <strong>LiveKit</strong>
+                </div>
+                <div class="stat">
+                  <span>Chat</span>
+                  <strong>Realtime</strong>
+                </div>
+                <div class="stat">
+                  <span>Mode</span>
+                  <strong>RB Watch</strong>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="stage-controls">
-            <button id="connectBtn" class="btn btn-primary" type="button">Connect</button>
-            <button id="disconnectBtn" class="btn btn-dark" type="button">Disconnect</button>
-            <button id="followBtn" class="btn btn-dark" type="button">Follow Creator</button>
-            <button id="tipBtn" class="btn btn-gold" type="button">Send Tip</button>
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-header">
+            <h3>Live Chat</h3>
+            <span class="badge">Realtime</span>
           </div>
-        </section>
 
-        <section class="card section">
-          <h2>Quick Reactions</h2>
-          <div class="reactions">
-            <button class="emoji-btn" data-reaction="🔥">🔥</button>
-            <button class="emoji-btn" data-reaction="💸">💸</button>
-            <button class="emoji-btn" data-reaction="❤️">❤️</button>
-            <button class="emoji-btn" data-reaction="👏">👏</button>
-            <button class="emoji-btn" data-reaction="🎵">🎵</button>
-            <button class="emoji-btn" data-reaction="🎮">🎮</button>
-            <button class="emoji-btn" data-reaction="🏆">🏆</button>
-          </div>
-          <div id="watchStatus" class="status info"></div>
-        </section>
-      </main>
+          <div class="chat-shell">
+            <div id="live-chat-messages" class="chat-list">
+              <div class="live-chat-message">
+                <div class="live-chat-message__author">System</div>
+                <div class="live-chat-message__body">
+                  Chat history and new messages will appear here.
+                </div>
+              </div>
+            </div>
 
-      <aside>
-        <section class="card section">
-          <h2>Stream Details</h2>
-          <div class="info-grid">
-            <div class="info-box">
-              <strong>Title</strong>
-              <div id="infoTitle" class="muted">No stream selected</div>
-            </div>
-            <div class="info-box">
-              <strong>Creator</strong>
-              <div id="infoCreator" class="muted">Unknown</div>
-            </div>
-            <div class="info-box">
-              <strong>Category</strong>
-              <div id="infoCategory" class="muted">--</div>
-            </div>
-            <div class="info-box">
-              <strong>Access Type</strong>
-              <div id="infoAccess" class="muted">--</div>
-            </div>
-            <div class="info-box">
-              <strong>Description</strong>
-              <div id="infoDescription" class="muted">No description yet.</div>
-            </div>
-            <div class="info-box">
-              <strong>Tip Creator</strong>
-              <div class="muted tiny">
-                Use the tip button to support the host. Stripe checkout can be wired in right after your viewer flow is solid.
+            <div class="panel-body" style="padding-top:0;">
+              <div class="chat-input-row">
+                <input
+                  id="watch-chat-input"
+                  type="text"
+                  placeholder="Say something in chat..."
+                />
+                <button id="watch-chat-send-btn" class="btn" type="button">Send</button>
               </div>
             </div>
           </div>
         </section>
 
-        <section class="card chat-box">
-          <div class="section" style="padding-bottom:0;">
-            <h2 style="margin-bottom:8px;">Live Chat</h2>
-            <div class="muted tiny">
-              Realtime viewer chat through LiveKit data messages after you join the room.
-            </div>
+        <section class="panel">
+          <div class="panel-header">
+            <h3>About This Live</h3>
+            <span class="badge">V1</span>
           </div>
-
-          <div id="chatMessages" class="chat-messages">
-            <div class="msg">
-              <div class="msg-top">
-                <span class="msg-name">System</span>
-                <span class="msg-time">Now</span>
+          <div class="panel-body">
+            <div class="mini-list">
+              <div class="mini-item">
+                <strong>How it works</strong>
+                <span>Open this page using a valid stream slug in the URL.</span>
               </div>
-              <div class="msg-body">Join a stream to start chatting.</div>
+              <div class="mini-item">
+                <strong>Example</strong>
+                <span>/watch.html?slug=your-stream-slug</span>
+              </div>
+              <div class="mini-item">
+                <strong>Next upgrades</strong>
+                <span>Replay, tips, pinned chat, cohosts, and advanced creator tools.</span>
+              </div>
             </div>
           </div>
-
-          <form id="chatForm" class="chat-form">
-            <textarea id="chatInput" class="textarea" placeholder="Type message..."></textarea>
-            <div class="grid2">
-              <button class="btn btn-primary" type="submit">Send</button>
-              <button id="clearChatBtn" class="btn btn-dark" type="button">Clear</button>
-            </div>
-          </form>
         </section>
       </aside>
-    </div>
+    </main>
 
-    <div class="footer-space"></div>
+    <div class="footer-note">
+      Rich Bizness Watch Foundation V1
+    </div>
   </div>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-    import { Room, RoomEvent, Track } from "https://esm.sh/livekit-client@2.15.3";
-
-    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    const els = {
-      userPill: document.getElementById("userPill"),
-      signOutBtn: document.getElementById("signOutBtn"),
-      jumpBrowseBtn: document.getElementById("jumpBrowseBtn"),
-      jumpWatchBtn: document.getElementById("jumpWatchBtn"),
-
-      joinStreamId: document.getElementById("joinStreamId"),
-      joinRoomName: document.getElementById("joinRoomName"),
-      joinBtn: document.getElementById("joinBtn"),
-      refreshBtn: document.getElementById("refreshBtn"),
-      joinStatus: document.getElementById("joinStatus"),
-      streamList: document.getElementById("streamList"),
-
-      activeTitle: document.getElementById("activeTitle"),
-      activeSub: document.getElementById("activeSub"),
-      statusBadge: document.getElementById("statusBadge"),
-      roleBadge: document.getElementById("roleBadge"),
-      countBadge: document.getElementById("countBadge"),
-
-      roomContainer: document.getElementById("roomContainer"),
-      connectBtn: document.getElementById("connectBtn"),
-      disconnectBtn: document.getElementById("disconnectBtn"),
-      followBtn: document.getElementById("followBtn"),
-      tipBtn: document.getElementById("tipBtn"),
-      watchStatus: document.getElementById("watchStatus"),
-
-      infoTitle: document.getElementById("infoTitle"),
-      infoCreator: document.getElementById("infoCreator"),
-      infoCategory: document.getElementById("infoCategory"),
-      infoAccess: document.getElementById("infoAccess"),
-      infoDescription: document.getElementById("infoDescription"),
-
-      chatMessages: document.getElementById("chatMessages"),
-      chatForm: document.getElementById("chatForm"),
-      chatInput: document.getElementById("chatInput"),
-      clearChatBtn: document.getElementById("clearChatBtn"),
-
-      statLiveCount: document.getElementById("statLiveCount"),
-      statAccessLabel: document.getElementById("statAccessLabel"),
-      statViewerCount: document.getElementById("statViewerCount"),
-    };
-
-    let currentUser = null;
-    let currentProfile = null;
-    let currentRoom = null;
-    let currentStream = null;
-    let currentHostProfile = null;
-    let roomConnectionPayload = null;
-    let currentParticipantRole = "viewer";
-
-    function showStatus(el, msg, type = "info") {
-      if (!el) return;
-      el.textContent = msg;
-      el.className = `status show ${type}`;
-    }
-
-    function hideStatus(el) {
-      if (!el) return;
-      el.textContent = "";
-      el.className = "status";
-    }
-
-    function escapeHtml(str = "") {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function renderRoomPlaceholder(text, sub = "Join a room to watch the live stream, react, and chat.") {
-      els.roomContainer.innerHTML = `
-        <div>
-          <h3 style="margin:0 0 10px;">${escapeHtml(text)}</h3>
-          <div class="muted">${escapeHtml(sub)}</div>
-        </div>
-      `;
-    }
-
-    function scrollToId(id) {
-      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-
-    function getAccessBadgeClass(accessType = "") {
-      const value = String(accessType || "").toLowerCase();
-      if (value === "vip") return "vip";
-      if (value === "followers") return "followers";
-      if (value === "paid") return "paid";
-      return "free";
-    }
-
-    function addChatMessage({ name = "System", body = "", type = "message" }) {
-      const msg = document.createElement("div");
-      msg.className = "msg";
-
-      let content = body;
-      if (type === "reaction") content = `Reacted: ${body}`;
-
-      msg.innerHTML = `
-        <div class="msg-top">
-          <span class="msg-name">${escapeHtml(name)}</span>
-          <span class="msg-time">${new Date().toLocaleTimeString()}</span>
-        </div>
-        <div class="msg-body">${escapeHtml(content)}</div>
-      `;
-
-      els.chatMessages.appendChild(msg);
-      els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
-    }
-
-    async function requireUser() {
-      const { data, error } = await supabase.auth.getUser();
-
-      if (error || !data?.user) {
-        currentUser = null;
-        currentProfile = null;
-        els.userPill.textContent = "Not signed in";
-        return null;
-      }
-
-      currentUser = data.user;
-      els.userPill.textContent = currentUser.email || currentUser.id;
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", currentUser.id)
-        .maybeSingle();
-
-      currentProfile = profile || null;
-      return currentUser;
-    }
-
-    async function signOut() {
-      await supabase.auth.signOut();
-      location.href = "auth.html";
-    }
-
-    async function loadHostProfile(hostId) {
-      if (!hostId) return null;
-
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", hostId)
-        .maybeSingle();
-
-      currentHostProfile = data || null;
-      return currentHostProfile;
-    }
-
-    function setStreamInfo(stream, hostProfile = null) {
-      currentStream = stream || null;
-      if (hostProfile) currentHostProfile = hostProfile;
-
-      const title = stream?.title || "No stream joined yet";
-      const category = stream?.category || "--";
-      const accessType = stream?.accessType || stream?.access_type || "--";
-      const status = stream?.status || "offline";
-      const viewerCount = Number(stream?.total_views || 0);
-      const creatorName =
-        currentHostProfile?.display_name ||
-        currentHostProfile?.username ||
-        "Unknown";
-
-      els.activeTitle.textContent = title;
-      els.activeSub.textContent = stream
-        ? `${category} • ${stream.room_name || roomConnectionPayload?.roomName || "no-room"}`
-        : "Select a stream from the rail or paste a stream id / room name.";
-
-      els.infoTitle.textContent = title;
-      els.infoCreator.textContent = creatorName;
-      els.infoCategory.textContent = category;
-      els.infoAccess.textContent = accessType;
-      els.infoDescription.textContent = stream?.description || "No description yet.";
-
-      els.statusBadge.textContent = String(status).toUpperCase();
-      els.statusBadge.className = status === "live" ? "tag live" : "tag";
-      els.roleBadge.textContent = `Access: ${currentParticipantRole || "viewer"}`;
-      els.countBadge.textContent = `Viewers: ${viewerCount}`;
-
-      els.statAccessLabel.textContent = String(accessType || "--").toUpperCase();
-      els.statViewerCount.textContent = String(viewerCount);
-    }
-
-    async function loadLiveRail() {
-      const rail = els.streamList;
-      rail.innerHTML = `<div class="muted tiny">Loading live rooms...</div>`;
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .select("*")
-        .in("status", ["live", "scheduled"])
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-      if (error) {
-        rail.innerHTML = `<div class="muted tiny">Could not load live rooms: ${escapeHtml(error.message)}</div>`;
-        return;
-      }
-
-      els.statLiveCount.textContent = String(data?.length || 0);
-
-      if (!data || !data.length) {
-        rail.innerHTML = `<div class="muted tiny">No live rooms loaded yet.</div>`;
-        return;
-      }
-
-      rail.innerHTML = "";
-
-      data.forEach((stream) => {
-        const badgeClass =
-          stream.status === "live"
-            ? "live"
-            : stream.access_type === "paid"
-            ? "paid"
-            : stream.access_type === "vip"
-            ? "vip"
-            : stream.access_type === "followers"
-            ? "followers"
-            : "free";
-
-        const card = document.createElement("div");
-        card.className = "stream-item";
-        card.innerHTML = `
-          <div class="stream-top">
-            <div>
-              <div class="stream-title">${escapeHtml(stream.title || "Untitled Stream")}</div>
-              <div class="stream-meta">
-                <span>${escapeHtml(stream.category || "general")}</span>
-                <span>${escapeHtml(stream.room_name || "no-room")}</span>
-              </div>
-            </div>
-            <div class="tag ${badgeClass}">
-              ${escapeHtml(String(stream.status || "scheduled").toUpperCase())}
-            </div>
-          </div>
-
-          <div class="muted tiny">${escapeHtml(stream.description || "No description yet.")}</div>
-
-          <div class="stream-meta">
-            <span class="tag ${badgeClass}">${escapeHtml(stream.access_type || "free")}</span>
-            <span class="tag">Views ${Number(stream.total_views || 0)}</span>
-          </div>
-
-          <div class="grid2" style="margin-top:8px;">
-            <button class="btn btn-primary rail-join-btn" data-stream-id="${stream.id}">Join</button>
-            <button class="btn btn-dark rail-load-btn" data-stream-id="${stream.id}" data-room-name="${escapeHtml(stream.room_name || "")}">Load</button>
-          </div>
-        `;
-
-        rail.appendChild(card);
-      });
-
-      document.querySelectorAll(".rail-join-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          els.joinStreamId.value = btn.dataset.streamId || "";
-          els.joinRoomName.value = "";
-          await joinStream();
-        });
-      });
-
-      document.querySelectorAll(".rail-load-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          els.joinStreamId.value = btn.dataset.streamId || "";
-          els.joinRoomName.value = btn.dataset.roomName || "";
-
-          const { data: stream } = await supabase
-            .from("live_streams")
-            .select("*")
-            .eq("id", btn.dataset.streamId)
-            .maybeSingle();
-
-          const hostProfile = await loadHostProfile(stream?.host_id);
-          setStreamInfo(stream, hostProfile);
-          showStatus(els.joinStatus, "Stream loaded into join box.", "ok");
-        });
-      });
-    }
-
-    async function getSessionAccessToken() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error || !data?.session?.access_token) return null;
-      return data.session.access_token;
-    }
-
-    async function requestLivekitToken({ streamId = "", roomName = "", role = "" }) {
-      const accessToken = await getSessionAccessToken();
-      if (!accessToken) {
-        throw new Error("No auth session found. Please sign in first.");
-      }
-
-      const res = await fetch("/api/livekit-token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          streamId: streamId || undefined,
-          roomName: roomName || undefined,
-          role: role || undefined
-        })
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Could not get LiveKit token.");
-      }
-
-      return data;
-    }
-
-    function wireRoomEvents(room) {
-      room.on(RoomEvent.ParticipantConnected, () => {
-        const count = room.numParticipants || 1;
-        els.countBadge.textContent = `Viewers: ${count}`;
-        els.statViewerCount.textContent = String(count);
-      });
-
-      room.on(RoomEvent.ParticipantDisconnected, () => {
-        const count = room.numParticipants || 1;
-        els.countBadge.textContent = `Viewers: ${count}`;
-        els.statViewerCount.textContent = String(count);
-      });
-
-      room.on(RoomEvent.DataReceived, (payload, participant) => {
-        try {
-          const decoded = new TextDecoder().decode(payload);
-          const msg = JSON.parse(decoded);
-
-          if (msg.type === "chat") {
-            addChatMessage({
-              name: msg.name || participant?.identity || "User",
-              body: msg.body || "",
-              type: "message"
-            });
-          } else if (msg.type === "reaction") {
-            addChatMessage({
-              name: msg.name || participant?.identity || "User",
-              body: msg.reaction || "",
-              type: "reaction"
-            });
-          }
-        } catch {}
-      });
-
-      room.on(RoomEvent.TrackSubscribed, (track) => {
-        if (track.kind === Track.Kind.Video) {
-          const el = track.attach();
-          el.style.width = "100%";
-          el.style.maxHeight = "500px";
-          el.style.objectFit = "cover";
-          el.style.borderRadius = "18px";
-          els.roomContainer.innerHTML = "";
-          els.roomContainer.appendChild(el);
-        }
-
-        if (track.kind === Track.Kind.Audio) {
-          const el = track.attach();
-          els.roomContainer.appendChild(el);
-        }
-      });
-
-      room.on(RoomEvent.Disconnected, () => {
-        addChatMessage({
-          name: "System",
-          body: "Disconnected from stream.",
-          type: "system"
-        });
-      });
-    }
-
-    async function connectToRoom(payload) {
-      if (currentRoom) {
-        await disconnectRoom(false);
-      }
-
-      if (!payload?.wsUrl || !payload?.token) {
-        throw new Error("Missing LiveKit wsUrl or token.");
-      }
-
-      currentRoom = new Room({
-        adaptiveStream: true,
-        dynacast: true
-      });
-
-      wireRoomEvents(currentRoom);
-      await currentRoom.connect(payload.wsUrl, payload.token);
-
-      roomConnectionPayload = payload;
-      currentParticipantRole = payload?.participant?.role || "viewer";
-
-      els.roleBadge.textContent = `Access: ${currentParticipantRole}`;
-      const count = currentRoom.numParticipants || 1;
-      els.countBadge.textContent = `Viewers: ${count}`;
-      els.statViewerCount.textContent = String(count);
-
-      renderRoomPlaceholder(
-        `Connected to ${payload?.stream?.title || payload?.roomName || "room"}`,
-        "Waiting for remote host video or audio..."
-      );
-
-      addChatMessage({
-        name: "System",
-        body: `Connected as ${currentParticipantRole}.`,
-        type: "system"
-      });
-
-      showStatus(els.watchStatus, "Viewer connected.", "ok");
-    }
-
-    async function joinStream() {
-      hideStatus(els.joinStatus);
-
-      const user = await requireUser();
-      if (!user) {
-        showStatus(els.joinStatus, "Please sign in first.", "err");
-        return;
-      }
-
-      const streamId = els.joinStreamId.value.trim();
-      const roomName = els.joinRoomName.value.trim();
-
-      if (!streamId && !roomName) {
-        showStatus(els.joinStatus, "Add a stream id or room name first.", "err");
-        return;
-      }
-
-      try {
-        const payload = await requestLivekitToken({
-          streamId,
-          roomName,
-          role: "viewer"
-        });
-
-        currentParticipantRole = payload?.participant?.role || "viewer";
-
-        const stream = payload?.stream
-          ? {
-              id: payload.stream.id,
-              title: payload.stream.title,
-              description: payload.stream.description,
-              host_id: payload.stream.hostId,
-              category: payload.stream.category,
-              status: payload.stream.status,
-              access_type: payload.stream.accessType,
-              ticket_price_cents: payload.stream.ticketPriceCents,
-              allow_chat: payload.stream.allowChat,
-              allow_tips: payload.stream.allowTips,
-              allow_reactions: payload.stream.allowReactions,
-              is_featured: payload.stream.isFeatured,
-              room_name: payload.roomName
-            }
-          : null;
-
-        const hostProfile = await loadHostProfile(stream?.host_id);
-        setStreamInfo(stream, hostProfile);
-        await connectToRoom(payload);
-        showStatus(els.joinStatus, "Joined stream.", "ok");
-      } catch (err) {
-        showStatus(els.joinStatus, err.message, "err");
-      }
-    }
-
-    async function disconnectRoom(showMsg = true) {
-      try {
-        if (currentRoom) {
-          currentRoom.disconnect();
-          currentRoom = null;
-        }
-      } catch {}
-
-      renderRoomPlaceholder(
-        "Viewer stage not connected yet",
-        "Join a room to watch the live stream, react, and chat."
-      );
-
-      roomConnectionPayload = null;
-      currentParticipantRole = "viewer";
-      els.roleBadge.textContent = "Access: --";
-
-      if (showMsg) {
-        showStatus(els.watchStatus, "Disconnected.", "info");
-      }
-    }
-
-    async function sendChatMessage(text) {
-      if (!currentRoom) {
-        showStatus(els.watchStatus, "Join a room before chatting.", "err");
-        return;
-      }
-
-      const body = String(text || "").trim();
-      if (!body) return;
-
-      const payload = {
-        type: "chat",
-        name: currentProfile?.display_name || currentProfile?.username || currentUser?.email || "Viewer",
-        body
-      };
-
-      const bytes = new TextEncoder().encode(JSON.stringify(payload));
-      await currentRoom.localParticipant.publishData(bytes, { reliable: true });
-
-      addChatMessage({
-        name: payload.name,
-        body: payload.body,
-        type: "message"
-      });
-
-      els.chatInput.value = "";
-    }
-
-    async function sendReaction(reaction) {
-      if (!currentRoom) {
-        showStatus(els.watchStatus, "Join a room before reacting.", "err");
-        return;
-      }
-
-      const payload = {
-        type: "reaction",
-        name: currentProfile?.display_name || currentProfile?.username || currentUser?.email || "Viewer",
-        reaction
-      };
-
-      const bytes = new TextEncoder().encode(JSON.stringify(payload));
-      await currentRoom.localParticipant.publishData(bytes, { reliable: false });
-
-      addChatMessage({
-        name: payload.name,
-        body: payload.reaction,
-        type: "reaction"
-      });
-    }
-
-    async function followCreator() {
-      if (!currentUser?.id || !currentStream?.host_id) {
-        showStatus(els.watchStatus, "Join a stream first.", "err");
-        return;
-      }
-
-      if (currentUser.id === currentStream.host_id) {
-        showStatus(els.watchStatus, "You are the host of this stream.", "info");
-        return;
-      }
-
-      const payload = {
-        follower_id: currentUser.id,
-        following_id: currentStream.host_id
-      };
-
-      const { error } = await supabase
-        .from("followers")
-        .upsert(payload, { onConflict: "follower_id,following_id" });
-
-      if (error) {
-        showStatus(els.watchStatus, error.message, "err");
-        return;
-      }
-
-      showStatus(els.watchStatus, "Creator followed.", "ok");
-    }
-
-    function tipPlaceholder() {
-      if (!currentStream?.id) {
-        showStatus(els.watchStatus, "Join a stream first.", "err");
-        return;
-      }
-
-      showStatus(
-        els.watchStatus,
-        "Tip flow placeholder is ready. Next step is wiring this button into your Stripe checkout route.",
-        "info"
-      );
-    }
-
-    async function connectFromLoadedFields() {
-      await joinStream();
-    }
-
-    async function boot() {
-      await requireUser();
-      await loadLiveRail();
-
-      renderRoomPlaceholder(
-        "Viewer stage not connected yet",
-        "Join a room to watch the live stream, react, and chat."
-      );
-
-      const params = new URLSearchParams(window.location.search);
-      const streamId = params.get("streamId");
-      const roomName = params.get("roomName");
-
-      if (streamId) els.joinStreamId.value = streamId;
-      if (roomName) els.joinRoomName.value = roomName;
-    }
-
-    els.signOutBtn.addEventListener("click", signOut);
-    els.jumpBrowseBtn.addEventListener("click", () => scrollToId("browseSection"));
-    els.jumpWatchBtn.addEventListener("click", () => scrollToId("watchSection"));
-    els.joinBtn.addEventListener("click", joinStream);
-    els.connectBtn.addEventListener("click", connectFromLoadedFields);
-    els.refreshBtn.addEventListener("click", loadLiveRail);
-    els.disconnectBtn.addEventListener("click", () => disconnectRoom(true));
-    els.followBtn.addEventListener("click", followCreator);
-    els.tipBtn.addEventListener("click", tipPlaceholder);
-
-    els.chatForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      try {
-        await sendChatMessage(els.chatInput.value);
-      } catch (err) {
-        showStatus(els.watchStatus, err.message, "err");
-      }
-    });
-
-    els.clearChatBtn.addEventListener("click", () => {
-      els.chatMessages.innerHTML = "";
-      addChatMessage({
-        name: "System",
-        body: "Chat cleared on this page.",
-        type: "system"
-      });
-    });
-
-    document.querySelectorAll(".emoji-btn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        try {
-          await sendReaction(btn.dataset.reaction || "🔥");
-        } catch (err) {
-          showStatus(els.watchStatus, err.message, "err");
-        }
-      });
-    });
-
-    window.addEventListener("beforeunload", () => {
-      try {
-        currentRoom?.disconnect();
-      } catch {}
-    });
-
-    boot();
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || '';
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+    window.SUPABASE_URL = window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+    window.SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY || window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
   </script>
+
+  <script type="module" src="/src/live/watch-client.js"></script>
 </body>
 </html>
