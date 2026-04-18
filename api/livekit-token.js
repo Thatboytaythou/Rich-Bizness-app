@@ -6,18 +6,11 @@ const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
-const LIVEKIT_URL = process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
-
-if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-}
-
-if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
-  console.error("Missing LIVEKIT_API_KEY or LIVEKIT_API_SECRET");
-}
+const LIVEKIT_URL =
+  process.env.LIVEKIT_URL || process.env.NEXT_PUBLIC_LIVEKIT_URL || "";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false }
+  auth: { persistSession: false, autoRefreshToken: false },
 });
 
 function send(res, status, data) {
@@ -36,25 +29,18 @@ function normalizeRole(role, isHost = false) {
   if (isHost) return "host";
   if (!role) return "viewer";
 
-  const clean = String(role).toLowerCase();
-
+  const clean = String(role).toLowerCase().trim();
   if (["host", "cohost", "guest", "moderator", "viewer"].includes(clean)) {
     return clean;
   }
-
   return "viewer";
 }
 
 function getParticipantPermissions(role) {
   const isBroadcaster =
-    role === "host" ||
-    role === "cohost" ||
-    role === "guest";
-
+    role === "host" || role === "cohost" || role === "guest";
   const isModerator =
-    role === "host" ||
-    role === "cohost" ||
-    role === "moderator";
+    role === "host" || role === "cohost" || role === "moderator";
 
   return {
     role,
@@ -67,13 +53,15 @@ function getParticipantPermissions(role) {
       ? ["camera", "microphone", "screen_share"]
       : [],
     ingressAdmin: role === "host",
-    roomAdmin: isModerator
+    roomAdmin: isModerator,
   };
 }
 
 async function getAuthenticatedUser(req) {
   const jwt = getBearerToken(req);
-  if (!jwt) return { user: null, jwt: null, error: "Missing auth token" };
+  if (!jwt) {
+    return { user: null, jwt: null, error: "Missing auth token" };
+  }
 
   const { data, error } = await supabase.auth.getUser(jwt);
   if (error || !data?.user) {
@@ -88,10 +76,7 @@ async function getStream({ streamId, roomName }) {
     return { stream: null, error: "streamId or roomName is required" };
   }
 
-  let query = supabase
-    .from("live_streams")
-    .select("*")
-    .limit(1);
+  let query = supabase.from("live_streams").select("*").limit(1);
 
   if (streamId) {
     query = query.eq("id", streamId);
@@ -209,7 +194,7 @@ async function canUserAccessStream(stream, userId, role) {
     const allowed = await followsHost(userId, stream.host_id);
     return {
       ok: allowed,
-      reason: allowed ? "Follower access granted" : "Followers only"
+      reason: allowed ? "Follower access granted" : "Followers only",
     };
   }
 
@@ -217,7 +202,7 @@ async function canUserAccessStream(stream, userId, role) {
     const allowed = await hasVipAccess(userId, stream.host_id);
     return {
       ok: allowed,
-      reason: allowed ? "VIP access granted" : "VIP required"
+      reason: allowed ? "VIP access granted" : "VIP required",
     };
   }
 
@@ -225,7 +210,7 @@ async function canUserAccessStream(stream, userId, role) {
     const allowed = await hasPaidAccess(stream.id, userId);
     return {
       ok: allowed,
-      reason: allowed ? "Paid access granted" : "Payment required"
+      reason: allowed ? "Paid access granted" : "Payment required",
     };
   }
 
@@ -238,13 +223,13 @@ async function upsertMember(streamId, userId, role, hostId) {
     user_id: userId,
     role: normalizeRole(role, userId === hostId),
     is_active: true,
-    joined_at: new Date().toISOString()
+    joined_at: new Date().toISOString(),
   };
 
   const { error } = await supabase
     .from("live_stream_members")
     .upsert(payload, {
-      onConflict: "stream_id,user_id"
+      onConflict: "stream_id,user_id",
     });
 
   if (error) {
@@ -255,15 +240,13 @@ async function upsertMember(streamId, userId, role, hostId) {
 async function createViewSession(streamId, userId) {
   const sessionToken = crypto.randomUUID();
 
-  const { error } = await supabase
-    .from("live_view_sessions")
-    .insert({
-      stream_id: streamId,
-      user_id: userId,
-      session_token: sessionToken,
-      joined_at: new Date().toISOString(),
-      last_seen_at: new Date().toISOString()
-    });
+  const { error } = await supabase.from("live_view_sessions").insert({
+    stream_id: streamId,
+    user_id: userId,
+    session_token: sessionToken,
+    joined_at: new Date().toISOString(),
+    last_seen_at: new Date().toISOString(),
+  });
 
   if (error) {
     console.error("createViewSession error:", error.message);
@@ -274,7 +257,7 @@ async function createViewSession(streamId, userId) {
 
 async function refreshPeakViewers(streamId) {
   const { error } = await supabase.rpc("refresh_stream_peak_viewers", {
-    _stream_id: streamId
+    _stream_id: streamId,
   });
 
   if (error) {
@@ -284,7 +267,7 @@ async function refreshPeakViewers(streamId) {
 
 async function refreshTotalViews(streamId) {
   const { error } = await supabase.rpc("refresh_stream_total_views", {
-    _stream_id: streamId
+    _stream_id: streamId,
   });
 
   if (error) {
@@ -306,25 +289,40 @@ function buildParticipantName(profile, user) {
   return (
     profile?.display_name ||
     profile?.username ||
-    user?.user_metadata?.display_name ||
-    user?.user_metadata?.username ||
+    user?.user_metadata?.full_name ||
     user?.email ||
     "Rich Bizness User"
   );
 }
 
+function buildMetadata({ user, profile, stream, role }) {
+  return JSON.stringify({
+    userId: user.id,
+    email: user.email,
+    username: profile?.username || null,
+    displayName: profile?.display_name || null,
+    avatarUrl: profile?.avatar_url || null,
+    verified: !!profile?.is_verified,
+    streamId: stream.id,
+    roomName: stream.room_name,
+    hostId: stream.host_id,
+    role,
+    accessType: stream.access_type || "free",
+  });
+}
+
 function makeToken({
-  roomName,
   identity,
   participantName,
   metadata,
-  permissions
+  roomName,
+  permissions,
 }) {
   const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
     identity,
     name: participantName,
-    ttl: "2h",
-    metadata: JSON.stringify(metadata || {})
+    metadata,
+    ttl: "6h",
   });
 
   token.addGrant({
@@ -335,7 +333,7 @@ function makeToken({
     canPublishData: permissions.canPublishData,
     canUpdateOwnMetadata: permissions.canUpdateOwnMetadata,
     ingressAdmin: permissions.ingressAdmin,
-    roomAdmin: permissions.roomAdmin
+    roomAdmin: permissions.roomAdmin,
   });
 
   return token.toJwt();
@@ -345,7 +343,10 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization"
+    );
     return res.status(200).end();
   }
 
@@ -364,7 +365,7 @@ export default async function handler(req, res) {
       !LIVEKIT_URL
     ) {
       return send(res, 500, {
-        error: "Missing required server environment variables"
+        error: "Missing required server environment variables",
       });
     }
 
@@ -375,10 +376,11 @@ export default async function handler(req, res) {
 
     const streamId = req.body?.streamId || null;
     const roomNameInput = req.body?.roomName || null;
+    const requestedRole = req.body?.role || null;
 
     const { stream, error: streamError } = await getStream({
       streamId,
-      roomName: roomNameInput
+      roomName: roomNameInput,
     });
 
     if (streamError || !stream) {
@@ -386,51 +388,49 @@ export default async function handler(req, res) {
     }
 
     if (!stream.room_name) {
-      return send(res, 400, { error: "This stream has no room_name set yet" });
+      return send(res, 400, { error: "Stream missing room_name" });
     }
 
     const banned = await isBanned(stream.id, user.id);
     if (banned) {
-      return send(res, 403, { error: "You are banned from this stream" });
-    }
-
-    const role = await getMembershipRole(stream.id, user.id, stream.host_id);
-    const access = await canUserAccessStream(stream, user.id, role);
-
-    if (!access.ok) {
       return send(res, 403, {
-        error: access.reason || "Access denied",
-        accessType: stream.access_type
+        error: "You are banned from this stream",
+        accessType: stream.access_type || "free",
       });
     }
 
     const profile = await getProfile(user.id);
 
+    const dbRole = await getMembershipRole(stream.id, user.id, stream.host_id);
+    const role = normalizeRole(
+      requestedRole || dbRole,
+      user.id === stream.host_id
+    );
+
+    const access = await canUserAccessStream(stream, user.id, role);
+    if (!access.ok) {
+      return send(res, 403, {
+        error: access.reason || "Access denied",
+        accessType: stream.access_type || "free",
+      });
+    }
+
+    const permissions = getParticipantPermissions(role);
     const identity = buildIdentity(profile, user);
     const participantName = buildParticipantName(profile, user);
-    const permissions = getParticipantPermissions(role);
-
-    const metadata = {
-      app: "Rich Bizness",
-      userId: user.id,
-      streamId: stream.id,
-      hostId: stream.host_id,
-      roomName: stream.room_name,
+    const metadata = buildMetadata({
+      user,
+      profile,
+      stream,
       role,
-      username: profile?.username || null,
-      displayName: profile?.display_name || participantName,
-      avatarUrl: profile?.avatar_url || null,
-      verified: !!profile?.is_verified,
-      category: stream.category || "general",
-      accessType: stream.access_type || "free"
-    };
+    });
 
     const livekitToken = makeToken({
       roomName: stream.room_name,
       identity,
       participantName,
       metadata,
-      permissions
+      permissions,
     });
 
     await upsertMember(stream.id, user.id, role, stream.host_id);
@@ -445,7 +445,7 @@ export default async function handler(req, res) {
       participant: {
         identity,
         name: participantName,
-        role
+        role,
       },
       stream: {
         id: stream.id,
@@ -459,16 +459,16 @@ export default async function handler(req, res) {
         allowChat: !!stream.allow_chat,
         allowTips: !!stream.allow_tips,
         allowReactions: !!stream.allow_reactions,
-        isFeatured: !!stream.is_featured
+        isFeatured: !!stream.is_featured,
       },
       permissions,
-      sessionToken
+      sessionToken,
     });
   } catch (error) {
     console.error("livekit-token fatal error:", error);
     return send(res, 500, {
       error: "Server error creating LiveKit token",
-      details: error?.message || "Unknown error"
+      details: error?.message || "Unknown error",
     });
   }
 }
