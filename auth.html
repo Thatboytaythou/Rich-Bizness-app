@@ -3,377 +3,323 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Auth</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Rich Bizness — Auth</title>
+  <meta
+    name="description"
+    content="Sign in or create your Rich Bizness account."
+  />
+
   <style>
+    :root {
+      --bg: #06100b;
+      --panel: rgba(10, 22, 16, 0.92);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
+      --text: #ecfff4;
+      --muted: #93b6a3;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 28px;
+    }
+
     * { box-sizing: border-box; }
 
-    :root{
-      --bg:#06110a;
-      --panel:rgba(0,0,0,.62);
-      --panel2:rgba(8,17,11,.88);
-      --line:rgba(141,245,109,.18);
-      --text:#f4fff1;
-      --muted:#bfd4bf;
-      --green:#99f06a;
-      --green2:#72d84c;
-      --yellow:#f3d96d;
-      --red:#ff6b6b;
-      --shadow:0 18px 50px rgba(0,0,0,.45);
-    }
-
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:Arial, Helvetica, sans-serif;
-      color:var(--text);
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.52), rgba(0,0,0,.78)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed,
-        var(--bg);
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        radial-gradient(circle at 80% 20%, rgba(67,245,155,0.06), transparent 18%),
+        linear-gradient(180deg, #040905 0%, #07120d 38%, #08140f 100%);
     }
 
-    .page{
-      max-width:1180px;
-      margin:0 auto;
-      padding:18px;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .shell{
-      background:rgba(4,10,7,.60);
-      border:1px solid var(--line);
-      border-radius:28px;
-      backdrop-filter:blur(12px);
-      box-shadow:var(--shadow);
-      overflow:hidden;
+    .page {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
     }
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
-      padding:18px 20px;
-      border-bottom:1px solid var(--line);
-      flex-wrap:wrap;
+    .shell {
+      width: min(1100px, 100%);
+      display: grid;
+      grid-template-columns: 1fr 460px;
+      gap: 18px;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .brand-logo{
-      width:76px;
-      height:76px;
-      border-radius:50%;
-      object-fit:cover;
-      background:#000;
-      border:2px solid rgba(141,245,109,.25);
-      box-shadow:0 0 24px rgba(141,245,109,.15);
+    .hero {
+      padding: 34px;
+      min-height: 640px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,0.14), transparent 28%),
+        linear-gradient(180deg, rgba(13,28,21,0.98), rgba(8,17,13,0.98));
     }
 
-    .brand h1{
-      margin:0;
-      font-size:2.15rem;
-      line-height:1;
-      color:var(--green);
-      letter-spacing:.3px;
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .brand p{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:1.08rem;
+    .hero h1 {
+      margin: 18px 0 0;
+      font-size: clamp(38px, 6vw, 72px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
     }
 
-    .chip-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
+    .hero p {
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.7;
+      max-width: 620px;
     }
 
-    .chip, .nav-btn, .tab-btn, .btn{
-      border:none;
-      border-radius:18px;
-      font-weight:800;
-      cursor:pointer;
-      transition:.18s ease;
+    .feature-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 26px;
     }
 
-    .chip{
-      padding:12px 16px;
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:48px;
+    .feature-item {
+      padding: 15px 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
     }
 
-    .chip:hover, .tab-btn:hover, .btn:hover, .nav-btn:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.04);
+    .feature-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
     }
 
-    .hero{
-      padding:20px;
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      gap:18px;
-      border-bottom:1px solid var(--line);
+    .feature-item span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
     }
 
-    .hero-card, .auth-card{
-      border:1px solid var(--line);
-      border-radius:28px;
-      background:linear-gradient(180deg, rgba(0,0,0,.48), rgba(6,18,11,.82));
-      padding:28px;
-      min-width:0;
+    .auth-panel {
+      padding: 22px;
     }
 
-    .eyebrow{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:8px 12px;
-      border-radius:999px;
-      background:rgba(141,245,109,.08);
-      color:#d5ffc6;
-      border:1px solid rgba(141,245,109,.12);
-      font-size:.82rem;
-      font-weight:900;
-      letter-spacing:.5px;
-      text-transform:uppercase;
-      margin-bottom:12px;
+    .auth-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
-    .hero h2{
-      margin:0 0 12px;
-      font-size:4rem;
-      line-height:.95;
-      color:var(--green);
-      letter-spacing:-1.6px;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
-    .hero p{
-      margin:0;
-      color:#eef7ec;
-      font-size:1.2rem;
-      line-height:1.65;
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--green);
+      font-weight: 900;
     }
 
-    .tabs{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:20px;
+    .brand-copy h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
     }
 
-    .tab-btn{
-      padding:16px 20px;
-      background:rgba(255,255,255,.07);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.08);
-      font-size:1.02rem;
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
-    .tab-btn.active{
-      background:var(--green);
-      color:#071108;
-      box-shadow:0 0 0 1px rgba(0,0,0,.15) inset;
+    .tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
     }
 
-    .panel{
-      display:none;
-      margin-top:8px;
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
     }
 
-    .panel.active{
-      display:block;
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
+      border-color: var(--line-strong);
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
+    .notice {
+      display: none;
+      padding: 13px 14px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      border: 1px solid transparent;
     }
 
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-bottom:14px;
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
     }
 
-    .field.full{
-      grid-column:1 / -1;
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
     }
 
-    label{
-      font-size:.96rem;
-      font-weight:800;
-      color:#dff9d0;
+    .form {
+      display: none;
+      gap: 14px;
     }
 
-    input, textarea, select{
-      width:100%;
-      background:#030805;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:18px 18px;
-      font-size:1.05rem;
-      outline:none;
+    .form.active {
+      display: grid;
     }
 
-    textarea{
-      resize:vertical;
-      min-height:120px;
+    .field {
+      display: grid;
+      gap: 8px;
     }
 
-    input:focus, textarea:focus, select:focus{
-      border-color:rgba(141,245,109,.45);
-      box-shadow:0 0 0 3px rgba(141,245,109,.10);
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
     }
 
-    .btn-row{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:8px;
+    .field input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
     }
 
-    .btn{
-      padding:16px 22px;
-      font-size:1.02rem;
-      min-width:170px;
+    .field input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
     }
 
-    .btn-green{
-      background:var(--green);
-      color:#081108;
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 800;
+      cursor: pointer;
     }
 
-    .btn-dark{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.09);
+    .btn.primary {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #062312;
+      box-shadow: 0 10px 26px rgba(24, 201, 114, 0.28);
     }
 
-    .btn-yellow{
-      background:var(--yellow);
-      color:#161204;
+    .btn.secondary {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
+      color: var(--text);
     }
 
-    .quick-links{
-      display:flex;
-      gap:20px;
-      flex-wrap:wrap;
-      margin-top:12px;
-      font-weight:800;
+    .auth-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
     }
 
-    .quick-links a{
-      color:var(--green);
-      text-decoration:none;
+    .auth-links a {
+      color: var(--green);
+      font-weight: 800;
+      font-size: 14px;
     }
 
-    .status{
-      margin-top:18px;
-      padding:16px 18px;
-      border-radius:20px;
-      font-size:1.02rem;
-      line-height:1.55;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      min-height:64px;
-      white-space:pre-wrap;
+    .session-box {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      display: grid;
+      gap: 10px;
     }
 
-    .status.ok{
-      color:#d9ffd1;
-      border-color:rgba(141,245,109,.22);
-      background:rgba(141,245,109,.08);
+    .session-box strong {
+      font-size: 15px;
     }
 
-    .status.err{
-      color:#ffd6d6;
-      border-color:rgba(255,107,107,.28);
-      background:rgba(255,107,107,.08);
+    .session-box span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: break-word;
     }
 
-    .status.warn{
-      color:#fff0c4;
-      border-color:rgba(243,217,109,.26);
-      background:rgba(243,217,109,.08);
-    }
-
-    .status.loading{
-      color:#f8fff5;
-      border-color:rgba(255,255,255,.10);
-      background:rgba(255,255,255,.05);
-    }
-
-    .session-box{
-      margin-top:18px;
-      padding:16px 18px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:rgba(141,245,109,.05);
-    }
-
-    .session-title{
-      margin:0 0 8px;
-      color:var(--green);
-      font-size:1.1rem;
-      font-weight:900;
-    }
-
-    .session-meta{
-      color:#ebf7e5;
-      font-size:.98rem;
-      line-height:1.5;
-    }
-
-    .footer-note{
-      padding:16px 20px 22px;
-      color:#bcd3bd;
-      font-size:.95rem;
-    }
-
-    @media (max-width: 980px){
-      .hero{
-        grid-template-columns:1fr;
+    @media (max-width: 940px) {
+      .shell {
+        grid-template-columns: 1fr;
       }
-      .hero h2{
-        font-size:2.85rem;
-      }
-    }
 
-    @media (max-width: 720px){
-      .brand h1{
-        font-size:1.7rem;
-      }
-      .hero-card, .auth-card{
-        padding:18px;
-      }
-      .hero h2{
-        font-size:2.4rem;
-      }
-      .grid{
-        grid-template-columns:1fr;
-      }
-      .btn{
-        width:100%;
-      }
-      .btn-row{
-        flex-direction:column;
+      .hero {
+        min-height: auto;
       }
     }
   </style>
@@ -381,609 +327,115 @@
 <body>
   <div class="page">
     <div class="shell">
-      <div class="topbar">
-        <div class="brand">
-          <img
-            class="brand-logo"
-            src="rich-bizness-profile.jpg"
-            alt="Rich Bizness"
-            onerror="this.src='images/rich-bizness-profile.jpg'; this.onerror=null;"
-          />
-          <div>
-            <h1>Rich Bizness Auth</h1>
-            <p>Sign up, sign in, reset, and session sync for one real Rich Bizness platform.</p>
-          </div>
-        </div>
-
-        <div class="chip-row">
-          <a class="chip" href="index.html">Home</a>
-          <a class="chip" href="profile.html">Profile</a>
-          <a class="chip" href="messages.html">Messages</a>
-          <a class="chip" href="notifications.html">Notifications</a>
-        </div>
-      </div>
-
-      <div class="hero">
-        <div class="hero-card">
-          <div class="eyebrow">Full Auth Core</div>
-          <h2>Sign up, sign in, reset, and session sync for one real Rich Bizness platform.</h2>
+      <section class="panel hero">
+        <div>
+          <div class="eyebrow">Auth system</div>
+          <h1>Sign in, build profile, and lock into Rich Bizness.</h1>
           <p>
-            This version keeps auth stable first. Signup and login work directly with Supabase.
-            Profile sync happens only after a session exists.
+            This auth page powers login, signup, session restore, logout,
+            and profile-aware navigation across your app.
           </p>
+
+          <div class="feature-list">
+            <div class="feature-item">
+              <strong>Login + signup</strong>
+              <span>Email/password auth powered by Supabase.</span>
+            </div>
+            <div class="feature-item">
+              <strong>Profile aware</strong>
+              <span>After login, users can route into profile, live, and watch with a real session.</span>
+            </div>
+            <div class="feature-item">
+              <strong>Auto session restore</strong>
+              <span>Users stay signed in across page refreshes and navigation.</span>
+            </div>
+          </div>
         </div>
 
-        <div class="auth-card">
-          <div class="tabs">
-            <button id="loginTab" class="tab-btn active" type="button">Login</button>
-            <button id="signupTab" class="tab-btn" type="button">Sign Up</button>
-            <button id="forgotTab" class="tab-btn" type="button">Forgot Password</button>
-            <button id="resetTab" class="tab-btn" type="button">Reset Password</button>
-          </div>
+        <div class="auth-links">
+          <a href="/index.html">Home</a>
+          <a href="/profile.html">Profile</a>
+          <a href="/live.html">Live</a>
+          <a href="/watch.html">Watch</a>
+        </div>
+      </section>
 
-          <!-- LOGIN -->
-          <div id="loginPanel" class="panel active">
-            <div class="field">
-              <label for="loginEmail">Email</label>
-              <input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" />
+      <section class="panel auth-panel">
+        <div class="auth-top">
+          <div class="brand">
+            <div class="brand-mark">RB</div>
+            <div class="brand-copy">
+              <h2>Rich Bizness Auth</h2>
+              <p>Login • Signup • Session</p>
             </div>
-
-            <div class="field">
-              <label for="loginPassword">Password</label>
-              <input id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" />
-            </div>
-
-            <div class="btn-row">
-              <button id="loginBtn" class="btn btn-green" type="button">Sign In</button>
-              <button id="sessionCheckBtn" class="btn btn-dark" type="button">Check Session</button>
-              <button id="continueBtn" class="btn btn-yellow" type="button">Continue Into App</button>
-              <button id="logoutBtn" class="btn btn-dark" type="button">Log Out</button>
-            </div>
-
-            <div class="quick-links">
-              <a href="#" id="goSignup">Go to Sign Up</a>
-              <a href="#" id="goForgot">Forgot Password</a>
-            </div>
-          </div>
-
-          <!-- SIGNUP -->
-          <div id="signupPanel" class="panel">
-            <div class="grid">
-              <div class="field">
-                <label for="signupUsername">Username</label>
-                <input id="signupUsername" type="text" placeholder="thatboytay3d" />
-              </div>
-
-              <div class="field">
-                <label for="signupDisplayName">Display Name</label>
-                <input id="signupDisplayName" type="text" placeholder="ThatBoyTayThou" />
-              </div>
-
-              <div class="field full">
-                <label for="signupEmail">Email</label>
-                <input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email" />
-              </div>
-
-              <div class="field full">
-                <label for="signupPassword">Password</label>
-                <input id="signupPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password" />
-              </div>
-
-              <div class="field full">
-                <label for="signupBio">Short Bio</label>
-                <textarea id="signupBio" placeholder="Short bio"></textarea>
-              </div>
-
-              <div class="field">
-                <label for="signupFavoriteTeam">Favorite Team</label>
-                <input id="signupFavoriteTeam" type="text" placeholder="Favorite team" />
-              </div>
-
-              <div class="field">
-                <label for="signupRole">Role</label>
-                <select id="signupRole">
-                  <option value="creator">Creator</option>
-                  <option value="user">User</option>
-                  <option value="artist">Artist</option>
-                  <option value="fan">Fan</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="btn-row">
-              <button id="signupBtn" class="btn btn-green" type="button">Create Account</button>
-            </div>
-
-            <div class="quick-links">
-              <a href="#" id="goLogin">Go to Login</a>
-              <a href="#" id="goForgotFromSignup">Forgot Password</a>
-            </div>
-          </div>
-
-          <!-- FORGOT -->
-          <div id="forgotPanel" class="panel">
-            <div class="field">
-              <label for="forgotEmail">Email</label>
-              <input id="forgotEmail" type="email" placeholder="Enter your account email" />
-            </div>
-
-            <div class="btn-row">
-              <button id="forgotBtn" class="btn btn-green" type="button">Send Reset Email</button>
-            </div>
-          </div>
-
-          <!-- RESET -->
-          <div id="resetPanel" class="panel">
-            <div class="field">
-              <label for="resetPassword">New Password</label>
-              <input id="resetPassword" type="password" placeholder="New password" />
-            </div>
-
-            <div class="field">
-              <label for="resetPasswordConfirm">Confirm New Password</label>
-              <input id="resetPasswordConfirm" type="password" placeholder="Confirm new password" />
-            </div>
-
-            <div class="btn-row">
-              <button id="resetBtn" class="btn btn-green" type="button">Update Password</button>
-            </div>
-          </div>
-
-          <div id="statusBox" class="status loading">Ready.</div>
-
-          <div class="session-box">
-            <div class="session-title">Session</div>
-            <div id="sessionMeta" class="session-meta">No active session.</div>
           </div>
         </div>
-      </div>
 
-      <div class="footer-note">
-        Use your project URL and your public publishable key only. Keep secret keys off this page.
-      </div>
+        <div class="tabs">
+          <button id="tab-login" class="tab-btn active" type="button">Login</button>
+          <button id="tab-signup" class="tab-btn" type="button">Sign Up</button>
+        </div>
+
+        <div id="auth-error" class="notice error"></div>
+        <div id="auth-success" class="notice success"></div>
+
+        <form id="login-form" class="form active">
+          <div class="field">
+            <label for="login-email">Email</label>
+            <input id="login-email" type="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input id="login-password" type="password" placeholder="Enter password" />
+          </div>
+
+          <button id="login-btn" class="btn primary" type="submit">Login</button>
+        </form>
+
+        <form id="signup-form" class="form">
+          <div class="field">
+            <label for="signup-display-name">Display name</label>
+            <input id="signup-display-name" type="text" placeholder="ThatboyTayThou" />
+          </div>
+
+          <div class="field">
+            <label for="signup-username">Username</label>
+            <input id="signup-username" type="text" placeholder="thatboytaythou" />
+          </div>
+
+          <div class="field">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" type="email" placeholder="you@example.com" />
+          </div>
+
+          <div class="field">
+            <label for="signup-password">Password</label>
+            <input id="signup-password" type="password" placeholder="Create password" />
+          </div>
+
+          <button id="signup-btn" class="btn primary" type="submit">Create Account</button>
+        </form>
+
+        <div class="session-box">
+          <strong>Current session</strong>
+          <span id="auth-session-status">Checking session...</span>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button id="go-profile-btn" class="btn secondary" type="button">Open Profile</button>
+            <button id="logout-btn" class="btn secondary" type="button">Logout</button>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <script>
-    try {
-      // KEEP THESE TWO VALUES
-      const SUPABASE_URL = "https://ksvdequymkceevoCGPDJ.supabase.co".toLowerCase();
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const loginTab = document.getElementById("loginTab");
-      const signupTab = document.getElementById("signupTab");
-      const forgotTab = document.getElementById("forgotTab");
-      const resetTab = document.getElementById("resetTab");
-
-      const loginPanel = document.getElementById("loginPanel");
-      const signupPanel = document.getElementById("signupPanel");
-      const forgotPanel = document.getElementById("forgotPanel");
-      const resetPanel = document.getElementById("resetPanel");
-
-      const loginEmail = document.getElementById("loginEmail");
-      const loginPassword = document.getElementById("loginPassword");
-      const loginBtn = document.getElementById("loginBtn");
-
-      const signupUsername = document.getElementById("signupUsername");
-      const signupDisplayName = document.getElementById("signupDisplayName");
-      const signupEmail = document.getElementById("signupEmail");
-      const signupPassword = document.getElementById("signupPassword");
-      const signupBio = document.getElementById("signupBio");
-      const signupFavoriteTeam = document.getElementById("signupFavoriteTeam");
-      const signupRole = document.getElementById("signupRole");
-      const signupBtn = document.getElementById("signupBtn");
-
-      const forgotEmail = document.getElementById("forgotEmail");
-      const forgotBtn = document.getElementById("forgotBtn");
-
-      const resetPassword = document.getElementById("resetPassword");
-      const resetPasswordConfirm = document.getElementById("resetPasswordConfirm");
-      const resetBtn = document.getElementById("resetBtn");
-
-      const sessionCheckBtn = document.getElementById("sessionCheckBtn");
-      const continueBtn = document.getElementById("continueBtn");
-      const logoutBtn = document.getElementById("logoutBtn");
-
-      const goSignup = document.getElementById("goSignup");
-      const goForgot = document.getElementById("goForgot");
-      const goLogin = document.getElementById("goLogin");
-      const goForgotFromSignup = document.getElementById("goForgotFromSignup");
-
-      const statusBox = document.getElementById("statusBox");
-      const sessionMeta = document.getElementById("sessionMeta");
-
-      const tabs = [
-        { btn: loginTab, panel: loginPanel },
-        { btn: signupTab, panel: signupPanel },
-        { btn: forgotTab, panel: forgotPanel },
-        { btn: resetTab, panel: resetPanel }
-      ];
-
-      function setStatus(message, kind = "loading") {
-        statusBox.textContent = message;
-        statusBox.className = `status ${kind}`;
-      }
-
-      function openTab(name) {
-        tabs.forEach(({ btn, panel }) => {
-          const active =
-            (name === "login" && btn === loginTab) ||
-            (name === "signup" && btn === signupTab) ||
-            (name === "forgot" && btn === forgotTab) ||
-            (name === "reset" && btn === resetTab);
-
-          btn.classList.toggle("active", active);
-          panel.classList.toggle("active", active);
-        });
-      }
-
-      function slugifyUsername(value) {
-        return String(value || "")
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "")
-          .replace(/[^a-z0-9_]/g, "");
-      }
-
-      async function updateSessionMeta() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) {
-          sessionMeta.textContent = "Session check failed.";
-          return null;
-        }
-
-        const session = data?.session || null;
-        if (!session?.user) {
-          sessionMeta.textContent = "No active session.";
-          return null;
-        }
-
-        const user = session.user;
-        const username = user.user_metadata?.username || "not set";
-        const displayName = user.user_metadata?.display_name || "not set";
-
-        sessionMeta.innerHTML =
-          `<strong>Email:</strong> ${user.email || "unknown"}<br>` +
-          `<strong>Username:</strong> ${username}<br>` +
-          `<strong>Display:</strong> ${displayName}`;
-
-        return session;
-      }
-
-      async function usernameExists(username) {
-        const clean = slugifyUsername(username);
-        if (!clean) return false;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("username", clean)
-          .limit(1);
-
-        if (error) throw error;
-        return Array.isArray(data) && data.length > 0;
-      }
-
-      async function ensureProfileForUser(user, seed = {}) {
-        if (!user?.id) throw new Error("Missing user id.");
-
-        const email = user.email || seed.email || "";
-        let username = slugifyUsername(
-          seed.username ||
-          user.user_metadata?.username ||
-          (email ? email.split("@")[0] : "user")
-        );
-
-        const displayName =
-          seed.display_name ||
-          user.user_metadata?.display_name ||
-          username ||
-          "Rich Bizness User";
-
-        const existing = await supabase
-          .from("profiles")
-          .select("id, username")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (existing.error && existing.error.code !== "PGRST116") {
-          throw existing.error;
-        }
-
-        if (existing.data?.id) return existing.data;
-
-        let finalUsername = username || "user";
-        let count = 0;
-
-        while (await usernameExists(finalUsername)) {
-          count += 1;
-          finalUsername = `${username || "user"}_${count}`;
-        }
-
-        const payload = {
-          id: user.id,
-          user_id: user.id,
-          email,
-          username: finalUsername,
-          display_name: displayName,
-          bio: seed.bio || user.user_metadata?.bio || "",
-          favorite_team: seed.favorite_team || user.user_metadata?.favorite_team || "",
-          role: seed.role || user.user_metadata?.role || "user",
-          onboarding_complete: true
-        };
-
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .upsert(payload, { onConflict: "id" });
-
-        if (insertError) throw insertError;
-
-        return payload;
-      }
-
-      async function login() {
-        try {
-          const email = loginEmail.value.trim();
-          const password = loginPassword.value;
-
-          if (!email) throw new Error("Email is required.");
-          if (!password) throw new Error("Password is required.");
-
-          setStatus("Signing in...", "loading");
-
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-          });
-
-          if (error) throw error;
-          if (!data?.user) throw new Error("No user returned.");
-
-          await ensureProfileForUser(data.user);
-          await updateSessionMeta();
-
-          setStatus(`✅ Session found for ${data.user.email}`, "ok");
-        } catch (err) {
-          setStatus(`❌ Login error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function signup() {
-        try {
-          const email = signupEmail.value.trim();
-          const password = signupPassword.value;
-          const username = slugifyUsername(signupUsername.value);
-          const displayName = signupDisplayName.value.trim() || username;
-          const bio = signupBio.value.trim();
-          const favorite_team = signupFavoriteTeam.value.trim();
-          const role = signupRole.value || "creator";
-
-          if (!username) throw new Error("Username is required.");
-          if (!email) throw new Error("Email is required.");
-          if (!password || password.length < 6) throw new Error("Password must be at least 6 characters.");
-
-          if (await usernameExists(username)) {
-            throw new Error("Username already taken.");
-          }
-
-          setStatus("Creating account...", "loading");
-
-          const redirectTo = `${window.location.origin}/auth.html`;
-
-          const { data, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-              emailRedirectTo: redirectTo,
-              data: {
-                username,
-                display_name: displayName,
-                bio,
-                favorite_team,
-                role
-              }
-            }
-          });
-
-          if (error) throw error;
-
-          if (data?.user && data?.session) {
-            await ensureProfileForUser(data.user, {
-              email,
-              username,
-              display_name: displayName,
-              bio,
-              favorite_team,
-              role
-            });
-            await updateSessionMeta();
-            setStatus("✅ Account created and signed in.", "ok");
-            openTab("login");
-            loginEmail.value = email;
-            loginPassword.value = password;
-            return;
-          }
-
-          setStatus("✅ Account created. Check your email if confirmation is enabled, then log in.", "ok");
-          openTab("login");
-          loginEmail.value = email;
-          loginPassword.value = password;
-        } catch (err) {
-          setStatus(`❌ Sign up error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function sendReset() {
-        try {
-          const email = forgotEmail.value.trim();
-          if (!email) throw new Error("Email is required.");
-
-          setStatus("Sending password reset email...", "loading");
-
-          const redirectTo = `${window.location.origin}/auth.html`;
-
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo
-          });
-
-          if (error) throw error;
-
-          setStatus("✅ Reset email sent. Open it, then come back to this page to set a new password.", "ok");
-        } catch (err) {
-          setStatus(`❌ Forgot password error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function updatePassword() {
-        try {
-          const pw = resetPassword.value;
-          const confirm = resetPasswordConfirm.value;
-
-          if (!pw || pw.length < 6) throw new Error("New password must be at least 6 characters.");
-          if (pw !== confirm) throw new Error("Passwords do not match.");
-
-          setStatus("Updating password...", "loading");
-
-          const { error } = await supabase.auth.updateUser({
-            password: pw
-          });
-
-          if (error) throw error;
-
-          setStatus("✅ Password updated. You can now log in with the new password.", "ok");
-          openTab("login");
-        } catch (err) {
-          setStatus(`❌ Reset password error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function checkSession() {
-        try {
-          setStatus("Checking session...", "loading");
-          const session = await updateSessionMeta();
-
-          if (session?.user) {
-            setStatus(`✅ Session found for ${session.user.email}`, "ok");
-          } else {
-            setStatus("⚠️ No active session.", "warn");
-          }
-        } catch (err) {
-          setStatus(`❌ Session check error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function continueIntoApp() {
-        try {
-          const { data, error } = await supabase.auth.getSession();
-          if (error) throw error;
-
-          const session = data?.session;
-          if (!session?.user) throw new Error("No active session.");
-
-          await ensureProfileForUser(session.user);
-          window.location.href = "index.html";
-        } catch (err) {
-          setStatus(`❌ Continue error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function logout() {
-        try {
-          setStatus("Signing out...", "loading");
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-
-          await updateSessionMeta();
-          setStatus("✅ Logged out.", "ok");
-        } catch (err) {
-          setStatus(`❌ Logout error: ${err.message || err}`, "err");
-        }
-      }
-
-      loginTab.addEventListener("click", () => openTab("login"));
-      signupTab.addEventListener("click", () => openTab("signup"));
-      forgotTab.addEventListener("click", () => openTab("forgot"));
-      resetTab.addEventListener("click", () => openTab("reset"));
-
-      goSignup.addEventListener("click", (e) => { e.preventDefault(); openTab("signup"); });
-      goForgot.addEventListener("click", (e) => { e.preventDefault(); openTab("forgot"); });
-      goLogin.addEventListener("click", (e) => { e.preventDefault(); openTab("login"); });
-      goForgotFromSignup.addEventListener("click", (e) => { e.preventDefault(); openTab("forgot"); });
-
-      loginBtn.addEventListener("click", login);
-      signupBtn.addEventListener("click", signup);
-      forgotBtn.addEventListener("click", sendReset);
-      resetBtn.addEventListener("click", updatePassword);
-      sessionCheckBtn.addEventListener("click", checkSession);
-      continueBtn.addEventListener("click", continueIntoApp);
-      logoutBtn.addEventListener("click", logout);
-
-      loginPassword.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") login();
-      });
-
-      signupPassword.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") signup();
-      });
-
-      window.addEventListener("load", async () => {
-        try {
-          setStatus("Loading auth...", "loading");
-          const session = await updateSessionMeta();
-
-          const hash = window.location.hash || "";
-          if (hash.includes("type=recovery")) {
-            openTab("reset");
-            setStatus("⚠️ Recovery session detected. Set your new password below.", "warn");
-            return;
-          }
-
-          if (session?.user) {
-            setStatus(`✅ Session found for ${session.user.email}`, "ok");
-          } else {
-            setStatus("Ready.", "loading");
-          }
-        } catch (err) {
-          setStatus(`❌ Startup error: ${err.message || err}`, "err");
-        }
-      });
-
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        try {
-          if (session?.user) {
-            await ensureProfileForUser(session.user);
-          }
-          await updateSessionMeta();
-
-          if (event === "SIGNED_IN" && session?.user) {
-            setStatus(`✅ Session found for ${session.user.email}`, "ok");
-          }
-        } catch (err) {
-          setStatus(`❌ Auth state error: ${err.message || err}`, "err");
-        }
-      });
-
-    } catch (err) {
-      const body = document.body || document.documentElement;
-      const box = document.createElement("div");
-      box.style.maxWidth = "900px";
-      box.style.margin = "40px auto";
-      box.style.padding = "20px";
-      box.style.borderRadius = "20px";
-      box.style.color = "#fff";
-      box.style.background = "rgba(255,0,0,.15)";
-      box.style.border = "1px solid rgba(255,120,120,.35)";
-      box.textContent = "Fatal auth page error: " + (err.message || err);
-      body.appendChild(box);
-    }
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
+
+  <script type="module" src="/src/shared/auth-ui.js"></script>
 </body>
 </html>
