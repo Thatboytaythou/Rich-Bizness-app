@@ -367,7 +367,6 @@
     }
 
     .live-stage h4,
-    .card-grid h4,
     .sidebar-card h4,
     .timeline-card h4 {
       margin: 0 0 10px;
@@ -375,7 +374,6 @@
     }
 
     .live-stage p,
-    .card-grid p,
     .sidebar-card p,
     .timeline-card p,
     .media-card p {
@@ -480,6 +478,27 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
+    }
+
+    .notice {
+      display: none;
+      padding: 13px 14px;
+      border-radius: 16px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
+    }
+
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
     }
 
     .footer {
@@ -621,6 +640,9 @@
       </nav>
     </header>
 
+    <div id="profile-error" class="notice error"></div>
+    <div id="profile-success" class="notice success"></div>
+
     <section class="profile-hero">
       <div class="profile-banner">
         <div class="banner-glow">Creator profile</div>
@@ -634,15 +656,13 @@
               src="/images/rich-bizness-profile.jpg"
               alt="Profile avatar"
               style="width:100%;height:100%;object-fit:cover;display:none;"
-              onload="this.style.display='block'; this.parentNode.textContent=''; this.parentNode.appendChild(this);"
-              onerror="this.style.display='none';"
             />
             RB
           </div>
 
           <div class="profile-identity">
-            <h2 id="profile-display-name">ThatboyTayThou</h2>
-            <div class="handle" id="profile-handle">@thatboytaythou</div>
+            <h2 id="profile-display-name">Creator</h2>
+            <div class="handle" id="profile-handle">@creator</div>
             <div class="bio" id="profile-bio">
               Rich Bizness creator building live experiences, music energy, gaming movement,
               sports culture, and visual storytelling into one powerful platform.
@@ -661,23 +681,23 @@
         <div class="stats-row">
           <div class="stat-card">
             <span>Followers</span>
-            <strong id="profile-followers-count">12.4K</strong>
+            <strong id="profile-followers-count">0</strong>
           </div>
           <div class="stat-card">
             <span>Following</span>
-            <strong id="profile-following-count">468</strong>
+            <strong id="profile-following-count">0</strong>
           </div>
           <div class="stat-card">
             <span>Posts</span>
-            <strong id="profile-posts-count">128</strong>
+            <strong id="profile-posts-count">0</strong>
           </div>
           <div class="stat-card">
             <span>Lives hosted</span>
-            <strong id="profile-lives-count">39</strong>
+            <strong id="profile-lives-count">0</strong>
           </div>
           <div class="stat-card">
             <span>Creator tier</span>
-            <strong id="profile-tier-label">VIP Ready</strong>
+            <strong id="profile-tier-label">Building</strong>
           </div>
         </div>
       </div>
@@ -700,24 +720,22 @@
             <div class="live-highlight">
               <div class="live-stage">
                 <div>
-                  <h4>Live profile spotlight</h4>
-                  <p>
-                    Use this area to highlight the creator’s current stream, scheduled live,
-                    or latest premium event. It matches the live foundation so this profile can
-                    become the center of the creator ecosystem.
+                  <h4 id="profile-live-title">No live stream yet</h4>
+                  <p id="profile-live-description">
+                    Start a stream and your latest live highlight will show here.
                   </p>
                 </div>
 
                 <div>
                   <div class="badge-row">
-                    <span class="badge live">LIVE READY</span>
+                    <span class="badge live" id="profile-live-status">OFFLINE</span>
                     <span class="badge">Paid Access</span>
                     <span class="badge">VIP</span>
                     <span class="badge">Followers Growth</span>
                   </div>
 
                   <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
-                    <a class="btn" href="/live.html">Start Live</a>
+                    <a class="btn" id="profile-live-link" href="/live.html">Start Live</a>
                     <a class="btn-ghost" href="/watch.html">Watch Stream</a>
                   </div>
                 </div>
@@ -951,28 +969,20 @@
         tabPanels.forEach((panel) => panel.classList.remove('active'));
 
         button.classList.add('active');
-        document.querySelector(`.tab-panel[data-panel="${target}"]`)?.classList.add('active');
+        document
+          .querySelector(`.tab-panel[data-panel="${target}"]`)
+          ?.classList.add('active');
       });
     });
-
-    const followBtn = document.getElementById('follow-profile-btn');
-    if (followBtn) {
-      followBtn.addEventListener('click', () => {
-        const active = followBtn.getAttribute('data-following') === 'true';
-
-        if (active) {
-          followBtn.textContent = 'Follow';
-          followBtn.setAttribute('data-following', 'false');
-          followBtn.classList.remove('btn-ghost');
-          followBtn.classList.add('btn');
-        } else {
-          followBtn.textContent = 'Following';
-          followBtn.setAttribute('data-following', 'true');
-          followBtn.classList.remove('btn');
-          followBtn.classList.add('btn-ghost');
-        }
-      });
-    }
   </script>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || '';
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+    window.SUPABASE_URL = window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
+    window.SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY || window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+  </script>
+
+  <script type="module" src="/src/profile/profile-client.js"></script>
 </body>
 </html>
