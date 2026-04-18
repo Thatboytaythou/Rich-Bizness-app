@@ -2,1397 +2,976 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Profile</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+  <title>Rich Bizness — Profile</title>
+  <meta
+    name="description"
+    content="Rich Bizness creator profile with live highlights, uploads, stats, and community growth."
+  />
+
   <style>
-    * { box-sizing: border-box; }
-
-    :root{
-      --bg:#07110a;
-      --panel:rgba(0,0,0,.62);
-      --panel-2:rgba(5,15,9,.84);
-      --line:rgba(141,245,109,.18);
-      --line-strong:rgba(141,245,109,.28);
-      --text:#f6fff3;
-      --muted:#b9cdb8;
-      --green:#99f06a;
-      --green-dark:#75d74d;
-      --blue:#7bb2ff;
-      --yellow:#f2d66b;
-      --red:#ff7575;
-      --shadow:0 18px 50px rgba(0,0,0,.45);
+    :root {
+      --bg: #06100b;
+      --bg-2: #091710;
+      --panel: rgba(10, 22, 16, 0.92);
+      --panel-2: rgba(14, 30, 22, 0.88);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
+      --text: #ecfff4;
+      --muted: #93b6a3;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --yellow: #ffd86a;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 28px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1380px;
     }
 
-    html, body {
-      margin:0;
-      min-height:100%;
-      font-family:Arial, Helvetica, sans-serif;
-      color:var(--text);
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.52), rgba(0,0,0,.80)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed,
-        var(--bg);
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        radial-gradient(circle at 80% 20%, rgba(67,245,155,0.06), transparent 18%),
+        linear-gradient(180deg, #040905 0%, #07120d 38%, #08140f 100%);
     }
 
-    a { color:inherit; text-decoration:none; }
-
-    .page{
-      max-width:1400px;
-      margin:0 auto;
-      padding:18px;
+    a {
+      color: inherit;
+      text-decoration: none;
     }
 
-    .shell{
-      border:1px solid var(--line);
-      border-radius:28px;
-      overflow:hidden;
-      background:rgba(4,10,7,.60);
-      backdrop-filter:blur(12px);
-      box-shadow:var(--shadow);
+    img {
+      max-width: 100%;
+      display: block;
     }
 
-    .topbar{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:14px;
-      padding:18px 20px;
-      border-bottom:1px solid var(--line);
-      flex-wrap:wrap;
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:14px;
-      min-width:0;
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 40px;
     }
 
-    .brand-logo{
-      width:74px;
-      height:74px;
-      border-radius:50%;
-      border:2px solid rgba(141,245,109,.22);
-      object-fit:cover;
-      background:#000;
-      box-shadow:0 0 26px rgba(141,245,109,.16);
-      flex-shrink:0;
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(8, 17, 13, 0.78);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
     }
 
-    .brand h1{
-      margin:0;
-      font-size:2rem;
-      color:var(--green);
-      letter-spacing:.3px;
-      line-height:1;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .brand p{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:1.03rem;
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--green);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(67,245,155,0.18);
+      flex-shrink: 0;
     }
 
-    .top-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+      line-height: 1;
     }
 
-    .user-chip, .nav-btn, .pill, .btn{
-      border-radius:18px;
-      font-weight:800;
-      border:1px solid rgba(255,255,255,.08);
-      transition:.18s ease;
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
     }
 
-    .user-chip{
-      padding:12px 16px;
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      min-height:48px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .nav-btn{
-      padding:12px 16px;
-      min-height:48px;
-      background:rgba(255,255,255,.06);
-      color:#fff;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+    .nav-link,
+    .btn,
+    .btn-ghost,
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
     }
 
-    .nav-btn:hover, .btn:hover, .pill:hover{
-      transform:translateY(-1px);
-      filter:brightness(1.04);
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover,
+    .tab-btn:hover {
+      transform: translateY(-1px);
     }
 
-    .hero{
-      padding:18px;
-      border-bottom:1px solid var(--line);
+    .nav-link,
+    .btn-ghost,
+    .tab-btn {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
+      color: var(--text);
     }
 
-    .hero-card{
-      border:1px solid var(--line);
-      border-radius:28px;
-      background:linear-gradient(180deg, rgba(0,0,0,.45), rgba(6,18,11,.82));
-      padding:28px;
+    .btn {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #062312;
+      box-shadow: 0 10px 26px rgba(24, 201, 114, 0.28);
     }
 
-    .pill-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:12px;
+    .profile-hero {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
     }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding:8px 12px;
-      font-size:.82rem;
-      text-transform:uppercase;
-      letter-spacing:.45px;
-      background:rgba(141,245,109,.08);
-      color:#ddffd1;
-      border:1px solid rgba(141,245,109,.14);
-    }
-
-    .pill.blue{
-      background:rgba(123,178,255,.10);
-      border-color:rgba(123,178,255,.20);
-      color:#dce9ff;
-    }
-
-    .pill.yellow{
-      background:rgba(242,214,107,.10);
-      border-color:rgba(242,214,107,.20);
-      color:#fff2c1;
-    }
-
-    .hero-title{
-      margin:0;
-      color:var(--green);
-      font-size:4rem;
-      line-height:.95;
-      letter-spacing:-1.8px;
-    }
-
-    .hero-sub{
-      margin:14px 0 0;
-      color:#eef7ec;
-      font-size:1.18rem;
-      line-height:1.65;
-      max-width:980px;
-    }
-
-    .main{
-      padding:18px;
-      display:grid;
-      grid-template-columns:360px minmax(0,1fr);
-      gap:18px;
-    }
-
-    .panel{
-      border:1px solid var(--line);
-      border-radius:28px;
-      background:linear-gradient(180deg, rgba(0,0,0,.46), rgba(6,18,11,.86));
-      overflow:hidden;
-      min-width:0;
-    }
-
-    .panel-inner{
-      padding:20px;
-    }
-
-    .avatar-card{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-      align-items:center;
-      text-align:center;
-    }
-
-    .avatar-wrap{
-      width:220px;
-      height:220px;
-      border-radius:28px;
-      overflow:hidden;
-      border:1px solid var(--line-strong);
+    .profile-banner {
+      min-height: 280px;
+      position: relative;
       background:
-        linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.18)),
-        url("rich-bizness-profile.jpg") center/cover no-repeat;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-shadow:0 0 24px rgba(141,245,109,.08);
+        radial-gradient(circle at 18% 22%, rgba(67,245,155,0.18), transparent 24%),
+        radial-gradient(circle at 80% 30%, rgba(67,245,155,0.10), transparent 18%),
+        linear-gradient(135deg, #0b1b14 0%, #0e2419 45%, #08120e 100%);
     }
 
-    .avatar-img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      display:block;
-      background:#030805;
+    .banner-glow {
+      position: absolute;
+      inset: auto auto 20px 20px;
+      min-height: 34px;
+      padding: 8px 12px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .avatar-empty{
-      font-size:1.2rem;
-      font-weight:900;
-      color:#ffffffcc;
-      padding:14px;
+    .profile-main {
+      position: relative;
+      padding: 0 24px 24px;
     }
 
-    .section-title{
-      margin:0 0 10px;
-      color:var(--green);
-      font-size:1.35rem;
-      line-height:1.05;
+    .profile-top {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: end;
+      margin-top: -62px;
     }
 
-    .subtext{
-      color:var(--muted);
-      font-size:.97rem;
-      line-height:1.55;
-      margin:0;
+    .avatar-wrap {
+      width: 132px;
+      height: 132px;
+      border-radius: 28px;
+      border: 3px solid rgba(8,17,13,0.95);
+      box-shadow: 0 18px 38px rgba(0,0,0,0.35);
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
+      display: grid;
+      place-items: center;
+      font-size: 38px;
+      font-weight: 900;
+      color: var(--green);
     }
 
-    .file-input{
-      width:100%;
-      background:#040906;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:16px;
-      padding:12px;
+    .profile-identity {
+      padding-bottom: 8px;
+      min-width: 0;
     }
 
-    .btn{
-      border:none;
-      cursor:pointer;
-      padding:16px 18px;
-      min-height:52px;
-      font-size:1rem;
-      width:100%;
+    .profile-identity h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1;
+      letter-spacing: -0.03em;
     }
 
-    .btn.green{
-      background:var(--green);
-      color:#081108;
+    .profile-identity .handle {
+      margin-top: 8px;
+      color: var(--green);
+      font-weight: 800;
+      font-size: 14px;
     }
 
-    .btn.dark{
-      background:rgba(255,255,255,.06);
-      color:#fff;
+    .profile-identity .bio {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 780px;
     }
 
-    .btn.blue{
-      background:var(--blue);
-      color:#05101f;
+    .profile-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+      padding-bottom: 8px;
     }
 
-    .btn.yellow{
-      background:var(--yellow);
-      color:#171304;
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 20px;
     }
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(3, minmax(0, 1fr));
-      gap:14px;
-      margin-top:14px;
+    .stat-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
     }
 
-    .stat{
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:rgba(255,255,255,.03);
-      padding:18px;
-      text-align:center;
-      min-width:0;
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
     }
 
-    .stat-value{
-      font-size:2rem;
-      font-weight:900;
-      color:var(--green);
-      line-height:1;
-      margin-bottom:8px;
+    .stat-card strong {
+      font-size: 22px;
+      line-height: 1;
     }
 
-    .stat-label{
-      color:#e7f5e4;
-      font-weight:800;
-      font-size:.96rem;
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 18px;
     }
 
-    .status{
-      margin-top:14px;
-      padding:16px 18px;
-      border-radius:20px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      white-space:pre-wrap;
-      line-height:1.55;
-      min-height:64px;
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
-    .status.ok{
-      background:rgba(141,245,109,.08);
-      border-color:rgba(141,245,109,.22);
-      color:#ddffd2;
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.015);
     }
 
-    .status.err{
-      background:rgba(255,117,117,.08);
-      border-color:rgba(255,117,117,.22);
-      color:#ffd8d8;
+    .panel-header h3 {
+      margin: 0;
+      font-size: 18px;
     }
 
-    .status.warn{
-      background:rgba(242,214,107,.08);
-      border-color:rgba(242,214,107,.22);
-      color:#fff1c7;
+    .panel-body {
+      padding: 20px;
     }
 
-    .status.loading{
-      background:rgba(255,255,255,.04);
-      color:#fff;
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .form-head{
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      align-items:flex-start;
-      flex-wrap:wrap;
-      margin-bottom:14px;
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
+      border-color: var(--line-strong);
+      color: #dfffee;
     }
 
-    .profile-name{
-      margin:0;
-      font-size:3.35rem;
-      line-height:.95;
-      color:var(--green);
-      letter-spacing:-1.4px;
-      word-break:break-word;
+    .tab-panel {
+      display: none;
     }
 
-    .profile-meta{
-      margin-top:8px;
-      color:#ebf7e5;
-      line-height:1.65;
-      font-size:1rem;
+    .tab-panel.active {
+      display: block;
     }
 
-    .action-row{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin:14px 0;
+    .live-highlight {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
     }
 
-    .action-link{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      min-height:48px;
-      padding:12px 18px;
-      border-radius:18px;
-      font-weight:900;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.06);
-      color:#fff;
+    .live-stage {
+      min-height: 280px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 30%),
+        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
-    .action-link.green{ background:var(--green); color:#091107; }
-    .action-link.blue{ background:var(--blue); color:#08111d; }
-    .action-link.yellow{ background:var(--yellow); color:#161204; }
-
-    .progress-box{
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:14px;
-      background:rgba(255,255,255,.03);
-      margin-bottom:14px;
+    .live-stage h4,
+    .card-grid h4,
+    .sidebar-card h4,
+    .timeline-card h4 {
+      margin: 0 0 10px;
+      font-size: 20px;
     }
 
-    .progress-meta{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      margin-bottom:10px;
-      font-weight:800;
+    .live-stage p,
+    .card-grid p,
+    .sidebar-card p,
+    .timeline-card p,
+    .media-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
     }
 
-    .progress-track{
-      width:100%;
-      height:14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.06);
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
     }
 
-    .progress-fill{
-      height:100%;
-      width:0%;
-      border-radius:999px;
-      background:linear-gradient(90deg, var(--green), #c2ff95);
-      transition:width .25s ease;
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
-    .grid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:14px;
+    .badge.live {
+      background: linear-gradient(135deg, #ff5f73, #ff7e50);
+      border-color: transparent;
+      color: white;
     }
 
-    .field{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-      margin-bottom:2px;
-      min-width:0;
+    .side-stack,
+    .mini-list,
+    .timeline-list {
+      display: grid;
+      gap: 12px;
     }
 
-    .field.full{
-      grid-column:1 / -1;
+    .sidebar-card,
+    .timeline-card,
+    .mini-item,
+    .media-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
     }
 
-    .field label{
-      color:#dff9d0;
-      font-size:.95rem;
-      font-weight:800;
+    .mini-item strong,
+    .media-card strong,
+    .timeline-card strong,
+    .sidebar-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
     }
 
-    input, textarea, select{
-      width:100%;
-      background:#030805;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:18px;
-      padding:16px 16px;
-      font-size:1.02rem;
-      outline:none;
+    .mini-item span,
+    .media-card span,
+    .timeline-card span,
+    .sidebar-card span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
     }
 
-    textarea{
-      min-height:128px;
-      resize:vertical;
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
     }
 
-    input:focus, textarea:focus, select:focus{
-      border-color:rgba(141,245,109,.45);
-      box-shadow:0 0 0 3px rgba(141,245,109,.10);
+    .media-card {
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.06), transparent 28%),
+        rgba(255,255,255,0.03);
     }
 
-    .save-row{
-      display:flex;
-      gap:12px;
-      flex-wrap:wrap;
-      margin-top:16px;
+    .media-tag {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
-    .save-row .btn{
-      width:auto;
-      min-width:190px;
+    .split-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
     }
 
-    .mini-grid{
-      display:grid;
-      grid-template-columns:repeat(2, minmax(0, 1fr));
-      gap:14px;
-      margin-top:16px;
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .mini-card{
-      border:1px solid var(--line);
-      border-radius:22px;
-      background:rgba(255,255,255,.03);
-      padding:18px;
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
     }
 
-    .mini-card h3{
-      margin:0 0 8px;
-      color:var(--green);
-      font-size:1.12rem;
+    .footer-links {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .mini-card p{
-      margin:0;
-      color:#e5f3e0;
-      line-height:1.55;
+    .footer-links a {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
     }
 
-    .recent-list{
-      margin-top:14px;
-      display:grid;
-      gap:12px;
-    }
+    @media (max-width: 1180px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
 
-    .recent-item{
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      background:rgba(255,255,255,.03);
-    }
+      .stats-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
 
-    .recent-item strong{
-      display:block;
-      color:#f6fff3;
-      margin-bottom:6px;
-    }
+      .media-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
 
-    .recent-item span{
-      color:#cfe2cd;
-      font-size:.96rem;
-    }
-
-    .empty-box{
-      border:1px dashed rgba(255,255,255,.14);
-      border-radius:18px;
-      padding:18px;
-      text-align:center;
-      color:#d7e7d2;
-      background:rgba(255,255,255,.03);
-    }
-
-    @media (max-width: 1120px){
-      .main{
-        grid-template-columns:1fr;
+      .live-highlight {
+        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 780px){
-      .hero-title{
-        font-size:2.7rem;
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
       }
 
-      .profile-name{
-        font-size:2.45rem;
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
       }
 
-      .stats-grid{
-        grid-template-columns:1fr 1fr;
+      .profile-top {
+        grid-template-columns: 1fr;
+        align-items: start;
+        margin-top: -50px;
       }
 
-      .grid{
-        grid-template-columns:1fr;
+      .profile-actions {
+        justify-content: flex-start;
       }
 
-      .mini-grid{
-        grid-template-columns:1fr;
+      .stats-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
-      .save-row .btn{
-        width:100%;
+      .split-grid,
+      .media-grid {
+        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 560px){
-      .stats-grid{
-        grid-template-columns:1fr;
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
       }
 
-      .avatar-wrap{
-        width:180px;
-        height:180px;
+      .nav-link,
+      .btn,
+      .btn-ghost {
+        width: 100%;
       }
 
-      .brand h1{
-        font-size:1.65rem;
+      .stats-row {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-body,
+      .panel-header,
+      .profile-main {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .profile-banner {
+        min-height: 220px;
+      }
+
+      .avatar-wrap {
+        width: 110px;
+        height: 110px;
+      }
+
+      .footer {
+        align-items: flex-start;
+        flex-direction: column;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="shell">
-      <div class="topbar">
-        <div class="brand">
-          <img
-            class="brand-logo"
-            src="rich-bizness-profile.jpg"
-            alt="Rich Bizness"
-            onerror="this.src='images/rich-bizness-profile.jpg'; this.onerror=null;"
-          />
-          <div>
-            <h1>Profile Editor</h1>
-            <p>Advanced profile control, store sync, artist sync, and platform identity in one place.</p>
-          </div>
-        </div>
-
-        <div class="top-actions">
-          <div id="userChip" class="user-chip">Loading...</div>
-          <a class="nav-btn" href="index.html">Home</a>
-          <a class="nav-btn" href="artist.html">Artist</a>
-          <a class="nav-btn" href="store.html">Store</a>
-          <a class="nav-btn" href="gallery.html">Gallery</a>
-          <a class="nav-btn" href="messages.html">Messages</a>
-          <a class="nav-btn" href="notifications.html">Notifications</a>
-          <a class="nav-btn" href="analytics.html">Analytics</a>
-          <button id="logoutBtn" class="nav-btn" type="button">Log Out</button>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Creator Profile • Live • Music • Gaming • Sports • Gallery</p>
         </div>
       </div>
 
-      <div class="hero">
-        <div class="hero-card">
-          <div class="pill-row">
-            <div class="pill">Advanced Profile Control</div>
-            <div class="pill blue">Identity</div>
-            <div class="pill blue">Store Sync</div>
-            <div class="pill yellow">Artist Sync</div>
-          </div>
-          <h2 class="hero-title">Build one polished Rich Bizness identity that syncs across your app.</h2>
-          <p class="hero-sub">
-            This page keeps your username, display name, email, artist bio, links, favorite team,
-            role, avatar, and profile completion in sync with the rest of the platform.
-          </p>
-        </div>
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/feed.html">Feed</a>
+        <a class="nav-link" href="/watch.html">Watch</a>
+        <a class="nav-link" href="/messages.html">Messages</a>
+        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
+      </nav>
+    </header>
+
+    <section class="profile-hero">
+      <div class="profile-banner">
+        <div class="banner-glow">Creator profile</div>
       </div>
 
-      <div class="main">
-        <!-- LEFT -->
-        <div class="panel">
-          <div class="panel-inner">
-            <div class="avatar-card">
-              <div class="avatar-wrap" id="avatarWrap">
-                <img id="avatarImg" class="avatar-img" alt="Avatar" style="display:none;" />
-                <div id="avatarEmpty" class="avatar-empty">No Avatar Yet</div>
-              </div>
+      <div class="profile-main">
+        <div class="profile-top">
+          <div class="avatar-wrap" id="profile-avatar-wrap">
+            <img
+              id="profile-avatar"
+              src="/images/rich-bizness-profile.jpg"
+              alt="Profile avatar"
+              style="width:100%;height:100%;object-fit:cover;display:none;"
+              onload="this.style.display='block'; this.parentNode.textContent=''; this.parentNode.appendChild(this);"
+              onerror="this.style.display='none';"
+            />
+            RB
+          </div>
 
-              <div style="width:100%;">
-                <h2 class="section-title">Avatar</h2>
-                <p class="subtext">Upload a profile image to keep your profile, artist page, and inbox identity in sync.</p>
-              </div>
-
-              <input id="avatarInput" class="file-input" type="file" accept="image/*" />
-              <button id="uploadAvatarBtn" class="btn green" type="button">Upload Avatar</button>
+          <div class="profile-identity">
+            <h2 id="profile-display-name">ThatboyTayThou</h2>
+            <div class="handle" id="profile-handle">@thatboytaythou</div>
+            <div class="bio" id="profile-bio">
+              Rich Bizness creator building live experiences, music energy, gaming movement,
+              sports culture, and visual storytelling into one powerful platform.
             </div>
+          </div>
 
-            <div class="status loading" id="avatarStatus">Avatar ready.</div>
-
-            <div class="stats-grid">
-              <div class="stat">
-                <div id="storeStat" class="stat-value">0</div>
-                <div class="stat-label">Store Items</div>
-              </div>
-              <div class="stat">
-                <div id="musicStat" class="stat-value">0</div>
-                <div class="stat-label">Music Uploads</div>
-              </div>
-              <div class="stat">
-                <div id="playlistStat" class="stat-value">0</div>
-                <div class="stat-label">Playlists</div>
-              </div>
-              <div class="stat">
-                <div id="sportsStat" class="stat-value">0</div>
-                <div class="stat-label">Sports Posts</div>
-              </div>
-              <div class="stat">
-                <div id="galleryStat" class="stat-value">0</div>
-                <div class="stat-label">Gallery / Art</div>
-              </div>
-              <div class="stat">
-                <div id="followerStat" class="stat-value">0</div>
-                <div class="stat-label">Followers</div>
-              </div>
-            </div>
+          <div class="profile-actions">
+            <button class="btn" id="follow-profile-btn" type="button">Follow</button>
+            <a class="btn-ghost" href="/messages.html">Message</a>
+            <a class="btn-ghost" href="/notifications.html">Notifications</a>
+            <a class="btn-ghost" href="/upload.html">Upload</a>
+            <a class="btn-ghost" href="/edit-profile.html">Edit Profile</a>
           </div>
         </div>
 
-        <!-- RIGHT -->
-        <div class="panel">
-          <div class="panel-inner">
-            <div class="form-head">
-              <div>
-                <div class="pill-row" style="margin-bottom:10px;">
-                  <div class="pill">Synced Identity</div>
-                  <div class="pill blue">Creator Lane</div>
+        <div class="stats-row">
+          <div class="stat-card">
+            <span>Followers</span>
+            <strong id="profile-followers-count">12.4K</strong>
+          </div>
+          <div class="stat-card">
+            <span>Following</span>
+            <strong id="profile-following-count">468</strong>
+          </div>
+          <div class="stat-card">
+            <span>Posts</span>
+            <strong id="profile-posts-count">128</strong>
+          </div>
+          <div class="stat-card">
+            <span>Lives hosted</span>
+            <strong id="profile-lives-count">39</strong>
+          </div>
+          <div class="stat-card">
+            <span>Creator tier</span>
+            <strong id="profile-tier-label">VIP Ready</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Creator hub</h3>
+          <div class="tabs">
+            <button class="tab-btn active" data-tab="overview" type="button">Overview</button>
+            <button class="tab-btn" data-tab="live" type="button">Live</button>
+            <button class="tab-btn" data-tab="music" type="button">Music</button>
+            <button class="tab-btn" data-tab="media" type="button">Media</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="tab-panel active" data-panel="overview">
+            <div class="live-highlight">
+              <div class="live-stage">
+                <div>
+                  <h4>Live profile spotlight</h4>
+                  <p>
+                    Use this area to highlight the creator’s current stream, scheduled live,
+                    or latest premium event. It matches the live foundation so this profile can
+                    become the center of the creator ecosystem.
+                  </p>
                 </div>
-                <h2 id="profileHeading" class="profile-name">Loading profile...</h2>
-                <div id="profileMeta" class="profile-meta">Checking session...</div>
+
+                <div>
+                  <div class="badge-row">
+                    <span class="badge live">LIVE READY</span>
+                    <span class="badge">Paid Access</span>
+                    <span class="badge">VIP</span>
+                    <span class="badge">Followers Growth</span>
+                  </div>
+
+                  <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                    <a class="btn" href="/live.html">Start Live</a>
+                    <a class="btn-ghost" href="/watch.html">Watch Stream</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="side-stack">
+                <div class="sidebar-card">
+                  <h4>Profile energy</h4>
+                  <p>
+                    This creator profile is built to connect music, gaming, sports, gallery,
+                    uploads, messaging, and live monetization into one place.
+                  </p>
+                </div>
+
+                <div class="sidebar-card">
+                  <strong>Fast links</strong>
+                  <span>Music drops, gaming clips, sports highlights, live access, and uploads all connect from here.</span>
+                </div>
+
+                <div class="sidebar-card">
+                  <strong>Next layer</strong>
+                  <span>Follower system, verified creator tools, membership tiers, analytics, and premium rooms.</span>
+                </div>
               </div>
             </div>
 
-            <div class="action-row">
-              <a class="action-link green" id="openArtistBtn" href="artist.html">Open Artist</a>
-              <a class="action-link" id="openStoreBtn" href="store.html">Open Store</a>
-              <a class="action-link" id="openGalleryBtn" href="gallery.html">Open Gallery</a>
-              <a class="action-link blue" id="openMessagesBtn" href="messages.html">Messages</a>
-              <a class="action-link yellow" id="openAnalyticsBtn" href="analytics.html">Analytics</a>
-            </div>
-
-            <div class="status loading" id="statusBox">Loading profile...</div>
-
-            <div class="progress-box">
-              <div class="progress-meta">
-                <div><strong>Profile Completion</strong></div>
-                <div id="completionText">0% complete</div>
-              </div>
-              <div class="progress-track">
-                <div id="completionFill" class="progress-fill"></div>
-              </div>
-            </div>
-
-            <div class="grid">
-              <div class="field">
-                <label for="usernameInput">Username</label>
-                <input id="usernameInput" type="text" placeholder="thatboytay3d" />
+            <div class="split-grid" style="margin-top:16px;">
+              <div class="timeline-card">
+                <h4>Recent momentum</h4>
+                <div class="timeline-list">
+                  <div class="mini-item">
+                    <strong>Live session boosted</strong>
+                    <span>Creator went live and pushed the room to viewers through the homepage rail.</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>New upload cycle</strong>
+                    <span>Fresh content uploaded across creator lanes to keep audience activity moving.</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Community growth</strong>
+                    <span>Followers, profile activity, and messaging drive repeat engagement back to the creator.</span>
+                  </div>
+                </div>
               </div>
 
-              <div class="field">
-                <label for="displayNameInput">Display Name</label>
-                <input id="displayNameInput" type="text" placeholder="ThatBoyTayThou" />
-              </div>
-
-              <div class="field full">
-                <label for="emailInput">Email</label>
-                <input id="emailInput" type="email" placeholder="you@example.com" />
-              </div>
-
-              <div class="field">
-                <label for="favoriteTeamInput">Favorite Team</label>
-                <input id="favoriteTeamInput" type="text" placeholder="Favorite team" />
-              </div>
-
-              <div class="field">
-                <label for="roleInput">Role</label>
-                <select id="roleInput">
-                  <option value="creator">Creator</option>
-                  <option value="artist">Artist</option>
-                  <option value="user">User</option>
-                  <option value="fan">Fan</option>
-                </select>
-              </div>
-
-              <div class="field full">
-                <label for="bioInput">Bio</label>
-                <textarea id="bioInput" placeholder="Tell people who you are, what you build, and what your lane is."></textarea>
-              </div>
-
-              <div class="field">
-                <label for="websiteInput">Website URL</label>
-                <input id="websiteInput" type="text" placeholder="https://your-site.com" />
-              </div>
-
-              <div class="field">
-                <label for="instagramInput">Instagram URL</label>
-                <input id="instagramInput" type="text" placeholder="https://instagram.com/yourname" />
-              </div>
-
-              <div class="field full">
-                <label for="youtubeInput">YouTube URL</label>
-                <input id="youtubeInput" type="text" placeholder="https://youtube.com/@yourchannel" />
+              <div class="timeline-card">
+                <h4>Creator goals</h4>
+                <div class="timeline-list">
+                  <div class="mini-item">
+                    <strong>Launch premium live events</strong>
+                    <span>Use paid and VIP stream access to turn community into revenue flow.</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Build lane authority</strong>
+                    <span>Own the music, gaming, sports, and gallery identity from a single profile base.</span>
+                  </div>
+                  <div class="mini-item">
+                    <strong>Expand ecosystem</strong>
+                    <span>Scale from profile to full creator empire with live, uploads, store, and analytics.</span>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="save-row">
-              <button id="saveProfileBtn" class="btn green" type="button">Save Profile</button>
-              <button id="refreshProfileBtn" class="btn dark" type="button">Refresh Profile</button>
-              <button id="syncFromSessionBtn" class="btn blue" type="button">Sync From Session</button>
+          <div class="tab-panel" data-panel="live">
+            <div class="media-grid">
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Current live</span>
+                  <h4 style="margin:12px 0 8px;">WE LIT 🔥 Night Stream</h4>
+                  <p>Main live room ready for gaming, music, creator talks, and community energy.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn" href="/watch.html">Join Live</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">VIP room</span>
+                  <h4 style="margin:12px 0 8px;">Private Creator Session</h4>
+                  <p>Exclusive room structure for VIP members and premium access viewers.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/watch.html">Open VIP</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Replay ready</span>
+                  <h4 style="margin:12px 0 8px;">Future replay lane</h4>
+                  <p>This card becomes the replay home once the next live layer is added.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/live.html">Studio</a>
+                </div>
+              </article>
             </div>
+          </div>
 
-            <div class="mini-grid">
-              <div class="mini-card">
-                <h3>Artist Sync</h3>
-                <p>Your artist page can read your username, display name, avatar, role, email, team, and bio from here.</p>
-              </div>
-              <div class="mini-card">
-                <h3>Messages Sync</h3>
-                <p>Your inbox and message composer can use your profile identity so people can search you by username.</p>
-              </div>
+          <div class="tab-panel" data-panel="music">
+            <div class="media-grid">
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Music</span>
+                  <h4 style="margin:12px 0 8px;">Latest single</h4>
+                  <p>Use this card for the newest artist drop, audio link, or featured release.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/music.html">Open Music</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Playlist</span>
+                  <h4 style="margin:12px 0 8px;">Creator playlist</h4>
+                  <p>Spotlight playlist, catalog direction, or label-style content stack.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/music.html">View Playlist</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Artist lane</span>
+                  <h4 style="margin:12px 0 8px;">Channel growth</h4>
+                  <p>Expand artist identity with uploads, visuals, and live music sessions.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/artist/index.html">Open Artist</a>
+                </div>
+              </article>
             </div>
+          </div>
 
-            <div style="margin-top:16px;">
-              <h2 class="section-title">Recent Music</h2>
-              <div id="recentMusicList" class="recent-list">
-                <div class="empty-box">Loading music...</div>
-              </div>
+          <div class="tab-panel" data-panel="media">
+            <div class="media-grid">
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Gaming</span>
+                  <h4 style="margin:12px 0 8px;">Gaming content</h4>
+                  <p>Highlight game clips, challenges, scoreboards, and creator competition moments.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/gaming.html">Open Gaming</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Sports</span>
+                  <h4 style="margin:12px 0 8px;">Sports highlights</h4>
+                  <p>Show fan culture, athlete content, workout clips, and sports uploads.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/sports.html">Open Sports</a>
+                </div>
+              </article>
+
+              <article class="media-card">
+                <div>
+                  <span class="media-tag">Gallery</span>
+                  <h4 style="margin:12px 0 8px;">Visual drops</h4>
+                  <p>Display art, design, photo sets, and branded visual storytelling.</p>
+                </div>
+                <div style="margin-top:14px;">
+                  <a class="btn-ghost" href="/gallery.html">Open Gallery</a>
+                </div>
+              </article>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <aside class="panel">
+        <div class="panel-header">
+          <h3>Profile side panel</h3>
+        </div>
+
+        <div class="panel-body">
+          <div class="mini-list">
+            <div class="mini-item">
+              <strong>Profile status</strong>
+              <span>Creator identity polished and ready to connect to live, uploads, and community systems.</span>
+            </div>
+
+            <div class="mini-item">
+              <strong>Community tools</strong>
+              <span>Follow, message, notifications, and premium membership all grow from this base.</span>
+            </div>
+
+            <div class="mini-item">
+              <strong>Monetization direction</strong>
+              <span>Paid streams, VIP rooms, creator memberships, and Stripe-connected growth flow.</span>
+            </div>
+
+            <div class="mini-item">
+              <strong>Suggested actions</strong>
+              <span>Start a stream, upload a drop, update banner visuals, and connect profile stats to Supabase.</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <p>Rich Bizness profile foundation • polished to match homepage and live system</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/live.html">Live</a>
+        <a href="/watch.html">Watch</a>
+        <a href="/music.html">Music</a>
+        <a href="/gallery.html">Gallery</a>
+      </div>
+    </footer>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevoCGPDJ.supabase.co".toLowerCase();
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const PROFILE_BUCKET = "profile-images";
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
+    tabButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const target = button.getAttribute('data-tab');
+
+        tabButtons.forEach((btn) => btn.classList.remove('active'));
+        tabPanels.forEach((panel) => panel.classList.remove('active'));
+
+        button.classList.add('active');
+        document.querySelector(`.tab-panel[data-panel="${target}"]`)?.classList.add('active');
       });
+    });
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
+    const followBtn = document.getElementById('follow-profile-btn');
+    if (followBtn) {
+      followBtn.addEventListener('click', () => {
+        const active = followBtn.getAttribute('data-following') === 'true';
 
-      const avatarImg = document.getElementById("avatarImg");
-      const avatarEmpty = document.getElementById("avatarEmpty");
-      const avatarInput = document.getElementById("avatarInput");
-      const uploadAvatarBtn = document.getElementById("uploadAvatarBtn");
-      const avatarStatus = document.getElementById("avatarStatus");
-
-      const profileHeading = document.getElementById("profileHeading");
-      const profileMeta = document.getElementById("profileMeta");
-      const statusBox = document.getElementById("statusBox");
-
-      const usernameInput = document.getElementById("usernameInput");
-      const displayNameInput = document.getElementById("displayNameInput");
-      const emailInput = document.getElementById("emailInput");
-      const favoriteTeamInput = document.getElementById("favoriteTeamInput");
-      const roleInput = document.getElementById("roleInput");
-      const bioInput = document.getElementById("bioInput");
-      const websiteInput = document.getElementById("websiteInput");
-      const instagramInput = document.getElementById("instagramInput");
-      const youtubeInput = document.getElementById("youtubeInput");
-
-      const saveProfileBtn = document.getElementById("saveProfileBtn");
-      const refreshProfileBtn = document.getElementById("refreshProfileBtn");
-      const syncFromSessionBtn = document.getElementById("syncFromSessionBtn");
-
-      const completionText = document.getElementById("completionText");
-      const completionFill = document.getElementById("completionFill");
-
-      const storeStat = document.getElementById("storeStat");
-      const musicStat = document.getElementById("musicStat");
-      const playlistStat = document.getElementById("playlistStat");
-      const sportsStat = document.getElementById("sportsStat");
-      const galleryStat = document.getElementById("galleryStat");
-      const followerStat = document.getElementById("followerStat");
-
-      const recentMusicList = document.getElementById("recentMusicList");
-
-      let currentSession = null;
-      let currentUser = null;
-      let currentProfile = null;
-
-      function setStatus(message, kind = "loading") {
-        statusBox.textContent = message;
-        statusBox.className = `status ${kind}`;
-      }
-
-      function setAvatarStatus(message, kind = "loading") {
-        avatarStatus.textContent = message;
-        avatarStatus.className = `status ${kind}`;
-      }
-
-      function slugifyUsername(value) {
-        return String(value || "")
-          .trim()
-          .toLowerCase()
-          .replace(/\s+/g, "")
-          .replace(/[^a-z0-9_]/g, "");
-      }
-
-      function safeUrl(value) {
-        const raw = String(value || "").trim();
-        if (!raw) return "";
-        if (/^https?:\/\//i.test(raw)) return raw;
-        return "https://" + raw;
-      }
-
-      function setAvatar(url) {
-        if (url) {
-          avatarImg.src = url;
-          avatarImg.style.display = "block";
-          avatarEmpty.style.display = "none";
+        if (active) {
+          followBtn.textContent = 'Follow';
+          followBtn.setAttribute('data-following', 'false');
+          followBtn.classList.remove('btn-ghost');
+          followBtn.classList.add('btn');
         } else {
-          avatarImg.removeAttribute("src");
-          avatarImg.style.display = "none";
-          avatarEmpty.style.display = "flex";
-        }
-      }
-
-      function setUserChip(text) {
-        userChip.textContent = text || "No session";
-      }
-
-      function renderHeader(profile, user) {
-        const displayName =
-          profile?.display_name ||
-          user?.user_metadata?.display_name ||
-          profile?.username ||
-          user?.user_metadata?.username ||
-          (user?.email ? user.email.split("@")[0] : "Rich Bizness User");
-
-        const username =
-          profile?.username ||
-          user?.user_metadata?.username ||
-          "not-set";
-
-        const email = profile?.email || user?.email || "no-email";
-        const role = profile?.role || user?.user_metadata?.role || "creator";
-        const favoriteTeam = profile?.favorite_team || "—";
-
-        profileHeading.textContent = displayName;
-        profileMeta.innerHTML =
-          `<strong>@${username}</strong><br>` +
-          `${email}<br>` +
-          `Favorite Team: ${favoriteTeam}<br>` +
-          `Role: ${role}`;
-      }
-
-      function fillForm(profile, user) {
-        const username =
-          profile?.username ||
-          user?.user_metadata?.username ||
-          (user?.email ? user.email.split("@")[0] : "");
-
-        const displayName =
-          profile?.display_name ||
-          user?.user_metadata?.display_name ||
-          username;
-
-        usernameInput.value = username || "";
-        displayNameInput.value = displayName || "";
-        emailInput.value = profile?.email || user?.email || "";
-        favoriteTeamInput.value = profile?.favorite_team || user?.user_metadata?.favorite_team || "";
-        roleInput.value = profile?.role || user?.user_metadata?.role || "creator";
-        bioInput.value = profile?.bio || user?.user_metadata?.bio || "";
-        websiteInput.value = profile?.website_url || "";
-        instagramInput.value = profile?.instagram_url || "";
-        youtubeInput.value = profile?.youtube_url || "";
-      }
-
-      function updateCompletion(profile, user) {
-        const checks = [
-          !!(profile?.username || user?.user_metadata?.username),
-          !!(profile?.display_name || user?.user_metadata?.display_name),
-          !!(profile?.email || user?.email),
-          !!profile?.bio,
-          !!profile?.favorite_team,
-          !!profile?.role,
-          !!profile?.avatar_url,
-          !!profile?.website_url,
-          !!profile?.instagram_url,
-          !!profile?.youtube_url
-        ];
-
-        const done = checks.filter(Boolean).length;
-        const percent = Math.round((done / checks.length) * 100);
-        completionText.textContent = `${percent}% complete`;
-        completionFill.style.width = `${percent}%`;
-      }
-
-      async function getSessionOrThrow() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        if (!data?.session?.user) throw new Error("No active session. Log in first.");
-        currentSession = data.session;
-        currentUser = data.session.user;
-        return data.session;
-      }
-
-      async function usernameTakenElsewhere(username) {
-        const clean = slugifyUsername(username);
-        if (!clean) return false;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id")
-          .eq("username", clean);
-
-        if (error) throw error;
-
-        return (data || []).some(row => row.id !== currentUser.id);
-      }
-
-      async function ensureProfileExists() {
-        const session = await getSessionOrThrow();
-        const user = session.user;
-
-        const existingRes = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (existingRes.error && existingRes.error.code !== "PGRST116") {
-          throw existingRes.error;
-        }
-
-        let row = existingRes.data;
-
-        if (!row) {
-          let username = slugifyUsername(
-            user.user_metadata?.username ||
-            (user.email ? user.email.split("@")[0] : "user")
-          );
-
-          if (!username) username = "user";
-
-          let finalUsername = username;
-          let count = 0;
-
-          while (await usernameTakenElsewhere(finalUsername)) {
-            count += 1;
-            finalUsername = `${username}_${count}`;
-          }
-
-          const payload = {
-            id: user.id,
-            user_id: user.id,
-            email: user.email || "",
-            username: finalUsername,
-            display_name: user.user_metadata?.display_name || finalUsername,
-            bio: user.user_metadata?.bio || "",
-            avatar_url: user.user_metadata?.avatar_url || "",
-            favorite_team: user.user_metadata?.favorite_team || "",
-            role: user.user_metadata?.role || "creator",
-            website_url: "",
-            instagram_url: "",
-            youtube_url: "",
-            onboarding_complete: true
-          };
-
-          const insertRes = await supabase
-            .from("profiles")
-            .upsert(payload, { onConflict: "id" })
-            .select()
-            .single();
-
-          if (insertRes.error) throw insertRes.error;
-          row = insertRes.data;
-        }
-
-        currentProfile = row;
-        return row;
-      }
-
-      async function loadProfile() {
-        try {
-          setStatus("Loading profile...", "loading");
-          setAvatarStatus("Avatar ready.", "loading");
-
-          await getSessionOrThrow();
-          setUserChip(currentUser.email || "Logged in");
-
-          const profile = await ensureProfileExists();
-          fillForm(profile, currentUser);
-          renderHeader(profile, currentUser);
-          setAvatar(profile.avatar_url || "");
-          updateCompletion(profile, currentUser);
-
-          setStatus("✅ Profile editor fully synced.", "ok");
-
-          await Promise.allSettled([
-            loadStats(),
-            loadRecentMusic()
-          ]);
-        } catch (err) {
-          setStatus(`❌ Profile load error: ${err.message || err}`, "err");
-          setUserChip("No session");
-        }
-      }
-
-      async function syncFromSession() {
-        try {
-          await getSessionOrThrow();
-
-          usernameInput.value = currentProfile?.username || currentUser?.user_metadata?.username || usernameInput.value;
-          displayNameInput.value = currentUser?.user_metadata?.display_name || displayNameInput.value;
-          emailInput.value = currentUser?.email || emailInput.value;
-          favoriteTeamInput.value = currentUser?.user_metadata?.favorite_team || favoriteTeamInput.value;
-          roleInput.value = currentUser?.user_metadata?.role || roleInput.value;
-          bioInput.value = currentUser?.user_metadata?.bio || bioInput.value;
-
-          setStatus("✅ Form synced from current session metadata.", "ok");
-        } catch (err) {
-          setStatus(`❌ Sync error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function saveProfile() {
-        try {
-          await getSessionOrThrow();
-
-          const username = slugifyUsername(usernameInput.value);
-          const displayName = displayNameInput.value.trim();
-          const email = emailInput.value.trim();
-          const favoriteTeam = favoriteTeamInput.value.trim();
-          const role = roleInput.value;
-          const bio = bioInput.value.trim();
-          const websiteUrl = safeUrl(websiteInput.value);
-          const instagramUrl = safeUrl(instagramInput.value);
-          const youtubeUrl = safeUrl(youtubeInput.value);
-
-          if (!username) throw new Error("Username is required.");
-          if (!displayName) throw new Error("Display name is required.");
-          if (!email) throw new Error("Email is required.");
-
-          if (await usernameTakenElsewhere(username)) {
-            throw new Error("Username already taken by another profile.");
-          }
-
-          setStatus("Saving profile...", "loading");
-
-          const avatarUrl = currentProfile?.avatar_url || "";
-
-          const payload = {
-            id: currentUser.id,
-            user_id: currentUser.id,
-            email,
-            username,
-            display_name: displayName,
-            bio,
-            avatar_url: avatarUrl,
-            favorite_team: favoriteTeam,
-            role,
-            website_url: websiteUrl,
-            instagram_url: instagramUrl,
-            youtube_url: youtubeUrl,
-            onboarding_complete: true,
-            updated_at: new Date().toISOString()
-          };
-
-          const { data, error } = await supabase
-            .from("profiles")
-            .upsert(payload, { onConflict: "id" })
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          currentProfile = data;
-
-          await supabase.auth.updateUser({
-            data: {
-              username,
-              display_name: displayName,
-              bio,
-              favorite_team: favoriteTeam,
-              role,
-              avatar_url: avatarUrl
-            }
-          });
-
-          fillForm(currentProfile, currentUser);
-          renderHeader(currentProfile, currentUser);
-          updateCompletion(currentProfile, currentUser);
-          setAvatar(currentProfile.avatar_url || "");
-
-          setStatus("✅ Profile saved and synced.", "ok");
-        } catch (err) {
-          setStatus(`❌ Save error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function uploadAvatar() {
-        try {
-          await getSessionOrThrow();
-
-          const file = avatarInput.files?.[0];
-          if (!file) throw new Error("Choose an image first.");
-
-          setAvatarStatus("Uploading avatar...", "loading");
-
-          const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-          const path = `${currentUser.id}/avatar-${Date.now()}.${ext}`;
-
-          const uploadRes = await supabase.storage
-            .from(PROFILE_BUCKET)
-            .upload(path, file, {
-              upsert: true,
-              cacheControl: "3600"
-            });
-
-          if (uploadRes.error) throw uploadRes.error;
-
-          const publicRes = supabase.storage
-            .from(PROFILE_BUCKET)
-            .getPublicUrl(path);
-
-          const avatarUrl = publicRes?.data?.publicUrl;
-          if (!avatarUrl) throw new Error("Could not get avatar public URL.");
-
-          const { data, error } = await supabase
-            .from("profiles")
-            .upsert({
-              id: currentUser.id,
-              user_id: currentUser.id,
-              email: currentProfile?.email || currentUser.email || "",
-              username: currentProfile?.username || slugifyUsername(currentUser.email?.split("@")[0] || "user"),
-              display_name: currentProfile?.display_name || currentUser.user_metadata?.display_name || "Rich Bizness User",
-              bio: currentProfile?.bio || "",
-              avatar_url: avatarUrl,
-              favorite_team: currentProfile?.favorite_team || "",
-              role: currentProfile?.role || "creator",
-              website_url: currentProfile?.website_url || "",
-              instagram_url: currentProfile?.instagram_url || "",
-              youtube_url: currentProfile?.youtube_url || "",
-              onboarding_complete: true,
-              updated_at: new Date().toISOString()
-            }, { onConflict: "id" })
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          currentProfile = data;
-
-          await supabase.auth.updateUser({
-            data: {
-              avatar_url: avatarUrl
-            }
-          });
-
-          setAvatar(avatarUrl);
-          renderHeader(currentProfile, currentUser);
-          updateCompletion(currentProfile, currentUser);
-          setAvatarStatus("✅ Avatar uploaded and synced.", "ok");
-          setStatus("✅ Profile synced with new avatar.", "ok");
-        } catch (err) {
-          setAvatarStatus(`❌ Avatar upload error: ${err.message || err}`, "err");
-        }
-      }
-
-      async function countSafe(table, column = "user_id") {
-        try {
-          const { count, error } = await supabase
-            .from(table)
-            .select("*", { count: "exact", head: true })
-            .eq(column, currentUser.id);
-
-          if (error) return 0;
-          return count || 0;
-        } catch {
-          return 0;
-        }
-      }
-
-      async function loadStats() {
-        try {
-          if (!currentUser) return;
-
-          const [
-            storeCount,
-            musicCount,
-            playlistCount,
-            sportsCount,
-            galleryCount,
-            followersCount
-          ] = await Promise.all([
-            countSafe("products", "user_id"),
-            countSafe("music_uploads", "user_id"),
-            countSafe("playlists", "user_id"),
-            countSafe("sports_uploads", "user_id"),
-            countSafe("artworks", "user_id"),
-            countSafe("followers", "following_id")
-          ]);
-
-          storeStat.textContent = storeCount;
-          musicStat.textContent = musicCount;
-          playlistStat.textContent = playlistCount;
-          sportsStat.textContent = sportsCount;
-          galleryStat.textContent = galleryCount;
-          followerStat.textContent = followersCount;
-        } catch {
-          storeStat.textContent = "0";
-          musicStat.textContent = "0";
-          playlistStat.textContent = "0";
-          sportsStat.textContent = "0";
-          galleryStat.textContent = "0";
-          followerStat.textContent = "0";
-        }
-      }
-
-      async function loadRecentMusic() {
-        try {
-          if (!currentUser) return;
-
-          const { data, error } = await supabase
-            .from("music_uploads")
-            .select("id, title, artist_name, album_name, genre, created_at")
-            .eq("user_id", currentUser.id)
-            .order("created_at", { ascending: false })
-            .limit(3);
-
-          if (error || !data || !data.length) {
-            recentMusicList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
-            return;
-          }
-
-          recentMusicList.innerHTML = data.map(row => `
-            <div class="recent-item">
-              <strong>${escapeHtml(row.title || "Untitled Track")}</strong>
-              <span>
-                Artist: ${escapeHtml(row.artist_name || currentProfile?.display_name || "Unknown")}<br>
-                Album: ${escapeHtml(row.album_name || "—")}<br>
-                Genre: ${escapeHtml(row.genre || "—")}
-              </span>
-            </div>
-          `).join("");
-        } catch {
-          recentMusicList.innerHTML = `<div class="empty-box">No music uploads yet.</div>`;
-        }
-      }
-
-      function escapeHtml(value) {
-        return String(value || "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-
-      async function logout() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (err) {
-          setStatus(`❌ Logout error: ${err.message || err}`, "err");
-        }
-      }
-
-      uploadAvatarBtn.addEventListener("click", uploadAvatar);
-      saveProfileBtn.addEventListener("click", saveProfile);
-      refreshProfileBtn.addEventListener("click", loadProfile);
-      syncFromSessionBtn.addEventListener("click", syncFromSession);
-      logoutBtn.addEventListener("click", logout);
-
-      window.addEventListener("load", async () => {
-        await loadProfile();
-      });
-
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        currentSession = session || null;
-        currentUser = session?.user || null;
-
-        if (currentUser) {
-          setUserChip(currentUser.email || "Logged in");
-        } else {
-          setUserChip("No session");
+          followBtn.textContent = 'Following';
+          followBtn.setAttribute('data-following', 'true');
+          followBtn.classList.remove('btn');
+          followBtn.classList.add('btn-ghost');
         }
       });
-    } catch (err) {
-      const box = document.createElement("div");
-      box.style.maxWidth = "1000px";
-      box.style.margin = "30px auto";
-      box.style.padding = "20px";
-      box.style.borderRadius = "20px";
-      box.style.color = "#fff";
-      box.style.background = "rgba(255,0,0,.12)";
-      box.style.border = "1px solid rgba(255,110,110,.35)";
-      box.textContent = "Fatal profile page error: " + (err.message || err);
-      document.body.appendChild(box);
     }
   </script>
 </body>
