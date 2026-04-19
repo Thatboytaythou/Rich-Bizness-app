@@ -1,8 +1,5 @@
 import { getSessionUser, supabase } from "../shared/supabase.js";
-import {
-  getLiveStreams,
-  joinStream
-} from "./live-api.js";
+import { getStreamBySlug, joinStream } from "./live-api.js";
 import {
   liveState,
   setSessionState,
@@ -22,6 +19,10 @@ import {
   setButtonBusy
 } from "./live-ui.js";
 
+const LK = window.LivekitClient;
+let watchRoom = null;
+let attachedMedia = [];
+
 function el(id) {
   return document.getElementById(id);
 }
@@ -31,6 +32,147 @@ function getSlugFromUrl() {
   return url.searchParams.get("slug");
 }
 
+async function requestLivekitToken({
+  roomName,
+  participantName,
+  participantMetadata,
+  canPublish = true,
+  canSubscribe = true
+}) {
+  const response = await fetch("/api/livekit-token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      roomName,
+      participantName,
+      participantMetadata,
+      canPublish,
+      canSubscribe
+    })
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(json?.error || "Failed to fetch LiveKit token");
+  }
+
+  return json;
+}
+
+function clearWatchStage() {
+  const stage = el("watch-live-stage");
+  if (!stage) return;
+
+  attachedMedia.forEach((node) => node?.remove?.());
+  attachedMedia = [];
+
+  stage.innerHTML = `
+    <div class="stage-empty">
+      <strong>Live room viewer stage</strong>
+      <span>
+        This watch page is synced to your live system. It loads stream details,
+        allows viewers to join, and supports chat in the same room context.
+      </span>
+    </div>
+  `;
+}
+
+function attachSubscribedTrack(track) {
+  const stage = el("watch-live-stage");
+  if (!stage || !track) return;
+
+  const mediaEl = track.attach();
+
+  if (track.kind === "video") {
+    stage.innerHTML = "";
+    mediaEl.autoplay = true;
+    mediaEl.playsInline = true;
+    mediaEl.className = "stage-video";
+    stage.appendChild(mediaEl);
+    attachedMedia.push(mediaEl);
+    return;
+  }
+
+  if (track.kind === "audio") {
+    mediaEl.autoplay = true;
+    attachedMedia.push(mediaEl);
+  }
+}
+
+async function connectWatchRoom(stream, user) {
+  if (!LK) {
+    throw new Error("LiveKit client failed to load");
+  }
+
+  if (watchRoom) {
+    await disconnectWatchRoom();
+  }
+
+  const participantId = user?.id || `guest-${Math.random().toString(36).slice(2, 8)}`;
+
+  const tokenPayload = await requestLivekitToken({
+    roomName: stream.livekit_room_name || stream.slug,
+    participantName: `viewer-${participantId}`,
+    participantMetadata: {
+      role: "viewer",
+      streamId: stream.id,
+      userId: participantId
+    },
+    canPublish: false,
+    canSubscribe: true
+  });
+
+  const room = new LK.Room({
+    adaptiveStream: true,
+    dynacast: true
+  });
+
+  room
+    .on(LK.RoomEvent.TrackSubscribed, (track) => {
+      attachSubscribedTrack(track);
+    })
+    .on(LK.RoomEvent.ParticipantConnected, () => {
+      renderWatchPresence(room.numParticipants);
+    })
+    .on(LK.RoomEvent.ParticipantDisconnected, () => {
+      renderWatchPresence(room.numParticipants);
+    })
+    .on(LK.RoomEvent.Disconnected, () => {
+      clearWatchStage();
+    });
+
+  await room.connect(tokenPayload.url, tokenPayload.token);
+
+  room.remoteParticipants.forEach((participant) => {
+    participant.trackPublications.forEach((pub) => {
+      if (pub.track) {
+        attachSubscribedTrack(pub.track);
+      }
+    });
+  });
+
+  renderWatchPresence(room.numParticipants);
+  watchRoom = room;
+}
+
+async function disconnectWatchRoom() {
+  if (!watchRoom) return;
+
+  try {
+    attachedMedia.forEach((node) => node?.remove?.());
+    attachedMedia = [];
+    await watchRoom.disconnect();
+  } catch (error) {
+    console.error("[watch-client] disconnectWatchRoom error:", error);
+  } finally {
+    watchRoom = null;
+    clearWatchStage();
+  }
+}
+
 async function bootWatchPage() {
   try {
     resetWatchState();
@@ -38,6 +180,7 @@ async function bootWatchPage() {
     resetPresenceState();
     showWatchError("");
     showWatchSuccess("");
+    clearWatchStage();
 
     const user = await getSessionUser();
 
@@ -55,7 +198,7 @@ async function bootWatchPage() {
       return;
     }
 
-    const stream = await loadStreamBySlug(slug);
+    const stream = await getStreamBySlug(slug);
 
     if (!stream) {
       renderWatchStream(null);
@@ -80,13 +223,6 @@ async function bootWatchPage() {
     console.error("[watch-client] boot error:", error);
     showWatchError(error.message || "Failed to load watch page.");
   }
-}
-
-async function loadStreamBySlug(slug) {
-  const streams = await getLiveStreams();
-  if (!Array.isArray(streams)) return null;
-
-  return streams.find((stream) => stream.slug === slug) || null;
 }
 
 async function loadChatMessages(streamId) {
@@ -158,10 +294,6 @@ async function joinLiveFlow() {
     const user = liveState.session.user;
     const stream = liveState.watch.stream;
 
-    if (!user?.id) {
-      throw new Error("Please log in first from /auth.html.");
-    }
-
     if (!stream?.id) {
       throw new Error("No stream loaded.");
     }
@@ -176,7 +308,8 @@ async function joinLiveFlow() {
 
     setButtonBusy("watch-join-btn", true, "Joining...", "Join Live");
 
-    await joinStream(stream.id, user.id);
+    await joinStream(stream.id, user?.id || null);
+    await connectWatchRoom(stream, user);
 
     setWatchState({
       isJoining: false,
@@ -277,3 +410,6 @@ async function sendChatMessage() {
 }
 
 document.addEventListener("DOMContentLoaded", bootWatchPage);
+window.addEventListener("beforeunload", () => {
+  disconnectWatchRoom();
+});
