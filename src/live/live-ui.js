@@ -1,44 +1,53 @@
+import { liveState } from "./live-state.js";
+
 function el(id) {
   return document.getElementById(id);
 }
 
-function safeText(value, fallback = "--") {
+function safeText(value, fallback = "—") {
   if (value === null || value === undefined || value === "") return fallback;
   return String(value);
 }
 
-function formatAccess(value) {
-  return safeText(value, "free").toUpperCase();
+function formatAccessType(value) {
+  const map = {
+    free: "FREE",
+    paid: "PAID",
+    vip: "VIP",
+    followers: "FOLLOWERS"
+  };
+
+  return map[String(value || "").toLowerCase()] || safeText(value, "FREE");
 }
 
-function formatViewerCount(value) {
-  const num = Number(value || 0);
-  if (num < 1000) return String(num);
-  if (num < 1000000) return `${(num / 1000).toFixed(num >= 10000 ? 0 : 1)}K`;
-  return `${(num / 1000000).toFixed(1)}M`;
+function formatStatus(stream) {
+  if (!stream) return "OFFLINE";
+  return stream.is_live ? "LIVE" : "OFFLINE";
 }
 
-function deriveCreatorLabel(stream) {
+function buildWatchUrl(slug) {
+  if (!slug) return "";
+  return `${window.location.origin}/watch.html?slug=${encodeURIComponent(slug)}`;
+}
+
+function formatChatMessageName(message) {
   return (
-    stream?.creator_display_name ||
-    stream?.display_name ||
-    stream?.creator_username ||
-    stream?.username ||
-    stream?.creator_handle ||
-    stream?.creator_email ||
-    stream?.creator_id ||
-    "Creator"
+    message?.display_name ||
+    message?.username ||
+    message?.name ||
+    message?.user_id ||
+    "User"
   );
 }
 
-function buildWatchUrl(stream) {
-  if (!stream?.slug) return "#";
-  return `/watch.html?slug=${encodeURIComponent(stream.slug)}`;
+function formatChatMessageBody(message) {
+  return message?.message || "";
 }
 
 export function showLiveError(message) {
   const node = el("live-error");
   if (!node) return;
+
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
 }
@@ -46,6 +55,7 @@ export function showLiveError(message) {
 export function showLiveSuccess(message) {
   const node = el("live-success");
   if (!node) return;
+
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
 }
@@ -53,6 +63,7 @@ export function showLiveSuccess(message) {
 export function showWatchError(message) {
   const node = el("watch-error");
   if (!node) return;
+
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
 }
@@ -60,62 +71,31 @@ export function showWatchError(message) {
 export function showWatchSuccess(message) {
   const node = el("watch-success");
   if (!node) return;
+
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
 }
 
-export function setButtonBusy(id, busy, busyLabel, idleLabel) {
-  const node = el(id);
-  if (!node) return;
+export function setButtonBusy(id, busy, busyText = "Working...", idleText = "Submit") {
+  const button = el(id);
+  if (!button) return;
 
-  node.disabled = !!busy;
-  node.textContent = busy ? busyLabel : idleLabel;
-  node.style.opacity = busy ? "0.7" : "1";
-  node.style.pointerEvents = busy ? "none" : "auto";
+  button.disabled = !!busy;
+  button.textContent = busy ? busyText : idleText;
+  button.style.opacity = busy ? "0.75" : "1";
+  button.style.cursor = busy ? "wait" : "pointer";
 }
 
 export function renderStudioSession(user) {
   const node = el("studio-session-status");
   if (!node) return;
 
-  if (!user?.id) {
+  if (!user) {
     node.textContent = "No active session";
     return;
   }
 
   node.textContent = `Signed in as ${user.email || user.id}`;
-}
-
-export function renderStudioPresence(viewers) {
-  const countNode = el("studio-current-viewers");
-  if (countNode) {
-    countNode.textContent = formatViewerCount(viewers);
-  }
-}
-
-export function renderWatchPresence(viewers) {
-  const countNode = el("watch-stream-viewers");
-  if (countNode) {
-    countNode.textContent = formatViewerCount(viewers);
-  }
-}
-
-export function fillStudioForm(stream) {
-  if (!stream) return;
-
-  const title = el("stream-title");
-  const description = el("stream-description");
-  const category = el("stream-category");
-  const access = el("stream-access-type");
-  const price = el("stream-price-cents");
-  const thumb = el("stream-thumbnail-url");
-
-  if (title) title.value = stream.title || "";
-  if (description) description.value = stream.description || "";
-  if (category) category.value = stream.category || "general";
-  if (access) access.value = stream.access_type || "free";
-  if (price) price.value = Number(stream.price_cents || 0);
-  if (thumb) thumb.value = stream.thumbnail_url || "";
 }
 
 export function renderStudioStream(stream) {
@@ -126,8 +106,9 @@ export function renderStudioStream(stream) {
   const viewersNode = el("studio-current-viewers");
   const shareInput = el("studio-share-link");
 
+  if (statusNode) statusNode.textContent = formatStatus(stream);
+
   if (!stream) {
-    if (statusNode) statusNode.textContent = "OFFLINE";
     if (titleNode) titleNode.textContent = "No active stream";
     if (slugNode) slugNode.textContent = "--";
     if (accessNode) accessNode.textContent = "--";
@@ -136,79 +117,35 @@ export function renderStudioStream(stream) {
     return;
   }
 
-  if (statusNode) statusNode.textContent = stream.is_live ? "LIVE" : "OFFLINE";
-  if (titleNode) titleNode.textContent = safeText(stream.title, "Untitled stream");
-  if (slugNode) slugNode.textContent = safeText(stream.slug);
-  if (accessNode) accessNode.textContent = formatAccess(stream.access_type);
-  if (viewersNode) viewersNode.textContent = formatViewerCount(stream.viewer_count || 0);
-
-  if (shareInput) {
-    const origin = window.location.origin;
-    shareInput.value = `${origin}${buildWatchUrl(stream)}`;
-  }
+  if (titleNode) titleNode.textContent = safeText(stream.title, "Untitled Stream");
+  if (slugNode) slugNode.textContent = safeText(stream.slug, "--");
+  if (accessNode) accessNode.textContent = formatAccessType(stream.access_type);
+  if (viewersNode) viewersNode.textContent = safeText(stream.viewer_count, "0");
+  if (shareInput) shareInput.value = buildWatchUrl(stream.slug);
 }
 
-export function renderWatchStream(stream) {
-  const titleNode = el("watch-stream-title");
-  const descNode = el("watch-stream-description");
-  const statusNode = el("watch-stream-status");
-  const creatorNode = el("watch-stream-creator");
-  const accessNode = el("watch-stream-access");
-  const viewersNode = el("watch-stream-viewers");
-
-  if (!stream) {
-    if (titleNode) titleNode.textContent = "Stream unavailable";
-    if (descNode) descNode.textContent = "This live stream could not be loaded.";
-    if (statusNode) statusNode.textContent = "OFFLINE";
-    if (creatorNode) creatorNode.textContent = "--";
-    if (accessNode) accessNode.textContent = "--";
-    if (viewersNode) viewersNode.textContent = "0";
-    return;
-  }
-
-  if (titleNode) titleNode.textContent = safeText(stream.title, "Untitled stream");
-  if (descNode) {
-    descNode.textContent =
-      safeText(stream.description, "Live stream is active and ready for viewers.");
-  }
-  if (statusNode) statusNode.textContent = stream.is_live ? "LIVE" : "OFFLINE";
-  if (creatorNode) creatorNode.textContent = deriveCreatorLabel(stream);
-  if (accessNode) accessNode.textContent = formatAccess(stream.access_type);
-  if (viewersNode) viewersNode.textContent = formatViewerCount(stream.viewer_count || 0);
+export function renderStudioPresence(viewers) {
+  const viewersNode = el("studio-current-viewers");
+  if (!viewersNode) return;
+  viewersNode.textContent = safeText(viewers, "0");
 }
 
-export function renderChatMessages(messages = []) {
-  const feed = el("live-chat-feed");
-  if (!feed) return;
+export function fillStudioForm(stream) {
+  if (!stream) return;
 
-  if (!Array.isArray(messages) || messages.length === 0) {
-    feed.innerHTML = `
-      <div class="chat-message">
-        <strong>System</strong>
-        <span>No messages yet.</span>
-      </div>
-    `;
-    return;
-  }
+  const title = el("stream-title");
+  const description = el("stream-description");
+  const category = el("stream-category");
+  const accessType = el("stream-access-type");
+  const priceCents = el("stream-price-cents");
+  const thumbnail = el("stream-thumbnail-url");
 
-  feed.innerHTML = messages
-    .map((message) => {
-      const name =
-        message.display_name ||
-        message.username ||
-        message.user_name ||
-        message.user_id ||
-        "User";
-
-      const body = message.message || "";
-      return `
-        <div class="chat-message">
-          <strong>${escapeHtml(name)}</strong>
-          <span>${escapeHtml(body)}</span>
-        </div>
-      `;
-    })
-    .join("");
+  if (title) title.value = stream.title || "";
+  if (description) description.value = stream.description || "";
+  if (category) category.value = stream.category || "general";
+  if (accessType) accessType.value = stream.access_type || "free";
+  if (priceCents) priceCents.value = stream.price_cents ?? 0;
+  if (thumbnail) thumbnail.value = stream.thumbnail_url || "";
 }
 
 export function renderLiveRail(streams = []) {
@@ -229,36 +166,112 @@ export function renderLiveRail(streams = []) {
 
   rail.innerHTML = streams
     .map((stream) => {
-      const creator = deriveCreatorLabel(stream);
-      const cover = stream.cover_url || stream.thumbnail_url || "";
-      const watchUrl = buildWatchUrl(stream);
+      const thumb = stream.thumbnail_url || stream.cover_url || "";
+      const title = safeText(stream.title, "Live Stream");
+      const slug = safeText(stream.slug, "");
+      const access = formatAccessType(stream.access_type);
+      const viewers = safeText(stream.viewer_count, "0");
+      const watchUrl = buildWatchUrl(slug);
 
       return `
         <article class="rb-live-card">
           <a class="rb-live-card__media" href="${watchUrl}">
             ${
-              cover
-                ? `<img src="${escapeAttribute(cover)}" alt="${escapeAttribute(stream.title || "Live stream")}" />`
-                : `<div class="rb-live-card__fallback">LIVE ROOM</div>`
+              thumb
+                ? `<img src="${thumb}" alt="${title}" />`
+                : `<div class="rb-live-card__fallback">RICH BIZNESS LIVE</div>`
             }
             <div class="rb-live-card__overlay">
               <span class="rb-live-badge rb-live-badge--live">LIVE</span>
-              <span class="rb-live-badge">${formatViewerCount(stream.viewer_count || 0)} viewers</span>
-              <span class="rb-live-badge">${formatAccess(stream.access_type)}</span>
+              <span class="rb-live-badge">${access}</span>
+              <span class="rb-live-badge">${viewers} watching</span>
             </div>
           </a>
 
           <div class="rb-live-card__body">
             <div class="rb-live-card__meta">
-              <span>${escapeHtml(creator)}</span>
-              <span>${escapeHtml(stream.category || "general")}</span>
+              <span>${safeText(stream.category, "general")}</span>
+              <span>${slug || "--"}</span>
             </div>
 
-            <h3 class="rb-live-card__title">${escapeHtml(stream.title || "Untitled stream")}</h3>
+            <h3 class="rb-live-card__title">${title}</h3>
 
             <a class="rb-live-watch-btn" href="${watchUrl}">Watch Live</a>
           </div>
         </article>
+      `;
+    })
+    .join("");
+}
+
+export function renderWatchStream(stream) {
+  const titleNode = el("watch-stream-title");
+  const descriptionNode = el("watch-stream-description");
+  const statusNode = el("watch-stream-status");
+  const creatorNode = el("watch-stream-creator");
+  const accessNode = el("watch-stream-access");
+  const viewersNode = el("watch-stream-viewers");
+  const joinButton = el("watch-join-btn");
+
+  if (!stream) {
+    if (titleNode) titleNode.textContent = "Stream unavailable";
+    if (descriptionNode) descriptionNode.textContent = "This live stream could not be loaded.";
+    if (statusNode) statusNode.textContent = "OFFLINE";
+    if (creatorNode) creatorNode.textContent = "--";
+    if (accessNode) accessNode.textContent = "--";
+    if (viewersNode) viewersNode.textContent = "0";
+    if (joinButton) joinButton.textContent = "Join Live";
+    return;
+  }
+
+  if (titleNode) titleNode.textContent = safeText(stream.title, "Live Stream");
+  if (descriptionNode) {
+    descriptionNode.textContent =
+      safeText(stream.description, "Join the room and watch live on Rich Bizness.");
+  }
+  if (statusNode) statusNode.textContent = formatStatus(stream);
+  if (creatorNode) creatorNode.textContent = safeText(stream.creator_id, "--");
+  if (accessNode) accessNode.textContent = formatAccessType(stream.access_type);
+  if (viewersNode) viewersNode.textContent = safeText(stream.viewer_count, "0");
+
+  if (joinButton) {
+    joinButton.textContent = stream.is_live ? "Join Live" : "Offline";
+    joinButton.disabled = !stream.is_live;
+    joinButton.style.opacity = stream.is_live ? "1" : "0.65";
+    joinButton.style.cursor = stream.is_live ? "pointer" : "not-allowed";
+  }
+}
+
+export function renderWatchPresence(viewers) {
+  const viewersNode = el("watch-stream-viewers");
+  if (!viewersNode) return;
+  viewersNode.textContent = safeText(viewers, "0");
+}
+
+export function renderChatMessages(messages = []) {
+  const feed = el("live-chat-feed");
+  if (!feed) return;
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    feed.innerHTML = `
+      <div class="chat-message">
+        <strong>System</strong>
+        <span>Chat will appear here once messages start coming in.</span>
+      </div>
+    `;
+    return;
+  }
+
+  feed.innerHTML = messages
+    .map((message) => {
+      const name = formatChatMessageName(message);
+      const body = formatChatMessageBody(message);
+
+      return `
+        <div class="chat-message">
+          <strong>${escapeHtml(name)}</strong>
+          <span>${escapeHtml(body)}</span>
+        </div>
       `;
     })
     .join("");
@@ -273,6 +286,14 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#39;");
 }
 
-function escapeAttribute(value = "") {
-  return escapeHtml(value);
+export function syncStudioFromState() {
+  renderStudioSession(liveState.session?.user || null);
+  renderStudioStream(liveState.studio?.stream || null);
+  renderStudioPresence(liveState.presence?.viewers || 0);
+}
+
+export function syncWatchFromState() {
+  renderWatchStream(liveState.watch?.stream || null);
+  renderWatchPresence(liveState.presence?.viewers || 0);
+  renderChatMessages(liveState.chat?.messages || []);
 }
