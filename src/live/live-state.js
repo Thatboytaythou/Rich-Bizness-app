@@ -14,16 +14,10 @@ export const liveState = {
 
   watch: {
     stream: null,
-    isJoining: false,
     joined: false,
+    isJoining: false,
     error: "",
     success: ""
-  },
-
-  liveRail: {
-    streams: [],
-    loading: false,
-    error: ""
   },
 
   chat: {
@@ -35,6 +29,12 @@ export const liveState = {
   presence: {
     viewers: 0,
     members: []
+  },
+
+  liveRail: {
+    streams: [],
+    loading: false,
+    error: ""
   }
 };
 
@@ -43,8 +43,6 @@ export function setSessionState(patch = {}) {
     ...liveState.session,
     ...patch
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.session;
 }
 
 export function setStudioState(patch = {}) {
@@ -52,8 +50,6 @@ export function setStudioState(patch = {}) {
     ...liveState.studio,
     ...patch
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.studio;
 }
 
 export function setWatchState(patch = {}) {
@@ -61,17 +57,6 @@ export function setWatchState(patch = {}) {
     ...liveState.watch,
     ...patch
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.watch;
-}
-
-export function setLiveRailState(patch = {}) {
-  liveState.liveRail = {
-    ...liveState.liveRail,
-    ...patch
-  };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.liveRail;
 }
 
 export function setChatState(patch = {}) {
@@ -79,8 +64,6 @@ export function setChatState(patch = {}) {
     ...liveState.chat,
     ...patch
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.chat;
 }
 
 export function setPresenceState(patch = {}) {
@@ -88,8 +71,13 @@ export function setPresenceState(patch = {}) {
     ...liveState.presence,
     ...patch
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.presence;
+}
+
+export function setLiveRailState(patch = {}) {
+  liveState.liveRail = {
+    ...liveState.liveRail,
+    ...patch
+  };
 }
 
 export function resetStudioState() {
@@ -100,20 +88,16 @@ export function resetStudioState() {
     error: "",
     success: ""
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.studio;
 }
 
 export function resetWatchState() {
   liveState.watch = {
     stream: null,
-    isJoining: false,
     joined: false,
+    isJoining: false,
     error: "",
     success: ""
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.watch;
 }
 
 export function resetChatState() {
@@ -122,8 +106,6 @@ export function resetChatState() {
     sending: false,
     error: ""
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.chat;
 }
 
 export function resetPresenceState() {
@@ -131,8 +113,4 @@ export function resetPresenceState() {
     viewers: 0,
     members: []
   };
-  window.__RB_LIVE_STATE__ = liveState;
-  return liveState.presence;
 }
-
-window.__RB_LIVE_STATE__ = liveState;
