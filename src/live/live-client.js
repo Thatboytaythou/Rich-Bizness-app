@@ -1,9 +1,5 @@
 import { getSessionUser } from "../shared/supabase.js";
-import {
-  getLiveStreams,
-  createStream,
-  endStream
-} from "./live-api.js";
+import { createStream, endStream, getLiveStreams } from "./live-api.js";
 import {
   liveState,
   setSessionState,
@@ -24,6 +20,11 @@ import {
   fillStudioForm
 } from "./live-ui.js";
 
+const LK = window.LivekitClient;
+
+let studioRoom = null;
+let attachedLocalEls = [];
+
 function el(id) {
   return document.getElementById(id);
 }
@@ -43,12 +44,168 @@ function makeStreamSlug(title = "") {
   return `${base || "live-stream"}-${suffix}`;
 }
 
+function clearLocalStage() {
+  const stage = el("live-local-stage");
+  if (!stage) return;
+  attachedLocalEls.forEach((node) => node?.remove?.());
+  attachedLocalEls = [];
+  stage.innerHTML = `
+    <div class="stage-empty">
+      <strong>Camera preview</strong>
+      <span>Your camera preview will appear here when you go live.</span>
+    </div>
+  `;
+}
+
+function attachLocalTracks(room) {
+  const stage = el("live-local-stage");
+  if (!stage) return;
+
+  stage.innerHTML = "";
+  attachedLocalEls.forEach((node) => node?.remove?.());
+  attachedLocalEls = [];
+
+  let attached = false;
+
+  room.localParticipant.videoTrackPublications.forEach((pub) => {
+    if (!pub.track) return;
+    const mediaEl = pub.track.attach();
+    mediaEl.autoplay = true;
+    mediaEl.muted = true;
+    mediaEl.playsInline = true;
+    mediaEl.className = "stage-video";
+    stage.appendChild(mediaEl);
+    attachedLocalEls.push(mediaEl);
+    attached = true;
+  });
+
+  room.localParticipant.audioTrackPublications.forEach((pub) => {
+    if (!pub.track) return;
+    const audioEl = pub.track.attach();
+    audioEl.autoplay = true;
+    audioEl.muted = true;
+    attachedLocalEls.push(audioEl);
+  });
+
+  if (!attached) {
+    clearLocalStage();
+  }
+}
+
+async function requestLivekitToken({
+  roomName,
+  participantName,
+  participantMetadata,
+  canPublish = true,
+  canSubscribe = true
+}) {
+  const response = await fetch("/api/livekit-token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      roomName,
+      participantName,
+      participantMetadata,
+      canPublish,
+      canSubscribe
+    })
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(json?.error || "Failed to fetch LiveKit token");
+  }
+
+  return json;
+}
+
+async function connectStudioRoom(stream, user) {
+  if (!LK) {
+    throw new Error("LiveKit client failed to load");
+  }
+
+  if (studioRoom) {
+    await disconnectStudioRoom();
+  }
+
+  const tokenPayload = await requestLivekitToken({
+    roomName: stream.livekit_room_name || stream.slug,
+    participantName: `host-${user.id}`,
+    participantMetadata: {
+      role: "host",
+      streamId: stream.id,
+      userId: user.id
+    },
+    canPublish: true,
+    canSubscribe: true
+  });
+
+  const room = new LK.Room({
+    adaptiveStream: true,
+    dynacast: true
+  });
+
+  room
+    .on(LK.RoomEvent.Disconnected, () => {
+      clearLocalStage();
+    })
+    .on(LK.RoomEvent.ParticipantConnected, () => {
+      renderStudioPresence(room.numParticipants);
+    })
+    .on(LK.RoomEvent.ParticipantDisconnected, () => {
+      renderStudioPresence(room.numParticipants);
+    })
+    .on(LK.RoomEvent.LocalTrackPublished, () => {
+      attachLocalTracks(room);
+    })
+    .on(LK.RoomEvent.LocalTrackUnpublished, () => {
+      attachLocalTracks(room);
+    });
+
+  await room.connect(tokenPayload.url, tokenPayload.token);
+
+  await room.localParticipant.setCameraEnabled(true);
+  await room.localParticipant.setMicrophoneEnabled(true);
+
+  attachLocalTracks(room);
+  renderStudioPresence(room.numParticipants);
+
+  studioRoom = room;
+}
+
+async function disconnectStudioRoom() {
+  if (!studioRoom) return;
+
+  try {
+    studioRoom.localParticipant.videoTrackPublications.forEach((pub) => {
+      pub.track?.stop?.();
+      pub.track?.detach?.();
+    });
+
+    studioRoom.localParticipant.audioTrackPublications.forEach((pub) => {
+      pub.track?.stop?.();
+      pub.track?.detach?.();
+    });
+
+    await studioRoom.disconnect();
+  } catch (error) {
+    console.error("[live-client] disconnectStudioRoom error:", error);
+  } finally {
+    studioRoom = null;
+    clearLocalStage();
+  }
+}
+
 async function bootLivePage() {
   try {
     resetStudioState();
     resetPresenceState();
     showLiveError("");
     showLiveSuccess("");
+    clearLocalStage();
 
     const user = await getSessionUser();
 
@@ -176,6 +333,10 @@ async function startLiveFlow() {
       throw new Error("You already have a live stream running.");
     }
 
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error("Camera is not supported in this browser.");
+    }
+
     const formPayload = collectStudioForm();
     validateStudioPayload(formPayload);
 
@@ -187,7 +348,9 @@ async function startLiveFlow() {
 
     setButtonBusy("start-stream-btn", true, "Starting...", "Start Stream");
 
-    const payload = {
+    const slug = makeStreamSlug(formPayload.title);
+
+    const stream = await createStream({
       creator_id: user.id,
       title: formPayload.title,
       description: formPayload.description,
@@ -195,16 +358,10 @@ async function startLiveFlow() {
       access_type: formPayload.access_type,
       price_cents: formPayload.price_cents,
       thumbnail_url: formPayload.thumbnail_url,
-      slug: makeStreamSlug(formPayload.title),
-      is_live: true,
-      viewer_count: 0
-    };
+      slug
+    });
 
-    const stream = await createStream(payload);
-
-    if (!stream) {
-      throw new Error("Failed to create stream.");
-    }
+    await connectStudioRoom(stream, user);
 
     setStudioState({
       stream,
@@ -251,6 +408,7 @@ async function endLiveFlow() {
 
     setButtonBusy("end-stream-btn", true, "Ending...", "End Stream");
 
+    await disconnectStudioRoom();
     await endStream(stream.id);
 
     setStudioState({
@@ -299,3 +457,6 @@ async function copyShareLink() {
 }
 
 document.addEventListener("DOMContentLoaded", bootLivePage);
+window.addEventListener("beforeunload", () => {
+  disconnectStudioRoom();
+});
