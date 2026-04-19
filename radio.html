@@ -1,1 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Radio Station</title>
+  <meta
+    name="description"
+    content="Rich Bizness radio station for nonstop playlist rotations, artist mixes, curated stations, and live DJ energy."
+  />
 
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(10, 10, 10, 0.78);
+      --panel-2: rgba(18, 18, 18, 0.84);
+      --line: rgba(255, 201, 109, 0.16);
+      --line-strong: rgba(255, 201, 109, 0.32);
+      --text: #f8f1e7;
+      --muted: #c7b79d;
+      --gold: #ffcb6b;
+      --gold-2: #c98a1a;
+      --green: #43f59b;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1400px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.68), rgba(0,0,0,0.92)),
+        radial-gradient(circle at top, rgba(255,203,107,0.12), transparent 24%),
+        url('/images/brand/logo-music-label.png') center center / cover no-repeat fixed;
+      background-color: #050505;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 42px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(8, 8, 8, 0.76);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(255,203,107,0.22), rgba(201,138,26,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--gold);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(255,203,107,0.16);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link,
+    .btn,
+    .btn-ghost,
+    .station-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover,
+    .station-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-link,
+    .btn-ghost,
+    .station-btn {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #201202;
+      box-shadow: 0 10px 28px rgba(201, 138, 26, 0.28);
+    }
+
+    .station-btn.active {
+      background: linear-gradient(135deg, rgba(255,203,107,0.18), rgba(201,138,26,0.10));
+      border-color: var(--line-strong);
+      color: #fff2d2;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,10,10,0.82), rgba(8,8,8,0.88));
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 34px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(255,203,107,0.14), transparent 26%),
+        linear-gradient(180deg, rgba(10,10,10,0.54), rgba(8,8,8,0.78));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #ffe5b0;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      margin: 20px 0 0;
+      font-size: clamp(38px, 5vw, 74px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      max-width: 820px;
+    }
+
+    .hero p {
+      margin: 18px 0 0;
+      color: #f0dcc0;
+      font-size: 16px;
+      line-height: 1.8;
+      max-width: 760px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .side-stack {
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .side-card {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .side-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .side-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .notice {
+      display: none;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
+    }
+
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
+    }
+
+    .station-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 22px;
+    }
+
+    .now-playing {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .cover-card {
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      min-height: 220px;
+    }
+
+    .cover-card img {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      object-fit: cover;
+    }
+
+    .np-copy {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .np-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #fff2d2;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .np-title {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .np-meta {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .np-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .control-btn {
+      min-width: 132px;
+      min-height: 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,203,107,0.16);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .control-btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #201202;
+    }
+
+    .queue-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .queue-item {
+      display: grid;
+      grid-template-columns: auto 56px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+
+    .queue-item.active {
+      border-color: var(--line-strong);
+      background: linear-gradient(135deg, rgba(255,203,107,0.12), rgba(201,138,26,0.08));
+    }
+
+    .queue-index {
+      width: 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .queue-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,203,107,0.16);
+      background: rgba(255,255,255,0.03);
+      flex-shrink: 0;
+    }
+
+    .queue-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .queue-copy strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .queue-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .queue-tag {
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff2d2;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .station-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .station-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+
+    .station-item.active {
+      border-color: var(--line-strong);
+      background: linear-gradient(135deg, rgba(255,203,107,0.12), rgba(201,138,26,0.08));
+    }
+
+    .station-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .station-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .now-playing {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
+
+      .nav-link,
+      .btn,
+      .btn-ghost,
+      .station-btn {
+        width: 100%;
+      }
+
+      #global-session-nav {
+        width: 100%;
+      }
+
+      #global-session-nav .nav-link,
+      #global-session-nav .btn,
+      #global-session-nav .btn-ghost {
+        width: 100%;
+      }
+
+      .queue-item {
+        grid-template-columns: auto 56px 1fr;
+      }
+
+      .queue-tag {
+        grid-column: 1 / -1;
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Radio Station • Nonstop Mixes • DJ Energy</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/music.html">Music</a>
+        <a class="nav-link" href="/playlist.html">Playlists</a>
+        <a class="nav-link" href="/artist/">Artist</a>
+        <a class="nav-link" href="/upload.html">Upload</a>
+        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
+        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </nav>
+    </header>
+
+    <div id="radio-error" class="notice error"></div>
+    <div id="radio-success" class="notice success"></div>
+
+    <section class="hero-grid">
+      <section class="panel hero">
+        <div>
+          <div class="eyebrow">Radio station</div>
+          <h2>Run nonstop curated sound with artist stations, mood rotations, and radio-ready replay.</h2>
+          <p>
+            Rich Bizness Radio is the continuous-play lane for playlist stations, artist mixes,
+            smoke sessions, late-night studio sound, and future hosted DJ or podcast crossover.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn" id="radio-start-btn" type="button">Start Station</button>
+          <a class="btn-ghost" href="/playlist.html">Open Playlists</a>
+          <a class="btn-ghost" href="/music.html">Music Lane</a>
+        </div>
+      </section>
+
+      <aside class="panel side-stack">
+        <div class="side-card">
+          <strong>Built from playlists</strong>
+          <span>Radio stations sit on top of the playlist system so you can rotate curated mood lanes nonstop.</span>
+        </div>
+
+        <div class="side-card">
+          <strong>Artist station ready</strong>
+          <span>Each artist can later have their own dedicated station, hosted mix, and release rotation.</span>
+        </div>
+
+        <div class="side-card">
+          <strong>Podcast crossover</strong>
+          <span>This same lane can later switch between music stations, talk radio, podcast episodes, and live DJ rooms.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="station-bar">
+      <button class="station-btn active" type="button" data-station="late-night">Late Night Studio</button>
+      <button class="station-btn" type="button" data-station="smoke-session">Smoke Session</button>
+      <button class="station-btn" type="button" data-station="fitness">Fitness Vibes</button>
+      <button class="station-btn" type="button" data-station="night-drive">Night Drive</button>
+      <button class="station-btn" type="button" data-station="artist-picks">Artist Picks</button>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Now playing</h3>
+            <p>Station queue, active track, and replay controls.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="now-playing">
+            <div class="cover-card">
+              <img id="radio-cover" src="/images/brand/logo-music-label.png" alt="Radio cover art" />
+            </div>
+
+            <div class="np-copy">
+              <div class="np-badge" id="radio-station-label">Late Night Studio</div>
+              <h2 class="np-title" id="radio-track-title">Studio Smoke Intro</h2>
+              <div class="np-meta" id="radio-track-meta">
+                Rich Bizness • Late night station • smooth rotation
+              </div>
+
+              <div class="np-controls">
+                <button class="control-btn primary" id="radio-play-toggle" type="button">Play</button>
+                <button class="control-btn" id="radio-prev-btn" type="button">Previous</button>
+                <button class="control-btn" id="radio-next-btn" type="button">Next</button>
+              </div>
+
+              <audio id="radio-player" preload="none" controls style="width:100%;margin-top:6px;"></audio>
+            </div>
+          </div>
+
+          <div id="radio-queue" class="queue-list"></div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Station lane</h3>
+            <p>Switch moods, artist picks, and future host channels.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="stack">
+            <div class="card">
+              <h4>Station mood</h4>
+              <p id="radio-station-description">
+                After-hours studio sound, smoke-session pacing, and Rich Bizness late-night energy.
+              </p>
+            </div>
+
+            <div class="card">
+              <h4>Station list</h4>
+              <div id="radio-station-list" class="station-list"></div>
+            </div>
+
+            <div class="card">
+              <h4>Where this goes next</h4>
+              <p>
+                Next layers can add real playlist-backed tracks, hosted radio blocks, DJ takeover rooms,
+                podcast episodes, and nonstop automated station playback.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <p>Rich Bizness • radio station lane locked</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/playlist.html">Playlists</a>
+        <a href="/artist/">Artist</a>
+        <a href="/upload.html">Upload</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const RADIO_STATIONS = {
+      "late-night": {
+        label: "Late Night Studio",
+        description: "After-hours studio sound, smoke-session pacing, and Rich Bizness late-night energy.",
+        tracks: [
+          {
+            title: "Studio Smoke Intro",
+            artist: "Rich Bizness",
+            tag: "Late Night",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Midnight Motion",
+            artist: "ThatboyTayThou",
+            tag: "After Hours",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Gold Room Vibes",
+            artist: "Rich Bizness",
+            tag: "Smooth",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "smoke-session": {
+        label: "Smoke Session",
+        description: "Mellow rotation, smoked-out replay, and laid-back playlist chemistry.",
+        tracks: [
+          {
+            title: "Cloud Ride",
+            artist: "Rich Bizness",
+            tag: "Smoke Session",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Ashes & Gold",
+            artist: "ThatboyTayThou",
+            tag: "Mellow",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Slow Burn",
+            artist: "Rich Bizness",
+            tag: "Vibes",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "fitness": {
+        label: "Fitness Vibes",
+        description: "Workout tempo, forward motion, and high-energy replay for training mode.",
+        tracks: [
+          {
+            title: "Push Tempo",
+            artist: "Rich Bizness",
+            tag: "Workout",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Sprint Lane",
+            artist: "ThatboyTayThou",
+            tag: "Energy",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Second Wind",
+            artist: "Rich Bizness",
+            tag: "Gym Mix",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "night-drive": {
+        label: "Night Drive",
+        description: "Road-ready cuts, smooth transitions, and motion-heavy late-night replay.",
+        tracks: [
+          {
+            title: "Highway Gold",
+            artist: "Rich Bizness",
+            tag: "Drive",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Tail Lights",
+            artist: "ThatboyTayThou",
+            tag: "Cruise",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "City Glow",
+            artist: "Rich Bizness",
+            tag: "Night Ride",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "artist-picks": {
+        label: "Artist Picks",
+        description: "Direct artist selections, creator favorites, and channel-driven replay rotations.",
+        tracks: [
+          {
+            title: "Creator's Choice",
+            artist: "ThatboyTayThou",
+            tag: "Artist Pick",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Label Select",
+            artist: "Rich Bizness",
+            tag: "Channel Mix",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Replay Favorite",
+            artist: "ThatboyTayThou",
+            tag: "Featured",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      }
+    };
+
+    let activeStationKey = "late-night";
+    let activeTrackIndex = 0;
+    let isPlaying = false;
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+
+    function showRadioSuccess(message) {
+      const node = el("radio-success");
+      if (!node) return;
+      node.textContent = message || "";
+      node.style.display = message ? "block" : "none";
+      if (message) {
+        const error = el("radio-error");
+        if (error) error.style.display = "none";
+      }
+    }
+
+    function showRadioError(message) {
+      const node = el("radio-error");
+      if (!node) return;
+      node.textContent = message || "";
+      node.style.display = message ? "block" : "none";
+      if (message) {
+        const success = el("radio-success");
+        if (success) success.style.display = "none";
+      }
+    }
+
+    function getActiveStation() {
+      return RADIO_STATIONS[activeStationKey];
+    }
+
+    function getActiveTrack() {
+      const station = getActiveStation();
+      return station.tracks[activeTrackIndex] || station.tracks[0];
+    }
+
+    function renderStationButtons() {
+      document.querySelectorAll(".station-btn").forEach((button) => {
+        const key = button.getAttribute("data-station");
+        button.classList.toggle("active", key === activeStationKey);
+      });
+    }
+
+    function renderStationList() {
+      const container = el("radio-station-list");
+      if (!container) return;
+
+      container.innerHTML = Object.entries(RADIO_STATIONS).map(([key, station]) => `
+        <div class="station-item ${key === activeStationKey ? "active" : ""}" data-station-item="${key}">
+          <strong>${station.label}</strong>
+          <span>${station.description}</span>
+        </div>
+      `).join("");
+
+      container.querySelectorAll("[data-station-item]").forEach((item) => {
+        item.addEventListener("click", () => {
+          setStation(item.getAttribute("data-station-item"));
+        });
+      });
+    }
+
+    function renderQueue() {
+      const station = getActiveStation();
+      const queue = el("radio-queue");
+      if (!queue) return;
+
+      queue.innerHTML = station.tracks.map((track, index) => `
+        <div class="queue-item ${index === activeTrackIndex ? "active" : ""}" data-queue-index="${index}">
+          <div class="queue-index">${index + 1}</div>
+          <div class="queue-thumb">
+            <img src="${track.cover}" alt="${track.title}" />
+          </div>
+          <div class="queue-copy">
+            <strong>${track.title}</strong>
+            <span>${track.artist}</span>
+          </div>
+          <div class="queue-tag">${track.tag}</div>
+        </div>
+      `).join("");
+
+      queue.querySelectorAll("[data-queue-index]").forEach((item) => {
+        item.addEventListener("click", () => {
+          activeTrackIndex = Number(item.getAttribute("data-queue-index") || 0);
+          renderNowPlaying();
+          if (isPlaying) startPlayback();
+        });
+      });
+    }
+
+    function renderNowPlaying() {
+      const station = getActiveStation();
+      const track = getActiveTrack();
+
+      el("radio-station-label").textContent = station.label;
+      el("radio-station-description").textContent = station.description;
+      el("radio-track-title").textContent = track.title;
+      el("radio-track-meta").textContent = `${track.artist} • ${track.tag} • ${station.label}`;
+      el("radio-cover").src = track.cover;
+
+      const player = el("radio-player");
+      if (player) {
+        player.src = track.src || "";
+      }
+
+      const playBtn = el("radio-play-toggle");
+      if (playBtn) {
+        playBtn.textContent = isPlaying ? "Pause" : "Play";
+      }
+
+      renderQueue();
+      renderStationButtons();
+      renderStationList();
+    }
+
+    async function startPlayback() {
+      const player = el("radio-player");
+      if (!player) return;
+
+      const track = getActiveTrack();
+
+      if (!track.src) {
+        isPlaying = false;
+        renderNowPlaying();
+        showRadioSuccess("Station visuals are live. Add real audio URLs next to make the station fully play.");
+        return;
+      }
+
+      try {
+        await player.play();
+        isPlaying = true;
+        renderNowPlaying();
+        showRadioSuccess(`Now playing: ${track.title}`);
+      } catch (error) {
+        isPlaying = false;
+        renderNowPlaying();
+        showRadioError("Playback was blocked. Tap play again to start the station.");
+      }
+    }
+
+    function pausePlayback() {
+      const player = el("radio-player");
+      if (!player) return;
+      player.pause();
+      isPlaying = false;
+      renderNowPlaying();
+    }
+
+    function togglePlayback() {
+      if (isPlaying) {
+        pausePlayback();
+      } else {
+        startPlayback();
+      }
+    }
+
+    function nextTrack() {
+      const station = getActiveStation();
+      activeTrackIndex = (activeTrackIndex + 1) % station.tracks.length;
+      renderNowPlaying();
+      if (isPlaying) startPlayback();
+    }
+
+    function prevTrack() {
+      const station = getActiveStation();
+      activeTrackIndex = (activeTrackIndex - 1 + station.tracks.length) % station.tracks.length;
+      renderNowPlaying();
+      if (isPlaying) startPlayback();
+    }
+
+    function setStation(stationKey) {
+      if (!RADIO_STATIONS[stationKey]) return;
+      activeStationKey = stationKey;
+      activeTrackIndex = 0;
+      renderNowPlaying();
+      if (isPlaying) startPlayback();
+    }
+
+    document.querySelectorAll(".station-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        setStation(button.getAttribute("data-station"));
+      });
+    });
+
+    el("radio-play-toggle")?.addEventListener("click", togglePlayback);
+    el("radio-next-btn")?.addEventListener("click", nextTrack);
+    el("radio-prev-btn")?.addEventListener("click", prevTrack);
+    el("radio-start-btn")?.addEventListener("click", () => {
+      startPlayback();
+    });
+
+    el("radio-player")?.addEventListener("ended", nextTrack);
+
+    renderNowPlaying();
+  </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
+</body>
+</html>
