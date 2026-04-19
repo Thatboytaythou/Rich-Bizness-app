@@ -3,912 +3,195 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Music</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Rich Bizness — Music</title>
 
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --green-2: #b8ff8d;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    :root{
+      --bg:#06100b;
+      --card:rgba(255,255,255,0.04);
+      --line:rgba(110,255,176,0.18);
+      --text:#ecfff4;
+      --muted:#97b8a6;
+      --green:#43f59b;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+    body{
+      margin:0;
+      font-family:Inter,system-ui;
       background:
-        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.9)),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover;
+      color:var(--text);
     }
 
-    .page {
-      max-width: 1700px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 60px;
+    .wrap{
+      width:min(1200px,95%);
+      margin:auto;
+      padding:20px 0 40px;
     }
 
-    .topbar,
-    .hero,
-    .section,
-    .rail-shell,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.9rem;
-      font-weight: 900;
+    .nav a{
+      padding:10px 14px;
+      border-radius:10px;
+      background:var(--card);
+      border:1px solid var(--line);
+      font-weight:700;
     }
 
-    .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
+    .hero{
+      padding:40px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.5);
+      margin-bottom:20px;
     }
 
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    .hero h1{
+      margin:0;
+      font-size:42px;
     }
 
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .hero p{
+      color:var(--muted);
+      margin-top:10px;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:16px;
     }
 
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
+    .card{
+      padding:16px;
+      border-radius:16px;
+      background:var(--card);
+      border:1px solid var(--line);
     }
 
-    .hero,
-    .section,
-    .rail-shell {
-      padding: 24px;
-      margin-bottom: 18px;
+    .card img{
+      width:100%;
+      height:160px;
+      object-fit:cover;
+      border-radius:12px;
+      margin-bottom:10px;
     }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 20px;
-      align-items: stretch;
+    .card h3{
+      margin:0;
+      font-size:18px;
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 0.94;
-      color: var(--green);
+    .card span{
+      color:var(--muted);
+      font-size:13px;
     }
 
-    .subtle,
-    .mini-text,
-    .card-text,
-    .card-meta,
-    .status-box {
-      color: var(--text);
-      line-height: 1.75;
+    .btn{
+      margin-top:12px;
+      padding:10px;
+      width:100%;
+      border:none;
+      border-radius:10px;
+      background:var(--green);
+      color:#002b17;
+      font-weight:900;
+      cursor:pointer;
     }
 
-    .hero-kicker,
-    .pill,
-    .pill-green,
-    .pill-gold,
-    .pill-red {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
-    .hero-actions,
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .mini-panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 14px;
-    }
-
-    .mini-panel-title,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.35rem;
-      font-weight: 900;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--green);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .filters-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .filters-grid input,
-    .filters-grid select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .section-header p {
-      margin: 0;
-      color: var(--text);
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      border-radius: 20px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-cover {
-      height: 240px;
-      background:
-        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .card-cover.custom-bg {
-      background-size: cover;
-      background-position: center center;
-    }
-
-    .card-pill-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .card-body {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .card-title {
-      color: var(--gold);
-      font-size: 1.08rem;
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.55;
-    }
-
-    .card-meta a {
-      color: var(--green);
-      text-decoration: none;
-    }
-
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      grid-column: 1 / -1;
-    }
-
-    @media (max-width: 1450px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .filters-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .grid-4 {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 920px) {
-      .hero h1 {
-        font-size: 2.3rem;
-      }
-
-      .stats-row,
-      .filters-grid,
-      .grid-4 {
-        grid-template-columns: 1fr;
-      }
-
-      .card-cover {
-        height: 210px;
-      }
-    }
   </style>
 </head>
+
 <body>
-  <div class="page">
+  <div class="wrap">
+
+    <!-- NAV -->
     <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Music</span>
-      </div>
+      <h2>🎵 Rich Bizness Music</h2>
 
       <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="music.html" class="active">Music</a>
-        <a href="music-unlock.html">Unlock</a>
-        <a href="upload-music.html">Upload Music</a>
-        <a href="artist.html">Artist</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+        <a href="/index.html">Home</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/live.html">Live</a>
+        <a href="/watch.html">Watch</a>
       </div>
     </div>
 
+    <!-- HERO -->
     <div class="hero">
-      <div class="hero-grid">
-        <div>
-          <div class="hero-kicker">FULL MUSIC LANE</div>
-          <h1>Stream open tracks, unlock premium music, and support your artist network.</h1>
-          <div class="subtle">
-            This page is synced to your current Stripe unlock flow, current Supabase setup, and current music file structure. Locked tracks can be purchased and unlocked, while open tracks play right away.
-          </div>
-
-          <div class="hero-actions">
-            <a class="btn-green" href="music-unlock.html">Premium Unlocks</a>
-            <a class="btn-dark" href="upload-music.html">Upload Music</a>
-            <a class="btn-dark" href="feed.html">Feed</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading music page...</div>
-
-          <div class="stats-row">
-            <div class="stat">
-              <div id="allStat" class="stat-value">0</div>
-              <div class="stat-label">All Tracks</div>
-            </div>
-            <div class="stat">
-              <div id="lockedStat" class="stat-value">0</div>
-              <div class="stat-label">Locked</div>
-            </div>
-            <div class="stat">
-              <div id="openStat" class="stat-value">0</div>
-              <div class="stat-label">Open</div>
-            </div>
-            <div class="stat">
-              <div id="unlockedStat" class="stat-value">0</div>
-              <div class="stat-label">Unlocked For Me</div>
-            </div>
-            <div class="stat">
-              <div id="priceStat" class="stat-value">$0</div>
-              <div class="stat-label">Top Price</div>
-            </div>
-          </div>
-
-          <div class="filters-grid">
-            <input id="searchInput" type="text" placeholder="Search title, artist, album, genre..." />
-            <select id="accessFilter">
-              <option value="">All Access</option>
-              <option value="open">Open Only</option>
-              <option value="locked">Locked Only</option>
-              <option value="unlocked">Unlocked For Me</option>
-            </select>
-            <select id="genreFilter">
-              <option value="">All Genres</option>
-            </select>
-            <select id="sortFilter">
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="price_high">Highest Price</option>
-              <option value="price_low">Lowest Price</option>
-              <option value="title_az">Title A-Z</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <div class="mini-panel">
-            <div class="mini-panel-title">Music Access Pulse</div>
-            <div id="pulseBox" class="mini-text">Loading music pulse...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Unlock Flow</div>
-            <div class="mini-text">
-              Locked tracks use your existing Stripe checkout route. When payment completes, your webhook writes to <strong>music_unlocks</strong> and the track becomes available for that user.
-            </div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Current Sync</div>
-            <div class="mini-text">
-              This page is designed to stay in line with:
-              <br>• <strong>music-unlock.html</strong>
-              <br>• <strong>/api/create-checkout-session.js</strong>
-              <br>• <strong>/api/stripe-webhook.js</strong>
-              <br>• <strong>music_uploads</strong>
-              <br>• <strong>music_unlocks</strong>
-            </div>
-          </div>
-        </div>
-      </div>
+      <h1>Music Empire</h1>
+      <p>
+        Upload, stream, and build your music brand.
+        This is where artists grow their audience on Rich Bizness.
+      </p>
     </div>
 
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Music Catalog</h2>
-          <p>Open tracks, premium releases, and artist uploads in one lane.</p>
-        </div>
+    <!-- MUSIC GRID -->
+    <div id="music-grid" class="grid">
+
+      <!-- Example Card -->
+      <div class="card">
+        <img src="https://picsum.photos/300/200" />
+        <h3>Sample Track</h3>
+        <span>Artist Name</span>
+        <button class="btn">Play</button>
       </div>
 
-      <div id="musicGrid" class="grid-4">
-        <div class="empty-box">Loading music catalog...</div>
-      </div>
     </div>
+
   </div>
 
+  <!-- SUPABASE -->
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const CHECKOUT_API_URL = "/api/create-checkout-session";
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-      const pulseBox = document.getElementById("pulseBox");
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    );
 
-      const allStat = document.getElementById("allStat");
-      const lockedStat = document.getElementById("lockedStat");
-      const openStat = document.getElementById("openStat");
-      const unlockedStat = document.getElementById("unlockedStat");
-      const priceStat = document.getElementById("priceStat");
+    const grid = document.getElementById("music-grid");
 
-      const searchInput = document.getElementById("searchInput");
-      const accessFilter = document.getElementById("accessFilter");
-      const genreFilter = document.getElementById("genreFilter");
-      const sortFilter = document.getElementById("sortFilter");
-      const musicGrid = document.getElementById("musicGrid");
+    async function loadMusic(){
+      const { data } = await supabase
+        .from("tracks")
+        .select("*")
+        .order("created_at",{ ascending:false })
+        .limit(20);
 
-      let currentUser = null;
-      let unlockRows = [];
-      let musicRows = [];
-      let profilesById = {};
+      if(!data) return;
 
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function money(cents) {
-        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function startCheckout({ type, amount, title, metadata = {} }) {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        const token = data?.session?.access_token;
-        if (!token) {
-          throw new Error("You must be logged in first.");
-        }
-
-        const response = await fetch(CHECKOUT_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            type,
-            amount,
-            title,
-            metadata
-          })
-        });
-
-        const body = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(body.error || "Checkout session failed");
-        }
-
-        if (!body.url) {
-          throw new Error("No checkout URL returned");
-        }
-
-        window.location.href = body.url;
-      }
-
-      async function loadUnlocks() {
-        if (!currentUser?.id) {
-          unlockRows = [];
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("music_unlocks")
-          .select("*")
-          .eq("user_id", currentUser.id)
-          .eq("status", "active");
-
-        if (error && error.code !== "42P01") throw error;
-        unlockRows = data || [];
-      }
-
-      async function loadProfiles(userIds) {
-        const ids = [...new Set(userIds.filter(Boolean))];
-        if (!ids.length) return;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, email")
-          .in("id", ids);
-
-        if (error && error.code !== "42P01") throw error;
-
-        profilesById = {};
-        (data || []).forEach(profile => {
-          profilesById[profile.id] = profile;
-        });
-      }
-
-      function isTrackUnlocked(track) {
-        if (!track) return false;
-        if (!track.is_locked) return true;
-
-        return unlockRows.some(row =>
-          (row.track_slug && track.slug && row.track_slug === track.slug) ||
-          (row.album_slug && track.album_slug && row.album_slug === track.album_slug)
-        );
-      }
-
-      function getArtistLabel(track) {
-        const profile = profilesById[track.user_id] || {};
-        return (
-          track.artist_name ||
-          profile.display_name ||
-          profile.username ||
-          "Artist"
-        );
-      }
-
-      function getArtistLink(track) {
-        const profile = profilesById[track.user_id] || {};
-        return profile.username ? `artist.html?u=${encodeURIComponent(profile.username)}` : "artist.html";
-      }
-
-      async function unlockTrack(track) {
-        try {
-          if (!track) throw new Error("Track not found.");
-
-          await startCheckout({
-            type: "music_unlock",
-            amount: Number(track.price_cents || 299),
-            title: track.title || "Music Unlock",
-            metadata: {
-              track_slug: track.slug || "",
-              album_slug: track.album_slug || ""
-            }
-          });
-        } catch (error) {
-          setStatus("Music unlock error: " + error.message);
-        }
-      }
-
-      function populateGenreFilter(rows) {
-        const genres = [...new Set(rows.map(row => String(row.genre || "").trim()).filter(Boolean))].sort();
-
-        genreFilter.innerHTML =
-          `<option value="">All Genres</option>` +
-          genres.map(genre => `<option value="${escapeHtml(genre)}">${escapeHtml(genre)}</option>`).join("");
-      }
-
-      function getFilteredRows() {
-        const q = searchInput.value.trim().toLowerCase();
-        const accessMode = accessFilter.value;
-        const genre = genreFilter.value;
-        const sortMode = sortFilter.value;
-
-        let rows = musicRows.filter(row => {
-          const artist = getArtistLabel(row);
-          const haystack = [
-            row.title,
-            artist,
-            row.album_name,
-            row.genre,
-            row.slug,
-            row.album_slug
-          ].join(" ").toLowerCase();
-
-          const unlocked = isTrackUnlocked(row);
-          const locked = !!row.is_locked;
-          const open = !locked;
-
-          const matchesSearch = !q || haystack.includes(q);
-          const matchesGenre = !genre || String(row.genre || "") === genre;
-
-          let matchesAccess = true;
-          if (accessMode === "open") matchesAccess = open;
-          if (accessMode === "locked") matchesAccess = locked;
-          if (accessMode === "unlocked") matchesAccess = unlocked;
-
-          return matchesSearch && matchesGenre && matchesAccess;
-        });
-
-        rows.sort((a, b) => {
-          if (sortMode === "oldest") {
-            return new Date(a.created_at || 0) - new Date(b.created_at || 0);
-          }
-          if (sortMode === "price_high") {
-            return Number(b.price_cents || 0) - Number(a.price_cents || 0);
-          }
-          if (sortMode === "price_low") {
-            return Number(a.price_cents || 0) - Number(b.price_cents || 0);
-          }
-          if (sortMode === "title_az") {
-            return String(a.title || "").localeCompare(String(b.title || ""));
-          }
-          return new Date(b.created_at || 0) - new Date(a.created_at || 0);
-        });
-
-        return rows;
-      }
-
-      function renderStats() {
-        const locked = musicRows.filter(row => !!row.is_locked).length;
-        const open = musicRows.filter(row => !row.is_locked).length;
-        const unlocked = musicRows.filter(row => isTrackUnlocked(row)).length;
-        const topPrice = Math.max(0, ...musicRows.map(row => Number(row.price_cents || 0)));
-
-        allStat.textContent = String(musicRows.length);
-        lockedStat.textContent = String(locked);
-        openStat.textContent = String(open);
-        unlockedStat.textContent = String(unlocked);
-        priceStat.textContent = money(topPrice);
-
-        pulseBox.textContent =
-          `Tracks Loaded: ${musicRows.length}\n` +
-          `Locked: ${locked}\n` +
-          `Open: ${open}\n` +
-          `Unlocked For Me: ${unlocked}\n` +
-          `Highest Price: ${money(topPrice)}\n` +
-          `Current User: ${currentUser?.email || "Guest mode"}`;
-      }
-
-      function renderMusic() {
-        const rows = getFilteredRows();
-
-        if (!rows.length) {
-          musicGrid.innerHTML = `<div class="empty-box">No music found with the current filters.</div>`;
-          return;
-        }
-
-        musicGrid.innerHTML = rows.map(track => {
-          const unlocked = isTrackUnlocked(track);
-          const artistLabel = getArtistLabel(track);
-          const artistLink = getArtistLink(track);
-          const locked = !!track.is_locked;
-          const coverStyle = track.cover_url
-            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(track.cover_url).replace(/'/g, "%27")}');`
-            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
-
-          const openHref = track.file_url || "music.html";
-
-          return `
-            <div class="card">
-              <div class="card-cover custom-bg" style="${coverStyle}">
-                <div class="card-pill-wrap">
-                  ${locked ? `<span class="pill-red">LOCKED</span>` : `<span class="pill-green">OPEN</span>`}
-                  ${unlocked ? `<span class="pill-green">UNLOCKED</span>` : ``}
-                  <span class="pill-gold">${money(track.price_cents || 299)}</span>
-                </div>
-              </div>
-
-              <div class="card-body">
-                <div class="card-title">${escapeHtml(track.title || "Track")}</div>
-                <div class="card-text">
-                  <a href="${artistLink}" style="color:var(--green);text-decoration:none;">${escapeHtml(artistLabel)}</a>
-                  • ${escapeHtml(track.album_name || "Single")}
-                  • ${escapeHtml(track.genre || "Music")}
-                </div>
-
-                <div class="card-meta">
-                  Posted: ${escapeHtml(formatDate(track.created_at))}<br>
-                  Access: ${locked ? (unlocked ? "Unlocked" : "Locked") : "Open"}<br>
-                  Slug: ${escapeHtml(track.slug || "--")}
-                </div>
-
-                <div class="card-actions">
-                  ${
-                    !locked || unlocked
-                      ? `<a class="btn-green" href="${openHref}" ${String(openHref).startsWith("http") ? 'target="_blank"' : ""}>Open Track</a>`
-                      : `<button class="btn-gold unlock-btn" data-id="${track.id}" type="button">Unlock Now</button>`
-                  }
-                  <a class="btn-dark" href="${artistLink}">Artist</a>
-                  <a class="btn-dark" href="music-unlock.html">Premium</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        document.querySelectorAll(".unlock-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const id = Number(btn.dataset.id);
-            const track = musicRows.find(row => row.id === id);
-            if (track) unlockTrack(track);
-          });
-        });
-      }
-
-      async function loadMusicPage() {
-        try {
-          setStatus("Loading music page...");
-          await loadSession();
-          await loadUnlocks();
-
-          const { data, error } = await supabase
-            .from("music_uploads")
-            .select("*")
-            .order("created_at", { ascending: false });
-
-          if (error && error.code !== "42P01") throw error;
-
-          musicRows = data || [];
-          await loadProfiles(musicRows.map(row => row.user_id));
-
-          populateGenreFilter(musicRows);
-          renderStats();
-          renderMusic();
-
-          setStatus("✅ Music page fully synced and loaded.");
-        } catch (error) {
-          console.error("Music page load error:", error);
-          setStatus("❌ Music page load error: " + error.message);
-          musicGrid.innerHTML = `<div class="empty-box">Could not load music right now.</div>`;
-        }
-      }
-
-      [searchInput, accessFilter, genreFilter, sortFilter].forEach(el => {
-        el.addEventListener("input", renderMusic);
-        el.addEventListener("change", renderMusic);
-      });
-
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadMusicPage();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Music Page Startup Error</h1>
-          <p>${error.message}</p>
+      grid.innerHTML = data.map(track=>`
+        <div class="card">
+          <img src="${track.cover_url || 'https://picsum.photos/300/200'}"/>
+          <h3>${track.title}</h3>
+          <span>${track.artist_name}</span>
+          <audio controls src="${track.audio_url}" style="width:100%;margin-top:10px;"></audio>
         </div>
-      `;
+      `).join("");
     }
+
+    loadMusic();
   </script>
 </body>
 </html>
