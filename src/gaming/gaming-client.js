@@ -1,9 +1,16 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabase = createClient(
-  window.NEXT_PUBLIC_SUPABASE_URL,
-  window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
+const SUPABASE_URL =
+  window.NEXT_PUBLIC_SUPABASE_URL ||
+  window.SUPABASE_URL ||
+  "https://ksvdequymkceevocgpdj.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+  window.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 function el(id) {
   return document.getElementById(id);
@@ -57,23 +64,6 @@ const state = {
   activeTab: "all",
   search: ""
 };
-
-async function getProfilesMap(userIds = []) {
-  const uniqueIds = [...new Set(userIds.filter(Boolean))];
-  if (!uniqueIds.length) return new Map();
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, username, display_name, avatar_url")
-    .in("id", uniqueIds);
-
-  if (error) {
-    console.error("[gaming-client] profiles lookup error:", error);
-    return new Map();
-  }
-
-  return new Map((data || []).map((row) => [row.id, row]));
-}
 
 async function getGames() {
   const { data, error } = await supabase
@@ -131,6 +121,23 @@ async function getChallenges() {
   return data || [];
 }
 
+async function getProfilesMap(userIds = []) {
+  const uniqueIds = [...new Set(userIds.filter(Boolean))];
+  if (!uniqueIds.length) return new Map();
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, username, display_name")
+    .in("id", uniqueIds);
+
+  if (error) {
+    console.error("[gaming-client] profiles lookup error:", error);
+    return new Map();
+  }
+
+  return new Map((data || []).map((row) => [row.id, row]));
+}
+
 function formatPlayerName(profile, fallback = "Player") {
   if (!profile) return fallback;
   return profile.display_name || profile.username || fallback;
@@ -184,80 +191,43 @@ function ensureChallengeShell() {
   return section.querySelector(".challenge-list");
 }
 
-function buildGameCards() {
-  if (!state.games.length) {
-    return `
-      <div class="empty-state">
-        <div>No games found yet. Add your game rows and this section will populate automatically.</div>
-      </div>
-    `;
-  }
-
-  return state.games.map((game) => {
-    const title = safeText(game.title, "Untitled Game");
-    const description = safeText(game.description, "Game ready for launch.");
-    const status = game.is_featured ? "Featured" : safeText(game.genre || game.category || "Game", "Game");
-
-    return `
-      <article class="tournament-item" data-game-card data-search="${escapeHtml(`${title} ${description} ${status}`.toLowerCase())}">
-        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-          <div>
-            <h4 class="item-title">${escapeHtml(title)}</h4>
-            <p class="item-sub">${escapeHtml(description)}</p>
-          </div>
-          <div class="status-pill ${game.is_featured ? "status-live" : ""}">
-            ${escapeHtml(status)}
-          </div>
-        </div>
-
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
-          <a class="action-btn" href="${escapeHtml(game.game_url || "#")}">Play</a>
-        </div>
-      </article>
-    `;
-  }).join("");
-}
-
 function renderFeaturedGame() {
   const shell = ensureFeaturedShell();
   if (!shell) return;
 
-  const game = state.featuredGame || state.games[0] || null;
+  const game = state.featuredGame;
 
   if (!game) {
     shell.innerHTML = `
       <div class="empty-state">
-        <div>No featured game found yet. Add games to public.games to power this section.</div>
+        <div>No featured game found yet. Add rows to public.games to power this section.</div>
       </div>
     `;
     return;
   }
 
   const title = safeText(game.title, "Featured Game");
-  const description = safeText(
-    game.description,
-    "Featured game ready for score battles, tournaments, and live creator competition."
-  );
+  const description = safeText(game.description, "Featured game ready for launch.");
   const image =
     game.cover_url ||
     game.thumbnail_url ||
     "/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png";
-
   const badge = safeText(game.genre || game.category || "Featured", "Featured");
+  const href = safeText(game.game_url, "#");
 
   shell.innerHTML = `
-    <div class="featured-game">
+    <div class="featured-game" data-search="${escapeHtml(`${title} ${description} ${badge}`.toLowerCase())}">
       <div class="featured-media">
         <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" />
       </div>
 
       <div class="featured-copy">
-        <div class="featured-badge">${escapeHtml(badge)}</div>
-        <h2 class="featured-title">${escapeHtml(title)}</h2>
-        <div class="featured-meta">${escapeHtml(description)}</div>
+        <div class="featured-badge">${escapeHtml(title)}</div>
+        <h2 class="featured-title">${escapeHtml(description)}</h2>
+        <div class="featured-meta">${escapeHtml(badge)} • ${escapeHtml(safeText(game.category, "Game"))}</div>
 
         <div class="featured-actions">
-          <a class="action-btn" id="gaming-launch-featured" href="${escapeHtml(game.game_url || "#")}">Play</a>
+          <a class="action-btn" href="${escapeHtml(href)}">Play</a>
           <button class="action-btn" id="gaming-submit-score-btn" type="button">Submit Score</button>
           <button class="action-btn" id="gaming-challenge-btn" type="button">Challenge Friends</button>
         </div>
@@ -268,17 +238,111 @@ function renderFeaturedGame() {
   const topPlayBtn = el("gaming-play-btn");
   if (topPlayBtn) {
     topPlayBtn.onclick = () => {
-      window.location.href = game.game_url || "#";
+      window.location.href = href;
     };
   }
 
   el("gaming-submit-score-btn")?.addEventListener("click", () => {
-    showSuccess("Score flow is ready. Money Road Runner uses /api/submit-game-score.js.");
+    showSuccess("Money Road Runner score flow is connected through /api/submit-game-score.js.");
   });
 
   el("gaming-challenge-btn")?.addEventListener("click", () => {
-    showSuccess("Challenge system is connected. Build challenge creation UI next.");
+    showSuccess("Challenge system is ready for the next UI pass.");
   });
+}
+
+function renderGamesSection() {
+  const list = ensureTournamentShell();
+  if (!list) return;
+
+  if (!state.games.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div>Game catalog will load here.</div>
+      </div>
+    `;
+    return;
+  }
+
+  const tournamentMarkup = state.tournaments.map((item) => {
+    const status = safeText(item.status, "soon");
+    const statusClass =
+      String(status).toLowerCase() === "open" || String(status).toLowerCase() === "live"
+        ? "status-pill status-live"
+        : "status-pill";
+
+    const subtitle = [
+      safeText(item.description, "Tournament lane ready."),
+      item.start_time ? `Starts ${new Date(item.start_time).toLocaleDateString()}` : null
+    ].filter(Boolean).join(" • ");
+
+    return `
+      <article class="tournament-item" data-search="${escapeHtml(`${item.title || ""} ${subtitle} ${status}`.toLowerCase())}">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+          <div>
+            <h4 class="item-title">${escapeHtml(safeText(item.title, "Tournament"))}</h4>
+            <p class="item-sub">${escapeHtml(subtitle)}</p>
+          </div>
+          <div class="${statusClass}">${escapeHtml(status)}</div>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  const gamesMarkup = state.games.map((game) => {
+    const title = safeText(game.title, "Untitled Game");
+    const description = safeText(game.description, "Game ready for launch.");
+    const href = safeText(game.game_url, "#");
+    const tag = game.is_featured
+      ? "Featured"
+      : safeText(game.genre || game.category || "Game", "Game");
+
+    return `
+      <article class="tournament-item" data-search="${escapeHtml(`${title} ${description} ${tag}`.toLowerCase())}">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+          <div>
+            <h4 class="item-title">${escapeHtml(title)}</h4>
+            <p class="item-sub">${escapeHtml(description)}</p>
+          </div>
+          <div class="status-pill ${game.is_featured ? "status-live" : ""}">${escapeHtml(tag)}</div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <a class="action-btn" href="${escapeHtml(href)}">Play</a>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  list.innerHTML = tournamentMarkup + gamesMarkup;
+}
+
+function renderChallenges() {
+  const list = ensureChallengeShell();
+  if (!list) return;
+
+  if (!state.challenges.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div>Challenges will load here.</div>
+      </div>
+    `;
+    return;
+  }
+
+  list.innerHTML = state.challenges.map((item) => {
+    const subtitle = [
+      safeText(item.description, "Challenge lane ready."),
+      item.target_score ? `Target ${item.target_score}` : null
+    ].filter(Boolean).join(" • ");
+
+    return `
+      <article class="challenge-item" data-search="${escapeHtml(`${item.title || ""} ${subtitle}`.toLowerCase())}">
+        <h4 class="item-title">${escapeHtml(safeText(item.title, "Challenge"))}</h4>
+        <p class="item-sub">${escapeHtml(subtitle)}</p>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderLeaderboard() {
@@ -288,7 +352,7 @@ function renderLeaderboard() {
   if (!state.leaderboard.length) {
     list.innerHTML = `
       <div class="empty-state">
-        <div>No leaderboard scores found yet.</div>
+        <div>Leaderboard scores will load here.</div>
       </div>
     `;
     return;
@@ -306,76 +370,9 @@ function renderLeaderboard() {
         <div class="rank-pill">${index + 1}</div>
         <div>
           <h4 class="item-title">${escapeHtml(playerName)}</h4>
-          <p class="item-sub">${escapeHtml(subtitle || "Score submission")}</p>
+          <p class="item-sub">${escapeHtml(subtitle)}</p>
         </div>
         <div class="score-pill">${escapeHtml(String(entry.score ?? 0))}</div>
-      </article>
-    `;
-  }).join("");
-}
-
-function renderTournaments() {
-  const list = ensureTournamentShell();
-  if (!list) return;
-
-  const baseMarkup = buildGameCards();
-
-  const tournamentMarkup = state.tournaments.map((item) => {
-    const status = safeText(item.status, "soon");
-    const statusClass =
-      String(status).toLowerCase() === "open" || String(status).toLowerCase() === "live"
-        ? "status-pill status-live"
-        : "status-pill";
-
-    const subtitleParts = [
-      safeText(item.description, "Tournament lane ready for competition."),
-      item.start_time ? `Starts ${new Date(item.start_time).toLocaleDateString()}` : null
-    ].filter(Boolean);
-
-    return `
-      <article class="tournament-item" data-search="${escapeHtml(`${item.title || ""} ${subtitleParts.join(" ")} ${status}`.toLowerCase())}">
-        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-          <div>
-            <h4 class="item-title">${escapeHtml(safeText(item.title, "Tournament"))}</h4>
-            <p class="item-sub">${escapeHtml(subtitleParts.join(" • "))}</p>
-          </div>
-          <div class="${statusClass}">${escapeHtml(status)}</div>
-        </div>
-      </article>
-    `;
-  }).join("");
-
-  if (!state.tournaments.length) {
-    list.innerHTML = baseMarkup;
-    return;
-  }
-
-  list.innerHTML = tournamentMarkup + baseMarkup;
-}
-
-function renderChallenges() {
-  const list = ensureChallengeShell();
-  if (!list) return;
-
-  if (!state.challenges.length) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div>No challenges found yet.</div>
-      </div>
-    `;
-    return;
-  }
-
-  list.innerHTML = state.challenges.map((item) => {
-    const subtitleParts = [
-      safeText(item.description, "Challenge lane ready."),
-      item.target_score ? `Target ${item.target_score}` : null
-    ].filter(Boolean);
-
-    return `
-      <article class="challenge-item" data-search="${escapeHtml(`${item.title || ""} ${subtitleParts.join(" ")}`.toLowerCase())}">
-        <h4 class="item-title">${escapeHtml(safeText(item.title, "Challenge"))}</h4>
-        <p class="item-sub">${escapeHtml(subtitleParts.join(" • "))}</p>
       </article>
     `;
   }).join("");
@@ -385,10 +382,7 @@ function renderStats() {
   const statsCards = document.querySelectorAll(".stat-card");
   if (!statsCards.length) return;
 
-  const topScore = state.leaderboard[0]?.score
-    ? Number(state.leaderboard[0].score)
-    : 0;
-
+  const topScore = state.leaderboard[0]?.score ? Number(state.leaderboard[0].score) : 0;
   const values = [
     state.games.length,
     state.tournaments.length || state.games.length,
@@ -409,8 +403,7 @@ function applySearchToVisibleContent() {
 
   document.querySelectorAll("[data-search]").forEach((node) => {
     const haystack = String(node.getAttribute("data-search") || "").toLowerCase();
-    const show = !query || haystack.includes(query);
-    node.style.display = show ? "" : "none";
+    node.style.display = !query || haystack.includes(query) ? "" : "none";
   });
 }
 
@@ -485,9 +478,9 @@ async function bootGamingClient() {
     state.challenges = challenges || [];
 
     renderFeaturedGame();
-    renderLeaderboard();
-    renderTournaments();
+    renderGamesSection();
     renderChallenges();
+    renderLeaderboard();
     renderStats();
     updateVisibility();
 
@@ -496,11 +489,7 @@ async function bootGamingClient() {
       return;
     }
 
-    if (state.games.length) {
-      showSuccess(`Gaming locked in. ${state.games.length} game${state.games.length === 1 ? "" : "s"} loaded.`);
-    } else {
-      showSuccess("Gaming page connected.");
-    }
+    showSuccess(`Gaming locked in. ${state.games.length} game${state.games.length === 1 ? "" : "s"} loaded.`);
   } catch (error) {
     console.error("[gaming-client] boot error:", error);
     showError(error.message || "Failed to load gaming page.");
