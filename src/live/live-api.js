@@ -4,14 +4,25 @@ function nowIso() {
   return new Date().toISOString();
 }
 
-function makeRoomName(slug = "") {
-  const clean = String(slug || "")
-    .trim()
+export function slugify(value = "") {
+  return String(value)
     .toLowerCase()
-    .replace(/[^a-z0-9-_]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .replace(/--+/g, "-")
+    .slice(0, 80);
+}
 
-  return clean || `rb-live-${Math.random().toString(36).slice(2, 8)}`;
+export function makeStreamSlug(title = "", creatorId = "") {
+  const base = slugify(title || "live-stream") || "live-stream";
+  const creatorTail = String(creatorId || "")
+    .replace(/-/g, "")
+    .slice(-6)
+    .toLowerCase();
+  const randomTail = Math.random().toString(36).slice(2, 6).toLowerCase();
+
+  return [base, creatorTail || "rb", randomTail].filter(Boolean).join("-");
 }
 
 function normalizeStream(row) {
@@ -23,10 +34,6 @@ function normalizeStream(row) {
   };
 }
 
-/**
- * Active live streams:
- * started_at exists AND ended_at is null
- */
 export async function getLiveStreams() {
   const { data, error } = await supabase
     .from("live_streams")
@@ -36,16 +43,13 @@ export async function getLiveStreams() {
     .order("started_at", { ascending: false });
 
   if (error) {
-    console.error("getLiveStreams error:", error);
+    console.error("[live-api] getLiveStreams error:", error);
     return [];
   }
 
   return Array.isArray(data) ? data.map(normalizeStream) : [];
 }
 
-/**
- * Get stream by id
- */
 export async function getStreamById(streamId) {
   const { data, error } = await supabase
     .from("live_streams")
@@ -54,43 +58,75 @@ export async function getStreamById(streamId) {
     .single();
 
   if (error) {
-    console.error("getStreamById error:", error);
+    console.error("[live-api] getStreamById error:", error);
     return null;
   }
 
   return normalizeStream(data);
 }
 
-/**
- * Get stream by slug
- */
 export async function getStreamBySlug(slug) {
+  const cleanSlug = slugify(slug);
+
+  if (!cleanSlug) return null;
+
   const { data, error } = await supabase
     .from("live_streams")
     .select("*")
-    .eq("slug", slug)
+    .eq("slug", cleanSlug)
     .single();
 
   if (error) {
-    console.error("getStreamBySlug error:", error);
+    console.error("[live-api] getStreamBySlug error:", error);
     return null;
   }
 
   return normalizeStream(data);
 }
 
-/**
- * Create a new stream
- */
+export async function ensureUniqueSlug(title, creatorId) {
+  const baseSlug = makeStreamSlug(title, creatorId);
+
+  let attempt = 0;
+  let candidate = baseSlug;
+
+  while (attempt < 8) {
+    const { data, error } = await supabase
+      .from("live_streams")
+      .select("id")
+      .eq("slug", candidate)
+      .maybeSingle();
+
+    if (error) {
+      console.error("[live-api] ensureUniqueSlug check error:", error);
+      return candidate;
+    }
+
+    if (!data) {
+      return candidate;
+    }
+
+    attempt += 1;
+    candidate = `${baseSlug}-${Math.random().toString(36).slice(2, 5).toLowerCase()}`;
+  }
+
+  return `${baseSlug}-${Date.now().toString(36)}`;
+}
+
 export async function createStream(payload) {
   const startedAt = nowIso();
+  const slug =
+    payload.slug && slugify(payload.slug)
+      ? slugify(payload.slug)
+      : await ensureUniqueSlug(payload.title, payload.creator_id);
 
   const insertPayload = {
     creator_id: payload.creator_id,
-    slug: payload.slug,
+    slug,
     title: payload.title || "Live Stream",
     description: payload.description || "",
     category: payload.category || "general",
+    status: "live",
     access_type: payload.access_type || "free",
     price_cents: Number(payload.price_cents || 0),
     currency: payload.currency || "usd",
@@ -106,8 +142,9 @@ export async function createStream(payload) {
     is_featured: payload.is_featured ?? false,
     started_at: startedAt,
     ended_at: null,
+    scheduled_for: payload.scheduled_for || null,
     last_activity_at: startedAt,
-    livekit_room_name: payload.livekit_room_name || makeRoomName(payload.slug),
+    livekit_room_name: payload.livekit_room_name || slug,
     livekit_room_sid: payload.livekit_room_sid || null
   };
 
@@ -118,50 +155,49 @@ export async function createStream(payload) {
     .single();
 
   if (error) {
-    console.error("createStream error:", error);
+    console.error("[live-api] createStream error:", error);
     throw error;
   }
 
   return normalizeStream(data);
 }
 
-/**
- * End stream
- */
 export async function endStream(streamId) {
+  const stamp = nowIso();
+
   const { data, error } = await supabase
     .from("live_streams")
     .update({
-      ended_at: nowIso(),
-      last_activity_at: nowIso()
+      status: "ended",
+      ended_at: stamp,
+      last_activity_at: stamp
     })
     .eq("id", streamId)
     .select()
     .single();
 
   if (error) {
-    console.error("endStream error:", error);
+    console.error("[live-api] endStream error:", error);
     throw error;
   }
 
   return normalizeStream(data);
 }
 
-/**
- * Join stream
- */
 export async function joinStream(streamId, userId) {
-  const { error } = await supabase
-    .from("live_stream_members")
-    .insert([
-      {
-        stream_id: streamId,
-        user_id: userId
-      }
-    ]);
+  if (userId) {
+    const { error } = await supabase
+      .from("live_stream_members")
+      .insert([
+        {
+          stream_id: streamId,
+          user_id: userId
+        }
+      ]);
 
-  if (error) {
-    console.error("joinStream error:", error);
+    if (error) {
+      console.error("[live-api] joinStream member insert error:", error);
+    }
   }
 
   const stream = await getStreamById(streamId);
@@ -182,9 +218,14 @@ export async function joinStream(streamId, userId) {
     .single();
 
   if (updateError) {
-    console.error("joinStream viewer update error:", updateError);
+    console.error("[live-api] joinStream viewer update error:", updateError);
     return stream;
   }
 
   return normalizeStream(data);
+}
+
+export function buildWatchUrl(slug) {
+  const cleanSlug = slugify(slug);
+  return `${window.location.origin}/watch.html?slug=${encodeURIComponent(cleanSlug)}`;
 }
