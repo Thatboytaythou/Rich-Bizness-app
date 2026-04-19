@@ -13,13 +13,13 @@
     :root {
       --bg: #06100b;
       --panel: rgba(8, 18, 13, 0.9);
-      --panel-2: rgba(12, 28, 20, 0.84);
       --line: rgba(110, 255, 176, 0.16);
       --line-strong: rgba(110, 255, 176, 0.34);
       --text: #ecfff4;
       --muted: #97b8a6;
       --green: #43f59b;
       --green-2: #18c972;
+      --red: #ff6f82;
       --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
       --radius-xl: 30px;
       --radius-lg: 22px;
@@ -234,7 +234,7 @@
 
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(5, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
       gap: 12px;
       margin-top: 22px;
     }
@@ -354,6 +354,15 @@
       color: var(--muted);
       font-size: 14px;
       line-height: 1.75;
+    }
+
+    .live-card--on {
+      border-color: rgba(67,245,155,0.28);
+      box-shadow: 0 0 0 1px rgba(67,245,155,0.08), 0 0 30px rgba(67,245,155,0.08);
+    }
+
+    .live-card--off {
+      opacity: 0.95;
     }
 
     .action-row {
@@ -529,27 +538,20 @@
 
       <div class="hero-main">
         <div class="artist-top">
-          <div class="avatar-wrap" id="artist-avatar-wrap">
-            <img
-              id="artist-avatar"
-              src="/images/rich-bizness-profile.jpg"
-              alt="Artist avatar"
-              onerror="this.style.display='none'; this.parentNode.textContent='RB';"
-            />
-          </div>
+          <div class="avatar-wrap" id="artist-avatar-wrap">RB</div>
 
           <div class="artist-copy">
-            <h2 id="artist-display-name">ThatboyTayThou</h2>
-            <div class="artist-handle" id="artist-handle">@thatboytaythou</div>
+            <h2 id="artist-display-name">Artist Channel</h2>
+            <div class="artist-handle" id="artist-handle">@artist</div>
             <div class="artist-bio" id="artist-bio">
-              Artist channel for releases, live sessions, visuals, creator movement, and the full Rich Bizness music lane.
+              Artist channel for releases, live sessions, visuals, creator movement, and full Rich Bizness music lane.
             </div>
           </div>
 
           <div class="artist-actions">
             <button id="artist-follow-btn" class="btn-ghost" type="button">Follow Artist</button>
-            <a class="btn-ghost" href="/watch.html">Watch Live</a>
-            <a class="btn-ghost" href="/music.html">Open Music</a>
+            <a id="artist-watch-live-btn" class="btn-ghost" href="/watch.html">Watch Live</a>
+            <a id="artist-go-live-btn" class="btn-ghost" href="/live.html">Go Live As Artist</a>
             <a class="btn" href="/upload.html">Upload Track</a>
           </div>
         </div>
@@ -573,6 +575,11 @@
           <div class="stat-card">
             <span>Live shows</span>
             <strong id="artist-lives-count">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Live status</span>
+            <strong id="artist-live-status-label">OFFLINE</strong>
           </div>
 
           <div class="stat-card">
@@ -623,14 +630,15 @@
 
           <div class="tab-panel" data-panel="live">
             <div class="stack">
-              <div class="card">
+              <div id="artist-live-card" class="card live-card--off">
                 <h4 id="artist-live-title">Artist live room</h4>
                 <p id="artist-live-description">
                   Live sessions, performances, and creator drops can all flow from this artist channel.
                 </p>
+
                 <div class="action-row">
-                  <a class="btn" href="/live.html">Go Live</a>
-                  <a class="btn-ghost" href="/watch.html">Watch Room</a>
+                  <a id="artist-live-watch-btn-2" class="btn-ghost" href="/watch.html">Watch Live</a>
+                  <a id="artist-live-go-btn-2" class="btn" href="/live.html">Go Live</a>
                 </div>
               </div>
 
@@ -698,7 +706,7 @@
     </section>
 
     <footer class="footer">
-      <p>Rich Bizness • artist channel foundation locked</p>
+      <p>Rich Bizness • artist live integration locked</p>
       <div class="footer-links">
         <a href="/index.html">Home</a>
         <a href="/music.html">Music</a>
@@ -735,178 +743,7 @@
     })();
   </script>
 
-  <script type="module">
-    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-    const supabase = createClient(
-      window.NEXT_PUBLIC_SUPABASE_URL,
-      window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-    );
-
-    const params = new URLSearchParams(window.location.search);
-    const artistIdFromUrl = params.get("id");
-
-    const displayNameEl = document.getElementById("artist-display-name");
-    const handleEl = document.getElementById("artist-handle");
-    const bioEl = document.getElementById("artist-bio");
-    const followersEl = document.getElementById("artist-followers-count");
-    const tracksEl = document.getElementById("artist-tracks-count");
-    const releasesEl = document.getElementById("artist-releases-count");
-    const livesEl = document.getElementById("artist-lives-count");
-    const trackListEl = document.getElementById("artist-track-list");
-    const liveTitleEl = document.getElementById("artist-live-title");
-    const liveDescriptionEl = document.getElementById("artist-live-description");
-    const avatarEl = document.getElementById("artist-avatar");
-    const errorEl = document.getElementById("artist-error");
-
-    function showError(message) {
-      if (!errorEl) return;
-      errorEl.textContent = message || "";
-      errorEl.style.display = message ? "block" : "none";
-    }
-
-    function formatHandle(value) {
-      const clean = String(value || "").replace(/^@+/, "").trim();
-      return clean ? `@${clean}` : "@artist";
-    }
-
-    async function getCurrentUser() {
-      const { data, error } = await supabase.auth.getSession();
-      if (error) throw error;
-      return data?.session?.user || null;
-    }
-
-    async function resolveArtistId() {
-      if (artistIdFromUrl) return artistIdFromUrl;
-      const currentUser = await getCurrentUser();
-      return currentUser?.id || null;
-    }
-
-    async function loadArtistProfile(artistId) {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", artistId)
-        .maybeSingle();
-
-      if (error) throw error;
-      return data || null;
-    }
-
-    async function loadFollowersCount(artistId) {
-      const { count } = await supabase
-        .from("followers")
-        .select("*", { count: "exact", head: true })
-        .eq("following_id", artistId);
-
-      return count || 0;
-    }
-
-    async function loadTracks(artistId) {
-      const { data, error } = await supabase
-        .from("tracks")
-        .select("*")
-        .eq("creator_id", artistId)
-        .order("created_at", { ascending: false })
-        .limit(12);
-
-      if (error) throw error;
-      return data || [];
-    }
-
-    async function loadLivesCount(artistId) {
-      const { count } = await supabase
-        .from("live_streams")
-        .select("*", { count: "exact", head: true })
-        .eq("creator_id", artistId);
-
-      return count || 0;
-    }
-
-    async function loadLatestLive(artistId) {
-      const { data, error } = await supabase
-        .from("live_streams")
-        .select("*")
-        .eq("creator_id", artistId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (error) return null;
-      return data || null;
-    }
-
-    function renderTracks(tracks) {
-      if (!trackListEl) return;
-
-      if (!tracks || tracks.length === 0) {
-        trackListEl.innerHTML = `
-          <div class="track-item">
-            <strong>No tracks yet</strong>
-            <span>Upload music to fill the artist channel.</span>
-          </div>
-        `;
-        return;
-      }
-
-      trackListEl.innerHTML = tracks.map((track) => `
-        <div class="track-item">
-          <strong>${track.title || "Untitled Track"}</strong>
-          <span>${track.genre || "No genre"} • ${track.artist_name || "Artist"} • ${track.description || "Release ready for the artist lane."}</span>
-          ${track.audio_url ? `<audio controls src="${track.audio_url}"></audio>` : ""}
-        </div>
-      `).join("");
-    }
-
-    async function bootArtistPage() {
-      try {
-        const artistId = await resolveArtistId();
-
-        if (!artistId) {
-          showError("No artist profile found.");
-          return;
-        }
-
-        const [profile, followers, tracks, lives, latestLive] = await Promise.all([
-          loadArtistProfile(artistId),
-          loadFollowersCount(artistId),
-          loadTracks(artistId),
-          loadLivesCount(artistId),
-          loadLatestLive(artistId)
-        ]);
-
-        if (profile) {
-          displayNameEl.textContent = profile.display_name || "Artist Channel";
-          handleEl.textContent = formatHandle(profile.username || profile.handle || "artist");
-          bioEl.textContent = profile.bio || "Artist channel for releases, live sessions, visuals, and creator growth.";
-
-          if (profile.avatar_url) {
-            avatarEl.src = profile.avatar_url;
-          }
-        }
-
-        followersEl.textContent = followers;
-        tracksEl.textContent = tracks.length;
-        releasesEl.textContent = tracks.length;
-        livesEl.textContent = lives;
-
-        renderTracks(tracks);
-
-        if (latestLive) {
-          liveTitleEl.textContent = latestLive.title || "Latest Live Session";
-          liveDescriptionEl.textContent =
-            latestLive.description ||
-            "Artist live session ready for drop nights, fan rooms, and creator performance energy.";
-        }
-      } catch (error) {
-        console.error("[artist-page] bootArtistPage error:", error);
-        showError(error.message || "Failed to load artist channel.");
-      }
-    }
-
-    bootArtistPage();
-  </script>
-
+  <script type="module" src="/src/artist/artist-live.js"></script>
   <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
