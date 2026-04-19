@@ -160,13 +160,17 @@ function bindProfileRedirect() {
         return;
       }
       window.location.href = "/profile.html";
-    } catch {
+    } catch (error) {
+      console.error("[auth-ui] profile redirect error:", error);
       window.location.href = "/profile.html";
     }
   });
 }
 
 function boot() {
+  const node = document.getElementById("auth-session-status");
+  if (node) node.textContent = "auth-ui loaded";
+
   bindTabs();
   bindLogin();
   bindSignup();
