@@ -1,1 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Smoke City Hustle</title>
 
+<style>
+body {
+  margin:0;
+  background:#020f0a;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+
+canvas {
+  background:#081b12;
+  display:block;
+  margin:20px auto;
+  border-radius:12px;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>🏙 Smoke City Hustle</h1>
+<p>Dodge obstacles. Stay alive.</p>
+
+<canvas id="game" width="300" height="500"></canvas>
+<div>Score: <span id="score">0</span></div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x:140, y:420, w:20, h:20 };
+let obstacles = [];
+let score = 0;
+
+function spawnObstacle() {
+  obstacles.push({
+    x: Math.random() * 280,
+    y: 0,
+    w:20,
+    h:20
+  });
+}
+
+function update() {
+  ctx.clearRect(0,0,300,500);
+
+  // player
+  ctx.fillStyle = "#00ff99";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  // obstacles
+  ctx.fillStyle = "#ff4444";
+  obstacles.forEach(o => {
+    o.y += 4;
+    ctx.fillRect(o.x, o.y, o.w, o.h);
+
+    // collision
+    if (
+      player.x < o.x + o.w &&
+      player.x + player.w > o.x &&
+      player.y < o.y + o.h &&
+      player.y + player.h > o.y
+    ) {
+      alert("Game Over. Score: " + score);
+      obstacles = [];
+      score = 0;
+    }
+  });
+
+  obstacles = obstacles.filter(o => o.y < 500);
+
+  score++;
+  document.getElementById("score").innerText = score;
+
+  requestAnimationFrame(update);
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft") player.x -= 20;
+  if (e.key === "ArrowRight") player.x += 20;
+});
+
+setInterval(spawnObstacle, 1000);
+update();
+</script>
+
+</body>
+</html>
