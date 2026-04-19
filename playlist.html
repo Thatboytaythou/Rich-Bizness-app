@@ -2,951 +2,1360 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
   <title>Rich Bizness | Playlist</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --blue: #67b7ff;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    :root{
+      --bg:#07110a;
+      --panel:rgba(7, 18, 10, 0.76);
+      --panel-2:rgba(12, 28, 18, 0.88);
+      --soft:#b7ffcb;
+      --text:#f5fff8;
+      --muted:#9fbea8;
+      --line:rgba(140,255,180,0.18);
+      --glow:#59ff93;
+      --glow-2:#d7ffe5;
+      --danger:#ff5f7a;
+      --warning:#ffcc66;
+      --shadow:0 20px 60px rgba(0,0,0,0.45);
+      --radius:22px;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    html,body{
+      width:100%;
+      min-height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Inter, Arial, Helvetica, sans-serif;
+      overflow-x:hidden;
+    }
+
+    body{
+      position:relative;
+    }
+
+    /* BACKGROUND */
+    .bg{
+      position:fixed;
+      inset:0;
+      z-index:-5;
       background:
-        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.94)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.72)),
+        radial-gradient(circle at top left, rgba(89,255,147,0.15), transparent 28%),
+        radial-gradient(circle at right center, rgba(183,255,203,0.12), transparent 25%),
+        url("images/playlist-bg.jpg") center center / cover no-repeat;
+      filter:saturate(1.05) contrast(1.05);
+      transform:scale(1.03);
     }
 
-    .page {
-      max-width: 1760px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 50px;
-    }
-
-    .topbar,
-    .hero,
-    .section,
-    .status-box,
-    .player-bar {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.85rem;
-      font-weight: 900;
-    }
-
-    .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-    }
-
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 320px 1fr 360px;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .cover-box {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      border-radius: 28px;
-      overflow: hidden;
+    .bg::after{
+      content:"";
+      position:absolute;
+      inset:0;
       background:
-        linear-gradient(to top, rgba(0,0,0,0.65), rgba(0,0,0,0.20)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: var(--shadow);
+        linear-gradient(to bottom, rgba(0,0,0,0.15), rgba(0,0,0,0.35)),
+        radial-gradient(circle at 20% 20%, rgba(255,255,255,0.06), transparent 16%),
+        radial-gradient(circle at 80% 10%, rgba(89,255,147,0.08), transparent 14%);
+      animation:bgPulse 9s ease-in-out infinite alternate;
     }
 
-    .cover-box img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    @keyframes bgPulse{
+      from{ opacity:.85; }
+      to{ opacity:1; }
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 0.94;
-      color: var(--green);
+    .smoke{
+      position:fixed;
+      inset:0;
+      z-index:-4;
+      pointer-events:none;
+      overflow:hidden;
     }
 
-    .subtle,
-    .mini-text,
-    .status-box,
-    .track-meta,
-    .track-desc {
-      color: var(--text);
-      line-height: 1.75;
+    .smoke span{
+      position:absolute;
+      display:block;
+      width:420px;
+      height:420px;
+      border-radius:50%;
+      filter:blur(70px);
+      opacity:.08;
+      background:radial-gradient(circle, rgba(215,255,229,.8), transparent 70%);
+      animation:floatSmoke linear infinite;
     }
 
-    .hero-kicker,
-    .pill-green,
-    .pill-blue,
-    .pill-gold,
-    .pill-red {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
+    .smoke span:nth-child(1){
+      left:-8%;
+      bottom:-10%;
+      animation-duration:25s;
     }
 
-    .hero-kicker,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
+    .smoke span:nth-child(2){
+      right:-10%;
+      top:10%;
+      animation-duration:32s;
+      opacity:.06;
     }
 
-    .pill-blue {
-      background: rgba(103,183,255,0.18);
-      border: 1px solid rgba(103,183,255,0.28);
-      color: var(--blue);
+    .smoke span:nth-child(3){
+      left:30%;
+      bottom:-18%;
+      animation-duration:28s;
+      opacity:.07;
     }
 
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
+    @keyframes floatSmoke{
+      0%{
+        transform:translateY(0) translateX(0) scale(1);
+      }
+      100%{
+        transform:translateY(-140px) translateX(50px) scale(1.25);
+      }
     }
 
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
+    a{
+      color:inherit;
+      text-decoration:none;
     }
 
-    .hero-actions,
-    .track-actions,
-    .player-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
+    button{
+      font:inherit;
+      border:none;
+      outline:none;
+      cursor:pointer;
     }
 
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-blue,
-    .btn-red {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
+    img{
+      max-width:100%;
+      display:block;
     }
 
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-blue { background: var(--blue); color: black; }
-    .btn-red { background: var(--danger); color: white; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
+    /* NAV */
+    .nav{
+      position:sticky;
+      top:0;
+      z-index:50;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:16px 22px;
+      backdrop-filter:blur(16px);
+      background:rgba(4, 10, 6, 0.6);
+      border-bottom:1px solid var(--line);
     }
 
-    .mini-panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 14px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
     }
 
-    .mini-panel-title,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.3rem;
-      font-weight: 900;
+    .brand-logo{
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      object-fit:cover;
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow:0 0 24px rgba(89,255,147,0.18);
+      background:#0a160d;
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
+    .brand-text h1{
+      font-size:1.05rem;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      font-weight:900;
+      line-height:1;
     }
 
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
+    .brand-text p{
+      color:var(--muted);
+      font-size:.76rem;
+      margin-top:5px;
+      letter-spacing:.06em;
     }
 
-    .stat-value {
-      font-size: 1.7rem;
-      font-weight: 900;
-      color: var(--green);
+    .nav-links{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
     }
 
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
+    .nav-links a{
+      padding:10px 14px;
+      border-radius:999px;
+      color:var(--muted);
+      background:rgba(255,255,255,0.03);
+      border:1px solid transparent;
+      transition:.25s ease;
+      font-size:.93rem;
     }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
+    .nav-links a:hover,
+    .nav-links a.active{
+      color:var(--text);
+      border-color:rgba(89,255,147,0.22);
+      background:rgba(89,255,147,0.08);
+      box-shadow:0 0 18px rgba(89,255,147,0.08);
     }
 
-    .section-header p {
-      margin: 0;
-      color: var(--text);
+    /* LAYOUT */
+    .wrap{
+      max-width:1450px;
+      margin:0 auto;
+      padding:28px 22px 100px;
     }
 
-    .track-list {
-      display: grid;
-      gap: 14px;
+    .hero{
+      display:grid;
+      grid-template-columns:330px 1fr;
+      gap:24px;
+      align-items:end;
+      margin-top:12px;
+      margin-bottom:24px;
     }
 
-    .track-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      transition: 0.2s ease;
-    }
-
-    .track-card.active {
-      border-color: rgba(125,255,113,0.35);
-      box-shadow: 0 0 22px rgba(125,255,113,0.12);
-      background: rgba(125,255,113,0.08);
-    }
-
-    .track-row {
-      display: grid;
-      grid-template-columns: 74px 1fr auto;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .track-cover {
-      width: 74px;
-      height: 74px;
-      border-radius: 16px;
-      overflow: hidden;
+    .hero-cover{
+      position:relative;
+      min-height:330px;
+      border-radius:30px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
       background:
-        linear-gradient(to top, rgba(0,0,0,0.6), rgba(0,0,0,0.2)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      border: 1px solid rgba(255,255,255,0.08);
+        linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.45)),
+        url("images/playlist-cover.jpg") center/cover no-repeat;
     }
 
-    .track-cover img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .hero-cover::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(to top, rgba(0,0,0,.72), rgba(0,0,0,0.08));
     }
 
-    .track-title {
-      color: var(--gold);
-      font-size: 1.02rem;
-      font-weight: 900;
-      margin-bottom: 4px;
+    .hero-badge{
+      position:absolute;
+      top:18px;
+      left:18px;
+      z-index:2;
+      padding:8px 14px;
+      border-radius:999px;
+      background:rgba(7,18,10,.62);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(140,255,180,.24);
+      font-size:.82rem;
+      font-weight:800;
+      letter-spacing:.05em;
+      color:var(--soft);
+      box-shadow:0 0 18px rgba(89,255,147,.12);
     }
 
-    .track-meta {
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.55;
+    .hero-cover-bottom{
+      position:absolute;
+      left:20px;
+      right:20px;
+      bottom:18px;
+      z-index:2;
     }
 
-    .track-side {
-      text-align: right;
-      min-width: 110px;
+    .hero-cover-bottom h2{
+      font-size:1.55rem;
+      font-weight:900;
+      text-shadow:0 5px 20px rgba(0,0,0,.55);
     }
 
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+    .hero-cover-bottom p{
+      color:#d8efe0;
+      margin-top:8px;
+      line-height:1.45;
+      font-size:.94rem;
+      max-width:90%;
     }
 
-    .player-bar {
-      position: sticky;
-      bottom: 14px;
-      padding: 18px;
-      z-index: 12;
+    .hero-main{
+      min-height:330px;
+      padding:26px;
+      border-radius:30px;
+      background:var(--panel);
+      backdrop-filter:blur(16px);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
     }
 
-    .player-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      align-items: center;
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      font-size:.82rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--soft);
+      font-weight:800;
+      margin-bottom:14px;
     }
 
-    .now-playing {
-      color: white;
-      font-weight: 800;
+    .eyebrow::before{
+      content:"";
+      width:10px;
+      height:10px;
+      border-radius:50%;
+      background:var(--glow);
+      box-shadow:0 0 14px var(--glow);
     }
 
-    .now-playing small {
-      display: block;
-      color: var(--muted);
-      font-weight: 600;
-      margin-top: 4px;
+    .hero-main h3{
+      font-size:clamp(2rem, 4vw, 4.1rem);
+      line-height:.96;
+      font-weight:1000;
+      letter-spacing:-.03em;
+      max-width:900px;
+      text-shadow:0 8px 30px rgba(0,0,0,.34);
     }
 
-    audio {
-      width: 100%;
-      margin-top: 10px;
+    .hero-main p{
+      margin-top:16px;
+      color:var(--muted);
+      line-height:1.7;
+      font-size:1rem;
+      max-width:900px;
     }
 
-    @media (max-width: 1500px) {
-      .hero-grid {
-        grid-template-columns: 280px 1fr;
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:28px;
+    }
+
+    .btn{
+      padding:14px 20px;
+      border-radius:16px;
+      font-weight:900;
+      transition:.25s ease;
+      letter-spacing:.02em;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg, rgba(89,255,147,.92), rgba(144,255,187,.78));
+      color:#041109;
+      box-shadow:0 10px 30px rgba(89,255,147,.22);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 34px rgba(89,255,147,.3);
+    }
+
+    .btn-secondary{
+      color:var(--text);
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .btn-secondary:hover{
+      background:rgba(255,255,255,.09);
+    }
+
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0,1fr));
+      gap:12px;
+      margin-top:28px;
+    }
+
+    .stat{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .stat strong{
+      display:block;
+      font-size:1.25rem;
+      font-weight:900;
+    }
+
+    .stat span{
+      display:block;
+      margin-top:4px;
+      color:var(--muted);
+      font-size:.86rem;
+    }
+
+    /* CONTENT GRID */
+    .content{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:24px;
+      margin-top:24px;
+    }
+
+    .panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(16px);
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:22px 22px 16px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .panel-head h4{
+      font-size:1.15rem;
+      font-weight:900;
+      letter-spacing:.01em;
+    }
+
+    .panel-head p{
+      color:var(--muted);
+      font-size:.92rem;
+      margin-top:4px;
+    }
+
+    .search-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:18px 22px 0;
+      flex-wrap:wrap;
+    }
+
+    .search{
+      flex:1;
+      min-width:200px;
+      display:flex;
+      align-items:center;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:0 14px;
+      min-height:52px;
+    }
+
+    .search input{
+      width:100%;
+      background:transparent;
+      border:none;
+      outline:none;
+      color:var(--text);
+      font-size:.95rem;
+      padding:0 8px;
+    }
+
+    .search input::placeholder{
+      color:#7fa18a;
+    }
+
+    .chip-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .chip{
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.06);
+      font-size:.84rem;
+      font-weight:700;
+      transition:.25s ease;
+    }
+
+    .chip.active,
+    .chip:hover{
+      color:var(--text);
+      border-color:rgba(89,255,147,.2);
+      background:rgba(89,255,147,.08);
+    }
+
+    .track-list{
+      padding:14px 14px 16px;
+    }
+
+    .track{
+      display:grid;
+      grid-template-columns:56px 1.55fr 1fr 100px 70px;
+      gap:14px;
+      align-items:center;
+      padding:12px;
+      border-radius:20px;
+      transition:.25s ease;
+      border:1px solid transparent;
+    }
+
+    .track:hover{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(255,255,255,.05);
+    }
+
+    .track-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .play-btn{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      background:rgba(89,255,147,.12);
+      color:var(--soft);
+      font-size:1rem;
+      font-weight:900;
+      border:1px solid rgba(89,255,147,.18);
+      transition:.25s ease;
+    }
+
+    .play-btn:hover{
+      background:rgba(89,255,147,.22);
+      transform:scale(1.04);
+    }
+
+    .track-title{
+      min-width:0;
+    }
+
+    .track-title h5{
+      font-size:1rem;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .track-title p{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-top:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .track-meta{
+      color:#d6efe0;
+      font-size:.9rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .track-plays{
+      color:var(--muted);
+      font-size:.9rem;
+      text-align:right;
+    }
+
+    .track-time{
+      font-weight:800;
+      color:#dffde8;
+      text-align:right;
+    }
+
+    .track-more{
+      justify-self:end;
+      background:transparent;
+      color:var(--muted);
+      font-size:1.2rem;
+      width:42px;
+      height:42px;
+      border-radius:12px;
+    }
+
+    .track-more:hover{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+    }
+
+    /* SIDEBAR */
+    .sidebar{
+      display:grid;
+      gap:24px;
+    }
+
+    .card{
+      padding:22px;
+    }
+
+    .now-playing{
+      position:relative;
+      overflow:hidden;
+    }
+
+    .now-playing::before{
+      content:"";
+      position:absolute;
+      inset:auto -20% 50% auto;
+      width:220px;
+      height:220px;
+      border-radius:50%;
+      background:radial-gradient(circle, rgba(89,255,147,.16), transparent 68%);
+      filter:blur(18px);
+    }
+
+    .cover-art{
+      position:relative;
+      width:100%;
+      aspect-ratio:1/1;
+      border-radius:24px;
+      overflow:hidden;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.44)),
+        url("images/now-playing.jpg") center/cover no-repeat;
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow:0 14px 40px rgba(0,0,0,.35);
+    }
+
+    .np-info{
+      margin-top:18px;
+    }
+
+    .np-info h5{
+      font-size:1.25rem;
+      font-weight:900;
+    }
+
+    .np-info p{
+      margin-top:6px;
+      color:var(--muted);
+      line-height:1.55;
+    }
+
+    .wave{
+      display:flex;
+      align-items:flex-end;
+      gap:5px;
+      height:34px;
+      margin:18px 0 14px;
+    }
+
+    .wave span{
+      width:7px;
+      border-radius:999px;
+      background:linear-gradient(to top, rgba(89,255,147,.45), rgba(183,255,203,.95));
+      animation:wave 1.2s ease-in-out infinite;
+      box-shadow:0 0 12px rgba(89,255,147,.15);
+    }
+
+    .wave span:nth-child(1){ height:14px; animation-delay:.0s; }
+    .wave span:nth-child(2){ height:22px; animation-delay:.1s; }
+    .wave span:nth-child(3){ height:30px; animation-delay:.2s; }
+    .wave span:nth-child(4){ height:18px; animation-delay:.3s; }
+    .wave span:nth-child(5){ height:26px; animation-delay:.4s; }
+    .wave span:nth-child(6){ height:16px; animation-delay:.5s; }
+    .wave span:nth-child(7){ height:28px; animation-delay:.6s; }
+    .wave span:nth-child(8){ height:21px; animation-delay:.7s; }
+
+    @keyframes wave{
+      0%,100%{ transform:scaleY(.7); opacity:.7; }
+      50%{ transform:scaleY(1.25); opacity:1; }
+    }
+
+    .player-controls{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr);
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .ctrl{
+      min-height:50px;
+      border-radius:16px;
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.06);
+      font-weight:900;
+      transition:.25s ease;
+    }
+
+    .ctrl:hover{
+      background:rgba(255,255,255,.1);
+    }
+
+    .ctrl.main{
+      background:rgba(89,255,147,.18);
+      color:var(--soft);
+      border-color:rgba(89,255,147,.22);
+    }
+
+    .mini-list{
+      display:grid;
+      gap:12px;
+      margin-top:4px;
+    }
+
+    .mini-item{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:10px;
+      border-radius:18px;
+      transition:.25s ease;
+    }
+
+    .mini-item:hover{
+      background:rgba(255,255,255,.04);
+    }
+
+    .mini-thumb{
+      width:56px;
+      height:56px;
+      border-radius:16px;
+      object-fit:cover;
+      background:#102116;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .mini-copy{
+      min-width:0;
+      flex:1;
+    }
+
+    .mini-copy h6{
+      font-size:.96rem;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .mini-copy p{
+      color:var(--muted);
+      font-size:.84rem;
+      margin-top:4px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:68px;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(89,255,147,.1);
+      color:var(--soft);
+      border:1px solid rgba(89,255,147,.16);
+      font-size:.8rem;
+      font-weight:800;
+    }
+
+    .queue-note{
+      margin-top:14px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      border:1px solid rgba(255,255,255,.05);
+      line-height:1.6;
+      font-size:.92rem;
+    }
+
+    /* FOOTER PLAYER */
+    .bottom-player{
+      position:fixed;
+      left:16px;
+      right:16px;
+      bottom:16px;
+      z-index:60;
+      display:grid;
+      grid-template-columns:1.15fr 1fr 180px;
+      gap:14px;
+      align-items:center;
+      padding:14px 16px;
+      background:rgba(5, 12, 7, 0.86);
+      backdrop-filter:blur(18px);
+      border:1px solid rgba(140,255,180,.18);
+      border-radius:24px;
+      box-shadow:0 20px 60px rgba(0,0,0,.4);
+    }
+
+    .bottom-left{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .bottom-thumb{
+      width:64px;
+      height:64px;
+      border-radius:18px;
+      object-fit:cover;
+      background:#0d1b11;
+      border:1px solid rgba(255,255,255,.06);
+    }
+
+    .bottom-copy{
+      min-width:0;
+    }
+
+    .bottom-copy h6{
+      font-size:1rem;
+      font-weight:900;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .bottom-copy p{
+      color:var(--muted);
+      margin-top:4px;
+      font-size:.88rem;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .bottom-center{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .bottom-controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .bottom-controls button{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid rgba(255,255,255,.06);
+      font-weight:900;
+    }
+
+    .bottom-controls .play-main{
+      width:54px;
+      height:54px;
+      border-radius:16px;
+      background:rgba(89,255,147,.18);
+      color:var(--soft);
+      border-color:rgba(89,255,147,.24);
+    }
+
+    .progress-wrap{
+      width:100%;
+      display:grid;
+      grid-template-columns:44px 1fr 44px;
+      align-items:center;
+      gap:10px;
+    }
+
+    .progress-wrap span{
+      color:var(--muted);
+      font-size:.8rem;
+      text-align:center;
+    }
+
+    .progress{
+      position:relative;
+      height:8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+    }
+
+    .progress-fill{
+      position:absolute;
+      inset:0 auto 0 0;
+      width:46%;
+      border-radius:999px;
+      background:linear-gradient(90deg, rgba(89,255,147,.75), rgba(183,255,203,1));
+      box-shadow:0 0 16px rgba(89,255,147,.15);
+    }
+
+    .bottom-right{
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+      gap:12px;
+    }
+
+    .vol{
+      flex:1;
+      max-width:120px;
+      height:8px;
+      border-radius:999px;
+      background:rgba(255,255,255,.08);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .vol::after{
+      content:"";
+      position:absolute;
+      inset:0 auto 0 0;
+      width:68%;
+      background:linear-gradient(90deg, rgba(89,255,147,.7), rgba(183,255,203,.98));
+      border-radius:999px;
+    }
+
+    .ghost-btn{
+      padding:11px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.06);
+      color:var(--text);
+      font-weight:800;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width:1150px){
+      .hero{
+        grid-template-columns:1fr;
       }
 
-      .hero-side {
-        grid-column: 1 / -1;
+      .content{
+        grid-template-columns:1fr;
       }
 
-      .stats-row {
-        grid-template-columns: repeat(2, 1fr);
+      .bottom-player{
+        grid-template-columns:1fr;
+      }
+
+      .bottom-right{
+        justify-content:flex-start;
       }
     }
 
-    @media (max-width: 980px) {
-      .hero-grid,
-      .stats-row,
-      .player-grid,
-      .track-row {
-        grid-template-columns: 1fr;
+    @media (max-width:820px){
+      .nav{
+        flex-direction:column;
+        align-items:flex-start;
       }
 
-      .hero h1 {
-        font-size: 2.2rem;
+      .nav-links{
+        width:100%;
+        justify-content:flex-start;
       }
 
-      .track-side {
-        text-align: left;
+      .hero-stats{
+        grid-template-columns:repeat(2, minmax(0,1fr));
+      }
+
+      .track{
+        grid-template-columns:56px 1fr 80px;
+      }
+
+      .track-meta{
+        display:none;
+      }
+
+      .track-plays{
+        display:none;
+      }
+    }
+
+    @media (max-width:560px){
+      .wrap{
+        padding:20px 14px 140px;
+      }
+
+      .hero-main,
+      .panel,
+      .hero-cover{
+        border-radius:22px;
+      }
+
+      .hero-main{
+        padding:18px;
+      }
+
+      .panel-head,
+      .card{
+        padding:18px;
+      }
+
+      .search-wrap{
+        padding:14px 18px 0;
+      }
+
+      .track-list{
+        padding:10px;
+      }
+
+      .track{
+        grid-template-columns:46px 1fr 56px;
+        gap:10px;
+        padding:10px;
+      }
+
+      .play-btn{
+        width:42px;
+        height:42px;
+        border-radius:14px;
+      }
+
+      .hero-main h3{
+        line-height:1.02;
+      }
+
+      .bottom-player{
+        left:10px;
+        right:10px;
+        bottom:10px;
+        padding:12px;
+      }
+
+      .bottom-thumb{
+        width:56px;
+        height:56px;
+      }
+
+      .bottom-right{
+        flex-wrap:wrap;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Playlist</span>
-      </div>
+  <div class="bg"></div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
-        <a href="albums.html">Albums</a>
-        <a href="playlist.html" class="active">Playlist</a>
-        <a href="artist.html">Artist</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
-
-    <div class="hero">
-      <div class="hero-grid">
-        <div class="cover-box" id="playlistCoverBox"></div>
-
-        <div>
-          <div>
-            <span class="hero-kicker">UPGRADED PLAYLIST</span>
-            <span class="pill-green">MUSIC LANE</span>
-            <span class="pill-blue">QUEUE READY</span>
-            <span class="pill-gold">RICH BIZNESS</span>
-          </div>
-
-          <h1 id="playlistTitle">Loading playlist...</h1>
-          <div id="playlistCreator" class="mini-text">by loading...</div>
-          <div id="playlistDesc" class="subtle" style="margin-top:12px;">Loading playlist description...</div>
-
-          <div class="hero-actions">
-            <button id="playAllBtn" class="btn-green" type="button">Play All</button>
-            <button id="shuffleBtn" class="btn-blue" type="button">Shuffle</button>
-            <a id="creatorArtistBtn" class="btn-dark" href="artist.html">Artist Page</a>
-            <a class="btn-dark" href="music.html">Back to Music</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading playlist...</div>
-
-          <div class="stats-row">
-            <div class="stat">
-              <div id="tracksStat" class="stat-value">0</div>
-              <div class="stat-label">Tracks</div>
-            </div>
-            <div class="stat">
-              <div id="durationStat" class="stat-value">0:00</div>
-              <div class="stat-label">Duration</div>
-            </div>
-            <div class="stat">
-              <div id="viewsStat" class="stat-value">0</div>
-              <div class="stat-label">Views</div>
-            </div>
-            <div class="stat">
-              <div id="likesStat" class="stat-value">0</div>
-              <div class="stat-label">Likes</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="hero-side">
-          <div class="mini-panel">
-            <div class="mini-panel-title">Playlist Pulse</div>
-            <div id="pulseBox" class="mini-text">Loading playlist pulse...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">What This Page Does</div>
-            <div class="mini-text">
-              • playlist hero and cover
-              <br>• real track queue
-              <br>• play / pause / next / previous
-              <br>• artist links
-              <br>• lock-aware track UI
-            </div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Owner Tools Ready</div>
-            <div id="ownerToolsBox" class="mini-text">
-              Checking owner tools...
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <div>
-          <h2>Playlist Tracks</h2>
-          <p>Preview tracks, jump through the queue, and open related artist or album lanes.</p>
-        </div>
-      </div>
-
-      <div id="trackList" class="track-list">
-        <div class="empty-box">Loading tracks...</div>
-      </div>
-    </div>
-
-    <div class="player-bar">
-      <div class="player-grid">
-        <div>
-          <div id="nowPlayingBox" class="now-playing">
-            No track selected
-            <small>Pick a track from the playlist to start playback.</small>
-          </div>
-          <audio id="audioPlayer" controls preload="none"></audio>
-        </div>
-
-        <div class="player-actions">
-          <button id="prevBtn" class="btn-dark" type="button">Previous</button>
-          <button id="pauseBtn" class="btn-dark" type="button">Pause</button>
-          <button id="nextBtn" class="btn-green" type="button">Next</button>
-        </div>
-      </div>
-    </div>
+  <div class="smoke">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  <nav class="nav">
+    <div class="brand">
+      <img
+        class="brand-logo"
+        src="images/rich-bizness-profile.jpg"
+        alt="Rich Bizness logo"
+      />
+      <div class="brand-text">
+        <h1>Rich Bizness</h1>
+        <p>Playlist Empire</p>
+      </div>
+    </div>
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="music.html">Music</a>
+      <a href="artist.html">Artist</a>
+      <a href="live.html">Live</a>
+      <a href="watch.html">Watch</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="playlist.html" class="active">Playlist</a>
+    </div>
+  </nav>
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-
-      const playlistCoverBox = document.getElementById("playlistCoverBox");
-      const playlistTitle = document.getElementById("playlistTitle");
-      const playlistCreator = document.getElementById("playlistCreator");
-      const playlistDesc = document.getElementById("playlistDesc");
-      const creatorArtistBtn = document.getElementById("creatorArtistBtn");
-
-      const statusBox = document.getElementById("statusBox");
-      const pulseBox = document.getElementById("pulseBox");
-      const ownerToolsBox = document.getElementById("ownerToolsBox");
-
-      const tracksStat = document.getElementById("tracksStat");
-      const durationStat = document.getElementById("durationStat");
-      const viewsStat = document.getElementById("viewsStat");
-      const likesStat = document.getElementById("likesStat");
-
-      const trackList = document.getElementById("trackList");
-
-      const playAllBtn = document.getElementById("playAllBtn");
-      const shuffleBtn = document.getElementById("shuffleBtn");
-      const prevBtn = document.getElementById("prevBtn");
-      const pauseBtn = document.getElementById("pauseBtn");
-      const nextBtn = document.getElementById("nextBtn");
-
-      const audioPlayer = document.getElementById("audioPlayer");
-      const nowPlayingBox = document.getElementById("nowPlayingBox");
-
-      let currentUser = null;
-      let playlist = null;
-      let playlistTracks = [];
-      let profilesById = {};
-      let currentTrackIndex = -1;
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      function formatDuration(totalSeconds) {
-        const secs = Number(totalSeconds || 0);
-        const mins = Math.floor(secs / 60);
-        const rem = secs % 60;
-        return `${mins}:${String(rem).padStart(2, "0")}`;
-      }
-
-      function getPlaylistIdFromUrl() {
-        const params = new URLSearchParams(window.location.search);
-        const id = params.get("id");
-        return id ? Number(id) : null;
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function loadProfiles(userIds) {
-        const ids = [...new Set(userIds.filter(Boolean))];
-        if (!ids.length) {
-          profilesById = {};
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, email")
-          .in("id", ids);
-
-        if (error && error.code !== "42P01") throw error;
-
-        profilesById = {};
-        (data || []).forEach(profile => {
-          profilesById[profile.id] = profile;
-        });
-      }
-
-      function getCreatorName(userId) {
-        const p = profilesById[userId] || {};
-        return p.display_name || p.username || p.email || "Creator";
-      }
-
-      function getArtistLink(userId) {
-        const p = profilesById[userId] || {};
-        return p.username ? `artist.html?u=${encodeURIComponent(p.username)}` : "artist.html";
-      }
-
-      async function loadPlaylist() {
-        const playlistId = getPlaylistIdFromUrl();
-        if (!playlistId) throw new Error("Missing playlist id. Use playlist.html?id=1");
-
-        const { data, error } = await supabase
-          .from("playlists")
-          .select("*")
-          .eq("id", playlistId)
-          .maybeSingle();
-
-        if (error && error.code !== "42P01") throw error;
-        if (!data) throw new Error("Playlist not found.");
-
-        playlist = data;
-        await loadProfiles([playlist.user_id]);
-      }
-
-      async function loadPlaylistTracks() {
-        const { data: joinRows, error: joinError } = await supabase
-          .from("playlist_tracks")
-          .select("*")
-          .eq("playlist_id", playlist.id)
-          .order("position", { ascending: true });
-
-        if (joinError && joinError.code !== "42P01") throw joinError;
-
-        const trackIds = (joinRows || []).map(r => r.track_id);
-        if (!trackIds.length) {
-          playlistTracks = [];
-          return;
-        }
-
-        const { data: trackRows, error: tracksError } = await supabase
-          .from("music_uploads")
-          .select("*")
-          .in("id", trackIds);
-
-        if (tracksError && tracksError.code !== "42P01") throw tracksError;
-
-        const trackMap = new Map((trackRows || []).map(t => [Number(t.id), t]));
-
-        playlistTracks = (joinRows || [])
-          .map(r => ({
-            ...trackMap.get(Number(r.track_id)),
-            playlist_track_id: r.id,
-            position: r.position
-          }))
-          .filter(Boolean);
-
-        await loadProfiles([
-          playlist.user_id,
-          ...playlistTracks.map(t => t.user_id)
-        ]);
-      }
-
-      async function bumpPlaylistView() {
-        if (!playlist?.id) return;
-        const nextViews = Number(playlist.views || 0) + 1;
-
-        const { error } = await supabase
-          .from("playlists")
-          .update({ views: nextViews })
-          .eq("id", playlist.id);
-
-        if (!error) {
-          playlist.views = nextViews;
-        }
-      }
-
-      function renderHero() {
-        playlistTitle.textContent = playlist.title || "Playlist";
-        playlistCreator.innerHTML = `by <a href="${getArtistLink(playlist.user_id)}" style="color:var(--green);text-decoration:none;">${escapeHtml(getCreatorName(playlist.user_id))}</a>`;
-        playlistDesc.textContent = playlist.description || "No playlist description yet.";
-        creatorArtistBtn.href = getArtistLink(playlist.user_id);
-
-        if (playlist.cover_url) {
-          playlistCoverBox.innerHTML = `<img src="${escapeHtml(playlist.cover_url)}" alt="Playlist Cover" />`;
-        } else {
-          playlistCoverBox.innerHTML = "";
-        }
-
-        const totalDuration = playlistTracks.reduce((sum, t) => sum + Number(t.duration_seconds || 0), 0);
-
-        tracksStat.textContent = String(playlistTracks.length);
-        durationStat.textContent = formatDuration(totalDuration);
-        viewsStat.textContent = String(playlist.views || 0);
-        likesStat.textContent = String(playlist.likes_count || 0);
-
-        pulseBox.textContent =
-          `Playlist: ${playlist.title || "Playlist"}\n` +
-          `Creator: ${getCreatorName(playlist.user_id)}\n` +
-          `Tracks: ${playlistTracks.length}\n` +
-          `Duration: ${formatDuration(totalDuration)}\n` +
-          `Views: ${playlist.views || 0}\n` +
-          `Created: ${formatDate(playlist.created_at)}`;
-
-        ownerToolsBox.textContent =
-          currentUser && currentUser.id === playlist.user_id
-            ? "You own this playlist. This page is ready for edit, reorder, and add-track tools next."
-            : "Viewer mode active. Playlist owner controls hidden.";
-      }
-
-      function renderTracks() {
-        if (!playlistTracks.length) {
-          trackList.innerHTML = `<div class="empty-box">No tracks in this playlist yet.</div>`;
-          return;
-        }
-
-        trackList.innerHTML = playlistTracks.map((track, index) => {
-          const active = index === currentTrackIndex;
-          const artistLink = getArtistLink(track.user_id);
-          const albumLink = track.album_slug
-            ? `album-view.html?slug=${encodeURIComponent(track.album_slug)}`
-            : "albums.html";
-
-          return `
-            <div class="track-card ${active ? "active" : ""}">
-              <div class="track-row">
-                <div class="track-cover">
-                  ${track.cover_url ? `<img src="${escapeHtml(track.cover_url)}" alt="Track Cover" />` : ""}
-                </div>
-
-                <div>
-                  <div class="track-title">${escapeHtml(track.title || "Track")}</div>
-                  <div class="track-desc">
-                    <a href="${artistLink}" style="color:var(--green);text-decoration:none;">${escapeHtml(track.artist_name || getCreatorName(track.user_id))}</a>
-                    ${track.album_name ? ` • <a href="${albumLink}" style="color:var(--gold);text-decoration:none;">${escapeHtml(track.album_name)}</a>` : ""}
-                  </div>
-                  <div class="track-meta">
-                    Genre: ${escapeHtml(track.genre || "--")}<br>
-                    Duration: ${escapeHtml(formatDuration(track.duration_seconds || 0))}<br>
-                    ${track.is_locked ? `Locked • $${((Number(track.price_cents || 0)) / 100).toFixed(2)}` : "Open preview"}
-                  </div>
-
-                  <div class="track-actions">
-                    <button class="btn-green play-track-btn" data-index="${index}" type="button">
-                      ${active ? "Playing" : "Play"}
-                    </button>
-                    <a class="btn-dark" href="${artistLink}">Artist</a>
-                    <a class="btn-dark" href="${albumLink}">Album</a>
-                    ${track.is_locked ? `<a class="btn-gold" href="music-unlock.html">Unlock</a>` : ""}
-                  </div>
-                </div>
-
-                <div class="track-side">
-                  ${track.is_locked ? `<span class="pill-red">LOCKED</span>` : `<span class="pill-blue">OPEN</span>`}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-
-        document.querySelectorAll(".play-track-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            playTrackAtIndex(Number(btn.dataset.index));
-          });
-        });
-      }
-
-      function setNowPlaying(track) {
-        if (!track) {
-          nowPlayingBox.innerHTML = `
-            No track selected
-            <small>Pick a track from the playlist to start playback.</small>
-          `;
-          return;
-        }
-
-        nowPlayingBox.innerHTML = `
-          ${escapeHtml(track.title || "Track")}
-          <small>${escapeHtml(track.artist_name || getCreatorName(track.user_id))} • ${escapeHtml(track.album_name || "Single")}</small>
-        `;
-      }
-
-      function playTrackAtIndex(index) {
-        const track = playlistTracks[index];
-        if (!track) return;
-
-        if (!track.file_url) {
-          setStatus("Track file missing.");
-          return;
-        }
-
-        currentTrackIndex = index;
-        audioPlayer.src = track.file_url;
-        audioPlayer.play().catch(() => {
-          setStatus("Playback could not start automatically.");
-        });
-        setNowPlaying(track);
-        renderTracks();
-      }
-
-      function playAll() {
-        if (!playlistTracks.length) {
-          setStatus("No tracks to play.");
-          return;
-        }
-        playTrackAtIndex(0);
-      }
-
-      function shufflePlay() {
-        if (!playlistTracks.length) {
-          setStatus("No tracks to shuffle.");
-          return;
-        }
-        const randomIndex = Math.floor(Math.random() * playlistTracks.length);
-        playTrackAtIndex(randomIndex);
-      }
-
-      function playNext() {
-        if (!playlistTracks.length) return;
-        const nextIndex = currentTrackIndex < 0
-          ? 0
-          : (currentTrackIndex + 1) % playlistTracks.length;
-        playTrackAtIndex(nextIndex);
-      }
-
-      function playPrev() {
-        if (!playlistTracks.length) return;
-        const prevIndex = currentTrackIndex <= 0
-          ? playlistTracks.length - 1
-          : currentTrackIndex - 1;
-        playTrackAtIndex(prevIndex);
-      }
-
-      async function loadPlaylistPage() {
-        try {
-          setStatus("Loading playlist...");
-          await loadSession();
-          await loadPlaylist();
-          await loadPlaylistTracks();
-          await bumpPlaylistView();
-          renderHero();
-          renderTracks();
-          setNowPlaying(null);
-          setStatus("✅ Playlist fully synced.");
-        } catch (error) {
-          console.error("playlist load error:", error);
-          setStatus("❌ Playlist load error: " + error.message);
-          trackList.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load playlist.")}</div>`;
-        }
-      }
-
-      playAllBtn.addEventListener("click", playAll);
-      shuffleBtn.addEventListener("click", shufflePlay);
-      nextBtn.addEventListener("click", playNext);
-      prevBtn.addEventListener("click", playPrev);
-      pauseBtn.addEventListener("click", () => audioPlayer.pause());
-      audioPlayer.addEventListener("ended", playNext);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadPlaylistPage();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Playlist Startup Error</h1>
-          <p>${error.message}</p>
+  <main class="wrap">
+    <section class="hero">
+      <div class="hero-cover">
+        <div class="hero-badge">Curated • Smoke & Sound</div>
+        <div class="hero-cover-bottom">
+          <h2>Money Road Vibes</h2>
+          <p>
+            A Rich Bizness playlist built for creators, grinders, late-night sessions,
+            and elevated smoke-filled energy.
+          </p>
         </div>
-      `;
-    }
-  </script>
+      </div>
+
+      <div class="hero-main">
+        <div>
+          <div class="eyebrow">Official Rich Bizness Playlist</div>
+          <h3>Turn the vibe into a whole movement.</h3>
+          <p>
+            Build your own music empire with featured records, artist uploads,
+            smoky visuals, trending sounds, and elite playlist energy. This page is
+            designed to feel like a real streaming section inside the Rich Bizness app.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary">▶ Play Playlist</button>
+            <button class="btn btn-secondary">＋ Add Track</button>
+            <button class="btn btn-secondary">❤ Save</button>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <strong>48</strong>
+            <span>Tracks loaded</span>
+          </div>
+          <div class="stat">
+            <strong>3h 26m</strong>
+            <span>Total runtime</span>
+          </div>
+          <div class="stat">
+            <strong>12.8K</strong>
+            <span>Playlist saves</span>
+          </div>
+          <div class="stat">
+            <strong>Live</strong>
+            <span>Updated weekly</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="content">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h4>Playlist Tracks</h4>
+            <p>Featured songs, artist drops, and Rich Bizness energy</p>
+          </div>
+          <button class="ghost-btn">Shuffle</button>
+        </div>
+
+        <div class="search-wrap">
+          <div class="search">
+            <span>🔎</span>
+            <input type="text" placeholder="Search tracks, artists, moods..." />
+          </div>
+
+          <div class="chip-row">
+            <button class="chip active">All</button>
+            <button class="chip">Trending</button>
+            <button class="chip">Smoke</button>
+            <button class="chip">Late Night</button>
+            <button class="chip">Live Set</button>
+          </div>
+        </div>
+
+        <div class="track-list">
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Money Road Anthem</h5>
+              <p>ThatboyTayThou • Rich Bizness Exclusive</p>
+            </div>
+            <div class="track-meta">Featured Single</div>
+            <div class="track-plays">1.2M plays</div>
+            <div class="track-time">3:14</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Treehouse Smoke Session</h5>
+              <p>Rich Bizness Radio • Midnight Vibes</p>
+            </div>
+            <div class="track-meta">Chill Rotation</div>
+            <div class="track-plays">845K plays</div>
+            <div class="track-time">2:58</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Neon Money Route</h5>
+              <p>Tayben Holmes • Premium Audio</p>
+            </div>
+            <div class="track-meta">Luxury Trap</div>
+            <div class="track-plays">674K plays</div>
+            <div class="track-time">4:02</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>We Lit Forever</h5>
+              <p>Rich Bizness Live • Crowd Favorite</p>
+            </div>
+            <div class="track-meta">Live Performance</div>
+            <div class="track-plays">930K plays</div>
+            <div class="track-time">3:46</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Green Haze Frequency</h5>
+              <p>Podcast / Radio Session • RB Audio</p>
+            </div>
+            <div class="track-meta">Podcast Mix</div>
+            <div class="track-plays">412K plays</div>
+            <div class="track-time">8:12</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Boss Moves Only</h5>
+              <p>Artist Upload • Business Mode</p>
+            </div>
+            <div class="track-meta">Motivation</div>
+            <div class="track-plays">503K plays</div>
+            <div class="track-time">3:21</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Streetlights & Strategy</h5>
+              <p>ThatboyTayThou • Night Tape</p>
+            </div>
+            <div class="track-meta">Late Night</div>
+            <div class="track-plays">287K plays</div>
+            <div class="track-time">4:18</div>
+          </div>
+
+          <div class="track">
+            <button class="play-btn">▶</button>
+            <div class="track-title">
+              <h5>Rich Bizness Outro</h5>
+              <p>Official Label Sound • Empire End Credits</p>
+            </div>
+            <div class="track-meta">Closing Theme</div>
+            <div class="track-plays">158K plays</div>
+            <div class="track-time">2:44</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <div class="panel card now-playing">
+          <div class="panel-head" style="padding:0 0 16px;border-bottom:none;">
+            <div>
+              <h4>Now Playing</h4>
+              <p>Current Rich Bizness rotation</p>
+            </div>
+          </div>
+
+          <div class="cover-art"></div>
+
+          <div class="np-info">
+            <h5>Money Road Anthem</h5>
+            <p>
+              ThatboyTayThou • Official Rich Bizness single with elevated energy,
+              smoke-session atmosphere, and boss-level replay value.
+            </p>
+          </div>
+
+          <div class="wave">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+
+          <div class="player-controls">
+            <button class="ctrl">⏮</button>
+            <button class="ctrl">🔀</button>
+            <button class="ctrl main">▶</button>
+            <button class="ctrl">⏭</button>
+            <button class="ctrl">🔁</button>
+          </div>
+        </div>
+
+        <div class="panel card">
+          <div class="panel-head" style="padding:0 0 14px;border-bottom:none;">
+            <div>
+              <h4>Up Next</h4>
+              <p>Queue built for momentum</p>
+            </div>
+          </div>
+
+          <div class="mini-list">
+            <div class="mini-item">
+              <img class="mini-thumb" src="images/playlist-cover.jpg" alt="track cover" />
+              <div class="mini-copy">
+                <h6>Treehouse Smoke Session</h6>
+                <p>Rich Bizness Radio</p>
+              </div>
+              <span class="pill">2:58</span>
+            </div>
+
+            <div class="mini-item">
+              <img class="mini-thumb" src="images/now-playing.jpg" alt="track cover" />
+              <div class="mini-copy">
+                <h6>Neon Money Route</h6>
+                <p>Tayben Holmes</p>
+              </div>
+              <span class="pill">4:02</span>
+            </div>
+
+            <div class="mini-item">
+              <img class="mini-thumb" src="images/playlist-bg.jpg" alt="track cover" />
+              <div class="mini-copy">
+                <h6>We Lit Forever</h6>
+                <p>Rich Bizness Live</p>
+              </div>
+              <span class="pill">3:46</span>
+            </div>
+          </div>
+
+          <div class="queue-note">
+            This sidebar can later be connected to your real music table,
+            playlist SQL, artist uploads, and live radio / podcast system.
+          </div>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="bottom-player">
+    <div class="bottom-left">
+      <img class="bottom-thumb" src="images/now-playing.jpg" alt="Now playing cover" />
+      <div class="bottom-copy">
+        <h6>Money Road Anthem</h6>
+        <p>ThatboyTayThou • Rich Bizness Exclusive</p>
+      </div>
+    </div>
+
+    <div class="bottom-center">
+      <div class="bottom-controls">
+        <button>⏮</button>
+        <button>🔀</button>
+        <button class="play-main">▶</button>
+        <button>⏭</button>
+        <button>🔁</button>
+      </div>
+
+      <div class="progress-wrap">
+        <span>1:22</span>
+        <div class="progress">
+          <div class="progress-fill"></div>
+        </div>
+        <span>3:14</span>
+      </div>
+    </div>
+
+    <div class="bottom-right">
+      <button class="ghost-btn">❤</button>
+      <button class="ghost-btn">＋ Queue</button>
+      <div class="vol"></div>
+    </div>
+  </div>
 </body>
 </html>
