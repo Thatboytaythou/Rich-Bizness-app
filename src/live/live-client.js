@@ -1,217 +1,301 @@
-import { Room, RoomEvent } from 'livekit-client';
-import { getSessionUser } from '../shared/supabase.js';
+import { getSessionUser } from "../shared/supabase.js";
 import {
-  createLiveStream,
-  createLivekitToken,
-  endLiveStream
-} from './live-api.js';
-import { liveState, setLiveState, setUiState, resetUiState } from './live-state.js';
+  getLiveStreams,
+  createStream,
+  endStream
+} from "./live-api.js";
 import {
-  getValue,
-  setText,
-  showError,
-  showSuccess,
-  renderStatusBadge,
-  updateShareUrl,
-  copyShareUrl,
-  setDisabled,
-  updateViewerCount
-} from './live-ui.js';
+  liveState,
+  setSessionState,
+  setStudioState,
+  setLiveRailState,
+  setPresenceState,
+  resetStudioState,
+  resetPresenceState
+} from "./live-state.js";
+import {
+  showLiveError,
+  showLiveSuccess,
+  renderStudioSession,
+  renderStudioStream,
+  renderStudioPresence,
+  renderLiveRail,
+  setButtonBusy,
+  fillStudioForm
+} from "./live-ui.js";
 
-function qs(id) {
+function el(id) {
   return document.getElementById(id);
 }
 
-async function createAndStartStream() {
-  resetUiState();
-  showError('');
-  showSuccess('');
-
-  try {
-    setUiState({ busy: true });
-    setDisabled('start-live-btn', true);
-
-    const payload = {
-      title: getValue('live-title'),
-      description: getValue('live-description'),
-      category: getValue('live-category') || 'general',
-      access_type: getValue('live-access-type') || 'free',
-      price_cents: Number(getValue('live-price-cents') || 0),
-      thumbnail_url: getValue('live-thumbnail-url') || null,
-      cover_url: getValue('live-cover-url') || null,
-      is_chat_enabled: true,
-      is_replay_enabled: false,
-      start_now: true
-    };
-
-    const createRes = await createLiveStream(payload);
-
-    setLiveState({
-      stream: createRes.stream,
-      isHost: true
-    });
-
-    updateShareUrl(createRes.share_url);
-    renderStatusBadge('LIVE', 'live');
-    setText('live-room-name', createRes.livekit_room_name);
-    showSuccess('Live stream created.');
-
-    await connectHostToRoom();
-  } catch (error) {
-    showError(error.message || 'Failed to start live stream');
-  } finally {
-    setUiState({ busy: false });
-    setDisabled('start-live-btn', false);
-  }
+function slugify(value = "") {
+  return String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60);
 }
 
-async function connectHostToRoom() {
+function makeStreamSlug(title = "") {
+  const base = slugify(title || "live-stream");
+  const suffix = Math.random().toString(36).slice(2, 8);
+  return `${base || "live-stream"}-${suffix}`;
+}
+
+async function bootLivePage() {
   try {
+    resetStudioState();
+    resetPresenceState();
+    showLiveError("");
+    showLiveSuccess("");
+
     const user = await getSessionUser();
 
-    if (!liveState.stream?.id) {
-      throw new Error('No active stream found');
+    setSessionState({
+      user,
+      ready: true
+    });
+
+    renderStudioSession(user);
+    bindStudioActions();
+
+    if (!user) {
+      showLiveError("Please log in first from /auth.html before starting a stream.");
+      renderStudioStream(null);
+      return;
     }
 
-    const tokenRes = await createLivekitToken({
-      stream_id: liveState.stream.id,
-      role: 'host',
-      display_name: user?.email || 'Host'
-    });
-
-    const room = new Room();
-
-    bindRoomEvents(room);
-
-    await room.connect(tokenRes.livekit_url, tokenRes.token);
-
-    setLiveState({
-      room,
-      token: tokenRes.token,
-      roomName: tokenRes.room_name,
-      livekitUrl: tokenRes.livekit_url,
-      participantIdentity: tokenRes.participant_identity,
-      connected: true
-    });
-
-    const tracks = await Room.createLocalTracks({
-      audio: true,
-      video: true
-    });
-
-    const localParticipant = room.localParticipant;
-
-    for (const track of tracks) {
-      await localParticipant.publishTrack(track);
-    }
-
-    attachLocalVideo(room);
-    showSuccess('You are live now.');
+    await loadCurrentUserLiveStream(user.id);
+    await loadLiveRailForStudio();
   } catch (error) {
-    showError(error.message || 'Failed to connect host to room');
+    console.error("[live-client] boot error:", error);
+    showLiveError(error.message || "Failed to load live studio.");
   }
 }
 
-function bindRoomEvents(room) {
-  room.on(RoomEvent.ParticipantConnected, () => {
-    updateViewerCount((liveState.stream?.viewer_count || 0) + 1);
-  });
-
-  room.on(RoomEvent.ParticipantDisconnected, () => {
-    updateViewerCount(Math.max(0, (liveState.stream?.viewer_count || 1) - 1));
-  });
-
-  room.on(RoomEvent.Disconnected, () => {
-    setLiveState({ connected: false });
-  });
-
-  room.on(RoomEvent.TrackSubscribed, (track) => {
-    const mediaEl = track.attach();
-    const container = qs('live-remote-media');
-    if (container) container.appendChild(mediaEl);
-  });
-}
-
-function attachLocalVideo(room) {
-  const container = qs('live-local-media');
-  if (!container) return;
-
-  container.innerHTML = '';
-
-  room.localParticipant.videoTrackPublications.forEach((publication) => {
-    if (!publication.track) return;
-    const mediaEl = publication.track.attach();
-    mediaEl.muted = true;
-    container.appendChild(mediaEl);
-  });
-}
-
-async function endCurrentStream() {
+async function loadCurrentUserLiveStream(userId) {
   try {
-    showError('');
-    showSuccess('');
+    const streams = await getLiveStreams();
+    const ownLive = Array.isArray(streams)
+      ? streams.find((stream) => stream.creator_id === userId)
+      : null;
 
-    if (!liveState.stream?.id) {
-      throw new Error('No live stream to end');
-    }
-
-    await endLiveStream({ stream_id: liveState.stream.id });
-
-    if (liveState.room) {
-      await liveState.room.disconnect();
-    }
-
-    setLiveState({
-      connected: false,
-      room: null
+    setStudioState({
+      stream: ownLive || null
     });
 
-    renderStatusBadge('ENDED', 'ended');
-    showSuccess('Live stream ended.');
-  } catch (error) {
-    showError(error.message || 'Failed to end stream');
-  }
-}
-
-async function toggleMic() {
-  try {
-    if (!liveState.room) return;
-    const enabled = liveState.room.localParticipant.isMicrophoneEnabled;
-    await liveState.room.localParticipant.setMicrophoneEnabled(!enabled);
-    showSuccess(enabled ? 'Mic muted.' : 'Mic unmuted.');
-  } catch (error) {
-    showError(error.message || 'Failed to toggle mic');
-  }
-}
-
-async function toggleCamera() {
-  try {
-    if (!liveState.room) return;
-    const enabled = liveState.room.localParticipant.isCameraEnabled;
-    await liveState.room.localParticipant.setCameraEnabled(!enabled);
-    showSuccess(enabled ? 'Camera off.' : 'Camera on.');
-  } catch (error) {
-    showError(error.message || 'Failed to toggle camera');
-  }
-}
-
-function bindUi() {
-  qs('start-live-btn')?.addEventListener('click', createAndStartStream);
-  qs('end-live-btn')?.addEventListener('click', endCurrentStream);
-  qs('toggle-mic-btn')?.addEventListener('click', toggleMic);
-  qs('toggle-camera-btn')?.addEventListener('click', toggleCamera);
-
-  qs('copy-share-btn')?.addEventListener('click', async () => {
-    try {
-      const ok = await copyShareUrl();
-      showSuccess(ok ? 'Share link copied.' : 'No share link yet.');
-    } catch (error) {
-      showError(error.message || 'Failed to copy share link');
+    if (ownLive) {
+      fillStudioForm(ownLive);
+      renderStudioStream(ownLive);
+      setPresenceState({
+        viewers: Number(ownLive.viewer_count || 0)
+      });
+      renderStudioPresence(Number(ownLive.viewer_count || 0));
+      return;
     }
-  });
+
+    renderStudioStream(null);
+    renderStudioPresence(0);
+  } catch (error) {
+    console.error("[live-client] loadCurrentUserLiveStream error:", error);
+    showLiveError(error.message || "Failed to load your stream.");
+  }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  bindUi();
-  renderStatusBadge('OFFLINE', 'default');
-});
+async function loadLiveRailForStudio() {
+  try {
+    setLiveRailState({
+      loading: true,
+      error: ""
+    });
+
+    const streams = await getLiveStreams();
+
+    setLiveRailState({
+      streams: Array.isArray(streams) ? streams : [],
+      loading: false,
+      error: ""
+    });
+
+    renderLiveRail(liveState.liveRail.streams);
+  } catch (error) {
+    console.error("[live-client] loadLiveRailForStudio error:", error);
+    setLiveRailState({
+      loading: false,
+      error: error.message || "Failed to load live rail."
+    });
+  }
+}
+
+function collectStudioForm() {
+  const title = el("stream-title")?.value?.trim() || "";
+  const description = el("stream-description")?.value?.trim() || "";
+  const category = el("stream-category")?.value?.trim() || "general";
+  const accessType = el("stream-access-type")?.value?.trim() || "free";
+  const priceCents = Number(el("stream-price-cents")?.value || 0);
+  const thumbnailUrl = el("stream-thumbnail-url")?.value?.trim() || "";
+
+  return {
+    title,
+    description,
+    category,
+    access_type: accessType,
+    price_cents: Number.isFinite(priceCents) ? priceCents : 0,
+    thumbnail_url: thumbnailUrl
+  };
+}
+
+function validateStudioPayload(payload) {
+  if (!payload.title) {
+    throw new Error("Stream title is required.");
+  }
+
+  if (payload.access_type === "paid" && Number(payload.price_cents || 0) <= 0) {
+    throw new Error("Paid streams must have a price greater than 0.");
+  }
+}
+
+function bindStudioActions() {
+  el("start-stream-btn")?.addEventListener("click", startLiveFlow);
+  el("end-stream-btn")?.addEventListener("click", endLiveFlow);
+  el("copy-share-link-btn")?.addEventListener("click", copyShareLink);
+}
+
+async function startLiveFlow() {
+  try {
+    showLiveError("");
+    showLiveSuccess("");
+
+    const user = liveState.session.user;
+    if (!user?.id) {
+      throw new Error("Please log in first from /auth.html.");
+    }
+
+    if (liveState.studio.stream?.is_live) {
+      throw new Error("You already have a live stream running.");
+    }
+
+    const formPayload = collectStudioForm();
+    validateStudioPayload(formPayload);
+
+    setStudioState({
+      isCreating: true,
+      error: "",
+      success: ""
+    });
+
+    setButtonBusy("start-stream-btn", true, "Starting...", "Start Stream");
+
+    const payload = {
+      creator_id: user.id,
+      title: formPayload.title,
+      description: formPayload.description,
+      category: formPayload.category,
+      access_type: formPayload.access_type,
+      price_cents: formPayload.price_cents,
+      thumbnail_url: formPayload.thumbnail_url,
+      slug: makeStreamSlug(formPayload.title),
+      is_live: true,
+      viewer_count: 0
+    };
+
+    const stream = await createStream(payload);
+
+    if (!stream) {
+      throw new Error("Failed to create stream.");
+    }
+
+    setStudioState({
+      stream,
+      isCreating: false,
+      success: "Stream started successfully."
+    });
+
+    setPresenceState({
+      viewers: Number(stream.viewer_count || 0)
+    });
+
+    renderStudioStream(stream);
+    renderStudioPresence(Number(stream.viewer_count || 0));
+    showLiveSuccess("Stream started successfully.");
+
+    await loadLiveRailForStudio();
+  } catch (error) {
+    console.error("[live-client] startLiveFlow error:", error);
+    setStudioState({
+      isCreating: false,
+      error: error.message || "Failed to start stream."
+    });
+    showLiveError(error.message || "Failed to start stream.");
+  } finally {
+    setButtonBusy("start-stream-btn", false, "Starting...", "Start Stream");
+  }
+}
+
+async function endLiveFlow() {
+  try {
+    showLiveError("");
+    showLiveSuccess("");
+
+    const stream = liveState.studio.stream;
+    if (!stream?.id) {
+      throw new Error("No active stream to end.");
+    }
+
+    setStudioState({
+      isEnding: true,
+      error: "",
+      success: ""
+    });
+
+    setButtonBusy("end-stream-btn", true, "Ending...", "End Stream");
+
+    await endStream(stream.id);
+
+    setStudioState({
+      stream: null,
+      isEnding: false,
+      success: "Stream ended."
+    });
+
+    setPresenceState({
+      viewers: 0,
+      members: []
+    });
+
+    renderStudioStream(null);
+    renderStudioPresence(0);
+    showLiveSuccess("Stream ended.");
+
+    await loadLiveRailForStudio();
+  } catch (error) {
+    console.error("[live-client] endLiveFlow error:", error);
+    setStudioState({
+      isEnding: false,
+      error: error.message || "Failed to end stream."
+    });
+    showLiveError(error.message || "Failed to end stream.");
+  } finally {
+    setButtonBusy("end-stream-btn", false, "Ending...", "End Stream");
+  }
+}
+
+async function copyShareLink() {
+  try {
+    const input = el("studio-share-link");
+    const value = input?.value?.trim() || "";
+
+    if (!value) {
+      throw new Error("No share link yet. Start a stream first.");
+    }
+
+    await navigator.clipboard.writeText(value);
+    showLiveSuccess("Share link copied.");
+  } catch (error) {
+    console.error("[live-client] copyShareLink error:", error);
+    showLiveError(error.message || "Failed to copy share link.");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", bootLivePage);
