@@ -4,878 +4,209 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness — Playlists</title>
-  <meta
-    name="description"
-    content="Rich Bizness playlist page for curated mixes, artist playlists, radio-ready collections, and creator music discovery."
-  />
 
   <style>
-    :root {
-      --bg: #050505;
-      --panel: rgba(10, 10, 10, 0.76);
-      --panel-2: rgba(18, 18, 18, 0.82);
-      --line: rgba(255, 201, 109, 0.16);
-      --line-strong: rgba(255, 201, 109, 0.32);
-      --text: #f8f1e7;
-      --muted: #c7b79d;
-      --gold: #ffcb6b;
-      --gold-2: #c98a1a;
-      --green: #43f59b;
-      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --max: 1400px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
     body {
       margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+      font-family: Inter, sans-serif;
+      color: #fff;
       background:
-        linear-gradient(180deg, rgba(0,0,0,0.68), rgba(0,0,0,0.92)),
-        radial-gradient(circle at top, rgba(255,203,107,0.12), transparent 24%),
-        url('/images/brand/logo-music-label.png') center center / cover no-repeat fixed;
-      background-color: #050505;
+        linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.95)),
+        url('/images/brand/logo-music-label.png') center/cover no-repeat fixed;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    .page-shell {
-      width: min(var(--max), calc(100% - 24px));
-      margin: 0 auto;
-      padding: 18px 0 42px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 12px;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      border: 1px solid var(--line);
-      background: rgba(8, 8, 8, 0.76);
-      backdrop-filter: blur(14px);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 52px;
-      height: 52px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(255,203,107,0.22), rgba(201,138,26,0.12));
-      border: 1px solid var(--line-strong);
-      color: var(--gold);
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(255,203,107,0.16);
-      flex-shrink: 0;
-    }
-
-    .brand-copy h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-copy p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
+    .container {
+      max-width: 1300px;
+      margin: auto;
+      padding: 20px;
     }
 
     .nav {
       display: flex;
-      align-items: center;
-      gap: 10px;
+      justify-content: space-between;
       flex-wrap: wrap;
-      justify-content: flex-end;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
-    .nav-link,
-    .btn,
-    .btn-ghost,
-    .filter-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 11px 15px;
-      border-radius: 14px;
-      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-      font-weight: 800;
+    .nav a, .btn {
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: white;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-weight: bold;
       cursor: pointer;
-      border: 1px solid transparent;
-    }
-
-    .nav-link:hover,
-    .btn:hover,
-    .btn-ghost:hover,
-    .filter-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .nav-link,
-    .btn-ghost,
-    .filter-btn {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.08);
-      color: var(--text);
     }
 
     .btn {
-      background: linear-gradient(135deg, var(--gold), var(--gold-2));
-      color: #201202;
-      box-shadow: 0 10px 28px rgba(201, 138, 26, 0.28);
-    }
-
-    .filter-btn.active {
-      background: linear-gradient(135deg, rgba(255,203,107,0.18), rgba(201,138,26,0.10));
-      border-color: var(--line-strong);
-      color: #fff2d2;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .panel {
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(10,10,10,0.82), rgba(8,8,8,0.88));
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      background: gold;
+      color: black;
     }
 
     .hero {
-      padding: 34px;
-      min-height: 320px;
+      padding: 30px;
+      border-radius: 20px;
+      background: rgba(0,0,0,0.6);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      margin: 0;
+    }
+
+    .toolbar {
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background:
-        radial-gradient(circle at top left, rgba(255,203,107,0.14), transparent 26%),
-        linear-gradient(180deg, rgba(10,10,10,0.54), rgba(8,8,8,0.78));
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      min-height: 34px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      color: #ffe5b0;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .hero h2 {
-      margin: 20px 0 0;
-      font-size: clamp(38px, 5vw, 74px);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      max-width: 820px;
-    }
-
-    .hero p {
-      margin: 18px 0 0;
-      color: #f0dcc0;
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 760px;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
       gap: 10px;
-      margin-top: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
     }
 
-    .side-stack {
-      padding: 22px;
+    input {
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .filters button {
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .grid {
       display: grid;
-      gap: 14px;
-      align-content: start;
+      grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+      gap: 16px;
     }
 
-    .side-card {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
+    .card {
+      background: rgba(0,0,0,0.6);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    .side-card strong {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 6px;
+    .card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
     }
 
-    .side-card span {
-      display: block;
-      color: var(--muted);
+    .card-body {
+      padding: 14px;
+    }
+
+    .card h3 {
+      margin: 0 0 6px;
+    }
+
+    .card p {
       font-size: 13px;
-      line-height: 1.65;
+      color: #ccc;
+    }
+
+    .actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .actions button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .actions button:first-child {
+      background: gold;
+      color: black;
+    }
+
+    .actions button:last-child {
+      background: rgba(255,255,255,0.1);
+      color: white;
     }
 
     .notice {
       display: none;
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      border: 1px solid transparent;
+      padding: 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
     }
 
-    .notice.error {
-      background: rgba(255, 90, 115, 0.1);
-      border-color: rgba(255, 90, 115, 0.24);
-      color: #ffd0d8;
+    .error {
+      background: #ff3b5c;
     }
 
-    .notice.success {
-      background: rgba(67, 245, 155, 0.1);
-      border-color: rgba(67, 245, 155, 0.24);
-      color: #d8ffea;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .search-box input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 14px 16px;
-      outline: none;
-      backdrop-filter: blur(6px);
-    }
-
-    .search-box input:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(255,203,107,0.10);
-    }
-
-    .filter-bar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: flex-end;
-    }
-
-    .playlist-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .playlist-card {
-      border-radius: 24px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      background: rgba(0,0,0,0.54);
-      box-shadow: 0 16px 34px rgba(0,0,0,0.34);
-      transition: transform 0.18s ease, border-color 0.18s ease;
-      backdrop-filter: blur(6px);
-    }
-
-    .playlist-card:hover {
-      transform: translateY(-4px);
-      border-color: var(--line-strong);
-    }
-
-    .playlist-media {
-      position: relative;
-      aspect-ratio: 1 / 1;
-      background: rgba(255,255,255,0.03);
-      overflow: hidden;
-    }
-
-    .playlist-media img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .playlist-badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      min-height: 30px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(0,0,0,0.56);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fff2d2;
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .playlist-body {
-      padding: 18px;
-    }
-
-    .playlist-title {
-      margin: 0 0 8px;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .playlist-copy {
-      margin: 0 0 14px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-      min-height: 48px;
-    }
-
-    .playlist-meta {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 14px;
-    }
-
-    .playlist-owner {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-
-    .playlist-owner-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(255,203,107,0.20), rgba(201,138,26,0.10));
-      border: 1px solid rgba(255,203,107,0.18);
-      color: var(--gold);
-      font-size: 12px;
-      font-weight: 900;
-      flex-shrink: 0;
-    }
-
-    .playlist-owner-text {
-      min-width: 0;
-    }
-
-    .playlist-owner-text strong {
-      display: block;
-      font-size: 13px;
-      line-height: 1.2;
-    }
-
-    .playlist-owner-text span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.2;
-      margin-top: 3px;
-    }
-
-    .playlist-actions {
-      display: grid;
-      gap: 10px;
-    }
-
-    .btn-card {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 11px 14px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,203,107,0.16);
-      background: linear-gradient(135deg, rgba(255,203,107,0.12), rgba(201,138,26,0.08));
-      color: #fff2d2;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .empty-state {
-      min-height: 260px;
-      border-radius: 22px;
-      border: 1px dashed rgba(255, 203, 107, 0.18);
-      display: none;
-      place-items: center;
-      text-align: center;
-      padding: 20px;
-      color: var(--muted);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .empty-state strong {
-      display: block;
-      color: var(--text);
-      margin-bottom: 8px;
-      font-size: 18px;
-    }
-
-    .footer {
-      margin-top: 24px;
-      padding: 18px;
-      border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .footer p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .footer-links a {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    @media (max-width: 1180px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .playlist-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 900px) {
-      .topbar {
-        position: static;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        justify-content: flex-start;
-        width: 100%;
-      }
-
-      .toolbar {
-        grid-template-columns: 1fr;
-      }
-
-      .filter-bar {
-        justify-content: flex-start;
-      }
-
-      .playlist-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .page-shell {
-        width: min(100% - 16px, 100%);
-      }
-
-      .nav-link,
-      .btn,
-      .btn-ghost,
-      .filter-btn {
-        width: 100%;
-      }
-
-      #global-session-nav {
-        width: 100%;
-      }
-
-      #global-session-nav .nav-link,
-      #global-session-nav .btn,
-      #global-session-nav .btn-ghost {
-        width: 100%;
-      }
+    .success {
+      background: #28d17c;
     }
   </style>
 </head>
+
 <body>
-  <div class="page-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">RB</div>
-        <div class="brand-copy">
-          <h1>Rich Bizness</h1>
-          <p>Playlists • Curated Mixes • Radio-Ready Sound</p>
-        </div>
+  <div class="container">
+
+    <div class="nav">
+      <div>
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/artist/">Artist</a>
       </div>
 
-      <nav class="nav">
-        <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link" href="/music.html">Music</a>
-        <a class="nav-link" href="/artist/">Artist</a>
-        <a class="nav-link" href="/profile.html">Profile</a>
-        <a class="nav-link" href="/upload.html">Upload</a>
-        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
-        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
-      </nav>
-    </header>
+      <div>
+        <a href="/live.html" class="btn">WE LIT 🔥</a>
+        <div id="global-session-nav"></div>
+      </div>
+    </div>
 
     <div id="playlist-error" class="notice error"></div>
     <div id="playlist-success" class="notice success"></div>
 
-    <section class="hero-grid">
-      <section class="panel hero">
-        <div>
-          <div class="eyebrow">Playlist lane</div>
-          <h2>Mix the sound, stack the mood, and build the Rich Bizness radio feel.</h2>
-          <p>
-            Curate artist playlists, mood collections, late-night rotations, smoke sessions,
-            workout runs, and radio-ready mixes from one clean music lane.
-          </p>
-        </div>
+    <div class="hero">
+      <h1>Playlist System</h1>
+      <p>Build playlists, run radio, control your music flow.</p>
 
-        <div class="hero-actions">
-          <a class="btn" href="/upload.html">Create New Playlist</a>
-          <a class="btn-ghost" href="/music.html">Open Music</a>
-          <a class="btn-ghost" href="/artist/">Artist Channel</a>
-        </div>
-      </section>
-
-      <aside class="panel side-stack">
-        <div class="side-card">
-          <strong>Radio foundation</strong>
-          <span>Playlists are the layer that power your future radio stations, nonstop rotations, and hosted DJ flows.</span>
-        </div>
-
-        <div class="side-card">
-          <strong>Artist control</strong>
-          <span>Artists can organize singles, vibes, albums, and release campaigns into one polished lane.</span>
-        </div>
-
-        <div class="side-card">
-          <strong>Platform flow</strong>
-          <span>Music → Playlist → Artist Channel → Live Room → Watch Flow → Fan growth.</span>
-        </div>
-      </aside>
-    </section>
-
-    <section class="toolbar">
-      <div class="search-box">
-        <input id="playlist-search" type="text" placeholder="Search playlists..." />
+      <div style="margin-top:15px;">
+        <button class="btn" id="create-playlist-btn">Create Playlist</button>
       </div>
+    </div>
 
-      <div class="filter-bar">
-        <button class="filter-btn active" type="button" data-filter="all">All</button>
-        <button class="filter-btn" type="button" data-filter="featured">Featured</button>
-        <button class="filter-btn" type="button" data-filter="artist">Artist</button>
-        <button class="filter-btn" type="button" data-filter="mood">Mood</button>
-        <button class="filter-btn" type="button" data-filter="night">Late Night</button>
+    <div class="toolbar">
+      <input id="playlist-search" placeholder="Search playlists..." />
+
+      <div class="filters">
+        <button data-filter="all">All</button>
+        <button data-filter="featured">Featured</button>
+        <button data-filter="artist">Artist</button>
+        <button data-filter="night">Night</button>
       </div>
-    </section>
+    </div>
 
-    <section id="playlist-grid" class="playlist-grid">
-      <article class="playlist-card" data-filter="featured artist night">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Late Night Studio playlist" />
-          <div class="playlist-badge">Featured</div>
-        </div>
+    <div id="playlist-grid" class="grid"></div>
 
-        <div class="playlist-body">
-          <h3 class="playlist-title">Late Night Studio</h3>
-          <p class="playlist-copy">Smooth smoke-session energy, late creator vibes, and after-hours Rich Bizness sound.</p>
+    <div id="playlist-empty" style="display:none;text-align:center;margin-top:40px;">
+      <h3>No playlists yet</h3>
+      <p>Create one to get started.</p>
+    </div>
 
-          <div class="playlist-meta">
-            <span>18 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">RB</div>
-            <div class="playlist-owner-text">
-              <strong>Rich Bizness</strong>
-              <span>Artist Curated</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-
-      <article class="playlist-card" data-filter="mood artist">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Smoke Session playlist" />
-          <div class="playlist-badge">Mood</div>
-        </div>
-
-        <div class="playlist-body">
-          <h3 class="playlist-title">Smoke Session</h3>
-          <p class="playlist-copy">Mellow records, slow-burn atmosphere, and laid-back playlist chemistry.</p>
-
-          <div class="playlist-meta">
-            <span>14 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">TT</div>
-            <div class="playlist-owner-text">
-              <strong>ThatboyTayThou</strong>
-              <span>Artist Curated</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-
-      <article class="playlist-card" data-filter="featured mood">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Producer's Mix playlist" />
-          <div class="playlist-badge">Featured</div>
-        </div>
-
-        <div class="playlist-body">
-          <h3 class="playlist-title">Producer's Mix</h3>
-          <p class="playlist-copy">Instrumentals, beat energy, and producer-friendly stacks for building sessions.</p>
-
-          <div class="playlist-meta">
-            <span>22 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">RB</div>
-            <div class="playlist-owner-text">
-              <strong>Rich Bizness</strong>
-              <span>Curated Mix</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-
-      <article class="playlist-card" data-filter="night mood">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Night Drive playlist" />
-          <div class="playlist-badge">Late Night</div>
-        </div>
-
-        <div class="playlist-body">
-          <h3 class="playlist-title">Night Drive</h3>
-          <p class="playlist-copy">Late-night motion music, road-ready energy, and clean playlist pacing.</p>
-
-          <div class="playlist-meta">
-            <span>16 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">RB</div>
-            <div class="playlist-owner-text">
-              <strong>Rich Bizness</strong>
-              <span>Night Rotation</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-
-      <article class="playlist-card" data-filter="artist mood">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Chill Rap playlist" />
-          <div class="playlist-badge">Artist</div>
-        </div>
-
-        <div class="playlist-body">
-          <h3 class="playlist-title">Chill Rap</h3>
-          <p class="playlist-copy">Relaxed bars, smooth hooks, and clean transitions for all-day replay.</p>
-
-          <div class="playlist-meta">
-            <span>20 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">TT</div>
-            <div class="playlist-owner-text">
-              <strong>ThatboyTayThou</strong>
-              <span>Artist Playlist</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-
-      <article class="playlist-card" data-filter="featured artist">
-        <div class="playlist-media">
-          <img src="/images/brand/logo-music-label.png" alt="Fitness Vibes playlist" />
-          <div class="playlist-badge">Featured</div>
-        </div>
-
-        <div class="playlist-body">
-          <h3 class="playlist-title">Fitness Vibes</h3>
-          <p class="playlist-copy">Workout-ready tempo, high-motion cuts, and playlist energy for training mode.</p>
-
-          <div class="playlist-meta">
-            <span>19 tracks</span>
-            <span>Public</span>
-          </div>
-
-          <div class="playlist-owner">
-            <div class="playlist-owner-avatar">RB</div>
-            <div class="playlist-owner-text">
-              <strong>Rich Bizness</strong>
-              <span>Curated Mix</span>
-            </div>
-          </div>
-
-          <div class="playlist-actions">
-            <a class="btn-card" href="#">Open Playlist</a>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <section id="playlist-empty" class="empty-state">
-      <div>
-        <strong>No playlists match this search.</strong>
-        <span>Change the filter or create a new playlist to grow the lane.</span>
-      </div>
-    </section>
-
-    <footer class="footer">
-      <p>Rich Bizness • playlist lane locked</p>
-      <div class="footer-links">
-        <a href="/index.html">Home</a>
-        <a href="/music.html">Music</a>
-        <a href="/artist/">Artist</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/upload.html">Upload</a>
-      </div>
-    </footer>
   </div>
 
-  <script>
-    (() => {
-      const searchInput = document.getElementById("playlist-search");
-      const buttons = Array.from(document.querySelectorAll(".filter-btn"));
-      const cards = Array.from(document.querySelectorAll(".playlist-card"));
-      const empty = document.getElementById("playlist-empty");
-      const grid = document.getElementById("playlist-grid");
+  <!-- PLAYLIST SYSTEM -->
+  <script type="module" src="/src/music/playlist-client.js"></script>
 
-      let activeFilter = "all";
-
-      function applyFilters() {
-        const query = String(searchInput?.value || "").trim().toLowerCase();
-        let visibleCount = 0;
-
-        cards.forEach((card) => {
-          const cardFilters = String(card.getAttribute("data-filter") || "").toLowerCase();
-          const text = card.textContent.toLowerCase();
-
-          const matchesFilter = activeFilter === "all" || cardFilters.includes(activeFilter);
-          const matchesSearch = !query || text.includes(query);
-
-          const show = matchesFilter && matchesSearch;
-          card.style.display = show ? "" : "none";
-          if (show) visibleCount += 1;
-        });
-
-        empty.style.display = visibleCount === 0 ? "grid" : "none";
-        grid.style.display = visibleCount === 0 ? "none" : "grid";
-      }
-
-      buttons.forEach((button) => {
-        button.addEventListener("click", () => {
-          activeFilter = button.getAttribute("data-filter") || "all";
-          buttons.forEach((btn) => btn.classList.remove("active"));
-          button.classList.add("active");
-          applyFilters();
-        });
-      });
-
-      searchInput?.addEventListener("input", applyFilters);
-      applyFilters();
-    })();
-  </script>
-
+  <!-- NAVBAR SESSION -->
   <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
