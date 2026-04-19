@@ -59,6 +59,7 @@ function attachLocalTracks(room) {
   if (!stage) return;
 
   stage.innerHTML = "";
+
   attachedLocalEls.forEach((node) => {
     try {
       node?.remove?.();
@@ -66,29 +67,32 @@ function attachLocalTracks(room) {
   });
   attachedLocalEls = [];
 
-  let attached = false;
+  let attachedVideo = false;
 
   room.localParticipant.videoTrackPublications.forEach((pub) => {
     if (!pub.track) return;
+
     const mediaEl = pub.track.attach();
     mediaEl.autoplay = true;
     mediaEl.muted = true;
     mediaEl.playsInline = true;
     mediaEl.className = "stage-video";
+
     stage.appendChild(mediaEl);
     attachedLocalEls.push(mediaEl);
-    attached = true;
+    attachedVideo = true;
   });
 
   room.localParticipant.audioTrackPublications.forEach((pub) => {
     if (!pub.track) return;
+
     const audioEl = pub.track.attach();
     audioEl.autoplay = true;
     audioEl.muted = true;
     attachedLocalEls.push(audioEl);
   });
 
-  if (!attached) {
+  if (!attachedVideo) {
     clearLocalStage();
   }
 }
@@ -152,6 +156,7 @@ async function connectStudioRoom(stream, user) {
   room
     .on(LK.RoomEvent.Disconnected, () => {
       clearLocalStage();
+      renderStudioPresence(0);
     })
     .on(LK.RoomEvent.ParticipantConnected, () => {
       renderStudioPresence(room.numParticipants);
@@ -181,13 +186,17 @@ async function disconnectStudioRoom() {
 
   try {
     studioRoom.localParticipant.videoTrackPublications.forEach((pub) => {
-      pub.track?.stop?.();
-      pub.track?.detach?.();
+      try {
+        pub.track?.stop?.();
+        pub.track?.detach?.();
+      } catch {}
     });
 
     studioRoom.localParticipant.audioTrackPublications.forEach((pub) => {
-      pub.track?.stop?.();
-      pub.track?.detach?.();
+      try {
+        pub.track?.stop?.();
+        pub.track?.detach?.();
+      } catch {}
     });
 
     await studioRoom.disconnect();
@@ -245,9 +254,11 @@ async function loadCurrentUserLiveStream(userId) {
     if (ownLive) {
       fillStudioForm(ownLive);
       renderStudioStream(ownLive);
+
       setPresenceState({
         viewers: Number(ownLive.viewer_count || 0)
       });
+
       renderStudioPresence(Number(ownLive.viewer_count || 0));
 
       const shareInput = el("studio-share-link");
@@ -323,9 +334,24 @@ function validateStudioPayload(payload) {
 }
 
 function bindStudioActions() {
-  el("start-stream-btn")?.addEventListener("click", startLiveFlow);
-  el("end-stream-btn")?.addEventListener("click", endLiveFlow);
-  el("copy-share-link-btn")?.addEventListener("click", copyShareLink);
+  const startBtn = el("start-stream-btn");
+  const endBtn = el("end-stream-btn");
+  const copyBtn = el("copy-share-link-btn");
+
+  if (startBtn && startBtn.dataset.bound !== "true") {
+    startBtn.dataset.bound = "true";
+    startBtn.addEventListener("click", startLiveFlow);
+  }
+
+  if (endBtn && endBtn.dataset.bound !== "true") {
+    endBtn.dataset.bound = "true";
+    endBtn.addEventListener("click", endLiveFlow);
+  }
+
+  if (copyBtn && copyBtn.dataset.bound !== "true") {
+    copyBtn.dataset.bound = "true";
+    copyBtn.addEventListener("click", copyShareLink);
+  }
 }
 
 async function startLiveFlow() {
@@ -476,6 +502,7 @@ async function copyShareLink() {
 }
 
 document.addEventListener("DOMContentLoaded", bootLivePage);
+
 window.addEventListener("beforeunload", () => {
   disconnectStudioRoom();
 });
