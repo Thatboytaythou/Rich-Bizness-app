@@ -1,5 +1,5 @@
 import { getSessionUser } from "../shared/supabase.js";
-import { createStream, endStream, getLiveStreams } from "./live-api.js";
+import { createStream, endStream, getLiveStreams, getStreamById } from "./live-api.js";
 import {
   liveState,
   setSessionState,
@@ -24,6 +24,7 @@ const LK = window.LivekitClient;
 
 let studioRoom = null;
 let attachedLocalEls = [];
+let studioRefreshTimer = null;
 
 function el(id) {
   return document.getElementById(id);
@@ -47,8 +48,10 @@ function makeStreamSlug(title = "") {
 function clearLocalStage() {
   const stage = el("live-local-stage");
   if (!stage) return;
+
   attachedLocalEls.forEach((node) => node?.remove?.());
   attachedLocalEls = [];
+
   stage.innerHTML = `
     <div class="stage-empty">
       <strong>Camera preview</strong>
@@ -65,7 +68,7 @@ function attachLocalTracks(room) {
   attachedLocalEls.forEach((node) => node?.remove?.());
   attachedLocalEls = [];
 
-  let attached = false;
+  let hasVideo = false;
 
   room.localParticipant.videoTrackPublications.forEach((pub) => {
     if (!pub.track) return;
@@ -76,7 +79,7 @@ function attachLocalTracks(room) {
     mediaEl.className = "stage-video";
     stage.appendChild(mediaEl);
     attachedLocalEls.push(mediaEl);
-    attached = true;
+    hasVideo = true;
   });
 
   room.localParticipant.audioTrackPublications.forEach((pub) => {
@@ -87,7 +90,7 @@ function attachLocalTracks(room) {
     attachedLocalEls.push(audioEl);
   });
 
-  if (!attached) {
+  if (!hasVideo) {
     clearLocalStage();
   }
 }
@@ -120,6 +123,38 @@ async function requestLivekitToken({
   }
 
   return json;
+}
+
+async function refreshStudioStreamFromDb() {
+  const current = liveState.studio.stream;
+  if (!current?.id) return;
+
+  try {
+    const latest = await getStreamById(current.id);
+    if (!latest) return;
+
+    setStudioState({ stream: latest });
+    setPresenceState({ viewers: Number(latest.viewer_count || 0) });
+
+    renderStudioStream(latest);
+    renderStudioPresence(Number(latest.viewer_count || 0));
+  } catch (error) {
+    console.error("[live-client] refreshStudioStreamFromDb error:", error);
+  }
+}
+
+function startStudioPolling() {
+  stopStudioPolling();
+  studioRefreshTimer = window.setInterval(() => {
+    refreshStudioStreamFromDb();
+  }, 4000);
+}
+
+function stopStudioPolling() {
+  if (studioRefreshTimer) {
+    window.clearInterval(studioRefreshTimer);
+    studioRefreshTimer = null;
+  }
 }
 
 async function connectStudioRoom(stream, user) {
@@ -166,7 +201,6 @@ async function connectStudioRoom(stream, user) {
     });
 
   await room.connect(tokenPayload.url, tokenPayload.token);
-
   await room.localParticipant.setCameraEnabled(true);
   await room.localParticipant.setMicrophoneEnabled(true);
 
@@ -174,10 +208,16 @@ async function connectStudioRoom(stream, user) {
   renderStudioPresence(room.numParticipants);
 
   studioRoom = room;
+  startStudioPolling();
 }
 
 async function disconnectStudioRoom() {
-  if (!studioRoom) return;
+  stopStudioPolling();
+
+  if (!studioRoom) {
+    clearLocalStage();
+    return;
+  }
 
   try {
     studioRoom.localParticipant.videoTrackPublications.forEach((pub) => {
@@ -218,7 +258,7 @@ async function bootLivePage() {
     bindStudioActions();
 
     if (!user) {
-      showLiveError("Please log in first from /auth.html before starting a stream.");
+      showLiveError("Please log in first from /auth.html before starting your stream.");
       renderStudioStream(null);
       return;
     }
@@ -358,7 +398,16 @@ async function startLiveFlow() {
       access_type: formPayload.access_type,
       price_cents: formPayload.price_cents,
       thumbnail_url: formPayload.thumbnail_url,
-      slug
+      slug,
+      metadata: {
+        creator_email: user.email || null,
+        creator_display_name:
+          user.user_metadata?.display_name ||
+          user.user_metadata?.full_name ||
+          user.user_metadata?.username ||
+          user.email ||
+          "Creator"
+      }
     });
 
     await connectStudioRoom(stream, user);
