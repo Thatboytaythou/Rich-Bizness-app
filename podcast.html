@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Podcast</title>
+  <meta
+    name="description"
+    content="Rich Bizness podcast lane for shows, episodes, talk radio, creator interviews, and audio storytelling."
+  />
+
+  <style>
+    :root {
+      --bg: #050505;
+      --panel: rgba(10, 10, 10, 0.78);
+      --panel-2: rgba(18, 18, 18, 0.84);
+      --line: rgba(255, 201, 109, 0.16);
+      --line-strong: rgba(255, 201, 109, 0.32);
+      --text: #f8f1e7;
+      --muted: #c7b79d;
+      --gold: #ffcb6b;
+      --gold-2: #c98a1a;
+      --green: #43f59b;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1400px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.68), rgba(0,0,0,0.92)),
+        radial-gradient(circle at top, rgba(255,203,107,0.12), transparent 24%),
+        url('/images/brand/logo-music-label.png') center center / cover no-repeat fixed;
+      background-color: #050505;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      max-width: 100%;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 42px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(8, 8, 8, 0.76);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(255,203,107,0.22), rgba(201,138,26,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--gold);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(255,203,107,0.16);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link,
+    .btn,
+    .btn-ghost,
+    .filter-btn,
+    .episode-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover,
+    .filter-btn:hover,
+    .episode-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-link,
+    .btn-ghost,
+    .filter-btn,
+    .episode-btn {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.08);
+      color: var(--text);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #201202;
+      box-shadow: 0 10px 28px rgba(201, 138, 26, 0.28);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, rgba(255,203,107,0.18), rgba(201,138,26,0.10));
+      border-color: var(--line-strong);
+      color: #fff2d2;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,10,10,0.82), rgba(8,8,8,0.88));
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero {
+      padding: 34px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(255,203,107,0.14), transparent 26%),
+        linear-gradient(180deg, rgba(10,10,10,0.54), rgba(8,8,8,0.78));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #ffe5b0;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hero h2 {
+      margin: 20px 0 0;
+      font-size: clamp(38px, 5vw, 74px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      max-width: 820px;
+    }
+
+    .hero p {
+      margin: 18px 0 0;
+      color: #f0dcc0;
+      font-size: 16px;
+      line-height: 1.8;
+      max-width: 760px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .side-stack {
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .side-card {
+      padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .side-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .side-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .notice {
+      display: none;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
+    }
+
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 14px 16px;
+      outline: none;
+      backdrop-filter: blur(6px);
+    }
+
+    .search-box input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(255,203,107,0.10);
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 22px;
+    }
+
+    .showcase {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .show-cover {
+      border-radius: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      min-height: 220px;
+    }
+
+    .show-cover img {
+      width: 100%;
+      height: 100%;
+      min-height: 220px;
+      object-fit: cover;
+    }
+
+    .show-copy {
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .show-badge {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 32px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #fff2d2;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .show-title {
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      margin: 0;
+    }
+
+    .show-meta {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .show-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .control-btn {
+      min-width: 132px;
+      min-height: 46px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,203,107,0.16);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .control-btn.primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-2));
+      color: #201202;
+    }
+
+    .episode-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .episode-item {
+      display: grid;
+      grid-template-columns: auto 68px 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+
+    .episode-item.active {
+      border-color: var(--line-strong);
+      background: linear-gradient(135deg, rgba(255,203,107,0.12), rgba(201,138,26,0.08));
+    }
+
+    .episode-number {
+      width: 36px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .episode-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,203,107,0.16);
+      background: rgba(255,255,255,0.03);
+      flex-shrink: 0;
+    }
+
+    .episode-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .episode-copy strong {
+      display: block;
+      font-size: 15px;
+      line-height: 1.2;
+      margin-bottom: 4px;
+    }
+
+    .episode-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .episode-tag {
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #fff2d2;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .show-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .show-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+    }
+
+    .show-item.active {
+      border-color: var(--line-strong);
+      background: linear-gradient(135deg, rgba(255,203,107,0.12), rgba(201,138,26,0.08));
+    }
+
+    .show-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .show-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-bar {
+        justify-content: flex-start;
+      }
+
+      .showcase {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
+
+      .nav-link,
+      .btn,
+      .btn-ghost,
+      .filter-btn,
+      .episode-btn {
+        width: 100%;
+      }
+
+      #global-session-nav {
+        width: 100%;
+      }
+
+      #global-session-nav .nav-link,
+      #global-session-nav .btn,
+      #global-session-nav .btn-ghost {
+        width: 100%;
+      }
+
+      .episode-item {
+        grid-template-columns: auto 68px 1fr;
+      }
+
+      .episode-tag {
+        grid-column: 1 / -1;
+        width: fit-content;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Podcast Lane • Talk Radio • Creator Interviews</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/radio.html">Radio</a>
+        <a class="nav-link" href="/playlist.html">Playlists</a>
+        <a class="nav-link" href="/artist/">Artist</a>
+        <a class="nav-link" href="/upload.html">Upload</a>
+        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
+        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </nav>
+    </header>
+
+    <div id="podcast-error" class="notice error"></div>
+    <div id="podcast-success" class="notice success"></div>
+
+    <section class="hero-grid">
+      <section class="panel hero">
+        <div>
+          <div class="eyebrow">Podcast lane</div>
+          <h2>Build show episodes, creator interviews, talk radio, and audio storytelling inside the platform.</h2>
+          <p>
+            Rich Bizness Podcast is the talk-content lane for hosted episodes, artist conversations,
+            creator commentary, radio crossovers, and future live podcast rooms.
+          </p>
+        </div>
+
+        <div class="hero-actions">
+          <button class="btn" id="podcast-start-btn" type="button">Play Episode</button>
+          <a class="btn-ghost" href="/radio.html">Open Radio</a>
+          <a class="btn-ghost" href="/playlist.html">Open Playlists</a>
+        </div>
+      </section>
+
+      <aside class="panel side-stack">
+        <div class="side-card">
+          <strong>Talk-radio ready</strong>
+          <span>Podcast episodes can later rotate into live radio, hosted shows, and talk-content blocks.</span>
+        </div>
+
+        <div class="side-card">
+          <strong>Live room crossover</strong>
+          <span>Creator interviews and podcast episodes can later go live from the same Rich Bizness streaming lane.</span>
+        </div>
+
+        <div class="side-card">
+          <strong>Show ecosystem</strong>
+          <span>Shows, seasons, episode uploads, and creator guest features can all grow from this page next.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="toolbar">
+      <div class="search-box">
+        <input id="podcast-search" type="text" placeholder="Search episodes or shows..." />
+      </div>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" type="button" data-filter="all">All</button>
+        <button class="filter-btn" type="button" data-filter="interview">Interviews</button>
+        <button class="filter-btn" type="button" data-filter="talk">Talk</button>
+        <button class="filter-btn" type="button" data-filter="music">Music Talk</button>
+        <button class="filter-btn" type="button" data-filter="culture">Culture</button>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Now featured</h3>
+            <p>Podcast show, active episode, and listening controls.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="showcase">
+            <div class="show-cover">
+              <img id="podcast-cover" src="/images/brand/logo-music-label.png" alt="Podcast cover art" />
+            </div>
+
+            <div class="show-copy">
+              <div class="show-badge" id="podcast-show-label">Rich Bizness Talks</div>
+              <h2 class="show-title" id="podcast-episode-title">Episode 01 — Label Vision</h2>
+              <div class="show-meta" id="podcast-episode-meta">
+                Rich Bizness • Music Talk • creator direction and platform vision
+              </div>
+
+              <div class="show-controls">
+                <button class="control-btn primary" id="podcast-play-toggle" type="button">Play</button>
+                <button class="control-btn" id="podcast-prev-btn" type="button">Previous</button>
+                <button class="control-btn" id="podcast-next-btn" type="button">Next</button>
+              </div>
+
+              <audio id="podcast-player" preload="none" controls style="width:100%;margin-top:6px;"></audio>
+            </div>
+          </div>
+
+          <div id="podcast-episode-list" class="episode-list"></div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Show lane</h3>
+            <p>Switch shows, subjects, and future hosted series.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="stack">
+            <div class="card">
+              <h4>Episode direction</h4>
+              <p id="podcast-show-description">
+                Creator conversations, music talk, platform direction, culture energy, and hosted show episodes.
+              </p>
+            </div>
+
+            <div class="card">
+              <h4>Show list</h4>
+              <div id="podcast-show-list" class="show-list"></div>
+            </div>
+
+            <div class="card">
+              <h4>Where this goes next</h4>
+              <p>
+                Next layers can add real episode uploads, show management, guest bios, live podcast rooms,
+                season organization, and monetized talk-content channels.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <p>Rich Bizness • podcast lane locked</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/radio.html">Radio</a>
+        <a href="/playlist.html">Playlists</a>
+        <a href="/artist/">Artist</a>
+        <a href="/upload.html">Upload</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const PODCAST_SHOWS = {
+      "rb-talks": {
+        label: "Rich Bizness Talks",
+        description: "Creator conversations, music talk, platform direction, culture energy, and hosted show episodes.",
+        episodes: [
+          {
+            title: "Episode 01 — Label Vision",
+            subtitle: "How the Rich Bizness music lane is being built",
+            tag: "Music Talk",
+            filter: "music talk",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Episode 02 — Live Room Energy",
+            subtitle: "Turning streaming into creator-owned momentum",
+            tag: "Talk",
+            filter: "talk culture",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Episode 03 — Artist Strategy",
+            subtitle: "Building channels, releases, and audience flow",
+            tag: "Interview",
+            filter: "interview music",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "smoke-talk": {
+        label: "Smoke Talk",
+        description: "Mellow conversation, late-night talk radio vibe, and smooth creator commentary.",
+        episodes: [
+          {
+            title: "Episode 01 — Studio Smoke",
+            subtitle: "Late-night thoughts and creator planning",
+            tag: "Talk",
+            filter: "talk culture",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Episode 02 — Calm Pressure",
+            subtitle: "Staying locked in while building something bigger",
+            tag: "Culture",
+            filter: "culture talk",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      },
+      "artist-interviews": {
+        label: "Artist Interviews",
+        description: "Artist stories, guest conversations, release breakdowns, and music lane commentary.",
+        episodes: [
+          {
+            title: "Episode 01 — Creator Mindset",
+            subtitle: "Talking growth, sound, and long-game strategy",
+            tag: "Interview",
+            filter: "interview music",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          },
+          {
+            title: "Episode 02 — Behind the Drop",
+            subtitle: "The visual, sound, and rollout behind a release",
+            tag: "Music Talk",
+            filter: "music interview",
+            cover: "/images/brand/logo-music-label.png",
+            src: ""
+          }
+        ]
+      }
+    };
+
+    let activeShowKey = "rb-talks";
+    let activeEpisodeIndex = 0;
+    let isPlaying = false;
+    let activeFilter = "all";
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+
+    function showPodcastSuccess(message) {
+      const node = el("podcast-success");
+      if (!node) return;
+      node.textContent = message || "";
+      node.style.display = message ? "block" : "none";
+      if (message) {
+        const error = el("podcast-error");
+        if (error) error.style.display = "none";
+      }
+    }
+
+    function showPodcastError(message) {
+      const node = el("podcast-error");
+      if (!node) return;
+      node.textContent = message || "";
+      node.style.display = message ? "block" : "none";
+      if (message) {
+        const success = el("podcast-success");
+        if (success) success.style.display = "none";
+      }
+    }
+
+    function getActiveShow() {
+      return PODCAST_SHOWS[activeShowKey];
+    }
+
+    function getActiveEpisode() {
+      const show = getActiveShow();
+      return show.episodes[activeEpisodeIndex] || show.episodes[0];
+    }
+
+    function renderShowList() {
+      const container = el("podcast-show-list");
+      if (!container) return;
+
+      container.innerHTML = Object.entries(PODCAST_SHOWS).map(([key, show]) => `
+        <div class="show-item ${key === activeShowKey ? "active" : ""}" data-show-item="${key}">
+          <strong>${show.label}</strong>
+          <span>${show.description}</span>
+        </div>
+      `).join("");
+
+      container.querySelectorAll("[data-show-item]").forEach((item) => {
+        item.addEventListener("click", () => {
+          setShow(item.getAttribute("data-show-item"));
+        });
+      });
+    }
+
+    function renderEpisodes() {
+      const show = getActiveShow();
+      const search = String(el("podcast-search")?.value || "").trim().toLowerCase();
+      const list = el("podcast-episode-list");
+      if (!list) return;
+
+      const filteredEpisodes = show.episodes.map((episode, index) => ({ episode, index })).filter(({ episode }) => {
+        const matchesFilter = activeFilter === "all" || String(episode.filter || "").includes(activeFilter);
+        const haystack = `${episode.title} ${episode.subtitle} ${episode.tag}`.toLowerCase();
+        const matchesSearch = !search || haystack.includes(search);
+        return matchesFilter && matchesSearch;
+      });
+
+      if (filteredEpisodes.length === 0) {
+        list.innerHTML = `
+          <div class="episode-item">
+            <div class="episode-number">—</div>
+            <div class="episode-thumb">
+              <img src="/images/brand/logo-music-label.png" alt="No episode" />
+            </div>
+            <div class="episode-copy">
+              <strong>No episodes match this filter</strong>
+              <span>Change the search or pick another show.</span>
+            </div>
+            <div class="episode-tag">Empty</div>
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = filteredEpisodes.map(({ episode, index }, visibleIndex) => `
+        <div class="episode-item ${index === activeEpisodeIndex ? "active" : ""}" data-episode-index="${index}">
+          <div class="episode-number">${visibleIndex + 1}</div>
+          <div class="episode-thumb">
+            <img src="${episode.cover}" alt="${episode.title}" />
+          </div>
+          <div class="episode-copy">
+            <strong>${episode.title}</strong>
+            <span>${episode.subtitle}</span>
+          </div>
+          <div class="episode-tag">${episode.tag}</div>
+        </div>
+      `).join("");
+
+      list.querySelectorAll("[data-episode-index]").forEach((item) => {
+        item.addEventListener("click", () => {
+          activeEpisodeIndex = Number(item.getAttribute("data-episode-index") || 0);
+          renderPodcastNow();
+          if (isPlaying) startEpisode();
+        });
+      });
+    }
+
+    function renderPodcastNow() {
+      const show = getActiveShow();
+      const episode = getActiveEpisode();
+
+      el("podcast-show-label").textContent = show.label;
+      el("podcast-show-description").textContent = show.description;
+      el("podcast-episode-title").textContent = episode.title;
+      el("podcast-episode-meta").textContent = `${show.label} • ${episode.tag} • ${episode.subtitle}`;
+      el("podcast-cover").src = episode.cover;
+
+      const player = el("podcast-player");
+      if (player) {
+        player.src = episode.src || "";
+      }
+
+      const playBtn = el("podcast-play-toggle");
+      if (playBtn) {
+        playBtn.textContent = isPlaying ? "Pause" : "Play";
+      }
+
+      document.querySelectorAll(".show-item").forEach((item) => {
+        const key = item.getAttribute("data-show-item");
+        item.classList.toggle("active", key === activeShowKey);
+      });
+
+      document.querySelectorAll(".filter-btn").forEach((button) => {
+        const filter = button.getAttribute("data-filter");
+        button.classList.toggle("active", filter === activeFilter);
+      });
+
+      renderShowList();
+      renderEpisodes();
+    }
+
+    async function startEpisode() {
+      const player = el("podcast-player");
+      if (!player) return;
+
+      const episode = getActiveEpisode();
+
+      if (!episode.src) {
+        isPlaying = false;
+        renderPodcastNow();
+        showPodcastSuccess("Podcast layout is live. Add real episode audio URLs next to make playback fully work.");
+        return;
+      }
+
+      try {
+        await player.play();
+        isPlaying = true;
+        renderPodcastNow();
+        showPodcastSuccess(`Now playing: ${episode.title}`);
+      } catch (error) {
+        isPlaying = false;
+        renderPodcastNow();
+        showPodcastError("Playback was blocked. Tap play again to start the episode.");
+      }
+    }
+
+    function pauseEpisode() {
+      const player = el("podcast-player");
+      if (!player) return;
+      player.pause();
+      isPlaying = false;
+      renderPodcastNow();
+    }
+
+    function toggleEpisodePlayback() {
+      if (isPlaying) {
+        pauseEpisode();
+      } else {
+        startEpisode();
+      }
+    }
+
+    function nextEpisode() {
+      const show = getActiveShow();
+      activeEpisodeIndex = (activeEpisodeIndex + 1) % show.episodes.length;
+      renderPodcastNow();
+      if (isPlaying) startEpisode();
+    }
+
+    function prevEpisode() {
+      const show = getActiveShow();
+      activeEpisodeIndex = (activeEpisodeIndex - 1 + show.episodes.length) % show.episodes.length;
+      renderPodcastNow();
+      if (isPlaying) startEpisode();
+    }
+
+    function setShow(showKey) {
+      if (!PODCAST_SHOWS[showKey]) return;
+      activeShowKey = showKey;
+      activeEpisodeIndex = 0;
+      renderPodcastNow();
+      if (isPlaying) startEpisode();
+    }
+
+    document.querySelectorAll(".filter-btn").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFilter = button.getAttribute("data-filter") || "all";
+        renderPodcastNow();
+      });
+    });
+
+    el("podcast-search")?.addEventListener("input", renderPodcastNow);
+    el("podcast-play-toggle")?.addEventListener("click", toggleEpisodePlayback);
+    el("podcast-next-btn")?.addEventListener("click", nextEpisode);
+    el("podcast-prev-btn")?.addEventListener("click", prevEpisode);
+    el("podcast-start-btn")?.addEventListener("click", startEpisode);
+    el("podcast-player")?.addEventListener("ended", nextEpisode);
+
+    renderPodcastNow();
+  </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
+</body>
+</html>
