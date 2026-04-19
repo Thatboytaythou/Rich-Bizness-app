@@ -2,44 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness — Watch Live</title>
+  <meta
+    name="description"
+    content="Rich Bizness watch page for joining live streams, chatting, and viewing creator rooms."
+  />
 
   <style>
     :root {
-      --bg: #07110c;
-      --bg-soft: #0d1a14;
+      --bg: #06100b;
       --panel: rgba(10, 22, 16, 0.92);
-      --panel-2: rgba(15, 30, 22, 0.92);
-      --line: rgba(105, 255, 170, 0.18);
-      --line-strong: rgba(105, 255, 170, 0.34);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
       --text: #ecfff4;
-      --muted: #97b8a6;
+      --muted: #93b6a3;
       --green: #43f59b;
       --green-2: #18c972;
-      --yellow: #ffd86a;
-      --red: #ff6b7a;
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 28px;
+      --max: 1380px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      background:
-        radial-gradient(circle at top, rgba(67, 245, 155, 0.12), transparent 32%),
-        linear-gradient(180deg, #050b08 0%, #09140f 45%, #07110c 100%);
-      color: var(--text);
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        radial-gradient(circle at 80% 20%, rgba(67,245,155,0.06), transparent 18%),
+        linear-gradient(180deg, #040905 0%, #07120d 38%, #08140f 100%);
     }
 
     a {
@@ -47,22 +44,32 @@
       text-decoration: none;
     }
 
-    .page {
-      width: min(1400px, calc(100% - 28px));
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
       margin: 0 auto;
-      padding: 20px 0 34px;
+      padding: 18px 0 40px;
     }
 
     .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 50;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
       padding: 14px 16px;
+      margin-bottom: 18px;
       border: 1px solid var(--line);
-      background: rgba(8, 18, 13, 0.74);
-      backdrop-filter: blur(12px);
+      background: rgba(8, 17, 13, 0.78);
+      backdrop-filter: blur(14px);
       border-radius: 18px;
       box-shadow: var(--shadow);
     }
@@ -71,93 +78,82 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
 
-    .brand-badge {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, rgba(67,245,155,0.3), rgba(24,201,114,0.15));
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
       border: 1px solid var(--line-strong);
-      font-weight: 800;
       color: var(--green);
-      box-shadow: 0 0 22px rgba(67, 245, 155, 0.18);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(67,245,155,0.18);
+      flex-shrink: 0;
     }
 
-    .brand h1 {
+    .brand-copy h1 {
       margin: 0;
       font-size: 18px;
-      line-height: 1;
       letter-spacing: 0.02em;
+      line-height: 1;
     }
 
-    .brand p {
-      margin: 5px 0 0;
+    .brand-copy p {
+      margin: 6px 0 0;
       color: var(--muted);
       font-size: 12px;
     }
 
-    .topbar-actions {
+    .nav {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .link-btn,
-    .btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
+    .nav-link,
+    .btn,
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
       border-radius: 14px;
-      transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
-      font-weight: 700;
+      transition: transform 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
     }
 
+    .nav-link:hover,
     .btn:hover,
-    .link-btn:hover {
+    .btn-ghost:hover {
       transform: translateY(-1px);
     }
 
-    .btn:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .link-btn {
+    .nav-link,
+    .btn-ghost {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
       color: var(--text);
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
     }
 
     .btn {
-      padding: 12px 16px;
       background: linear-gradient(135deg, var(--green), var(--green-2));
       color: #062312;
-      box-shadow: 0 10px 25px rgba(24, 201, 114, 0.28);
-    }
-
-    .btn.secondary {
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
-    }
-
-    .shell {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 340px;
-      gap: 18px;
+      box-shadow: 0 10px 26px rgba(24, 201, 114, 0.28);
     }
 
     .panel {
-      background: linear-gradient(180deg, rgba(12,24,18,0.92), rgba(9,18,14,0.92));
+      border-radius: var(--radius-xl);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
       box-shadow: var(--shadow);
       overflow: hidden;
     }
@@ -166,8 +162,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 16px 18px;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,0.015);
     }
@@ -175,115 +172,11 @@
     .panel-header h2,
     .panel-header h3 {
       margin: 0;
-      font-size: 15px;
-      letter-spacing: 0.01em;
+      font-size: 18px;
     }
 
     .panel-body {
-      padding: 18px;
-    }
-
-    .hero-stage {
-      display: grid;
-      gap: 16px;
-    }
-
-    .video-box {
-      background:
-        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 40%),
-        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      min-height: 560px;
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-    }
-
-    .video-box video,
-    .video-box audio {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .placeholder {
-      color: var(--muted);
-      font-size: 14px;
-      text-align: center;
-      padding: 18px;
-    }
-
-    .stream-meta {
-      display: grid;
-      gap: 14px;
-    }
-
-    .headline h2 {
-      margin: 0;
-      font-size: clamp(26px, 4vw, 42px);
-      line-height: 1.03;
-    }
-
-    .headline p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      max-width: 900px;
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 36px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .badge[data-tone="live"] {
-      color: white;
-      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
-      border-color: transparent;
-      box-shadow: 0 10px 24px rgba(255, 94, 114, 0.22);
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .stat {
-      padding: 14px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
-
-    .stat strong {
-      font-size: 20px;
-      line-height: 1;
+      padding: 20px;
     }
 
     .notice {
@@ -307,87 +200,146 @@
       color: #d8ffea;
     }
 
-    .gate {
-      display: none;
-      padding: 26px;
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      margin-bottom: 20px;
     }
 
-    .gate-card {
+    .watch-hero {
+      padding: 28px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,0.14), transparent 28%),
+        linear-gradient(180deg, rgba(13,28,21,0.98), rgba(8,17,13,0.98));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .watch-hero h2 {
+      margin: 18px 0 0;
+      font-size: clamp(34px, 5vw, 60px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .watch-hero p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 640px;
+    }
+
+    .stream-meta-card {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .meta-row {
+      padding: 15px 16px;
+      border-radius: 18px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
-      border-radius: 22px;
-      padding: 24px;
-      max-width: 720px;
-      margin: 0 auto;
-      text-align: center;
     }
 
-    .gate-card h3 {
-      margin: 0 0 10px;
-      font-size: 30px;
-    }
-
-    .gate-card p {
-      color: var(--muted);
-      margin: 0 0 18px;
+    .meta-row strong {
+      display: block;
       font-size: 15px;
+      margin-bottom: 6px;
     }
 
-    .chat-shell {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      min-height: 760px;
-    }
-
-    .chat-list {
-      padding: 16px;
-      overflow: auto;
-      display: grid;
-      gap: 12px;
-      align-content: start;
-      max-height: 620px;
-    }
-
-    .live-chat-message {
-      padding: 12px 13px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .live-chat-message__author {
-      font-size: 12px;
-      color: var(--green);
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .live-chat-message__body {
-      font-size: 14px;
-      color: var(--text);
+    .meta-row span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
       word-break: break-word;
     }
 
-    .chat-input-row {
+    .main-grid {
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 18px;
     }
 
-    .chat-input-row input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
+    .video-stage {
+      min-height: 420px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 30%),
+        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .video-stage strong {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .video-stage span {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    .stream-detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .detail-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      font: inherit;
-      outline: none;
     }
 
-    .chat-input-row input:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    .detail-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .detail-card strong {
+      font-size: 20px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
     }
 
     .side-stack {
@@ -395,161 +347,178 @@
       gap: 18px;
     }
 
-    .mini-list {
+    .chat-feed {
       display: grid;
       gap: 10px;
+      max-height: 340px;
+      overflow: auto;
     }
 
-    .mini-item {
-      padding: 12px 13px;
-      border-radius: 14px;
+    .chat-message {
+      padding: 13px 14px;
+      border-radius: 16px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
+      display: grid;
+      gap: 5px;
     }
 
-    .mini-item strong {
-      display: block;
+    .chat-message strong {
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    .chat-message span {
       font-size: 14px;
-      margin-bottom: 5px;
+      color: var(--text);
+      line-height: 1.5;
     }
 
-    .mini-item span {
-      color: var(--muted);
-      font-size: 12px;
+    .chat-message.system strong {
+      color: #fff;
     }
 
-    .footer-note {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
+    .chat-input-wrap {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .chat-input-wrap input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    .chat-input-wrap input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
     }
 
     @media (max-width: 1180px) {
-      .shell {
+      .hero-grid,
+      .main-grid {
         grid-template-columns: 1fr;
-      }
-
-      .video-box {
-        min-height: 360px;
-      }
-
-      .chat-shell {
-        min-height: unset;
       }
     }
 
-    @media (max-width: 760px) {
-      .page {
-        width: min(100% - 18px, 100%);
-      }
-
+    @media (max-width: 900px) {
       .topbar {
-        flex-direction: column;
+        position: static;
         align-items: flex-start;
+        flex-direction: column;
       }
 
-      .stats {
-        grid-template-columns: 1fr 1fr;
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
       }
 
-      .chat-input-row {
+      .stream-detail-grid {
         grid-template-columns: 1fr;
-      }
-
-      .btn,
-      .link-btn {
-        width: 100%;
-      }
-
-      .topbar-actions {
-        width: 100%;
       }
     }
 
-    @media (max-width: 520px) {
-      .stats {
-        grid-template-columns: 1fr;
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
+
+      .nav-link,
+      .btn,
+      .btn-ghost {
+        width: 100%;
       }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="page-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-badge">RB</div>
-        <div>
-          <h1>Rich Bizness Watch Live</h1>
-          <p>Viewer experience • Live Foundation V1</p>
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Watch Live • Join Rooms • Chat With Viewers</p>
         </div>
       </div>
 
-      <div class="topbar-actions">
-        <a class="link-btn" href="/index.html">Homepage</a>
-        <a class="link-btn" href="/live.html">Go Live</a>
-        <a class="link-btn" href="/profile.html">Profile</a>
-      </div>
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+        <a class="nav-link" href="/live.html">Live Studio</a>
+        <a class="btn" href="/auth.html">Auth</a>
+      </nav>
     </header>
 
-    <div id="live-error" class="notice error"></div>
-    <div id="live-success" class="notice success"></div>
+    <div id="watch-error" class="notice error"></div>
+    <div id="watch-success" class="notice success"></div>
 
-    <div id="watch-gate" class="gate">
-      <div class="gate-card">
-        <h3 id="watch-gate-title">Access blocked</h3>
-        <p id="watch-gate-subtitle">You cannot join this stream right now.</p>
-        <button id="watch-unlock-btn" class="btn" type="button">Unlock Stream</button>
-      </div>
-    </div>
+    <section class="hero-grid">
+      <section class="panel watch-hero">
+        <div>
+          <div class="eyebrow">Watch live</div>
+          <h2 id="watch-stream-title">Loading stream...</h2>
+          <p id="watch-stream-description">
+            Open this page with a valid stream slug to join a creator’s live session.
+          </p>
+        </div>
+      </section>
 
-    <main id="watch-live-shell" class="shell" style="display:none;">
+      <section class="panel stream-meta-card">
+        <div class="meta-row">
+          <strong>Status</strong>
+          <span id="watch-stream-status">OFFLINE</span>
+        </div>
+
+        <div class="meta-row">
+          <strong>Creator</strong>
+          <span id="watch-stream-creator">--</span>
+        </div>
+
+        <div class="meta-row">
+          <strong>Access</strong>
+          <span id="watch-stream-access">--</span>
+        </div>
+      </section>
+    </section>
+
+    <section class="main-grid">
       <section class="panel">
         <div class="panel-header">
-          <h2>Live Viewer Stage</h2>
-          <div id="live-status-badge" class="badge" data-tone="default">LIVE</div>
+          <h2>Live stage</h2>
         </div>
 
         <div class="panel-body">
-          <div class="hero-stage">
-            <div class="video-box">
-              <div id="watch-remote-media" style="width:100%;height:100%;"></div>
-              <div class="placeholder">
-                Live video will appear here once the stream connects.
-              </div>
+          <div class="video-stage">
+            <div>
+              <strong>Live room viewer stage</strong>
+              <span>
+                This watch page is synced to your live system. It loads stream details,
+                allows viewers to join, and supports chat in the same room context.
+              </span>
+            </div>
+          </div>
+
+          <div class="stream-detail-grid">
+            <div class="detail-card">
+              <span>Viewers</span>
+              <strong id="watch-stream-viewers">0</strong>
             </div>
 
-            <div class="stream-meta">
-              <div class="headline">
-                <h2 id="watch-stream-title">Live Stream</h2>
-                <p id="watch-stream-description">Stream description will appear here.</p>
-              </div>
-
-              <div class="chip-row">
-                <div class="badge">Category: <strong id="watch-stream-category">general</strong></div>
-                <div class="badge">Access: <strong id="watch-stream-access">free</strong></div>
-                <div class="badge">Viewers: <strong id="live-viewer-count">0</strong></div>
-              </div>
-
-              <div class="stats">
-                <div class="stat">
-                  <span>Status</span>
-                  <strong>Live</strong>
-                </div>
-                <div class="stat">
-                  <span>Delivery</span>
-                  <strong>LiveKit</strong>
-                </div>
-                <div class="stat">
-                  <span>Chat</span>
-                  <strong>Realtime</strong>
-                </div>
-                <div class="stat">
-                  <span>Mode</span>
-                  <strong>RB Watch</strong>
-                </div>
-              </div>
+            <div class="detail-card">
+              <span>Room mode</span>
+              <strong>Live Room</strong>
             </div>
+          </div>
+
+          <div class="action-row">
+            <button id="watch-join-btn" class="btn" type="button">Join Live</button>
+            <button id="watch-purchase-btn" class="btn-ghost" type="button">Unlock Paid Access</button>
           </div>
         </div>
       </section>
@@ -557,68 +526,36 @@
       <aside class="side-stack">
         <section class="panel">
           <div class="panel-header">
-            <h3>Live Chat</h3>
-            <span class="badge">Realtime</span>
+            <h3>Live chat</h3>
           </div>
 
-          <div class="chat-shell">
-            <div id="live-chat-messages" class="chat-list">
-              <div class="live-chat-message">
-                <div class="live-chat-message__author">System</div>
-                <div class="live-chat-message__body">
-                  Chat history and new messages will appear here.
-                </div>
-              </div>
-            </div>
-
-            <div class="panel-body" style="padding-top:0;">
-              <div class="chat-input-row">
-                <input
-                  id="watch-chat-input"
-                  type="text"
-                  placeholder="Say something in chat..."
-                />
-                <button id="watch-chat-send-btn" class="btn" type="button">Send</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <h3>About This Live</h3>
-            <span class="badge">V1</span>
-          </div>
           <div class="panel-body">
-            <div class="mini-list">
-              <div class="mini-item">
-                <strong>How it works</strong>
-                <span>Open this page using a valid stream slug in the URL.</span>
+            <div id="live-chat-feed" class="chat-feed">
+              <div class="chat-message system">
+                <strong>System</strong>
+                <span>Chat will appear here once messages start coming in.</span>
               </div>
-              <div class="mini-item">
-                <strong>Example</strong>
-                <span>/watch.html?slug=your-stream-slug</span>
-              </div>
-              <div class="mini-item">
-                <strong>Next upgrades</strong>
-                <span>Replay, tips, pinned chat, cohosts, and advanced creator tools.</span>
-              </div>
+            </div>
+
+            <div class="chat-input-wrap">
+              <input
+                id="chat-message-input"
+                type="text"
+                placeholder="Type a message..."
+              />
+              <button id="chat-send-btn" class="btn" type="button">Send</button>
             </div>
           </div>
         </section>
       </aside>
-    </main>
-
-    <div class="footer-note">
-      Rich Bizness Watch Foundation V1
-    </div>
+    </section>
   </div>
 
   <script>
-    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || '';
-    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
-    window.SUPABASE_URL = window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
-    window.SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY || window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
   <script type="module" src="/src/live/watch-client.js"></script>
