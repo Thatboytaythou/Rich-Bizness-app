@@ -1,5 +1,6 @@
 import { getSessionUser, supabase } from "../shared/supabase.js";
 import { getStreamBySlug, joinStream } from "./live-api.js";
+import { getWatchAccessState } from "./access.js";
 import {
   liveState,
   setSessionState,
@@ -20,6 +21,7 @@ import {
 } from "./live-ui.js";
 
 const LK = window.LivekitClient;
+
 let watchRoom = null;
 let attachedMedia = [];
 let chatChannel = null;
@@ -48,8 +50,7 @@ function clearWatchStage() {
     <div class="stage-empty">
       <strong>Live room viewer stage</strong>
       <span>
-        This watch page is synced to your live system. It loads stream details,
-        allows viewers to join, and supports chat in the same room context.
+        Join the stream to load the creator video, room audio, and live session feed.
       </span>
     </div>
   `;
@@ -75,6 +76,42 @@ function attachSubscribedTrack(track) {
     mediaEl.autoplay = true;
     attachedMedia.push(mediaEl);
   }
+}
+
+async function fetchCreatorProfile(creatorId) {
+  if (!creatorId) return null;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("id, display_name, username, avatar_url, profile_image_url")
+    .eq("id", creatorId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[watch-client] fetchCreatorProfile error:", error);
+    return null;
+  }
+
+  return data || null;
+}
+
+function decorateStreamWithCreator(stream, creatorProfile) {
+  if (!stream) return null;
+
+  return {
+    ...stream,
+    creator_display_name:
+      creatorProfile?.display_name ||
+      creatorProfile?.username ||
+      stream.creator_display_name ||
+      stream.creator_name ||
+      stream.creator_id,
+    creator_avatar_url:
+      creatorProfile?.avatar_url ||
+      creatorProfile?.profile_image_url ||
+      stream.creator_avatar_url ||
+      ""
+  };
 }
 
 async function requestLivekitToken({
@@ -258,8 +295,15 @@ async function joinLiveFlow() {
       throw new Error("This stream is offline.");
     }
 
+    const accessState = await getWatchAccessState({ stream, user });
+
+    if (!accessState.allowed) {
+      throw new Error(accessState.message || "You do not have access to this stream.");
+    }
+
     setWatchState({
-      isJoining: true
+      isJoining: true,
+      accessState
     });
 
     setButtonBusy("watch-join-btn", true, "Joining...", "Join Live");
@@ -267,7 +311,11 @@ async function joinLiveFlow() {
     await joinStream(stream.id, user?.id || null);
     await connectWatchRoom(stream, user);
 
-    const nextViewerCount = Number(stream.viewer_count || 0) + 1;
+    const nextViewerCount = Math.max(
+      Number(stream.viewer_count || 0) + 1,
+      Number(liveState.presence.viewers || 0)
+    );
+
     setPresenceState({
       viewers: nextViewerCount
     });
@@ -298,15 +346,23 @@ async function joinLiveFlow() {
   }
 }
 
-function handlePurchaseFlow() {
-  const stream = liveState.watch.stream;
+async function handlePurchaseFlow() {
+  try {
+    const stream = liveState.watch.stream;
 
-  if (!stream?.id) {
-    showWatchError("No stream loaded.");
-    return;
+    if (!stream?.id) {
+      throw new Error("No stream loaded.");
+    }
+
+    if (stream.access_type !== "paid") {
+      throw new Error("This stream does not require payment.");
+    }
+
+    showWatchSuccess("Paid access hookup is the next monetization layer.");
+  } catch (error) {
+    console.error("[watch-client] handlePurchaseFlow error:", error);
+    showWatchError(error.message || "Could not open purchase flow.");
   }
-
-  showWatchSuccess("Paid access flow hooks here next.");
 }
 
 async function sendChatMessage() {
@@ -396,16 +452,21 @@ async function bootWatchPage() {
       return;
     }
 
-    const stream = await getStreamBySlug(slug);
+    const baseStream = await getStreamBySlug(slug);
 
-    if (!stream) {
+    if (!baseStream) {
       renderWatchStream(null);
       showWatchError("Stream not found.");
       return;
     }
 
+    const creatorProfile = await fetchCreatorProfile(baseStream.creator_id);
+    const stream = decorateStreamWithCreator(baseStream, creatorProfile);
+    const accessState = await getWatchAccessState({ stream, user });
+
     setWatchState({
-      stream
+      stream,
+      accessState
     });
 
     setPresenceState({
@@ -414,6 +475,15 @@ async function bootWatchPage() {
 
     renderWatchStream(stream);
     renderWatchPresence(Number(stream.viewer_count || 0));
+
+    const creatorNode = el("watch-stream-creator");
+    if (creatorNode && stream.creator_display_name) {
+      creatorNode.textContent = stream.creator_display_name;
+    }
+
+    if (!accessState.allowed) {
+      showWatchError(accessState.message || "You do not have access to this stream.");
+    }
 
     await loadChatMessages(stream.id);
     subscribeToChat(stream.id);
