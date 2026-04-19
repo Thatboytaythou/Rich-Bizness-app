@@ -6,52 +6,66 @@
   <title>Rich Bizness — Watch Live</title>
   <meta
     name="description"
-    content="Rich Bizness watch page for joining live streams, viewing real video, and chatting."
+    content="Rich Bizness watch page for live streams, creator rooms, viewer chat, and premium watch experiences."
   />
 
   <style>
     :root {
       --bg: #06100b;
-      --panel: rgba(10, 22, 16, 0.92);
+      --panel: rgba(8, 18, 13, 0.9);
+      --panel-2: rgba(12, 28, 20, 0.84);
       --line: rgba(110, 255, 176, 0.16);
       --line-strong: rgba(110, 255, 176, 0.34);
       --text: #ecfff4;
-      --muted: #93b6a3;
+      --muted: #97b8a6;
       --green: #43f59b;
       --green-2: #18c972;
       --red: #ff6f82;
       --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
-      --radius-xl: 28px;
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
       --max: 1380px;
     }
 
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       min-height: 100%;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
       background:
+        linear-gradient(180deg, rgba(4,9,5,0.54), rgba(6,16,11,0.92)),
         radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
-        radial-gradient(circle at 80% 20%, rgba(67,245,155,0.06), transparent 18%),
-        linear-gradient(180deg, #040905 0%, #07120d 38%, #08140f 100%);
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
+      background-color: #06100b;
     }
 
-    a { color: inherit; text-decoration: none; }
-    button, input { font: inherit; }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
 
     .page-shell {
       width: min(var(--max), calc(100% - 24px));
       margin: 0 auto;
-      padding: 18px 0 40px;
+      padding: 18px 0 42px;
     }
 
     .topbar {
       position: sticky;
       top: 12px;
-      z-index: 50;
+      z-index: 60;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -59,7 +73,7 @@
       padding: 14px 16px;
       margin-bottom: 18px;
       border: 1px solid var(--line);
-      background: rgba(8, 17, 13, 0.78);
+      background: rgba(7, 16, 12, 0.78);
       backdrop-filter: blur(14px);
       border-radius: 18px;
       box-shadow: var(--shadow);
@@ -73,21 +87,31 @@
     }
 
     .brand-mark {
-      width: 46px;
-      height: 46px;
-      border-radius: 15px;
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
       display: grid;
       place-items: center;
       background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
       border: 1px solid var(--line-strong);
       color: var(--green);
       font-weight: 900;
-      box-shadow: 0 0 24px rgba(67,245,155,0.18);
+      box-shadow: 0 0 24px rgba(67,245,155,0.22);
       flex-shrink: 0;
     }
 
-    .brand-copy h1 { margin: 0; font-size: 18px; line-height: 1; }
-    .brand-copy p { margin: 6px 0 0; color: var(--muted); font-size: 12px; }
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
 
     .nav {
       display: flex;
@@ -97,60 +121,139 @@
       justify-content: flex-end;
     }
 
-    .nav-link, .btn, .btn-ghost {
+    .nav-link,
+    .btn,
+    .btn-ghost {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       min-height: 44px;
       padding: 11px 15px;
       border-radius: 14px;
-      transition: transform 0.15s ease;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
       font-weight: 800;
       cursor: pointer;
       border: 1px solid transparent;
     }
 
-    .nav-link:hover, .btn:hover, .btn-ghost:hover { transform: translateY(-1px); }
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover {
+      transform: translateY(-1px);
+    }
 
-    .nav-link, .btn-ghost {
-      background: rgba(255,255,255,0.03);
-      border-color: rgba(255,255,255,0.06);
+    .nav-link,
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.07);
       color: var(--text);
     }
 
     .btn {
       background: linear-gradient(135deg, var(--green), var(--green-2));
       color: #062312;
-      box-shadow: 0 10px 26px rgba(24, 201, 114, 0.28);
+      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      margin-bottom: 18px;
     }
 
     .panel {
       border-radius: var(--radius-xl);
       border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
+      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
+      backdrop-filter: blur(10px);
       box-shadow: var(--shadow);
       overflow: hidden;
     }
 
-    .panel-header {
+    .watch-hero {
+      padding: 34px;
+      min-height: 300px;
       display: flex;
-      align-items: center;
+      flex-direction: column;
       justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      padding: 18px 20px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,0.015);
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,0.16), transparent 28%),
+        linear-gradient(180deg, rgba(8,19,14,0.72), rgba(7,15,12,0.84));
     }
 
-    .panel-header h2, .panel-header h3 { margin: 0; font-size: 18px; }
-    .panel-body { padding: 20px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .watch-hero h2 {
+      margin: 20px 0 0;
+      font-size: clamp(38px, 5vw, 74px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+      max-width: 800px;
+      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .watch-hero p {
+      margin: 18px 0 0;
+      color: #d8f5e5;
+      font-size: 16px;
+      line-height: 1.8;
+      max-width: 760px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .stream-meta-card {
+      padding: 22px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .meta-row {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .meta-row strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .meta-row span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+      word-break: break-word;
+    }
 
     .notice {
       display: none;
-      padding: 13px 14px;
-      border-radius: 16px;
       margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
       font-size: 14px;
       border: 1px solid transparent;
     }
@@ -167,91 +270,41 @@
       color: #d8ffea;
     }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
-      gap: 18px;
-      margin-bottom: 20px;
-    }
-
-    .watch-hero {
-      padding: 28px;
-      min-height: 280px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background:
-        radial-gradient(circle at top left, rgba(67,245,155,0.14), transparent 28%),
-        linear-gradient(180deg, rgba(13,28,21,0.98), rgba(8,17,13,0.98));
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      min-height: 34px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
-      color: #d6ffe8;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .watch-hero h2 {
-      margin: 18px 0 0;
-      font-size: clamp(34px, 5vw, 60px);
-      line-height: 0.95;
-      letter-spacing: -0.04em;
-    }
-
-    .watch-hero p {
-      margin: 14px 0 0;
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.7;
-      max-width: 640px;
-    }
-
-    .stream-meta-card {
-      padding: 24px;
-      display: grid;
-      gap: 14px;
-      align-content: start;
-    }
-
-    .meta-row {
-      padding: 15px 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .meta-row strong {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 6px;
-    }
-
-    .meta-row span {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-      word-break: break-word;
-    }
-
     .main-grid {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 380px;
+      grid-template-columns: 1.06fr 0.94fr;
       gap: 18px;
+    }
+
+    .panel-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 22px;
     }
 
     .video-stage {
-      min-height: 420px;
-      border-radius: 22px;
+      min-height: 520px;
+      border-radius: 24px;
       border: 1px solid var(--line);
       background:
         radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 30%),
@@ -260,10 +313,11 @@
       place-items: center;
       padding: 0;
       overflow: hidden;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
     }
 
     .stage-empty {
-      padding: 20px;
+      padding: 24px;
       text-align: center;
       color: var(--muted);
     }
@@ -278,7 +332,7 @@
     .stage-empty span {
       color: var(--muted);
       font-size: 15px;
-      line-height: 1.7;
+      line-height: 1.75;
       max-width: 620px;
       display: inline-block;
     }
@@ -286,7 +340,7 @@
     .stage-video {
       width: 100%;
       height: 100%;
-      min-height: 420px;
+      min-height: 520px;
       object-fit: cover;
       display: block;
       background: #000;
@@ -294,7 +348,7 @@
 
     .stream-detail-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
       margin-top: 16px;
     }
@@ -303,7 +357,7 @@
       padding: 16px;
       border-radius: 18px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.04);
     }
 
     .detail-card span {
@@ -315,37 +369,49 @@
 
     .detail-card strong {
       font-size: 20px;
-      line-height: 1.2;
+      line-height: 1.15;
       word-break: break-word;
     }
 
     .action-row {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       margin-top: 16px;
     }
 
-    .side-stack { display: grid; gap: 18px; }
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
 
     .chat-feed {
       display: grid;
       gap: 10px;
-      max-height: 340px;
+      max-height: 400px;
       overflow: auto;
+      padding-right: 4px;
     }
 
     .chat-message {
       padding: 13px 14px;
       border-radius: 16px;
       border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
+      background: rgba(255,255,255,0.04);
       display: grid;
-      gap: 5px;
+      gap: 6px;
     }
 
-    .chat-message strong { font-size: 13px; color: var(--green); }
-    .chat-message span { font-size: 14px; color: var(--text); line-height: 1.5; }
+    .chat-message strong {
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    .chat-message span {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.65;
+    }
 
     .chat-input-wrap {
       display: grid;
@@ -363,8 +429,66 @@
       outline: none;
     }
 
+    .chat-input-wrap input:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    }
+
+    .creator-spotlight {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .creator-spotlight h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .creator-spotlight p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
     @media (max-width: 1180px) {
-      .hero-grid, .main-grid { grid-template-columns: 1fr; }
+      .hero-grid,
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 900px) {
@@ -374,13 +498,36 @@
         flex-direction: column;
       }
 
-      .nav { justify-content: flex-start; width: 100%; }
-      .stream-detail-grid { grid-template-columns: 1fr; }
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .stream-detail-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     @media (max-width: 640px) {
-      .page-shell { width: min(100% - 16px, 100%); }
-      .nav-link, .btn, .btn-ghost { width: 100%; }
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
+
+      .nav-link,
+      .btn,
+      .btn-ghost {
+        width: 100%;
+      }
+
+      #global-session-nav {
+        width: 100%;
+      }
+
+      #global-session-nav .nav-link,
+      #global-session-nav .btn,
+      #global-session-nav .btn-ghost {
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -391,7 +538,7 @@
         <div class="brand-mark">RB</div>
         <div class="brand-copy">
           <h1>Rich Bizness</h1>
-          <p>Watch Live • Join Rooms • Chat With Viewers</p>
+          <p>Watch Live • Creator Rooms • Viewer Chat</p>
         </div>
       </div>
 
@@ -399,7 +546,8 @@
         <a class="nav-link" href="/index.html">Home</a>
         <a class="nav-link" href="/profile.html">Profile</a>
         <a class="nav-link" href="/live.html">Live Studio</a>
-        <a class="btn" href="/auth.html">Auth</a>
+        <a class="nav-link" href="/feed.html">Feed</a>
+        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       </nav>
     </header>
 
@@ -412,12 +560,18 @@
           <div class="eyebrow">Watch live</div>
           <h2 id="watch-stream-title">Loading stream...</h2>
           <p id="watch-stream-description">
-            Open this page with a valid stream slug to join a creator’s live session.
+            Open a valid watch link and join the room to load the live creator session.
           </p>
+        </div>
+
+        <div class="hero-actions">
+          <button id="watch-join-btn" class="btn" type="button">Join Live</button>
+          <button id="watch-purchase-btn" class="btn-ghost" type="button">Unlock Paid Access</button>
+          <a class="btn-ghost" href="/live.html">Open Live Studio</a>
         </div>
       </section>
 
-      <section class="panel stream-meta-card">
+      <aside class="panel stream-meta-card">
         <div class="meta-row">
           <strong>Status</strong>
           <span id="watch-stream-status">OFFLINE</span>
@@ -432,13 +586,16 @@
           <strong>Access</strong>
           <span id="watch-stream-access">--</span>
         </div>
-      </section>
+      </aside>
     </section>
 
     <section class="main-grid">
       <section class="panel">
-        <div class="panel-header">
-          <h2>Live stage</h2>
+        <div class="panel-head">
+          <div>
+            <h3>Live stage</h3>
+            <p>Join the room to load the live creator feed.</p>
+          </div>
         </div>
 
         <div class="panel-body">
@@ -446,8 +603,7 @@
             <div class="stage-empty">
               <strong>Live room viewer stage</strong>
               <span>
-                This watch page is synced to your live system. It loads stream details,
-                allows viewers to join, and supports chat in the same room context.
+                Join the stream to load the creator video, room audio, and live session feed.
               </span>
             </div>
           </div>
@@ -460,21 +616,24 @@
 
             <div class="detail-card">
               <span>Room mode</span>
-              <strong>Live Room</strong>
+              <strong>Creator Live Room</strong>
             </div>
-          </div>
 
-          <div class="action-row">
-            <button id="watch-join-btn" class="btn" type="button">Join Live</button>
-            <button id="watch-purchase-btn" class="btn-ghost" type="button">Unlock Paid Access</button>
+            <div class="detail-card">
+              <span>Watch state</span>
+              <strong id="watch-room-mode-label">Live Playback</strong>
+            </div>
           </div>
         </div>
       </section>
 
       <aside class="side-stack">
         <section class="panel">
-          <div class="panel-header">
-            <h3>Live chat</h3>
+          <div class="panel-head">
+            <div>
+              <h3>Live chat</h3>
+              <p>Real-time viewer chat synced to the stream.</p>
+            </div>
           </div>
 
           <div class="panel-body">
@@ -491,8 +650,37 @@
             </div>
           </div>
         </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Creator spotlight</h3>
+              <p>Identity and stream presence.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="creator-spotlight">
+              <h4>Live creator session</h4>
+              <p>
+                This watch room is tuned for creator presence, clean access flow, and stronger audience connection across the platform.
+              </p>
+            </div>
+          </div>
+        </section>
       </aside>
     </section>
+
+    <footer class="footer">
+      <p>Rich Bizness • watch room locked</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/live.html">Live Studio</a>
+        <a href="/music.html">Music</a>
+        <a href="/gallery.html">Gallery</a>
+      </div>
+    </footer>
   </div>
 
   <script>
@@ -504,5 +692,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
   <script type="module" src="/src/live/watch-client.js"></script>
+  <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
