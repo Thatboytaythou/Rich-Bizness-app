@@ -1,203 +1,279 @@
-import { Room, RoomEvent } from 'livekit-client';
-import { getSessionUser, supabase } from '../shared/supabase.js';
+import { getSessionUser, supabase } from "../shared/supabase.js";
 import {
-  checkLiveStreamAccess,
-  createLivekitToken,
-  purchaseLiveAccess,
-  sendLiveChatMessage
-} from './live-api.js';
-import { liveState, setLiveState } from './live-state.js';
+  getLiveStreams,
+  joinStream
+} from "./live-api.js";
 import {
-  getValue,
-  setText,
-  showError,
-  showSuccess,
-  renderAccessState,
-  renderStatusBadge,
-  appendChatMessage
-} from './live-ui.js';
+  liveState,
+  setSessionState,
+  setWatchState,
+  setChatState,
+  setPresenceState,
+  resetWatchState,
+  resetChatState,
+  resetPresenceState
+} from "./live-state.js";
+import {
+  showWatchError,
+  showWatchSuccess,
+  renderWatchStream,
+  renderWatchPresence,
+  renderChatMessages,
+  setButtonBusy
+} from "./live-ui.js";
 
-function qs(id) {
+function el(id) {
   return document.getElementById(id);
 }
 
 function getSlugFromUrl() {
   const url = new URL(window.location.href);
-  return url.searchParams.get('slug');
+  return url.searchParams.get("slug");
 }
 
 async function bootWatchPage() {
   try {
-    showError('');
-    showSuccess('');
+    resetWatchState();
+    resetChatState();
+    resetPresenceState();
+    showWatchError("");
+    showWatchSuccess("");
+
+    const user = await getSessionUser();
+
+    setSessionState({
+      user,
+      ready: true
+    });
+
+    bindWatchActions();
 
     const slug = getSlugFromUrl();
-
     if (!slug) {
-      throw new Error('Missing stream slug');
-    }
-
-    const access = await checkLiveStreamAccess({ slug });
-
-    setLiveState({
-      viewerAccess: access,
-      stream: access.stream || null
-    });
-
-    hydrateWatchMeta(access.stream);
-    renderAccessState(access);
-
-    if (!access.allowed) return;
-
-    await connectViewer(access.stream);
-    await subscribeToChat(access.stream.id);
-  } catch (error) {
-    showError(error.message || 'Failed to load watch page');
-  }
-}
-
-function hydrateWatchMeta(stream) {
-  if (!stream) return;
-
-  setText('watch-stream-title', stream.title || 'Live Stream');
-  setText('watch-stream-category', stream.category || 'general');
-  setText('watch-stream-access', stream.access_type || 'free');
-  setText('watch-stream-description', stream.description || '');
-  setText('live-viewer-count', String(stream.viewer_count || 0));
-
-  renderStatusBadge(stream.status === 'live' ? 'LIVE' : String(stream.status || '').toUpperCase(), 'live');
-}
-
-async function connectViewer(stream) {
-  const user = await getSessionUser().catch(() => null);
-
-  const tokenRes = await createLivekitToken({
-    stream_id: stream.id,
-    role: 'viewer',
-    display_name: user?.email || 'Guest Viewer'
-  });
-
-  const room = new Room();
-  bindViewerRoomEvents(room);
-
-  await room.connect(tokenRes.livekit_url, tokenRes.token);
-
-  setLiveState({
-    room,
-    token: tokenRes.token,
-    roomName: tokenRes.room_name,
-    livekitUrl: tokenRes.livekit_url,
-    participantIdentity: tokenRes.participant_identity,
-    connected: true
-  });
-}
-
-function bindViewerRoomEvents(room) {
-  room.on(RoomEvent.TrackSubscribed, (track) => {
-    const mediaEl = track.attach();
-    const container = qs('watch-remote-media');
-
-    if (!container) return;
-
-    if (track.kind === 'video') {
-      container.innerHTML = '';
-    }
-
-    container.appendChild(mediaEl);
-  });
-
-  room.on(RoomEvent.Disconnected, () => {
-    setLiveState({ connected: false, room: null });
-  });
-}
-
-async function subscribeToChat(streamId) {
-  const { data: history, error } = await supabase
-    .from('live_chat_messages')
-    .select('*')
-    .eq('stream_id', streamId)
-    .eq('is_deleted', false)
-    .order('created_at', { ascending: true })
-    .limit(100);
-
-  if (!error && Array.isArray(history)) {
-    history.forEach((item) => appendChatMessage(item));
-  }
-
-  supabase
-    .channel(`live-chat-${streamId}`)
-    .on(
-      'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'live_chat_messages',
-        filter: `stream_id=eq.${streamId}`
-      },
-      (payload) => {
-        appendChatMessage(payload.new);
-      }
-    )
-    .subscribe();
-}
-
-async function handleUnlock() {
-  try {
-    if (!liveState.stream?.id) {
-      throw new Error('No stream selected');
-    }
-
-    const res = await purchaseLiveAccess({
-      stream_id: liveState.stream.id
-    });
-
-    if (res?.url) {
-      window.location.href = res.url;
+      renderWatchStream(null);
+      showWatchError("Missing stream slug in URL.");
       return;
     }
 
-    if (res?.checkout_url) {
-      window.location.href = res.checkout_url;
+    const stream = await loadStreamBySlug(slug);
+
+    if (!stream) {
+      renderWatchStream(null);
+      showWatchError("Stream not found.");
       return;
     }
 
-    throw new Error('No checkout URL returned');
-  } catch (error) {
-    showError(error.message || 'Failed to start purchase');
-  }
-}
-
-async function handleSendChat() {
-  try {
-    const message = getValue('watch-chat-input').trim();
-
-    if (!message) return;
-    if (!liveState.stream?.id) throw new Error('No stream selected');
-
-    await sendLiveChatMessage({
-      stream_id: liveState.stream.id,
-      message
+    setWatchState({
+      stream
     });
 
-    qs('watch-chat-input').value = '';
+    setPresenceState({
+      viewers: Number(stream.viewer_count || 0)
+    });
+
+    renderWatchStream(stream);
+    renderWatchPresence(Number(stream.viewer_count || 0));
+
+    await loadChatMessages(stream.id);
+    subscribeToChat(stream.id);
   } catch (error) {
-    showError(error.message || 'Failed to send message');
+    console.error("[watch-client] boot error:", error);
+    showWatchError(error.message || "Failed to load watch page.");
   }
 }
 
-function bindUi() {
-  qs('watch-unlock-btn')?.addEventListener('click', handleUnlock);
-  qs('watch-chat-send-btn')?.addEventListener('click', handleSendChat);
+async function loadStreamBySlug(slug) {
+  const streams = await getLiveStreams();
+  if (!Array.isArray(streams)) return null;
 
-  qs('watch-chat-input')?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleSendChat();
-    }
-  });
+  return streams.find((stream) => stream.slug === slug) || null;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  bindUi();
-  bootWatchPage();
-});
+async function loadChatMessages(streamId) {
+  try {
+    const { data, error } = await supabase
+      .from("live_chat_messages")
+      .select("*")
+      .eq("stream_id", streamId)
+      .order("created_at", { ascending: true })
+      .limit(100);
+
+    if (error) throw error;
+
+    setChatState({
+      messages: Array.isArray(data) ? data : [],
+      error: ""
+    });
+
+    renderChatMessages(liveState.chat.messages);
+  } catch (error) {
+    console.error("[watch-client] loadChatMessages error:", error);
+    setChatState({
+      error: error.message || "Failed to load chat messages."
+    });
+    renderChatMessages([]);
+  }
+}
+
+let chatChannel = null;
+
+function subscribeToChat(streamId) {
+  try {
+    if (chatChannel) {
+      supabase.removeChannel(chatChannel);
+      chatChannel = null;
+    }
+
+    chatChannel = supabase
+      .channel(`live-chat-${streamId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "live_chat_messages",
+          filter: `stream_id=eq.${streamId}`
+        },
+        async () => {
+          await loadChatMessages(streamId);
+        }
+      )
+      .subscribe();
+  } catch (error) {
+    console.error("[watch-client] subscribeToChat error:", error);
+  }
+}
+
+function bindWatchActions() {
+  el("watch-join-btn")?.addEventListener("click", joinLiveFlow);
+  el("watch-purchase-btn")?.addEventListener("click", handlePurchaseFlow);
+  el("chat-send-btn")?.addEventListener("click", sendChatMessage);
+}
+
+async function joinLiveFlow() {
+  try {
+    showWatchError("");
+    showWatchSuccess("");
+
+    const user = liveState.session.user;
+    const stream = liveState.watch.stream;
+
+    if (!user?.id) {
+      throw new Error("Please log in first from /auth.html.");
+    }
+
+    if (!stream?.id) {
+      throw new Error("No stream loaded.");
+    }
+
+    if (!stream.is_live) {
+      throw new Error("This stream is offline.");
+    }
+
+    setWatchState({
+      isJoining: true
+    });
+
+    setButtonBusy("watch-join-btn", true, "Joining...", "Join Live");
+
+    await joinStream(stream.id, user.id);
+
+    setWatchState({
+      isJoining: false,
+      joined: true,
+      success: "Joined stream successfully."
+    });
+
+    showWatchSuccess("Joined stream successfully.");
+  } catch (error) {
+    console.error("[watch-client] joinLiveFlow error:", error);
+    setWatchState({
+      isJoining: false,
+      error: error.message || "Failed to join stream."
+    });
+    showWatchError(error.message || "Failed to join stream.");
+  } finally {
+    const stream = liveState.watch.stream;
+    setButtonBusy(
+      "watch-join-btn",
+      false,
+      "Joining...",
+      stream?.is_live ? "Join Live" : "Offline"
+    );
+  }
+}
+
+function handlePurchaseFlow() {
+  const stream = liveState.watch.stream;
+
+  if (!stream?.id) {
+    showWatchError("No stream loaded.");
+    return;
+  }
+
+  showWatchSuccess("Paid access flow hooks here next.");
+}
+
+async function sendChatMessage() {
+  try {
+    showWatchError("");
+
+    const user = liveState.session.user;
+    const stream = liveState.watch.stream;
+    const input = el("chat-message-input");
+    const message = input?.value?.trim() || "";
+
+    if (!user?.id) {
+      throw new Error("Please log in first to chat.");
+    }
+
+    if (!stream?.id) {
+      throw new Error("No stream loaded.");
+    }
+
+    if (!message) {
+      throw new Error("Type a message first.");
+    }
+
+    setChatState({
+      sending: true,
+      error: ""
+    });
+
+    setButtonBusy("chat-send-btn", true, "Sending...", "Send");
+
+    const { error } = await supabase
+      .from("live_chat_messages")
+      .insert([
+        {
+          stream_id: stream.id,
+          user_id: user.id,
+          message,
+          display_name:
+            user.user_metadata?.display_name ||
+            user.user_metadata?.username ||
+            user.email ||
+            "User"
+        }
+      ]);
+
+    if (error) throw error;
+
+    if (input) input.value = "";
+
+    setChatState({
+      sending: false
+    });
+  } catch (error) {
+    console.error("[watch-client] sendChatMessage error:", error);
+    setChatState({
+      sending: false,
+      error: error.message || "Failed to send message."
+    });
+    showWatchError(error.message || "Failed to send message.");
+  } finally {
+    setButtonBusy("chat-send-btn", false, "Sending...", "Send");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", bootWatchPage);
