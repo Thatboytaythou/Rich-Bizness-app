@@ -1,89 +1,87 @@
-import { getSessionUser } from '../shared/supabase.js';
+import { supabase } from "../shared/supabase.js";
 
-async function request(path, options = {}) {
-  const user = await getSessionUser().catch(() => null);
+/**
+ * Get all active live streams
+ */
+export async function getLiveStreams() {
+  const { data, error } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("is_live", true)
+    .order("created_at", { ascending: false });
 
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {})
-  };
-
-  if (user?.id) {
-    headers['x-user-id'] = user.id;
-  }
-
-  const response = await fetch(path, {
-    ...options,
-    headers
-  });
-
-  const data = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(data?.error || `Request failed: ${response.status}`);
+  if (error) {
+    console.error("getLiveStreams error:", error);
+    return [];
   }
 
   return data;
 }
 
-export async function createLiveStream(payload) {
-  return request('/api/live-stream-create', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+/**
+ * Get single stream by ID
+ */
+export async function getStreamById(streamId) {
+  const { data, error } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("id", streamId)
+    .single();
+
+  if (error) {
+    console.error("getStreamById error:", error);
+    return null;
+  }
+
+  return data;
 }
 
-export async function updateLiveStream(payload) {
-  return request('/api/live-stream-update', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+/**
+ * Create a new live stream
+ */
+export async function createStream(payload) {
+  const { data, error } = await supabase
+    .from("live_streams")
+    .insert([payload])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("createStream error:", error);
+    return null;
+  }
+
+  return data;
 }
 
-export async function endLiveStream(payload) {
-  return request('/api/live-stream-end', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
+/**
+ * End stream
+ */
+export async function endStream(streamId) {
+  const { error } = await supabase
+    .from("live_streams")
+    .update({ is_live: false })
+    .eq("id", streamId);
+
+  if (error) {
+    console.error("endStream error:", error);
+  }
 }
 
-export async function checkLiveStreamAccess({ stream_id, slug }) {
-  return request('/api/live-stream-access', {
-    method: 'POST',
-    body: JSON.stringify({ stream_id, slug })
-  });
-}
+/**
+ * Join stream (tracks viewers)
+ */
+export async function joinStream(streamId, userId) {
+  const { error } = await supabase
+    .from("live_stream_members")
+    .insert([
+      {
+        stream_id: streamId,
+        user_id: userId,
+      },
+    ]);
 
-export async function createLivekitToken(payload) {
-  return request('/api/livekit-token', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function purchaseLiveAccess(payload) {
-  return request('/api/live-stream-purchase', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function sendLiveChatMessage(payload) {
-  return request('/api/live-chat-send', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function banLiveViewer(payload) {
-  return request('/api/live-moderation-ban', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-}
-
-export async function fetchLiveRail() {
-  const res = await fetch('/api/live-rail');
-  if (!res.ok) throw new Error('Failed to load live rail');
-  return res.json();
+  if (error) {
+    console.error("joinStream error:", error);
+  }
 }
