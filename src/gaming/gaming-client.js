@@ -49,6 +49,7 @@ function clearMessages() {
 }
 
 const state = {
+  games: [],
   featuredGame: null,
   leaderboard: [],
   tournaments: [],
@@ -74,20 +75,15 @@ async function getProfilesMap(userIds = []) {
   return new Map((data || []).map((row) => [row.id, row]));
 }
 
-async function getFeaturedGame() {
+async function getGames() {
   const { data, error } = await supabase
     .from("games")
     .select("*")
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .order("is_featured", { ascending: false })
+    .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("[gaming-client] featured game error:", error);
-    return null;
-  }
-
-  return data || null;
+  if (error) throw error;
+  return data || [];
 }
 
 async function getLeaderboard() {
@@ -140,6 +136,12 @@ function formatPlayerName(profile, fallback = "Player") {
   return profile.display_name || profile.username || fallback;
 }
 
+function ensureFeaturedShell() {
+  const section = el("gaming-featured-section");
+  if (!section) return null;
+  return section.querySelector(".panel-body");
+}
+
 function ensureLeaderboardShell() {
   let list = document.querySelector(".leaderboard-list");
   if (list) return list;
@@ -182,22 +184,50 @@ function ensureChallengeShell() {
   return section.querySelector(".challenge-list");
 }
 
-function ensureFeaturedShell() {
-  const section = el("gaming-featured-section");
-  if (!section) return null;
-  return section.querySelector(".panel-body");
+function buildGameCards() {
+  if (!state.games.length) {
+    return `
+      <div class="empty-state">
+        <div>No games found yet. Add your game rows and this section will populate automatically.</div>
+      </div>
+    `;
+  }
+
+  return state.games.map((game) => {
+    const title = safeText(game.title, "Untitled Game");
+    const description = safeText(game.description, "Game ready for launch.");
+    const status = game.is_featured ? "Featured" : safeText(game.genre || game.category || "Game", "Game");
+
+    return `
+      <article class="tournament-item" data-game-card data-search="${escapeHtml(`${title} ${description} ${status}`.toLowerCase())}">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+          <div>
+            <h4 class="item-title">${escapeHtml(title)}</h4>
+            <p class="item-sub">${escapeHtml(description)}</p>
+          </div>
+          <div class="status-pill ${game.is_featured ? "status-live" : ""}">
+            ${escapeHtml(status)}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+          <a class="action-btn" href="${escapeHtml(game.game_url || "#")}">Play</a>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
 
 function renderFeaturedGame() {
   const shell = ensureFeaturedShell();
   if (!shell) return;
 
-  const game = state.featuredGame;
+  const game = state.featuredGame || state.games[0] || null;
 
   if (!game) {
     shell.innerHTML = `
       <div class="empty-state">
-        <div>No featured game found yet. Add one to your gaming system to power this section.</div>
+        <div>No featured game found yet. Add games to public.games to power this section.</div>
       </div>
     `;
     return;
@@ -208,8 +238,12 @@ function renderFeaturedGame() {
     game.description,
     "Featured game ready for score battles, tournaments, and live creator competition."
   );
-  const image = game.cover_url || game.thumbnail_url || "/images/brand/logo-music-label.png";
-  const badge = safeText(game.genre || game.category || "Featured");
+  const image =
+    game.cover_url ||
+    game.thumbnail_url ||
+    "/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png";
+
+  const badge = safeText(game.genre || game.category || "Featured", "Featured");
 
   shell.innerHTML = `
     <div class="featured-game">
@@ -223,7 +257,7 @@ function renderFeaturedGame() {
         <div class="featured-meta">${escapeHtml(description)}</div>
 
         <div class="featured-actions">
-          <a class="action-btn" href="${escapeHtml(game.game_url || "#")}">Play</a>
+          <a class="action-btn" id="gaming-launch-featured" href="${escapeHtml(game.game_url || "#")}">Play</a>
           <button class="action-btn" id="gaming-submit-score-btn" type="button">Submit Score</button>
           <button class="action-btn" id="gaming-challenge-btn" type="button">Challenge Friends</button>
         </div>
@@ -231,20 +265,19 @@ function renderFeaturedGame() {
     </div>
   `;
 
+  const topPlayBtn = el("gaming-play-btn");
+  if (topPlayBtn) {
+    topPlayBtn.onclick = () => {
+      window.location.href = game.game_url || "#";
+    };
+  }
+
   el("gaming-submit-score-btn")?.addEventListener("click", () => {
-    showSuccess("Featured game score flow connected. Next step is a full submit-score UI.");
+    showSuccess("Score flow is ready. Money Road Runner uses /api/submit-game-score.js.");
   });
 
   el("gaming-challenge-btn")?.addEventListener("click", () => {
-    showSuccess("Challenge flow connected. Next step is a real challenge creation modal.");
-  });
-
-  el("gaming-play-btn")?.addEventListener("click", () => {
-    if (game.game_url) {
-      window.location.href = game.game_url;
-    } else {
-      showSuccess("Featured game is selected. Add a game_url to launch directly.");
-    }
+    showSuccess("Challenge system is connected. Build challenge creation UI next.");
   });
 }
 
@@ -269,7 +302,7 @@ function renderLeaderboard() {
     ].filter(Boolean).join(" • ");
 
     return `
-      <article class="leaderboard-item">
+      <article class="leaderboard-item" data-search="${escapeHtml(`${playerName} ${subtitle} ${entry.score}`.toLowerCase())}">
         <div class="rank-pill">${index + 1}</div>
         <div>
           <h4 class="item-title">${escapeHtml(playerName)}</h4>
@@ -285,20 +318,14 @@ function renderTournaments() {
   const list = ensureTournamentShell();
   if (!list) return;
 
-  if (!state.tournaments.length) {
-    list.innerHTML = `
-      <div class="empty-state">
-        <div>No tournaments found yet.</div>
-      </div>
-    `;
-    return;
-  }
+  const baseMarkup = buildGameCards();
 
-  list.innerHTML = state.tournaments.map((item) => {
+  const tournamentMarkup = state.tournaments.map((item) => {
     const status = safeText(item.status, "soon");
-    const statusClass = String(status).toLowerCase() === "open" || String(status).toLowerCase() === "live"
-      ? "status-pill status-live"
-      : "status-pill";
+    const statusClass =
+      String(status).toLowerCase() === "open" || String(status).toLowerCase() === "live"
+        ? "status-pill status-live"
+        : "status-pill";
 
     const subtitleParts = [
       safeText(item.description, "Tournament lane ready for competition."),
@@ -306,7 +333,7 @@ function renderTournaments() {
     ].filter(Boolean);
 
     return `
-      <article class="tournament-item">
+      <article class="tournament-item" data-search="${escapeHtml(`${item.title || ""} ${subtitleParts.join(" ")} ${status}`.toLowerCase())}">
         <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;">
           <div>
             <h4 class="item-title">${escapeHtml(safeText(item.title, "Tournament"))}</h4>
@@ -317,6 +344,13 @@ function renderTournaments() {
       </article>
     `;
   }).join("");
+
+  if (!state.tournaments.length) {
+    list.innerHTML = baseMarkup;
+    return;
+  }
+
+  list.innerHTML = tournamentMarkup + baseMarkup;
 }
 
 function renderChallenges() {
@@ -339,7 +373,7 @@ function renderChallenges() {
     ].filter(Boolean);
 
     return `
-      <article class="challenge-item">
+      <article class="challenge-item" data-search="${escapeHtml(`${item.title || ""} ${subtitleParts.join(" ")}`.toLowerCase())}">
         <h4 class="item-title">${escapeHtml(safeText(item.title, "Challenge"))}</h4>
         <p class="item-sub">${escapeHtml(subtitleParts.join(" • "))}</p>
       </article>
@@ -351,11 +385,15 @@ function renderStats() {
   const statsCards = document.querySelectorAll(".stat-card");
   if (!statsCards.length) return;
 
+  const topScore = state.leaderboard[0]?.score
+    ? Number(state.leaderboard[0].score)
+    : 0;
+
   const values = [
-    state.featuredGame ? 1 : 0,
-    state.tournaments.length,
+    state.games.length,
+    state.tournaments.length || state.games.length,
     state.challenges.length,
-    state.leaderboard[0]?.score ? `${Math.round(Number(state.leaderboard[0].score) / 1000)}K` : "0"
+    topScore ? `${Math.round(topScore / 1000)}K` : "0"
   ];
 
   statsCards.forEach((card, index) => {
@@ -363,6 +401,16 @@ function renderStats() {
     if (strong && values[index] !== undefined) {
       strong.textContent = String(values[index]);
     }
+  });
+}
+
+function applySearchToVisibleContent() {
+  const query = state.search.trim().toLowerCase();
+
+  document.querySelectorAll("[data-search]").forEach((node) => {
+    const haystack = String(node.getAttribute("data-search") || "").toLowerCase();
+    const show = !query || haystack.includes(query);
+    node.style.display = show ? "" : "none";
   });
 }
 
@@ -374,14 +422,13 @@ function updateVisibility() {
     challenges: el("gaming-challenges-section")
   };
 
-  const query = state.search.trim().toLowerCase();
-
   Object.entries(sections).forEach(([key, section]) => {
     if (!section) return;
     const matchesTab = state.activeTab === "all" || state.activeTab === key;
-    const matchesSearch = !query || section.textContent.toLowerCase().includes(query);
-    section.style.display = matchesTab && matchesSearch ? "" : "none";
+    section.style.display = matchesTab ? "" : "none";
   });
+
+  applySearchToVisibleContent();
 }
 
 function bindUI() {
@@ -412,8 +459,8 @@ async function bootGamingClient() {
     clearMessages();
     bindUI();
 
-    const [featuredGame, leaderboardRaw, tournaments, challenges] = await Promise.all([
-      getFeaturedGame(),
+    const [games, leaderboardRaw, tournaments, challenges] = await Promise.all([
+      getGames(),
       getLeaderboard(),
       getTournaments(),
       getChallenges()
@@ -422,13 +469,20 @@ async function bootGamingClient() {
     const profileIds = leaderboardRaw.map((entry) => entry.user_id || entry.player_id || entry.creator_id);
     const profilesMap = await getProfilesMap(profileIds);
 
-    state.featuredGame = featuredGame;
+    state.games = games || [];
+    state.featuredGame =
+      state.games.find((game) => game.is_featured) ||
+      state.games.find((game) => game.slug === "money-road-runner") ||
+      state.games[0] ||
+      null;
+
     state.leaderboard = leaderboardRaw.map((entry) => ({
       ...entry,
       profile: profilesMap.get(entry.user_id || entry.player_id || entry.creator_id) || null
     }));
-    state.tournaments = tournaments;
-    state.challenges = challenges;
+
+    state.tournaments = tournaments || [];
+    state.challenges = challenges || [];
 
     renderFeaturedGame();
     renderLeaderboard();
@@ -437,12 +491,16 @@ async function bootGamingClient() {
     renderStats();
     updateVisibility();
 
-    if (!featuredGame && !leaderboardRaw.length && !tournaments.length && !challenges.length) {
-      showError("Gaming page is locked in, but no real gaming data was found yet.");
+    if (!state.games.length && !state.leaderboard.length && !state.tournaments.length && !state.challenges.length) {
+      showError("Gaming section is live, but no real data was found yet.");
       return;
     }
 
-    showSuccess("Gaming page is now pulling real gaming data.");
+    if (state.games.length) {
+      showSuccess(`Gaming locked in. ${state.games.length} game${state.games.length === 1 ? "" : "s"} loaded.`);
+    } else {
+      showSuccess("Gaming page connected.");
+    }
   } catch (error) {
     console.error("[gaming-client] boot error:", error);
     showError(error.message || "Failed to load gaming page.");
