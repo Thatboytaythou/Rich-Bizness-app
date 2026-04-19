@@ -1,93 +1,932 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Studio Showdown</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Studio Showdown — Rich Bizness</title>
 
-<style>
-body {
-  margin:0;
-  font-family: Arial;
-  background:#081b12;
-  color:white;
-  text-align:center;
-}
-
-h1 {
-  margin-top:20px;
-}
-
-#game {
-  margin-top:30px;
-}
-
-.pad {
-  width:120px;
-  height:120px;
-  margin:10px;
-  display:inline-block;
-  border-radius:12px;
-  cursor:pointer;
-  opacity:0.7;
-}
-
-.active {
-  opacity:1;
-  transform:scale(1.1);
-}
-
-#score {
-  margin-top:20px;
-  font-size:20px;
-}
-</style>
-</head>
-
-<body>
-
-<h1>🎧 Studio Showdown</h1>
-<p>Tap the beat. Don’t miss.</p>
-
-<div id="game">
-  <div class="pad" id="pad1" style="background:#00ff99"></div>
-  <div class="pad" id="pad2" style="background:#00ccff"></div>
-  <div class="pad" id="pad3" style="background:#ffcc00"></div>
-</div>
-
-<div id="score">Score: 0</div>
-
-<script>
-let score = 0;
-let activePad = null;
-
-function activatePad() {
-  const pads = document.querySelectorAll(".pad");
-
-  if (activePad) activePad.classList.remove("active");
-
-  const rand = Math.floor(Math.random() * pads.length);
-  activePad = pads[rand];
-  activePad.classList.add("active");
-
-  setTimeout(activatePad, 800);
-}
-
-document.querySelectorAll(".pad").forEach(pad => {
-  pad.onclick = () => {
-    if (pad === activePad) {
-      score++;
-      document.getElementById("score").innerText = "Score: " + score;
-    } else {
-      alert("Missed beat! Final Score: " + score);
-      score = 0;
-      document.getElementById("score").innerText = "Score: 0";
+  <style>
+    :root {
+      --bg-1: #03110b;
+      --bg-2: #092016;
+      --panel: rgba(8, 18, 13, 0.82);
+      --line: rgba(89, 255, 164, 0.22);
+      --line-strong: rgba(89, 255, 164, 0.42);
+      --text: #ecfff4;
+      --muted: #a5c9b4;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --gold: #f7d96a;
+      --red: #ff6d7a;
+      --blue: #4bc8ff;
+      --purple: #c46bff;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
     }
-  };
-});
 
-activatePad();
-</script>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
 
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.12), transparent 25%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .game-shell {
+      width: min(100vw, 1180px);
+      height: 100vh;
+      max-height: 940px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: var(--green);
+      border: 1px solid var(--line-strong);
+      background: linear-gradient(135deg, rgba(67,245,155,0.16), rgba(24,201,114,0.08));
+      box-shadow: 0 0 24px rgba(67,245,155,0.16);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .btn {
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-weight: 900;
+      color: #052113;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      box-shadow: 0 12px 26px rgba(24,201,114,0.24);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .arena {
+      position: relative;
+      min-height: 0;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(5,15,10,0.18), rgba(5,15,10,0.46)),
+        url('/images/brand/logo-music-label.png') center center / cover no-repeat;
+      box-shadow: var(--shadow);
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 14px;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .hud-card {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(4, 12, 9, 0.68);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+
+    .hud-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .hud-card strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sequence-bar {
+      min-height: 62px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: rgba(4, 12, 9, 0.68);
+      border: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .sequence-copy strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .sequence-copy span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .sequence-track {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .sequence-chip {
+      min-width: 30px;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+    }
+
+    .stage {
+      position: relative;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(0,0,0,0.26);
+      overflow: hidden;
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 18px;
+    }
+
+    .stage-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .stage-head h2 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+    }
+
+    .stage-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    .stage-status {
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pad-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      align-content: center;
+    }
+
+    .pad {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      border-radius: 26px;
+      border: 1px solid rgba(255,255,255,0.10);
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04), var(--shadow);
+      transform: scale(1);
+      transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
+      overflow: hidden;
+    }
+
+    .pad::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(0,0,0,0.08));
+      pointer-events: none;
+    }
+
+    .pad:hover {
+      transform: scale(1.02);
+    }
+
+    .pad.active,
+    .pad.flash {
+      transform: scale(1.04);
+      filter: brightness(1.2);
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.24),
+        0 0 34px rgba(255,255,255,0.18),
+        var(--shadow);
+    }
+
+    .pad-label {
+      position: absolute;
+      left: 14px;
+      bottom: 14px;
+      min-height: 34px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.38);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pad-green { background: linear-gradient(135deg, #1ccf73, #0a7d44); }
+    .pad-blue { background: linear-gradient(135deg, #34baff, #1658d4); }
+    .pad-gold { background: linear-gradient(135deg, #ffd34d, #b07b07); }
+    .pad-purple { background: linear-gradient(135deg, #cf6cff, #7130bf); }
+
+    .bottom-controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .bottom-controls p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(3,8,5,0.34), rgba(3,8,5,0.66));
+      z-index: 4;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .overlay-card {
+      width: min(700px, 100%);
+      padding: 28px;
+      border-radius: 24px;
+      border: 1px solid var(--line-strong);
+      background: rgba(6, 14, 10, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      text-align: center;
+    }
+
+    .overlay-card h2 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .overlay-card p {
+      margin: 16px auto 0;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .overlay-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tips {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 920px) {
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .pad-grid {
+        gap: 14px;
+      }
+
+      .sequence-bar {
+        justify-content: flex-start;
+      }
+
+      .sequence-track {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .game-shell {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .topbar {
+        padding: 10px;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .pill,
+      .btn {
+        flex: 1 1 auto;
+      }
+
+      .arena {
+        padding: 12px;
+      }
+
+      .stage {
+        padding: 14px;
+      }
+
+      .overlay-card {
+        padding: 22px 16px;
+      }
+
+      .pad-label {
+        left: 10px;
+        bottom: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Studio Showdown</h1>
+          <p>Memorize • Repeat • Survive the beat</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a class="pill" href="/gaming.html">Back to Arcade</a>
+        <button class="btn secondary" id="muteBtn" type="button">Sound: On</button>
+        <button class="btn secondary" id="pauseBtn" type="button">Pause</button>
+      </div>
+    </header>
+
+    <section class="arena">
+      <div class="hud">
+        <div class="hud-card">
+          <span>Score</span>
+          <strong id="scoreValue">0</strong>
+        </div>
+        <div class="hud-card">
+          <span>Round</span>
+          <strong id="roundValue">1</strong>
+        </div>
+        <div class="hud-card">
+          <span>Best</span>
+          <strong id="bestValue">0</strong>
+        </div>
+        <div class="hud-card">
+          <span>Streak</span>
+          <strong id="streakValue">0</strong>
+        </div>
+      </div>
+
+      <div class="sequence-bar">
+        <div class="sequence-copy">
+          <strong>Beat sequence</strong>
+          <span>Watch the pattern. Repeat it without missing.</span>
+        </div>
+        <div class="sequence-track" id="sequenceTrack"></div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head">
+          <div>
+            <h2>Keep the session alive.</h2>
+            <p>
+              Studio Showdown is a memory and timing lane. Watch the pads flash,
+              repeat the sequence, and stack rounds before the beat breaks you.
+            </p>
+          </div>
+          <div class="stage-status" id="statusBadge">Ready</div>
+        </div>
+
+        <div class="pad-grid">
+          <button class="pad pad-green" data-pad="0" type="button">
+            <span class="pad-label">Kick</span>
+          </button>
+          <button class="pad pad-blue" data-pad="1" type="button">
+            <span class="pad-label">Snare</span>
+          </button>
+          <button class="pad pad-gold" data-pad="2" type="button">
+            <span class="pad-label">Hat</span>
+          </button>
+          <button class="pad pad-purple" data-pad="3" type="button">
+            <span class="pad-label">Bass</span>
+          </button>
+        </div>
+
+        <div class="bottom-controls">
+          <p>
+            Desktop: click pads or use keys 1 2 3 4 • Mobile: tap pads directly.
+          </p>
+          <button class="btn" id="startRoundBtn" type="button">Start Round</button>
+        </div>
+      </div>
+
+      <div class="overlay" id="startOverlay">
+        <div class="overlay-card">
+          <h2>Run the studio.</h2>
+          <p>
+            Watch the sequence, repeat it clean, and keep stacking rounds.
+            Every completed round adds score and builds your streak.
+          </p>
+          <div class="overlay-actions">
+            <button class="btn" id="startBtn" type="button">Start Game</button>
+            <button class="btn secondary" id="howBtn" type="button">Controls</button>
+          </div>
+          <div class="tips">
+            Tap or press 1 2 3 4 to repeat the beat.
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="gameOverOverlay">
+        <div class="overlay-card">
+          <h2>Session over.</h2>
+          <p id="gameOverText">Your score is locked.</p>
+          <div class="overlay-actions">
+            <button class="btn" id="restartBtn" type="button">Run Again</button>
+            <button class="btn secondary" id="submitBtn" type="button">Submit Score</button>
+          </div>
+          <div class="tips" id="submitStatus">Your local best is saved automatically.</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const pads = Array.from(document.querySelectorAll(".pad"));
+      const statusBadge = document.getElementById("statusBadge");
+      const sequenceTrack = document.getElementById("sequenceTrack");
+
+      const scoreValue = document.getElementById("scoreValue");
+      const roundValue = document.getElementById("roundValue");
+      const bestValue = document.getElementById("bestValue");
+      const streakValue = document.getElementById("streakValue");
+
+      const startOverlay = document.getElementById("startOverlay");
+      const gameOverOverlay = document.getElementById("gameOverOverlay");
+      const gameOverText = document.getElementById("gameOverText");
+      const submitStatus = document.getElementById("submitStatus");
+
+      const startBtn = document.getElementById("startBtn");
+      const startRoundBtn = document.getElementById("startRoundBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const muteBtn = document.getElementById("muteBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const howBtn = document.getElementById("howBtn");
+
+      const STORAGE_KEY = "rb_studio_showdown_best";
+
+      const audioCtx = window.AudioContext ? new AudioContext() : null;
+
+      const tones = [
+        { freq: 220, color: "#1ccf73", label: "Kick" },
+        { freq: 300, color: "#34baff", label: "Snare" },
+        { freq: 440, color: "#ffd34d", label: "Hat" },
+        { freq: 620, color: "#cf6cff", label: "Bass" }
+      ];
+
+      const state = {
+        running: false,
+        paused: false,
+        gameOver: false,
+        showingSequence: false,
+        waitingInput: false,
+        muted: false,
+        score: 0,
+        round: 1,
+        streak: 0,
+        best: Number(localStorage.getItem(STORAGE_KEY) || 0),
+        sequence: [],
+        playerIndex: 0,
+        submitLock: false
+      };
+
+      bestValue.textContent = String(state.best);
+
+      function setStatus(text) {
+        statusBadge.textContent = text;
+      }
+
+      function updateHud() {
+        scoreValue.textContent = String(state.score);
+        roundValue.textContent = String(state.round);
+        bestValue.textContent = String(state.best);
+        streakValue.textContent = String(state.streak);
+      }
+
+      function updateSequenceTrack() {
+        sequenceTrack.innerHTML = state.sequence
+          .map((value, index) => {
+            const item = tones[value];
+            const active = state.waitingInput && index < state.playerIndex;
+            return `
+              <div
+                class="sequence-chip"
+                style="border-color:${item.color}; color:${item.color}; ${active ? `background:${item.color}22;` : ""}"
+              >
+                ${item.label}
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      function playTone(index, duration = 180) {
+        if (state.muted || !audioCtx) return;
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume().catch(() => {});
+        }
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = "sine";
+        osc.frequency.value = tones[index].freq;
+
+        gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration / 1000);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration / 1000 + 0.03);
+      }
+
+      function flashPad(index, duration = 240) {
+        const pad = pads[index];
+        if (!pad) return;
+        pad.classList.add("flash");
+        playTone(index, duration);
+        setTimeout(() => {
+          pad.classList.remove("flash");
+        }, duration);
+      }
+
+      function randomPad() {
+        return Math.floor(Math.random() * pads.length);
+      }
+
+      function resetGame() {
+        state.running = false;
+        state.paused = false;
+        state.gameOver = false;
+        state.showingSequence = false;
+        state.waitingInput = false;
+        state.score = 0;
+        state.round = 1;
+        state.streak = 0;
+        state.sequence = [];
+        state.playerIndex = 0;
+        state.submitLock = false;
+        submitStatus.textContent = "Your local best is saved automatically.";
+        updateHud();
+        updateSequenceTrack();
+        setStatus("Ready");
+      }
+
+      async function startGame() {
+        resetGame();
+        state.running = true;
+        startOverlay.classList.add("hidden");
+        gameOverOverlay.classList.add("hidden");
+        await startNextRound();
+      }
+
+      async function startNextRound() {
+        if (!state.running || state.paused || state.gameOver) return;
+
+        state.waitingInput = false;
+        state.showingSequence = true;
+        state.playerIndex = 0;
+
+        const delay = Math.max(360, 700 - state.round * 18);
+
+        state.sequence.push(randomPad());
+        updateSequenceTrack();
+        setStatus("Watch");
+
+        await sleep(450);
+
+        for (const step of state.sequence) {
+          if (!state.running || state.paused || state.gameOver) return;
+          flashPad(step, Math.max(150, delay - 120));
+          await sleep(delay);
+        }
+
+        state.showingSequence = false;
+        state.waitingInput = true;
+        setStatus("Repeat");
+      }
+
+      function saveBestIfNeeded() {
+        if (state.score > state.best) {
+          state.best = state.score;
+          localStorage.setItem(STORAGE_KEY, String(state.best));
+          submitStatus.textContent = "New local best locked in.";
+        }
+      }
+
+      function loseRound() {
+        state.running = false;
+        state.gameOver = true;
+        state.waitingInput = false;
+        state.showingSequence = false;
+
+        saveBestIfNeeded();
+        updateHud();
+
+        gameOverText.textContent = `You ended on round ${state.round} with a score of ${state.score}.`;
+        gameOverOverlay.classList.remove("hidden");
+        setStatus("Session Over");
+      }
+
+      async function handlePadInput(index) {
+        if (!state.running || state.paused || state.gameOver) return;
+        if (!state.waitingInput || state.showingSequence) return;
+
+        flashPad(index, 170);
+
+        const expected = state.sequence[state.playerIndex];
+
+        if (index !== expected) {
+          loseRound();
+          return;
+        }
+
+        state.playerIndex += 1;
+        state.score += 100;
+        state.streak += 1;
+
+        updateHud();
+        updateSequenceTrack();
+
+        if (state.playerIndex >= state.sequence.length) {
+          state.waitingInput = false;
+          state.round += 1;
+          state.score += 250;
+          updateHud();
+          setStatus("Clean Round");
+          await sleep(650);
+          await startNextRound();
+        }
+      }
+
+      function togglePause() {
+        if (!state.running || state.gameOver) return;
+        state.paused = !state.paused;
+        pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+        setStatus(state.paused ? "Paused" : state.waitingInput ? "Repeat" : "Watch");
+
+        if (!state.paused && !state.waitingInput && !state.showingSequence) {
+          startNextRound();
+        }
+      }
+
+      async function submitScore() {
+        if (state.submitLock) return;
+        state.submitLock = true;
+        submitStatus.textContent = "Submitting score...";
+
+        try {
+          const res = await fetch("/api/submit-game-score.js", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              gameSlug: "studio-showdown",
+              score: state.score,
+              mode: "Beat Tap",
+              metadata: {
+                round: state.round,
+                streak: state.streak
+              }
+            })
+          });
+
+          if (!res.ok) {
+            throw new Error("Submit endpoint did not return success.");
+          }
+
+          submitStatus.textContent = "Score submitted to Rich Bizness leaderboard.";
+        } catch (error) {
+          console.error("[studio-showdown] submit score error:", error);
+          submitStatus.textContent = "Could not submit score yet. Local best is still saved.";
+        } finally {
+          state.submitLock = false;
+        }
+      }
+
+      function bindKeyboard() {
+        window.addEventListener("keydown", async (event) => {
+          const key = event.key.toLowerCase();
+
+          if (key === "1") await handlePadInput(0);
+          if (key === "2") await handlePadInput(1);
+          if (key === "3") await handlePadInput(2);
+          if (key === "4") await handlePadInput(3);
+
+          if (key === " " || key === "p") {
+            event.preventDefault();
+            if (!state.running && !state.gameOver && !startOverlay.classList.contains("hidden")) {
+              await startGame();
+            } else {
+              togglePause();
+            }
+          }
+
+          if (key === "enter" && state.gameOver) {
+            event.preventDefault();
+            await startGame();
+          }
+        });
+      }
+
+      pads.forEach((pad, index) => {
+        pad.addEventListener("click", () => handlePadInput(index));
+        pad.addEventListener("touchstart", (event) => {
+          event.preventDefault();
+          handlePadInput(index);
+        }, { passive: false });
+      });
+
+      startBtn.addEventListener("click", startGame);
+      startRoundBtn.addEventListener("click", async () => {
+        if (!state.running) {
+          await startGame();
+        }
+      });
+      restartBtn.addEventListener("click", startGame);
+      submitBtn.addEventListener("click", submitScore);
+
+      muteBtn.addEventListener("click", () => {
+        state.muted = !state.muted;
+        muteBtn.textContent = state.muted ? "Sound: Off" : "Sound: On";
+      });
+
+      pauseBtn.addEventListener("click", togglePause);
+
+      howBtn.addEventListener("click", () => {
+        alert("Watch the flashing pad sequence, then repeat it.\n\nDesktop: click pads or use keys 1 2 3 4.\nMobile: tap pads directly.");
+      });
+
+      bindKeyboard();
+      resetGame();
+    })();
+  </script>
 </body>
 </html>
