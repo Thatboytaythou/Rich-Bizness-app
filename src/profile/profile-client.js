@@ -1,194 +1,231 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  getFullProfileBundle,
+  upsertProfile,
+  followProfile,
+  unfollowProfile
+} from "./profile-api.js";
+import {
+  getState,
+  setLoading,
+  setError,
+  clearError,
+  setCurrentUser,
+  setProfileId,
+  setProfile,
+  setStats,
+  setLatestLive,
+  setIsOwnProfile,
+  setIsFollowing,
+  incrementFollowers,
+  decrementFollowers
+} from "./profile-state.js";
+import {
+  showProfileError,
+  showProfileSuccess,
+  renderProfileIdentity,
+  renderProfileStats,
+  renderFollowButton,
+  renderLatestLiveCard,
+  renderEditProfileForm,
+  openEditProfilePanel,
+  closeEditProfilePanel,
+  setSaveProfileButtonBusy,
+  getEditProfileValues,
+  deriveCreatorTier
+} from "./profile-ui.js";
 
-const supabase = createClient(
-  window.NEXT_PUBLIC_SUPABASE_URL,
-  window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-);
-
-// DOM
-const displayNameEl = document.getElementById("profile-display-name");
-const handleEl = document.getElementById("profile-handle");
-const bioEl = document.getElementById("profile-bio");
-const avatarEl = document.getElementById("profile-avatar");
-
-const followersEl = document.getElementById("profile-followers-count");
-const followingEl = document.getElementById("profile-following-count");
-const postsEl = document.getElementById("profile-posts-count");
-const livesEl = document.getElementById("profile-lives-count");
-
-const followBtn = document.getElementById("follow-profile-btn");
-
-const editPanel = document.getElementById("edit-profile-panel");
-const editForm = document.getElementById("edit-profile-form");
-
-const editName = document.getElementById("edit-display-name");
-const editUsername = document.getElementById("edit-username");
-const editBio = document.getElementById("edit-bio");
-const editAvatar = document.getElementById("edit-avatar-url");
-
-const errorBox = document.getElementById("profile-error");
-const successBox = document.getElementById("profile-success");
-
-let currentUser = null;
-let profileUserId = null;
-let isOwnProfile = false;
-
-// helpers
-function showError(msg) {
-  if (!errorBox) return;
-  errorBox.textContent = msg;
-  errorBox.style.display = "block";
-  successBox.style.display = "none";
+function el(id) {
+  return document.getElementById(id);
 }
 
-function showSuccess(msg) {
-  if (!successBox) return;
-  successBox.textContent = msg;
-  successBox.style.display = "block";
-  errorBox.style.display = "none";
+function resetMessages() {
+  showProfileError("");
+  showProfileSuccess("");
+  clearError();
 }
 
-// get profile id from URL
-function getProfileId() {
-  const params = new URLSearchParams(window.location.search);
-  return params.get("id");
-}
+async function bootProfilePage() {
+  try {
+    resetMessages();
+    setLoading(true);
 
-// load session
-async function loadSession() {
-  const { data } = await supabase.auth.getSession();
-  currentUser = data?.session?.user || null;
-}
+    const bundle = await getFullProfileBundle();
 
-// load profile
-async function loadProfile() {
-  profileUserId = getProfileId() || currentUser?.id;
+    setCurrentUser(bundle.currentUser);
+    setProfileId(bundle.profileId);
+    setProfile(bundle.profile);
+    setLatestLive(bundle.latestLive);
+    setIsOwnProfile(bundle.isOwnProfile);
+    setIsFollowing(bundle.isFollowing);
 
-  if (!profileUserId) {
-    showError("No profile found.");
-    return;
-  }
+    const tier = deriveCreatorTier(bundle.stats);
+    setStats({
+      ...bundle.stats,
+      tier
+    });
 
-  isOwnProfile = currentUser?.id === profileUserId;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", profileUserId)
-    .single();
-
-  if (error || !data) {
-    showError("Profile not found.");
-    return;
-  }
-
-  renderProfile(data);
-  loadStats();
-  setupEdit(data);
-}
-
-// render
-function renderProfile(p) {
-  displayNameEl.textContent = p.display_name || "Rich Bizness User";
-  handleEl.textContent = "@" + (p.username || "user");
-  bioEl.textContent = p.bio || "No bio yet.";
-
-  if (p.avatar_url) {
-    avatarEl.src = p.avatar_url;
-  }
-
-  if (isOwnProfile) {
-    followBtn.style.display = "none";
+    renderEverything();
+    bindEvents();
+  } catch (error) {
+    console.error("[profile-client] bootProfilePage error:", error);
+    const message = error.message || "Failed to load profile.";
+    setError(message);
+    showProfileError(message);
+  } finally {
+    setLoading(false);
   }
 }
 
-// stats
-async function loadStats() {
-  // followers
-  const { count: followers } = await supabase
-    .from("followers")
-    .select("*", { count: "exact", head: true })
-    .eq("following_id", profileUserId);
+function renderEverything() {
+  const state = getState();
 
-  // following
-  const { count: following } = await supabase
-    .from("followers")
-    .select("*", { count: "exact", head: true })
-    .eq("follower_id", profileUserId);
-
-  // lives
-  const { count: lives } = await supabase
-    .from("live_streams")
-    .select("*", { count: "exact", head: true })
-    .eq("creator_id", profileUserId);
-
-  followersEl.textContent = followers || 0;
-  followingEl.textContent = following || 0;
-  livesEl.textContent = lives || 0;
-  postsEl.textContent = 0;
-}
-
-// follow system
-followBtn?.addEventListener("click", async () => {
-  if (!currentUser) {
-    showError("Login first.");
-    return;
+  if (state.profile) {
+    renderProfileIdentity(state.profile);
+    renderEditProfileForm(state.profile);
   }
 
-  const { error } = await supabase.from("followers").insert({
-    follower_id: currentUser.id,
-    following_id: profileUserId,
+  renderProfileStats(state.stats);
+  renderFollowButton({
+    isOwnProfile: state.isOwnProfile,
+    isFollowing: state.isFollowing
   });
-
-  if (error) {
-    showError("Already following or error.");
-  } else {
-    showSuccess("Followed.");
-    loadStats();
-  }
-});
-
-// edit setup
-function setupEdit(p) {
-  if (!isOwnProfile) return;
-
-  editPanel.style.display = "none";
-
-  editName.value = p.display_name || "";
-  editUsername.value = p.username || "";
-  editBio.value = p.bio || "";
-  editAvatar.value = p.avatar_url || "";
+  renderLatestLiveCard(state.latestLive);
 }
 
-// save edit
-editForm?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+function bindEvents() {
+  bindFollowButton();
+  bindEditProfileToggle();
+  bindEditProfileForm();
+}
 
-  if (!currentUser) return;
+function bindFollowButton() {
+  const button = el("follow-profile-btn");
+  if (!button || button.dataset.bound === "true") return;
 
-  const updates = {
-    id: currentUser.id,
-    display_name: editName.value,
-    username: editUsername.value,
-    bio: editBio.value,
-    avatar_url: editAvatar.value,
-    updated_at: new Date(),
-  };
+  button.dataset.bound = "true";
 
-  const { error } = await supabase
-    .from("profiles")
-    .upsert(updates);
+  button.addEventListener("click", async () => {
+    const state = getState();
 
-  if (error) {
-    showError("Update failed.");
-  } else {
-    showSuccess("Profile updated.");
-    loadProfile();
+    if (state.isOwnProfile) return;
+
+    if (!state.currentUser?.id) {
+      showProfileError("Log in first to follow profiles.");
+      return;
+    }
+
+    try {
+      resetMessages();
+      button.disabled = true;
+
+      if (state.isFollowing) {
+        await unfollowProfile({
+          followerId: state.currentUser.id,
+          followingId: state.profileId
+        });
+
+        setIsFollowing(false);
+        decrementFollowers();
+        renderFollowButton({
+          isOwnProfile: false,
+          isFollowing: false
+        });
+        renderProfileStats(getState().stats);
+        showProfileSuccess("Unfollowed.");
+      } else {
+        await followProfile({
+          followerId: state.currentUser.id,
+          followingId: state.profileId
+        });
+
+        setIsFollowing(true);
+        incrementFollowers();
+        renderFollowButton({
+          isOwnProfile: false,
+          isFollowing: true
+        });
+        renderProfileStats(getState().stats);
+        showProfileSuccess("Followed.");
+      }
+    } catch (error) {
+      console.error("[profile-client] follow toggle error:", error);
+      showProfileError(error.message || "Could not update follow state.");
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+function bindEditProfileToggle() {
+  const openBtn = el("edit-profile-toggle-btn");
+  const cancelBtn = el("cancel-edit-profile-btn");
+
+  if (openBtn && openBtn.dataset.bound !== "true") {
+    openBtn.dataset.bound = "true";
+    openBtn.addEventListener("click", () => {
+      const state = getState();
+      if (!state.isOwnProfile) return;
+      openEditProfilePanel();
+    });
   }
-});
 
-// init
-(async () => {
-  await loadSession();
-  await loadProfile();
-})();
+  if (cancelBtn && cancelBtn.dataset.bound !== "true") {
+    cancelBtn.dataset.bound = "true";
+    cancelBtn.addEventListener("click", () => {
+      closeEditProfilePanel();
+      const state = getState();
+      if (state.profile) {
+        renderEditProfileForm(state.profile);
+      }
+      resetMessages();
+    });
+  }
+}
+
+function bindEditProfileForm() {
+  const form = el("edit-profile-form");
+  if (!form || form.dataset.bound === "true") return;
+
+  form.dataset.bound = "true";
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const state = getState();
+
+    if (!state.currentUser?.id || !state.isOwnProfile) {
+      showProfileError("You can only edit your own profile.");
+      return;
+    }
+
+    try {
+      resetMessages();
+      setSaveProfileButtonBusy(true);
+
+      const values = getEditProfileValues();
+
+      const updatedProfile = await upsertProfile({
+        id: state.currentUser.id,
+        display_name: values.display_name,
+        username: values.username,
+        handle: values.username,
+        bio: values.bio,
+        avatar_url: values.avatar_url,
+        updated_at: new Date().toISOString()
+      });
+
+      setProfile(updatedProfile);
+      renderProfileIdentity(updatedProfile);
+      renderEditProfileForm(updatedProfile);
+      closeEditProfilePanel();
+      showProfileSuccess("Profile updated.");
+    } catch (error) {
+      console.error("[profile-client] save profile error:", error);
+      showProfileError(error.message || "Could not save profile.");
+    } finally {
+      setSaveProfileButtonBusy(false);
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", bootProfilePage);
