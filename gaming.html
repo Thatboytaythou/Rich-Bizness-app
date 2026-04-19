@@ -3,870 +3,222 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Gaming</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Rich Bizness — Gaming</title>
 
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --green-2: #b8ff8d;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    :root{
+      --bg:#06100b;
+      --card:rgba(255,255,255,0.04);
+      --line:rgba(110,255,176,0.18);
+      --text:#ecfff4;
+      --muted:#97b8a6;
+      --green:#43f59b;
+      --green2:#18c972;
     }
 
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+    body{
+      margin:0;
+      font-family:Inter,system-ui;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(180deg,rgba(0,0,0,.6),rgba(0,0,0,.9)),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover;
     }
 
-    .page {
-      max-width: 1680px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 60px;
+    .wrap{
+      width:min(1200px,95%);
+      margin:auto;
+      padding:20px 0 40px;
     }
 
-    .topbar,
-    .hero,
-    .section,
-    .rail-shell,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:20px;
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      position: sticky;
-      top: 10px;
-      z-index: 30;
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.9rem;
-      font-weight: 900;
+    .nav a{
+      padding:10px 14px;
+      border-radius:10px;
+      background:var(--card);
+      border:1px solid var(--line);
+      font-weight:700;
     }
 
-    .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
+    .btn{
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      color:#002b17;
+      font-weight:900;
     }
 
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    .hero{
+      padding:40px;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.5);
+      margin-bottom:20px;
     }
 
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .hero h1{
+      margin:0;
+      font-size:42px;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    .hero p{
+      color:var(--muted);
+      margin-top:10px;
+      max-width:600px;
     }
 
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+      gap:16px;
     }
 
-    .hero,
-    .section,
-    .rail-shell {
-      padding: 24px;
-      margin-bottom: 18px;
+    .card{
+      padding:16px;
+      border-radius:16px;
+      background:var(--card);
+      border:1px solid var(--line);
     }
 
-    .hero {
-      position: relative;
-      overflow: hidden;
+    .card img{
+      width:100%;
+      height:160px;
+      object-fit:cover;
+      border-radius:12px;
+      margin-bottom:10px;
     }
 
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,0.78), rgba(0,0,0,0.34)),
-        url("images/brand/logo-music-label.png") center center / contain no-repeat;
-      opacity: 0.22;
-      z-index: 0;
+    .card h3{
+      margin:0;
+      font-size:18px;
     }
 
-    .hero-inner {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 20px;
-      align-items: stretch;
+    .card span{
+      font-size:13px;
+      color:var(--muted);
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3.2rem;
-      line-height: 0.93;
-      color: var(--green);
-      max-width: 920px;
+    .card button{
+      margin-top:10px;
+      width:100%;
+      padding:10px;
+      border:none;
+      border-radius:10px;
+      background:var(--green);
+      color:#002b17;
+      font-weight:900;
+      cursor:pointer;
     }
 
-    .subtle,
-    .mini-text,
-    .card-text,
-    .card-meta,
-    .status-box {
-      color: var(--text);
-      line-height: 1.75;
+    .section{
+      margin-top:30px;
     }
 
-    .hero-kicker,
-    .pill,
-    .pill-green,
-    .pill-gold,
-    .pill-red {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
+    .section h2{
+      margin-bottom:10px;
     }
 
-    .hero-kicker,
-    .pill,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
-    .hero-actions,
-    .quick-links,
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .hero-side {
-      display: grid;
-      gap: 14px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .mini-panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .mini-panel-title,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.35rem;
-      font-weight: 900;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--green);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .filters-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .filters-grid input,
-    .filters-grid select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: end;
-      gap: 16px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-
-    .section-header p {
-      margin: 0;
-      color: var(--text);
-    }
-
-    .grid-4 {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      border-radius: 20px;
-      overflow: hidden;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-cover {
-      height: 240px;
-      background:
-        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .card-cover.custom-bg {
-      background-size: cover;
-      background-position: center center;
-    }
-
-    .card-pill-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .card-body {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .card-title {
-      color: var(--gold);
-      font-size: 1.08rem;
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.55;
-    }
-
-    .card-meta a {
-      color: var(--green);
-      text-decoration: none;
-    }
-
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      grid-column: 1 / -1;
-    }
-
-    @media (max-width: 1400px) {
-      .hero-inner {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .grid-4,
-      .filters-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 960px) {
-      .stats-row,
-      .grid-3,
-      .grid-4,
-      .filters-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.3rem;
-      }
-
-      .card-cover {
-        height: 210px;
-      }
-    }
   </style>
 </head>
+
 <body>
-  <div class="page">
+  <div class="wrap">
+
+    <!-- NAV -->
     <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Gaming</span>
-      </div>
+      <h2>🎮 Rich Bizness Gaming</h2>
 
       <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html">Feed</a>
-        <a href="gaming.html" class="active">Gaming</a>
-        <a href="live.html">Live</a>
-        <a href="watch.html">Watch</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+        <a href="/index.html">Home</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/live.html">Live</a>
+        <a href="/watch.html">Watch</a>
+        <a href="/music.html">Music</a>
       </div>
     </div>
 
+    <!-- HERO -->
     <div class="hero">
-      <div class="hero-inner">
-        <div>
-          <div class="hero-kicker">FULLY POLISHED GAMING HUB</div>
-          <h1>Play, post clips, build your gamer tag, and turn gaming into a real Rich Bizness lane.</h1>
-          <div class="subtle">
-            This page is built for your current setup and is ready for arcade games, leaderboards, tournaments, clips, live gaming, and creator growth.
-          </div>
+      <h1>Gaming Arena</h1>
+      <p>
+        Compete, stream, and dominate.  
+        This is where tournaments, scores, and live gaming meet.
+      </p>
+    </div>
 
-          <div class="hero-actions">
-            <a class="btn-green" href="upload-gaming.html">Upload Gaming</a>
-            <a class="btn-dark" href="live.html">Go Live</a>
-            <a class="btn-dark" href="watch.html">Watch Gaming Live</a>
-            <a class="btn-gold" href="money-road-runner.html">Play Flagship Game</a>
-          </div>
+    <!-- FEATURED GAME -->
+    <div class="section">
+      <h2>🔥 Featured Game</h2>
 
-          <div class="quick-links">
-            <a class="btn-dark" href="gaming-leaderboard.html">Leaderboards</a>
-            <a class="btn-dark" href="gaming-tournaments.html">Tournaments</a>
-            <a class="btn-dark" href="feed.html">Gaming Feed</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading gaming hub...</div>
-
-          <div class="stats-row">
-            <div class="stat">
-              <div id="allStat" class="stat-value">0</div>
-              <div class="stat-label">All Clips</div>
-            </div>
-            <div class="stat">
-              <div id="featuredStat" class="stat-value">0</div>
-              <div class="stat-label">Featured</div>
-            </div>
-            <div class="stat">
-              <div id="viewsStat" class="stat-value">0</div>
-              <div class="stat-label">Views</div>
-            </div>
-            <div class="stat">
-              <div id="likesStat" class="stat-value">0</div>
-              <div class="stat-label">Likes</div>
-            </div>
-            <div class="stat">
-              <div id="platformStat" class="stat-value">0</div>
-              <div class="stat-label">Platforms</div>
-            </div>
-            <div class="stat">
-              <div id="gameStat" class="stat-value">0</div>
-              <div class="stat-label">Games</div>
-            </div>
-          </div>
-
-          <div class="filters-grid">
-            <input id="searchInput" type="text" placeholder="Search title, caption, game, platform, gamer tag..." />
-            <select id="platformFilter">
-              <option value="">All Platforms</option>
-            </select>
-            <select id="gameFilter">
-              <option value="">All Games</option>
-            </select>
-            <select id="clipTypeFilter">
-              <option value="">All Clip Types</option>
-              <option value="featured">Featured Only</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="hero-side">
-          <div class="mini-panel">
-            <div class="mini-panel-title">Gaming Pulse</div>
-            <div id="pulseBox" class="mini-text">Loading gaming pulse...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Original Arcade Lane</div>
-            <div class="mini-text">
-              Your gaming section can hold fully original playable mini-games, score systems, and branded challenges without copying anyone else’s IP.
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="money-road-runner.html">Money Road Runner</a>
-              <a class="btn-dark" href="gaming-leaderboard.html">Leaderboard</a>
-            </div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Creator Gaming</div>
-            <div class="mini-text">
-              Upload clips, connect gamer tags, post highlights, and tie everything back into profile, feed, comments, and live.
-            </div>
-            <div class="card-actions">
-              <a class="btn-dark" href="upload-gaming.html">Upload Clip</a>
-              <a class="btn-dark" href="profile.html">Profile</a>
-              <a class="btn-dark" href="comments.html">Comments</a>
-            </div>
-          </div>
+      <div class="grid">
+        <div class="card">
+          <img src="https://picsum.photos/400/200" />
+          <h3>Money Road Runner</h3>
+          <span>Fast pace coin runner</span>
+          <button>Play</button>
         </div>
       </div>
     </div>
 
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Featured Gaming</h2>
-          <p>The clips and posts with the biggest push behind them.</p>
+    <!-- TOURNAMENTS -->
+    <div class="section">
+      <h2>🏆 Tournaments</h2>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Weekly Challenge</h3>
+          <span>Top score wins rewards</span>
+          <button>Join</button>
         </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="money-road-runner.html">Play Game</a>
-          <a class="btn-dark" href="gaming-tournaments.html">Tournaments</a>
+
+        <div class="card">
+          <h3>Creator Battles</h3>
+          <span>1v1 live competitions</span>
+          <button>Enter</button>
         </div>
-      </div>
-      <div id="featuredRail" class="grid-4">
-        <div class="empty-box">Loading featured gaming...</div>
       </div>
     </div>
 
-    <div class="rail-shell">
-      <div class="section-header">
-        <div>
-          <h2>Latest Gaming Drops</h2>
-          <p>Recent uploads, highlights, and gamer energy from across the platform.</p>
-        </div>
-        <div class="card-actions">
-          <a class="btn-dark" href="upload-gaming.html">Upload Gaming</a>
-        </div>
-      </div>
-      <div id="gamingGrid" class="grid-4">
-        <div class="empty-box">Loading gaming clips...</div>
+    <!-- SCORES -->
+    <div class="section">
+      <h2>📊 Submit Score</h2>
+
+      <div class="card">
+        <input id="score-input" type="number" placeholder="Enter your score" style="width:100%;padding:10px;border-radius:10px;border:none;margin-bottom:10px;">
+        <button onclick="submitScore()">Submit Score</button>
       </div>
     </div>
+
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    async function submitScore(){
+      const score = document.getElementById("score-input").value;
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
+      if(!score) return alert("Enter score");
+
+      await fetch("/api/submit-game-score",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify({ score })
       });
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-      const pulseBox = document.getElementById("pulseBox");
-
-      const allStat = document.getElementById("allStat");
-      const featuredStat = document.getElementById("featuredStat");
-      const viewsStat = document.getElementById("viewsStat");
-      const likesStat = document.getElementById("likesStat");
-      const platformStat = document.getElementById("platformStat");
-      const gameStat = document.getElementById("gameStat");
-
-      const searchInput = document.getElementById("searchInput");
-      const platformFilter = document.getElementById("platformFilter");
-      const gameFilter = document.getElementById("gameFilter");
-      const clipTypeFilter = document.getElementById("clipTypeFilter");
-
-      const featuredRail = document.getElementById("featuredRail");
-      const gamingGrid = document.getElementById("gamingGrid");
-
-      let currentUser = null;
-      let profileMap = {};
-      let gamingCache = [];
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      function getCreatorLabel(userId, fallback = "Gamer") {
-        const profile = profileMap[userId] || {};
-        return profile.display_name || profile.username || profile.email || fallback;
-      }
-
-      function getArtistLink(userId) {
-        const profile = profileMap[userId] || {};
-        if (!profile.username) return "artist.html";
-        return `artist.html?u=${encodeURIComponent(profile.username)}`;
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function loadProfiles(userIds) {
-        const ids = [...new Set(userIds.filter(Boolean))];
-        if (!ids.length) return;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .in("id", ids);
-
-        if (error && error.code !== "42P01") throw error;
-
-        profileMap = {};
-        (data || []).forEach(profile => {
-          profileMap[profile.id] = profile;
-        });
-      }
-
-      function populateFilters(rows) {
-        const platforms = [...new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean))].sort();
-        const games = [...new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean))].sort();
-
-        platformFilter.innerHTML =
-          `<option value="">All Platforms</option>` +
-          platforms.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
-
-        gameFilter.innerHTML =
-          `<option value="">All Games</option>` +
-          games.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("");
-      }
-
-      function updateStats(rows) {
-        allStat.textContent = String(rows.length);
-        featuredStat.textContent = String(rows.filter(r => !!r.is_featured).length);
-        viewsStat.textContent = String(rows.reduce((sum, r) => sum + Number(r.views || 0), 0));
-        likesStat.textContent = String(rows.reduce((sum, r) => sum + Number(r.likes || 0), 0));
-        platformStat.textContent = String(new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean)).size);
-        gameStat.textContent = String(new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean)).size);
-
-        pulseBox.textContent =
-          `Clips Loaded: ${rows.length}\n` +
-          `Featured: ${rows.filter(r => !!r.is_featured).length}\n` +
-          `Views: ${rows.reduce((sum, r) => sum + Number(r.views || 0), 0)}\n` +
-          `Likes: ${rows.reduce((sum, r) => sum + Number(r.likes || 0), 0)}\n` +
-          `Platforms: ${new Set(rows.map(r => (r.platform || "").trim()).filter(Boolean)).size}\n` +
-          `Games: ${new Set(rows.map(r => (r.game_title || "").trim()).filter(Boolean)).size}`;
-      }
-
-      function getFilteredRows() {
-        const q = searchInput.value.trim().toLowerCase();
-        const platform = platformFilter.value;
-        const game = gameFilter.value;
-        const clipMode = clipTypeFilter.value;
-
-        return gamingCache.filter(row => {
-          const creator = getCreatorLabel(row.user_id, "").toLowerCase();
-          const haystack = [
-            row.title,
-            row.caption,
-            row.game_title,
-            row.platform,
-            row.gamer_tag,
-            row.clip_type,
-            creator
-          ].join(" ").toLowerCase();
-
-          const matchesSearch = !q || haystack.includes(q);
-          const matchesPlatform = !platform || row.platform === platform;
-          const matchesGame = !game || row.game_title === game;
-          const matchesClipMode = !clipMode || (clipMode === "featured" && !!row.is_featured);
-
-          return matchesSearch && matchesPlatform && matchesGame && matchesClipMode;
-        });
-      }
-
-      function buildCard(row) {
-        const coverStyle = row.thumbnail_url
-          ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url('${String(row.thumbnail_url).replace(/'/g, "%27")}');`
-          : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.14)), url("images/brand/logo-music-label.png");`;
-
-        const creatorName = getCreatorLabel(row.user_id);
-        const creatorLink = getArtistLink(row.user_id);
-        const openHref = row.file_url || "gaming.html";
-
-        return `
-          <div class="card">
-            <div class="card-cover custom-bg" style="${coverStyle}">
-              <div class="card-pill-wrap">
-                <span class="pill-green">${escapeHtml((row.platform || "gaming").toUpperCase())}</span>
-                ${row.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
-                ${row.clip_type ? `<span class="pill-gold">${escapeHtml(row.clip_type.toUpperCase())}</span>` : ``}
-              </div>
-            </div>
-
-            <div class="card-body">
-              <div class="card-title">${escapeHtml(row.title || "Gaming Upload")}</div>
-              <div class="card-text">
-                ${escapeHtml(row.game_title || "Game")} • ${escapeHtml(row.gamer_tag || "No gamer tag")} • ${escapeHtml(row.platform || "Platform")}
-              </div>
-
-              <div class="card-meta">
-                Creator: <a href="${creatorLink}">${escapeHtml(creatorName)}</a><br>
-                Caption: ${escapeHtml(row.caption || "No caption")}<br>
-                Posted: ${escapeHtml(formatDate(row.created_at))}<br>
-                Views: ${escapeHtml(row.views || 0)} • Likes: ${escapeHtml(row.likes || 0)}
-              </div>
-
-              <div class="card-actions">
-                <a class="btn-green" href="${openHref}" ${String(openHref).startsWith("http") ? 'target="_blank"' : ""}>Open Clip</a>
-                <a class="btn-dark" href="${creatorLink}">Creator</a>
-                <a class="btn-dark" href="comments.html?type=gaming&id=${encodeURIComponent(row.id)}">Comments</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      function renderFeatured(rows) {
-        const featured = rows.filter(r => !!r.is_featured).slice(0, 4);
-
-        if (!featured.length) {
-          featuredRail.innerHTML = `<div class="empty-box">No featured gaming yet.</div>`;
-          return;
-        }
-
-        featuredRail.innerHTML = featured.map(buildCard).join("");
-      }
-
-      function renderGamingGrid() {
-        const rows = getFilteredRows();
-
-        if (!rows.length) {
-          gamingGrid.innerHTML = `<div class="empty-box">No gaming clips found with the current filters.</div>`;
-          return;
-        }
-
-        gamingGrid.innerHTML = rows.map(buildCard).join("");
-      }
-
-      async function loadGaming() {
-        try {
-          setStatus("Loading gaming hub...");
-
-          const { data, error } = await supabase
-            .from("gaming_uploads")
-            .select("*")
-            .order("created_at", { ascending: false });
-
-          if (error && error.code !== "42P01") throw error;
-
-          gamingCache = data || [];
-          await loadProfiles(gamingCache.map(row => row.user_id));
-
-          populateFilters(gamingCache);
-          updateStats(gamingCache);
-          renderFeatured(gamingCache);
-          renderGamingGrid();
-
-          setStatus("✅ Gaming hub fully polished and synced.");
-        } catch (error) {
-          console.error("Gaming load error:", error);
-          setStatus("❌ Gaming load error: " + error.message);
-          featuredRail.innerHTML = `<div class="empty-box">Could not load featured gaming.</div>`;
-          gamingGrid.innerHTML = `<div class="empty-box">Could not load gaming right now.</div>`;
-        }
-      }
-
-      [searchInput, platformFilter, gameFilter, clipTypeFilter].forEach(el => {
-        el.addEventListener("input", renderGamingGrid);
-        el.addEventListener("change", renderGamingGrid);
-      });
-
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      async function init() {
-        await loadSession();
-        await loadGaming();
-      }
-
-      init();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Gaming Page Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+      alert("Score submitted 🔥");
     }
   </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
