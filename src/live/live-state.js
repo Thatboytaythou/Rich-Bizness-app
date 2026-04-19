@@ -38,46 +38,37 @@ export const liveState = {
   }
 };
 
-export function setSessionState(patch = {}) {
-  liveState.session = {
-    ...liveState.session,
+function mergeSection(sectionName, patch = {}) {
+  liveState[sectionName] = {
+    ...liveState[sectionName],
     ...patch
   };
+
+  return liveState[sectionName];
+}
+
+export function setSessionState(patch = {}) {
+  return mergeSection("session", patch);
 }
 
 export function setStudioState(patch = {}) {
-  liveState.studio = {
-    ...liveState.studio,
-    ...patch
-  };
+  return mergeSection("studio", patch);
 }
 
 export function setWatchState(patch = {}) {
-  liveState.watch = {
-    ...liveState.watch,
-    ...patch
-  };
+  return mergeSection("watch", patch);
 }
 
 export function setChatState(patch = {}) {
-  liveState.chat = {
-    ...liveState.chat,
-    ...patch
-  };
+  return mergeSection("chat", patch);
 }
 
 export function setPresenceState(patch = {}) {
-  liveState.presence = {
-    ...liveState.presence,
-    ...patch
-  };
+  return mergeSection("presence", patch);
 }
 
 export function setLiveRailState(patch = {}) {
-  liveState.liveRail = {
-    ...liveState.liveRail,
-    ...patch
-  };
+  return mergeSection("liveRail", patch);
 }
 
 export function resetStudioState() {
@@ -88,6 +79,8 @@ export function resetStudioState() {
     error: "",
     success: ""
   };
+
+  return liveState.studio;
 }
 
 export function resetWatchState() {
@@ -98,6 +91,8 @@ export function resetWatchState() {
     error: "",
     success: ""
   };
+
+  return liveState.watch;
 }
 
 export function resetChatState() {
@@ -106,6 +101,8 @@ export function resetChatState() {
     sending: false,
     error: ""
   };
+
+  return liveState.chat;
 }
 
 export function resetPresenceState() {
@@ -113,4 +110,31 @@ export function resetPresenceState() {
     viewers: 0,
     members: []
   };
+
+  return liveState.presence;
+}
+
+export function resetLiveRailState() {
+  liveState.liveRail = {
+    streams: [],
+    loading: false,
+    error: ""
+  };
+
+  return liveState.liveRail;
+}
+
+export function resetAllLiveState() {
+  liveState.session = {
+    user: null,
+    ready: false
+  };
+
+  resetStudioState();
+  resetWatchState();
+  resetChatState();
+  resetPresenceState();
+  resetLiveRailState();
+
+  return liveState;
 }
