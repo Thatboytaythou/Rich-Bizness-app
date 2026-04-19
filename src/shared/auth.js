@@ -1,10 +1,10 @@
-import { supabase, getSession, getSessionUser, signOutSession } from './supabase.js';
+import { supabase, getSession, getSessionUser, signOutSession } from "./supabase.js";
 
-function cleanUsername(value = '') {
+function cleanUsername(value = "") {
   return String(value)
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9_]+/g, '');
+    .replace(/[^a-z0-9_]+/g, "");
 }
 
 export async function signUpWithEmail({
@@ -13,14 +13,18 @@ export async function signUpWithEmail({
   displayName,
   username
 }) {
-  const cleanEmail = String(email || '').trim();
-  const cleanPassword = String(password || '');
-  const cleanDisplayName = String(displayName || '').trim();
-  const cleanUserName = cleanUsername(username || cleanDisplayName || cleanEmail.split('@')[0] || 'user');
+  const cleanEmail = String(email || "").trim();
+  const cleanPassword = String(password || "");
+  const cleanDisplayName = String(displayName || "").trim();
+  const cleanUserName = cleanUsername(
+    username || cleanDisplayName || cleanEmail.split("@")[0] || "user"
+  );
 
-  if (!cleanEmail) throw new Error('Email is required');
-  if (!cleanPassword || cleanPassword.length < 6) throw new Error('Password must be at least 6 characters');
-  if (!cleanDisplayName) throw new Error('Display name is required');
+  if (!cleanEmail) throw new Error("Email is required");
+  if (!cleanPassword || cleanPassword.length < 6) {
+    throw new Error("Password must be at least 6 characters");
+  }
+  if (!cleanDisplayName) throw new Error("Display name is required");
 
   const redirectTo = `${window.location.origin}/auth.html`;
 
@@ -41,11 +45,11 @@ export async function signUpWithEmail({
 }
 
 export async function loginWithEmail({ email, password }) {
-  const cleanEmail = String(email || '').trim();
-  const cleanPassword = String(password || '');
+  const cleanEmail = String(email || "").trim();
+  const cleanPassword = String(password || "");
 
-  if (!cleanEmail) throw new Error('Email is required');
-  if (!cleanPassword) throw new Error('Password is required');
+  if (!cleanEmail) throw new Error("Email is required");
+  if (!cleanPassword) throw new Error("Password is required");
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email: cleanEmail,
