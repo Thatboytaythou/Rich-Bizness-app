@@ -2,44 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Live Studio</title>
   <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    name="description"
+    content="Rich Bizness live studio for starting streams, managing access, and sharing live rooms."
   />
-  <title>Rich Bizness — Go Live</title>
 
   <style>
     :root {
-      --bg: #07110c;
-      --bg-soft: #0d1a14;
+      --bg: #06100b;
       --panel: rgba(10, 22, 16, 0.92);
-      --panel-2: rgba(15, 30, 22, 0.92);
-      --line: rgba(105, 255, 170, 0.18);
-      --line-strong: rgba(105, 255, 170, 0.34);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
       --text: #ecfff4;
-      --muted: #97b8a6;
+      --muted: #93b6a3;
       --green: #43f59b;
       --green-2: #18c972;
-      --yellow: #ffd86a;
-      --red: #ff6b7a;
-      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-      --radius: 22px;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 28px;
+      --max: 1380px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
-      background:
-        radial-gradient(circle at top, rgba(67, 245, 155, 0.12), transparent 32%),
-        linear-gradient(180deg, #050b08 0%, #09140f 45%, #07110c 100%);
-      color: var(--text);
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        radial-gradient(circle at 80% 20%, rgba(67,245,155,0.06), transparent 18%),
+        linear-gradient(180deg, #040905 0%, #07120d 38%, #08140f 100%);
     }
 
     a {
@@ -47,22 +44,32 @@
       text-decoration: none;
     }
 
-    .page {
-      width: min(1400px, calc(100% - 28px));
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
       margin: 0 auto;
-      padding: 20px 0 34px;
+      padding: 18px 0 40px;
     }
 
     .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 50;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
       padding: 14px 16px;
+      margin-bottom: 18px;
       border: 1px solid var(--line);
-      background: rgba(8, 18, 13, 0.74);
-      backdrop-filter: blur(12px);
+      background: rgba(8, 17, 13, 0.78);
+      backdrop-filter: blur(14px);
       border-radius: 18px;
       box-shadow: var(--shadow);
     }
@@ -71,99 +78,88 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      min-width: 0;
     }
 
-    .brand-badge {
-      width: 42px;
-      height: 42px;
-      border-radius: 14px;
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
       display: grid;
       place-items: center;
-      background: linear-gradient(135deg, rgba(67,245,155,0.3), rgba(24,201,114,0.15));
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
       border: 1px solid var(--line-strong);
-      font-weight: 800;
       color: var(--green);
-      box-shadow: 0 0 22px rgba(67, 245, 155, 0.18);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(67,245,155,0.18);
+      flex-shrink: 0;
     }
 
-    .brand h1 {
+    .brand-copy h1 {
       margin: 0;
       font-size: 18px;
-      line-height: 1;
       letter-spacing: 0.02em;
+      line-height: 1;
     }
 
-    .brand p {
-      margin: 5px 0 0;
+    .brand-copy p {
+      margin: 6px 0 0;
       color: var(--muted);
       font-size: 12px;
     }
 
-    .topbar-actions {
+    .nav {
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
 
-    .link-btn,
-    .btn {
-      appearance: none;
-      border: 0;
-      cursor: pointer;
+    .nav-link,
+    .btn,
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
       border-radius: 14px;
-      transition: transform 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
-      font-weight: 700;
+      transition: transform 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
     }
 
+    .nav-link:hover,
     .btn:hover,
-    .link-btn:hover {
+    .btn-ghost:hover {
       transform: translateY(-1px);
     }
 
-    .btn:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .link-btn {
+    .nav-link,
+    .btn-ghost {
+      background: rgba(255,255,255,0.03);
+      border-color: rgba(255,255,255,0.06);
       color: var(--text);
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
     }
 
     .btn {
-      padding: 12px 16px;
       background: linear-gradient(135deg, var(--green), var(--green-2));
       color: #062312;
-      box-shadow: 0 10px 25px rgba(24, 201, 114, 0.28);
-    }
-
-    .btn.secondary {
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border: 1px solid var(--line);
-      box-shadow: none;
+      box-shadow: 0 10px 26px rgba(24, 201, 114, 0.28);
     }
 
     .btn.danger {
-      background: linear-gradient(135deg, #ff8b98, #ff5f73);
-      color: white;
-      box-shadow: 0 10px 25px rgba(255, 95, 115, 0.24);
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 380px 1fr 330px;
-      gap: 18px;
+      background: linear-gradient(135deg, #ff8998, var(--red));
+      color: #fff;
+      box-shadow: 0 10px 26px rgba(255, 111, 130, 0.24);
     }
 
     .panel {
-      background: linear-gradient(180deg, rgba(12,24,18,0.92), rgba(9,18,14,0.92));
+      border-radius: var(--radius-xl);
       border: 1px solid var(--line);
-      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(11,23,17,0.94), rgba(8,17,13,0.96));
       box-shadow: var(--shadow);
       overflow: hidden;
     }
@@ -172,8 +168,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 16px 18px;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
       border-bottom: 1px solid var(--line);
       background: rgba(255,255,255,0.015);
     }
@@ -181,205 +178,11 @@
     .panel-header h2,
     .panel-header h3 {
       margin: 0;
-      font-size: 15px;
-      letter-spacing: 0.01em;
+      font-size: 18px;
     }
 
     .panel-body {
-      padding: 18px;
-    }
-
-    .stack {
-      display: grid;
-      gap: 14px;
-    }
-
-    .field {
-      display: grid;
-      gap: 8px;
-    }
-
-    .field label {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 600;
-    }
-
-    .field input,
-    .field select,
-    .field textarea {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      font: inherit;
-      outline: none;
-    }
-
-    .field textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
-    }
-
-    .media-stage {
-      display: grid;
-      gap: 14px;
-    }
-
-    .video-box {
-      background:
-        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 40%),
-        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      min-height: 280px;
-      position: relative;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-    }
-
-    .video-box.large {
-      min-height: 520px;
-    }
-
-    .video-box video,
-    .video-box audio {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .placeholder {
-      color: var(--muted);
-      font-size: 14px;
-      text-align: center;
-      padding: 18px;
-    }
-
-    .status-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 36px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--line);
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .badge[data-tone="live"] {
-      color: white;
-      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
-      border-color: transparent;
-      box-shadow: 0 10px 24px rgba(255, 94, 114, 0.22);
-    }
-
-    .badge[data-tone="ended"] {
-      background: rgba(255,255,255,0.05);
-      color: #ffd1d7;
-      border-color: rgba(255,255,255,0.08);
-    }
-
-    .metric-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .metric {
-      padding: 14px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.03);
-    }
-
-    .metric span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
-
-    .metric strong {
-      font-size: 20px;
-      line-height: 1;
-    }
-
-    .share-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-    }
-
-    .share-row input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      font: inherit;
-    }
-
-    .action-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .chat-wrap {
-      display: grid;
-      grid-template-rows: 1fr auto;
-      min-height: 620px;
-    }
-
-    .chat-list {
-      padding: 16px;
-      overflow: auto;
-      display: grid;
-      gap: 12px;
-      align-content: start;
-      max-height: 520px;
-    }
-
-    .live-chat-message {
-      padding: 12px 13px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .live-chat-message__author {
-      font-size: 12px;
-      color: var(--green);
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .live-chat-message__body {
-      font-size: 14px;
-      color: var(--text);
-      word-break: break-word;
+      padding: 20px;
     }
 
     .notice {
@@ -403,270 +206,565 @@
       color: #d8ffea;
     }
 
-    .mini-list {
+    .hero-grid {
       display: grid;
-      gap: 10px;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 18px;
+      margin-bottom: 20px;
     }
 
-    .mini-item {
-      padding: 12px 13px;
-      border-radius: 14px;
+    .studio-hero {
+      padding: 28px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,0.14), transparent 28%),
+        linear-gradient(180deg, rgba(13,28,21,0.98), rgba(8,17,13,0.98));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .studio-hero h2 {
+      margin: 18px 0 0;
+      font-size: clamp(34px, 5vw, 60px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+    }
+
+    .studio-hero p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 640px;
+    }
+
+    .session-card {
+      padding: 24px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .session-row {
+      padding: 15px 16px;
+      border-radius: 18px;
       border: 1px solid var(--line);
       background: rgba(255,255,255,0.03);
     }
 
-    .mini-item strong {
+    .session-row strong {
       display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .session-row span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    .field textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .status-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .status-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .status-card strong {
+      font-size: 20px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .share-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .share-row input {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .chat-feed {
+      display: grid;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    .chat-message {
+      padding: 13px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      display: grid;
+      gap: 5px;
+    }
+
+    .chat-message strong {
+      font-size: 13px;
+      color: var(--green);
+    }
+
+    .chat-message span {
       font-size: 14px;
-      margin-bottom: 5px;
+      color: var(--text);
+      line-height: 1.5;
     }
 
-    .mini-item span {
-      color: var(--muted);
-      font-size: 12px;
+    .chat-message.system strong {
+      color: #fff;
     }
 
-    .footer-note {
-      margin-top: 16px;
-      color: var(--muted);
-      font-size: 12px;
+    .rb-live-empty {
+      min-height: 170px;
+      border-radius: 22px;
+      border: 1px dashed rgba(105, 255, 170, 0.18);
+      display: grid;
+      place-items: center;
       text-align: center;
+      padding: 20px;
+      color: #97b8a6;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .rb-live-empty strong {
+      display: block;
+      color: #ecfff4;
+      margin-bottom: 8px;
+      font-size: 18px;
+    }
+
+    .rb-live-rail {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .rb-live-card {
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid rgba(105, 255, 170, 0.14);
+      background: rgba(255,255,255,0.03);
+      box-shadow: 0 14px 35px rgba(0,0,0,0.24);
+    }
+
+    .rb-live-card__media {
+      position: relative;
+      display: block;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
+    }
+
+    .rb-live-card__media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .rb-live-card__fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #97b8a6;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .rb-live-card__overlay {
+      position: absolute;
+      inset: auto 12px 12px 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .rb-live-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(8, 18, 13, 0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ecfff4;
+      font-size: 12px;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+
+    .rb-live-badge--live {
+      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
+      border-color: transparent;
+    }
+
+    .rb-live-card__body {
+      padding: 14px;
+    }
+
+    .rb-live-card__meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: #97b8a6;
+      font-size: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .rb-live-card__title {
+      margin: 0 0 14px;
+      font-size: 18px;
+      line-height: 1.2;
+    }
+
+    .rb-live-card__actions {
+      display: flex;
+    }
+
+    .rb-live-watch-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 800;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(105, 255, 170, 0.18);
+      color: #ecfff4;
     }
 
     @media (max-width: 1180px) {
-      .grid {
+      .hero-grid,
+      .main-grid {
         grid-template-columns: 1fr;
-      }
-
-      .chat-wrap {
-        min-height: unset;
-      }
-
-      .video-box.large {
-        min-height: 360px;
       }
     }
 
-    @media (max-width: 720px) {
-      .page {
-        width: min(100% - 18px, 100%);
-      }
-
+    @media (max-width: 900px) {
       .topbar {
-        flex-direction: column;
+        position: static;
         align-items: flex-start;
+        flex-direction: column;
       }
 
-      .metric-grid {
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .field-grid,
+      .status-grid {
         grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
+
+      .nav-link,
+      .btn,
+      .btn-ghost {
+        width: 100%;
       }
 
       .share-row {
         grid-template-columns: 1fr;
       }
-
-      .action-row,
-      .topbar-actions {
-        width: 100%;
-      }
-
-      .btn,
-      .link-btn {
-        width: 100%;
-      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+  <div class="page-shell">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-badge">RB</div>
-        <div>
-          <h1>Rich Bizness Live Studio</h1>
-          <p>Creator dashboard • Go live • Stream foundation V1</p>
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Live Studio • Creator Control • Stream Management</p>
         </div>
       </div>
 
-      <div class="topbar-actions">
-        <a class="link-btn" href="/index.html">Homepage</a>
-        <a class="link-btn" href="/watch.html">Watch</a>
-        <a class="link-btn" href="/profile.html">Profile</a>
-      </div>
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+        <a class="nav-link" href="/watch.html">Watch</a>
+        <a class="btn" href="/auth.html">Auth</a>
+      </nav>
     </header>
 
     <div id="live-error" class="notice error"></div>
     <div id="live-success" class="notice success"></div>
 
-    <main class="grid">
+    <section class="hero-grid">
+      <section class="panel studio-hero">
+        <div>
+          <div class="eyebrow">Live studio</div>
+          <h2>Go live, control access, and share your stream.</h2>
+          <p>
+            This is your creator control room. Start a stream, set category and access,
+            copy the watch link, and manage your live status from one place.
+          </p>
+        </div>
+      </section>
+
+      <section class="panel session-card">
+        <div class="session-row">
+          <strong>Studio session</strong>
+          <span id="studio-session-status">Checking session...</span>
+        </div>
+
+        <div class="session-row">
+          <strong>Current stream state</strong>
+          <span id="studio-stream-status">OFFLINE</span>
+        </div>
+
+        <div class="session-row">
+          <strong>Quick reminder</strong>
+          <span>Log in first from /auth.html before starting your stream.</span>
+        </div>
+      </section>
+    </section>
+
+    <section class="main-grid">
       <section class="panel">
         <div class="panel-header">
-          <h2>Stream Setup</h2>
-          <div id="live-status-badge" class="badge" data-tone="default">OFFLINE</div>
+          <h2>Stream setup</h2>
         </div>
+
         <div class="panel-body">
-          <div class="stack">
+          <div class="form-grid">
             <div class="field">
-              <label for="live-title">Stream title</label>
-              <input id="live-title" type="text" placeholder="WE LIT 🔥 Rich Bizness Live" />
+              <label for="stream-title">Stream title</label>
+              <input id="stream-title" type="text" placeholder="WE LIT 🔥 Late Night Live" />
             </div>
 
             <div class="field">
-              <label for="live-description">Description</label>
-              <textarea id="live-description" placeholder="Tell people what this live is about..."></textarea>
+              <label for="stream-description">Description</label>
+              <textarea id="stream-description" placeholder="Tell viewers what this stream is about..."></textarea>
             </div>
 
-            <div class="field">
-              <label for="live-category">Category</label>
-              <select id="live-category">
-                <option value="general">General</option>
-                <option value="music">Music</option>
-                <option value="gaming">Gaming</option>
-                <option value="sports">Sports</option>
-                <option value="gallery">Gallery</option>
-              </select>
+            <div class="field-grid">
+              <div class="field">
+                <label for="stream-category">Category</label>
+                <select id="stream-category">
+                  <option value="general">General</option>
+                  <option value="music">Music</option>
+                  <option value="gaming">Gaming</option>
+                  <option value="sports">Sports</option>
+                  <option value="gallery">Gallery</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="stream-access-type">Access type</label>
+                <select id="stream-access-type">
+                  <option value="free">Free</option>
+                  <option value="followers">Followers</option>
+                  <option value="vip">VIP</option>
+                  <option value="paid">Paid</option>
+                </select>
+              </div>
             </div>
 
-            <div class="field">
-              <label for="live-access-type">Access type</label>
-              <select id="live-access-type">
-                <option value="free">Free</option>
-                <option value="followers">Followers only</option>
-                <option value="paid">Paid</option>
-                <option value="vip">VIP</option>
-              </select>
-            </div>
+            <div class="field-grid">
+              <div class="field">
+                <label for="stream-price-cents">Price (cents for paid streams)</label>
+                <input id="stream-price-cents" type="number" min="0" step="1" placeholder="500" />
+              </div>
 
-            <div class="field">
-              <label for="live-price-cents">Price cents (for paid streams)</label>
-              <input id="live-price-cents" type="number" min="0" step="1" placeholder="500" />
-            </div>
-
-            <div class="field">
-              <label for="live-thumbnail-url">Thumbnail URL</label>
-              <input id="live-thumbnail-url" type="text" placeholder="https://..." />
-            </div>
-
-            <div class="field">
-              <label for="live-cover-url">Cover URL</label>
-              <input id="live-cover-url" type="text" placeholder="https://..." />
+              <div class="field">
+                <label for="stream-thumbnail-url">Thumbnail URL</label>
+                <input id="stream-thumbnail-url" type="text" placeholder="https://..." />
+              </div>
             </div>
 
             <div class="action-row">
-              <button id="start-live-btn" class="btn">WE LIT 🔥 Start Live</button>
-              <button id="end-live-btn" class="btn danger" type="button">End Live</button>
+              <button id="start-stream-btn" class="btn" type="button">Start Stream</button>
+              <button id="end-stream-btn" class="btn danger" type="button">End Stream</button>
+            </div>
+
+            <div class="status-grid">
+              <div class="status-card">
+                <span>Current title</span>
+                <strong id="studio-current-title">No active stream</strong>
+              </div>
+
+              <div class="status-card">
+                <span>Current slug</span>
+                <strong id="studio-current-slug">--</strong>
+              </div>
+
+              <div class="status-card">
+                <span>Access</span>
+                <strong id="studio-current-access">--</strong>
+              </div>
+
+              <div class="status-card">
+                <span>Viewers</span>
+                <strong id="studio-current-viewers">0</strong>
+              </div>
+            </div>
+
+            <div class="share-row">
+              <input id="studio-share-link" type="text" readonly placeholder="Start stream first, then copy the watch link." />
+              <button id="copy-share-link-btn" class="btn-ghost" type="button">Copy Link</button>
             </div>
           </div>
         </div>
       </section>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Broadcast Stage</h2>
-          <span class="badge">
-            Room:
-            <strong id="live-room-name">—</strong>
-          </span>
-        </div>
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-header">
+            <h3>Live chat preview</h3>
+          </div>
 
-        <div class="panel-body">
-          <div class="media-stage">
-            <div class="video-box large">
-              <div id="live-local-media" style="width:100%;height:100%;"></div>
-              <div class="placeholder" id="live-local-placeholder">
-                Your camera preview will appear here when you go live.
-              </div>
-            </div>
-
-            <div class="video-box">
-              <div id="live-remote-media" style="width:100%;height:100%;"></div>
-              <div class="placeholder">
-                Guests, cohosts, or viewer media will appear here later.
-              </div>
-            </div>
-
-            <div class="status-row">
-              <div class="badge">Viewers: <strong id="live-viewer-count">0</strong></div>
-              <div class="badge">Mic/Camera controls below</div>
-            </div>
-
-            <div class="metric-grid">
-              <div class="metric">
-                <span>Status</span>
-                <strong id="metric-status">Ready</strong>
-              </div>
-              <div class="metric">
-                <span>Mode</span>
-                <strong id="metric-mode">LiveKit</strong>
-              </div>
-              <div class="metric">
-                <span>Chat</span>
-                <strong id="metric-chat">Enabled</strong>
-              </div>
-            </div>
-
-            <div class="action-row">
-              <button id="toggle-mic-btn" class="btn secondary" type="button">Toggle Mic</button>
-              <button id="toggle-camera-btn" class="btn secondary" type="button">Toggle Camera</button>
-            </div>
-
-            <div class="stack">
-              <label for="live-share-url" style="font-size:13px;color:var(--muted);font-weight:600;">Share URL</label>
-              <div class="share-row">
-                <input id="live-share-url" type="text" readonly placeholder="Share link appears after stream starts" />
-                <button id="copy-share-btn" class="btn secondary" type="button">Copy Link</button>
+          <div class="panel-body">
+            <div id="live-chat-feed" class="chat-feed">
+              <div class="chat-message system">
+                <strong>System</strong>
+                <span>Live chat will show here when messages start coming in.</span>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <aside class="panel">
-        <div class="panel-header">
-          <h3>Live Chat</h3>
-          <span class="badge">Studio Feed</span>
-        </div>
+        <section class="panel">
+          <div class="panel-header">
+            <h3>Live now rail</h3>
+          </div>
 
-        <div class="chat-wrap">
-          <div id="live-chat-messages" class="chat-list">
-            <div class="live-chat-message">
-              <div class="live-chat-message__author">System</div>
-              <div class="live-chat-message__body">
-                Live chat will show here when messages start coming in.
+          <div class="panel-body">
+            <div id="homepage-live-rail" class="rb-live-rail">
+              <div class="rb-live-empty">
+                <div>
+                  <strong>No one is live right now.</strong>
+                  <span>When a creator starts streaming, the live rail will appear here.</span>
+                </div>
               </div>
             </div>
           </div>
-
-          <div class="panel-body" style="padding-top:0;">
-            <div class="mini-list">
-              <div class="mini-item">
-                <strong>Studio notes</strong>
-                <span>Keep this page open while you are live.</span>
-              </div>
-              <div class="mini-item">
-                <strong>Share the room</strong>
-                <span>Start stream first, then copy the watch link.</span>
-              </div>
-              <div class="mini-item">
-                <strong>V1 foundation</strong>
-                <span>Next upgrade layer adds cohosts, requests, and advanced moderation.</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        </section>
       </aside>
-    </main>
-
-    <div class="footer-note">
-      Rich Bizness Live Foundation V1
-    </div>
+    </section>
   </div>
 
   <script>
-    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || '';
-    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
-    window.SUPABASE_URL = window.SUPABASE_URL || window.NEXT_PUBLIC_SUPABASE_URL || '';
-    window.SUPABASE_PUBLISHABLE_KEY = window.SUPABASE_PUBLISHABLE_KEY || window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || '';
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
   <script type="module" src="/src/live/live-client.js"></script>
