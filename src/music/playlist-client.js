@@ -47,6 +47,7 @@ function showError(message) {
   if (!node) return;
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
+
   const success = el("playlist-success");
   if (success && message) success.style.display = "none";
 }
@@ -56,6 +57,7 @@ function showSuccess(message) {
   if (!node) return;
   node.textContent = message || "";
   node.style.display = message ? "block" : "none";
+
   const error = el("playlist-error");
   if (error && message) error.style.display = "none";
 }
@@ -73,8 +75,7 @@ const state = {
   selectedPlaylist: null,
   selectedTracks: [],
   activeFilter: "all",
-  search: "",
-  loading: false
+  search: ""
 };
 
 function playlistMatchesFilter(playlist, filter) {
@@ -94,7 +95,9 @@ function applyPlaylistFilters() {
     const matchesFilter = playlistMatchesFilter(playlist, state.activeFilter);
     const matchesSearch =
       !state.search ||
-      `${playlist.title || ""} ${playlist.description || ""}`.toLowerCase().includes(state.search.toLowerCase());
+      `${playlist.title || ""} ${playlist.description || ""}`
+        .toLowerCase()
+        .includes(state.search.toLowerCase());
 
     return matchesFilter && matchesSearch;
   });
@@ -124,7 +127,10 @@ function renderPlaylistGrid() {
   grid.innerHTML = state.filteredPlaylists.map((playlist) => `
     <article class="playlist-card">
       <div class="playlist-media">
-        <img src="${escapeHtml(playlist.cover_url || "/images/brand/logo-music-label.png")}" alt="${escapeHtml(playlist.title || "Playlist")}" />
+        <img
+          src="${escapeHtml(playlist.cover_url || "/images/brand/logo-music-label.png")}"
+          alt="${escapeHtml(playlist.title || "Playlist")}"
+        />
         <div class="playlist-badge">${playlist.is_featured ? "Featured" : "Playlist"}</div>
       </div>
 
@@ -160,14 +166,14 @@ function renderPlaylistGrid() {
   grid.querySelectorAll("[data-open-playlist]").forEach((button) => {
     button.addEventListener("click", () => {
       const playlistId = button.getAttribute("data-open-playlist");
-      openPlaylist(playlistId);
+      window.location.href = `/playlist-view.html?id=${encodeURIComponent(playlistId)}`;
     });
   });
 
   grid.querySelectorAll("[data-edit-playlist]").forEach((button) => {
     button.addEventListener("click", () => {
       const playlistId = button.getAttribute("data-edit-playlist");
-      openPlaylist(playlistId, true);
+      openPlaylistManager(playlistId, true);
     });
   });
 }
@@ -176,7 +182,7 @@ function ensureManagerShell() {
   let shell = el("playlist-manager-shell");
   if (shell) return shell;
 
-  const pageShell = document.querySelector(".page-shell");
+  const pageShell = document.querySelector(".page-shell") || document.querySelector(".container");
   const footer = document.querySelector(".footer");
 
   shell = document.createElement("section");
@@ -197,9 +203,9 @@ function ensureManagerShell() {
     <div class="panel-body" id="playlist-manager-body"></div>
   `;
 
-  if (footer) {
+  if (footer && pageShell) {
     pageShell.insertBefore(shell, footer);
-  } else {
+  } else if (pageShell) {
     pageShell.appendChild(shell);
   }
 
@@ -369,6 +375,7 @@ function renderPlaylistManager() {
   `;
 
   renderSelectedTracks(isOwner);
+
   if (isOwner) {
     renderMyTracks();
     el("playlist-save-edit-btn")?.addEventListener("click", handleUpdatePlaylist);
@@ -474,6 +481,7 @@ function renderMyTracks() {
 
 async function reloadSelectedPlaylist() {
   if (!state.selectedPlaylist?.id) return;
+
   state.selectedTracks = await getPlaylistTracks(state.selectedPlaylist.id);
   state.myTracks = state.currentUser?.id ? await getTracksForCurrentUser().catch(() => []) : [];
   renderPlaylistManager();
@@ -482,6 +490,7 @@ async function reloadSelectedPlaylist() {
 
 async function refreshPlaylistListOnly() {
   const playlistId = state.selectedPlaylist?.id || getPlaylistIdFromUrl() || null;
+
   const bundle = await getPlaylistBundle({
     playlistId,
     search: state.search,
@@ -490,15 +499,18 @@ async function refreshPlaylistListOnly() {
 
   state.currentUser = bundle.currentUser;
   state.playlists = bundle.playlists;
+
   if (bundle.selectedPlaylist) {
     state.selectedPlaylist = bundle.selectedPlaylist;
   }
+
   renderPlaylistGrid();
 }
 
-async function openPlaylist(playlistId, forceOpen = false) {
+async function openPlaylistManager(playlistId, forceOpen = false) {
   try {
     clearMessages();
+
     const bundle = await getPlaylistBundle({
       playlistId,
       search: state.search,
@@ -519,7 +531,7 @@ async function openPlaylist(playlistId, forceOpen = false) {
       ensureManagerShell().scrollIntoView({ behavior: "smooth", block: "start" });
     }
   } catch (error) {
-    console.error("[playlist-client] open playlist error:", error);
+    console.error("[playlist-client] open playlist manager error:", error);
     showError(error.message || "Could not open playlist.");
   }
 }
@@ -545,7 +557,7 @@ async function handleCreatePlaylist() {
     });
 
     showSuccess("Playlist created.");
-    await openPlaylist(playlist.id, true);
+    await openPlaylistManager(playlist.id, true);
   } catch (error) {
     console.error("[playlist-client] create playlist error:", error);
     showError(error.message || "Could not create playlist.");
@@ -555,7 +567,10 @@ async function handleCreatePlaylist() {
 async function handleUpdatePlaylist() {
   try {
     clearMessages();
-    if (!state.selectedPlaylist?.id) throw new Error("No playlist selected.");
+
+    if (!state.selectedPlaylist?.id) {
+      throw new Error("No playlist selected.");
+    }
 
     const updated = await updatePlaylist(state.selectedPlaylist.id, {
       title: el("playlist-edit-title")?.value || "",
@@ -577,7 +592,10 @@ async function handleUpdatePlaylist() {
 async function handleDeletePlaylist() {
   try {
     clearMessages();
-    if (!state.selectedPlaylist?.id) throw new Error("No playlist selected.");
+
+    if (!state.selectedPlaylist?.id) {
+      throw new Error("No playlist selected.");
+    }
 
     const confirmed = window.confirm("Delete this playlist?");
     if (!confirmed) return;
@@ -602,17 +620,35 @@ function bindToolbar() {
     });
   }
 
-  document.querySelectorAll(".filter-btn").forEach((button) => {
+  document.querySelectorAll(".filter-btn, .filters button").forEach((button) => {
     if (button.dataset.bound === "true") return;
     button.dataset.bound = "true";
 
     button.addEventListener("click", () => {
       state.activeFilter = button.getAttribute("data-filter") || "all";
-      document.querySelectorAll(".filter-btn").forEach((btn) => btn.classList.remove("active"));
+
+      document.querySelectorAll(".filter-btn, .filters button").forEach((btn) => {
+        btn.classList.remove("active");
+      });
+
       button.classList.add("active");
       renderPlaylistGrid();
     });
   });
+}
+
+function bindCreateButtons() {
+  const topBtn = el("playlist-create-real-btn");
+  if (topBtn && topBtn.dataset.bound !== "true") {
+    topBtn.dataset.bound = "true";
+    topBtn.addEventListener("click", openCreatePlaylistForm);
+  }
+
+  const legacyBtn = el("create-playlist-btn");
+  if (legacyBtn && legacyBtn.dataset.bound !== "true") {
+    legacyBtn.dataset.bound = "true";
+    legacyBtn.addEventListener("click", openCreatePlaylistForm);
+  }
 }
 
 function injectCreateButton() {
@@ -624,8 +660,6 @@ function injectCreateButton() {
   button.className = "btn";
   button.type = "button";
   button.textContent = "Create Playlist";
-  button.addEventListener("click", openCreatePlaylistForm);
-
   heroActions.prepend(button);
 }
 
@@ -634,8 +668,10 @@ async function bootPlaylistPage() {
     clearMessages();
     bindToolbar();
     injectCreateButton();
+    bindCreateButtons();
 
     const playlistId = getPlaylistIdFromUrl();
+
     const bundle = await getPlaylistBundle({
       playlistId,
       search: state.search,
