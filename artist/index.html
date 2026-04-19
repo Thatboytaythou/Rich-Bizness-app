@@ -1,1 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Artist Channel</title>
+  <meta
+    name="description"
+    content="Rich Bizness artist channel for music, profile identity, live sessions, visuals, and releases."
+  />
 
+  <style>
+    :root {
+      --bg: #06100b;
+      --panel: rgba(8, 18, 13, 0.9);
+      --panel-2: rgba(12, 28, 20, 0.84);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
+      --text: #ecfff4;
+      --muted: #97b8a6;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1380px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        linear-gradient(180deg, rgba(4,9,5,0.54), rgba(6,16,11,0.92)),
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
+      background-color: #06100b;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+    button, input, textarea { font: inherit; }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
+      margin: 0 auto;
+      padding: 18px 0 42px;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 60;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(7, 16, 12, 0.78);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--green);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(67,245,155,0.22);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-link,
+    .btn,
+    .btn-ghost,
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover,
+    .tab-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .nav-link,
+    .btn-ghost,
+    .tab-btn {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.07);
+      color: var(--text);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #062312;
+      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
+    }
+
+    .hero {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .hero-banner {
+      position: relative;
+      min-height: 240px;
+      background:
+        linear-gradient(180deg, rgba(7,17,12,0.28), rgba(7,17,12,0.82)),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero-main {
+      padding: 0 24px 24px;
+      margin-top: -58px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .artist-top {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: end;
+    }
+
+    .avatar-wrap {
+      width: 136px;
+      height: 136px;
+      border-radius: 28px;
+      overflow: hidden;
+      border: 2px solid rgba(110,255,176,0.28);
+      background: linear-gradient(135deg, rgba(67,245,155,0.24), rgba(24,201,114,0.12));
+      box-shadow: 0 14px 30px rgba(0,0,0,0.28);
+      display: grid;
+      place-items: center;
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--green);
+    }
+
+    .avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .artist-copy h2 {
+      margin: 0;
+      font-size: clamp(34px, 4vw, 64px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+    }
+
+    .artist-handle {
+      margin-top: 10px;
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .artist-bio {
+      margin-top: 14px;
+      max-width: 820px;
+      color: #d8f5e5;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+
+    .artist-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      justify-content: flex-end;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .stat-card {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .stat-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 7px;
+    }
+
+    .stat-card strong {
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .notice {
+      display: none;
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      border: 1px solid transparent;
+    }
+
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
+    }
+
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 22px;
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
+      border-color: var(--line-strong);
+      color: #dfffee;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .stack { display: grid; gap: 12px; }
+
+    .card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .track-list,
+    .release-list,
+    .media-grid,
+    .event-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .track-item,
+    .release-item,
+    .event-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .track-item strong,
+    .release-item strong,
+    .event-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .track-item span,
+    .release-item span,
+    .event-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .track-item audio {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    .media-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .media-thumb {
+      aspect-ratio: 1 / 1;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .media-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .artist-top {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .artist-actions {
+        justify-content: flex-start;
+      }
+
+      .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .media-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell { width: min(100% - 16px, 100%); }
+
+      .nav-link,
+      .btn,
+      .btn-ghost,
+      .tab-btn {
+        width: 100%;
+      }
+
+      #global-session-nav { width: 100%; }
+
+      #global-session-nav .nav-link,
+      #global-session-nav .btn,
+      #global-session-nav .btn-ghost {
+        width: 100%;
+      }
+
+      .stats-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Artist Channel • Releases • Live • Visuals</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/music.html">Music</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+        <a class="nav-link" href="/live.html">Live</a>
+        <a class="btn" href="/upload.html">Upload</a>
+        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-banner"></div>
+
+      <div class="hero-main">
+        <div class="artist-top">
+          <div class="avatar-wrap" id="artist-avatar-wrap">
+            <img
+              id="artist-avatar"
+              src="/images/rich-bizness-profile.jpg"
+              alt="Artist avatar"
+              onerror="this.style.display='none'; this.parentNode.textContent='RB';"
+            />
+          </div>
+
+          <div class="artist-copy">
+            <h2 id="artist-display-name">ThatboyTayThou</h2>
+            <div class="artist-handle" id="artist-handle">@thatboytaythou</div>
+            <div class="artist-bio" id="artist-bio">
+              Artist channel for releases, live sessions, visuals, creator movement, and the full Rich Bizness music lane.
+            </div>
+          </div>
+
+          <div class="artist-actions">
+            <button id="artist-follow-btn" class="btn-ghost" type="button">Follow Artist</button>
+            <a class="btn-ghost" href="/watch.html">Watch Live</a>
+            <a class="btn-ghost" href="/music.html">Open Music</a>
+            <a class="btn" href="/upload.html">Upload Track</a>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Followers</span>
+            <strong id="artist-followers-count">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Tracks</span>
+            <strong id="artist-tracks-count">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Releases</span>
+            <strong id="artist-releases-count">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Live shows</span>
+            <strong id="artist-lives-count">0</strong>
+          </div>
+
+          <div class="stat-card">
+            <span>Artist tier</span>
+            <strong id="artist-tier-label">Rising</strong>
+          </div>
+        </div>
+
+        <div id="artist-error" class="notice error"></div>
+        <div id="artist-success" class="notice success"></div>
+      </div>
+    </section>
+
+    <section class="content-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Artist lane</h3>
+            <p>Music, releases, visuals, and live sessions in one place.</p>
+          </div>
+
+          <div class="tab-row">
+            <button class="tab-btn active" type="button" data-tab="tracks">Tracks</button>
+            <button class="tab-btn" type="button" data-tab="releases">Releases</button>
+            <button class="tab-btn" type="button" data-tab="live">Live</button>
+            <button class="tab-btn" type="button" data-tab="visuals">Visuals</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="tab-panel active" data-panel="tracks">
+            <div id="artist-track-list" class="track-list">
+              <div class="track-item">
+                <strong>No tracks yet</strong>
+                <span>Upload music to fill the artist channel.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="releases">
+            <div id="artist-release-list" class="release-list">
+              <div class="release-item">
+                <strong>Release lane ready</strong>
+                <span>Singles, projects, and campaigns can stack here next.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="live">
+            <div class="stack">
+              <div class="card">
+                <h4 id="artist-live-title">Artist live room</h4>
+                <p id="artist-live-description">
+                  Live sessions, performances, and creator drops can all flow from this artist channel.
+                </p>
+                <div class="action-row">
+                  <a class="btn" href="/live.html">Go Live</a>
+                  <a class="btn-ghost" href="/watch.html">Watch Room</a>
+                </div>
+              </div>
+
+              <div class="event-list">
+                <div class="event-item">
+                  <strong>Session format</strong>
+                  <span>Music previews, drop nights, fan talks, performance rooms, and VIP creator sessions.</span>
+                </div>
+
+                <div class="event-item">
+                  <strong>Audience path</strong>
+                  <span>Profile → Artist Page → Live Room → Watch Flow → Follow + Growth.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tab-panel" data-panel="visuals">
+            <div class="media-grid">
+              <div class="media-thumb">
+                <img src="/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png" alt="Artist visual 1" />
+              </div>
+
+              <div class="media-thumb">
+                <img src="/images/rich-bizness-profile.jpg" alt="Artist visual 2" onerror="this.style.display='none'; this.parentNode.style.background='rgba(255,255,255,0.03)';" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Channel spotlight</h3>
+            <p>Identity, direction, and artist buildout.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="stack">
+            <div class="card">
+              <h4>Artist identity</h4>
+              <p>
+                This page ties the music lane to profile identity, live sessions, releases, visuals, and fan growth.
+              </p>
+            </div>
+
+            <div class="card">
+              <h4>Release direction</h4>
+              <p>
+                Singles, EP drops, cover art, promo visuals, playlists, and release campaigns can all live here next.
+              </p>
+            </div>
+
+            <div class="card">
+              <h4>Competitive edge</h4>
+              <p>
+                This turns the creator profile into a real artist channel instead of just a static music page.
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <p>Rich Bizness • artist channel foundation locked</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/upload.html">Upload</a>
+        <a href="/live.html">Live</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  </script>
+
+  <script>
+    (() => {
+      const buttons = Array.from(document.querySelectorAll(".tab-btn"));
+      const panels = Array.from(document.querySelectorAll(".tab-panel"));
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = button.getAttribute("data-tab");
+
+          buttons.forEach((btn) => btn.classList.remove("active"));
+          panels.forEach((panel) => panel.classList.remove("active"));
+
+          button.classList.add("active");
+          document.querySelector(`.tab-panel[data-panel="${target}"]`)?.classList.add("active");
+        });
+      });
+    })();
+  </script>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const artistIdFromUrl = params.get("id");
+
+    const displayNameEl = document.getElementById("artist-display-name");
+    const handleEl = document.getElementById("artist-handle");
+    const bioEl = document.getElementById("artist-bio");
+    const followersEl = document.getElementById("artist-followers-count");
+    const tracksEl = document.getElementById("artist-tracks-count");
+    const releasesEl = document.getElementById("artist-releases-count");
+    const livesEl = document.getElementById("artist-lives-count");
+    const trackListEl = document.getElementById("artist-track-list");
+    const liveTitleEl = document.getElementById("artist-live-title");
+    const liveDescriptionEl = document.getElementById("artist-live-description");
+    const avatarEl = document.getElementById("artist-avatar");
+    const errorEl = document.getElementById("artist-error");
+
+    function showError(message) {
+      if (!errorEl) return;
+      errorEl.textContent = message || "";
+      errorEl.style.display = message ? "block" : "none";
+    }
+
+    function formatHandle(value) {
+      const clean = String(value || "").replace(/^@+/, "").trim();
+      return clean ? `@${clean}` : "@artist";
+    }
+
+    async function getCurrentUser() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return data?.session?.user || null;
+    }
+
+    async function resolveArtistId() {
+      if (artistIdFromUrl) return artistIdFromUrl;
+      const currentUser = await getCurrentUser();
+      return currentUser?.id || null;
+    }
+
+    async function loadArtistProfile(artistId) {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", artistId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data || null;
+    }
+
+    async function loadFollowersCount(artistId) {
+      const { count } = await supabase
+        .from("followers")
+        .select("*", { count: "exact", head: true })
+        .eq("following_id", artistId);
+
+      return count || 0;
+    }
+
+    async function loadTracks(artistId) {
+      const { data, error } = await supabase
+        .from("tracks")
+        .select("*")
+        .eq("creator_id", artistId)
+        .order("created_at", { ascending: false })
+        .limit(12);
+
+      if (error) throw error;
+      return data || [];
+    }
+
+    async function loadLivesCount(artistId) {
+      const { count } = await supabase
+        .from("live_streams")
+        .select("*", { count: "exact", head: true })
+        .eq("creator_id", artistId);
+
+      return count || 0;
+    }
+
+    async function loadLatestLive(artistId) {
+      const { data, error } = await supabase
+        .from("live_streams")
+        .select("*")
+        .eq("creator_id", artistId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) return null;
+      return data || null;
+    }
+
+    function renderTracks(tracks) {
+      if (!trackListEl) return;
+
+      if (!tracks || tracks.length === 0) {
+        trackListEl.innerHTML = `
+          <div class="track-item">
+            <strong>No tracks yet</strong>
+            <span>Upload music to fill the artist channel.</span>
+          </div>
+        `;
+        return;
+      }
+
+      trackListEl.innerHTML = tracks.map((track) => `
+        <div class="track-item">
+          <strong>${track.title || "Untitled Track"}</strong>
+          <span>${track.genre || "No genre"} • ${track.artist_name || "Artist"} • ${track.description || "Release ready for the artist lane."}</span>
+          ${track.audio_url ? `<audio controls src="${track.audio_url}"></audio>` : ""}
+        </div>
+      `).join("");
+    }
+
+    async function bootArtistPage() {
+      try {
+        const artistId = await resolveArtistId();
+
+        if (!artistId) {
+          showError("No artist profile found.");
+          return;
+        }
+
+        const [profile, followers, tracks, lives, latestLive] = await Promise.all([
+          loadArtistProfile(artistId),
+          loadFollowersCount(artistId),
+          loadTracks(artistId),
+          loadLivesCount(artistId),
+          loadLatestLive(artistId)
+        ]);
+
+        if (profile) {
+          displayNameEl.textContent = profile.display_name || "Artist Channel";
+          handleEl.textContent = formatHandle(profile.username || profile.handle || "artist");
+          bioEl.textContent = profile.bio || "Artist channel for releases, live sessions, visuals, and creator growth.";
+
+          if (profile.avatar_url) {
+            avatarEl.src = profile.avatar_url;
+          }
+        }
+
+        followersEl.textContent = followers;
+        tracksEl.textContent = tracks.length;
+        releasesEl.textContent = tracks.length;
+        livesEl.textContent = lives;
+
+        renderTracks(tracks);
+
+        if (latestLive) {
+          liveTitleEl.textContent = latestLive.title || "Latest Live Session";
+          liveDescriptionEl.textContent =
+            latestLive.description ||
+            "Artist live session ready for drop nights, fan rooms, and creator performance energy.";
+        }
+      } catch (error) {
+        console.error("[artist-page] bootArtistPage error:", error);
+        showError(error.message || "Failed to load artist channel.");
+      }
+    }
+
+    bootArtistPage();
+  </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
+</body>
+</html>
