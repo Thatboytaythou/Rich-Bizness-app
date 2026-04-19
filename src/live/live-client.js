@@ -1,5 +1,11 @@
 import { getSessionUser } from "../shared/supabase.js";
-import { createStream, endStream, getLiveStreams, getStreamById } from "./live-api.js";
+import {
+  createStream,
+  endStream,
+  getLiveStreams,
+  ensureUniqueSlug,
+  buildWatchUrl
+} from "./live-api.js";
 import {
   liveState,
   setSessionState,
@@ -24,32 +30,20 @@ const LK = window.LivekitClient;
 
 let studioRoom = null;
 let attachedLocalEls = [];
-let studioRefreshTimer = null;
 
 function el(id) {
   return document.getElementById(id);
-}
-
-function slugify(value = "") {
-  return String(value)
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
-
-function makeStreamSlug(title = "") {
-  const base = slugify(title || "live-stream");
-  const suffix = Math.random().toString(36).slice(2, 8);
-  return `${base || "live-stream"}-${suffix}`;
 }
 
 function clearLocalStage() {
   const stage = el("live-local-stage");
   if (!stage) return;
 
-  attachedLocalEls.forEach((node) => node?.remove?.());
+  attachedLocalEls.forEach((node) => {
+    try {
+      node?.remove?.();
+    } catch {}
+  });
   attachedLocalEls = [];
 
   stage.innerHTML = `
@@ -65,10 +59,14 @@ function attachLocalTracks(room) {
   if (!stage) return;
 
   stage.innerHTML = "";
-  attachedLocalEls.forEach((node) => node?.remove?.());
+  attachedLocalEls.forEach((node) => {
+    try {
+      node?.remove?.();
+    } catch {}
+  });
   attachedLocalEls = [];
 
-  let hasVideo = false;
+  let attached = false;
 
   room.localParticipant.videoTrackPublications.forEach((pub) => {
     if (!pub.track) return;
@@ -79,7 +77,7 @@ function attachLocalTracks(room) {
     mediaEl.className = "stage-video";
     stage.appendChild(mediaEl);
     attachedLocalEls.push(mediaEl);
-    hasVideo = true;
+    attached = true;
   });
 
   room.localParticipant.audioTrackPublications.forEach((pub) => {
@@ -90,7 +88,7 @@ function attachLocalTracks(room) {
     attachedLocalEls.push(audioEl);
   });
 
-  if (!hasVideo) {
+  if (!attached) {
     clearLocalStage();
   }
 }
@@ -123,38 +121,6 @@ async function requestLivekitToken({
   }
 
   return json;
-}
-
-async function refreshStudioStreamFromDb() {
-  const current = liveState.studio.stream;
-  if (!current?.id) return;
-
-  try {
-    const latest = await getStreamById(current.id);
-    if (!latest) return;
-
-    setStudioState({ stream: latest });
-    setPresenceState({ viewers: Number(latest.viewer_count || 0) });
-
-    renderStudioStream(latest);
-    renderStudioPresence(Number(latest.viewer_count || 0));
-  } catch (error) {
-    console.error("[live-client] refreshStudioStreamFromDb error:", error);
-  }
-}
-
-function startStudioPolling() {
-  stopStudioPolling();
-  studioRefreshTimer = window.setInterval(() => {
-    refreshStudioStreamFromDb();
-  }, 4000);
-}
-
-function stopStudioPolling() {
-  if (studioRefreshTimer) {
-    window.clearInterval(studioRefreshTimer);
-    studioRefreshTimer = null;
-  }
 }
 
 async function connectStudioRoom(stream, user) {
@@ -208,16 +174,10 @@ async function connectStudioRoom(stream, user) {
   renderStudioPresence(room.numParticipants);
 
   studioRoom = room;
-  startStudioPolling();
 }
 
 async function disconnectStudioRoom() {
-  stopStudioPolling();
-
-  if (!studioRoom) {
-    clearLocalStage();
-    return;
-  }
+  if (!studioRoom) return;
 
   try {
     studioRoom.localParticipant.videoTrackPublications.forEach((pub) => {
@@ -258,7 +218,7 @@ async function bootLivePage() {
     bindStudioActions();
 
     if (!user) {
-      showLiveError("Please log in first from /auth.html before starting your stream.");
+      showLiveError("Please log in first from /auth.html before starting a stream.");
       renderStudioStream(null);
       return;
     }
@@ -289,11 +249,20 @@ async function loadCurrentUserLiveStream(userId) {
         viewers: Number(ownLive.viewer_count || 0)
       });
       renderStudioPresence(Number(ownLive.viewer_count || 0));
+
+      const shareInput = el("studio-share-link");
+      if (shareInput && ownLive.slug) {
+        shareInput.value = buildWatchUrl(ownLive.slug);
+      }
+
       return;
     }
 
     renderStudioStream(null);
     renderStudioPresence(0);
+
+    const shareInput = el("studio-share-link");
+    if (shareInput) shareInput.value = "";
   } catch (error) {
     console.error("[live-client] loadCurrentUserLiveStream error:", error);
     showLiveError(error.message || "Failed to load your stream.");
@@ -388,26 +357,17 @@ async function startLiveFlow() {
 
     setButtonBusy("start-stream-btn", true, "Starting...", "Start Stream");
 
-    const slug = makeStreamSlug(formPayload.title);
+    const slug = await ensureUniqueSlug(formPayload.title, user.id);
 
     const stream = await createStream({
       creator_id: user.id,
+      slug,
       title: formPayload.title,
       description: formPayload.description,
       category: formPayload.category,
       access_type: formPayload.access_type,
       price_cents: formPayload.price_cents,
-      thumbnail_url: formPayload.thumbnail_url,
-      slug,
-      metadata: {
-        creator_email: user.email || null,
-        creator_display_name:
-          user.user_metadata?.display_name ||
-          user.user_metadata?.full_name ||
-          user.user_metadata?.username ||
-          user.email ||
-          "Creator"
-      }
+      thumbnail_url: formPayload.thumbnail_url
     });
 
     await connectStudioRoom(stream, user);
@@ -425,6 +385,11 @@ async function startLiveFlow() {
     renderStudioStream(stream);
     renderStudioPresence(Number(stream.viewer_count || 0));
     showLiveSuccess("Stream started successfully.");
+
+    const shareInput = el("studio-share-link");
+    if (shareInput) {
+      shareInput.value = buildWatchUrl(stream.slug);
+    }
 
     await loadLiveRailForStudio();
   } catch (error) {
@@ -474,6 +439,11 @@ async function endLiveFlow() {
     renderStudioStream(null);
     renderStudioPresence(0);
     showLiveSuccess("Stream ended.");
+
+    const shareInput = el("studio-share-link");
+    if (shareInput) {
+      shareInput.value = "";
+    }
 
     await loadLiveRailForStudio();
   } catch (error) {
