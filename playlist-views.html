@@ -2,1118 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Playlist View | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Playlist View</title>
 
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --green-2: #a8ff8f;
-      --bg: rgba(0,0,0,0.50);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-    }
-
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      font-family: Inter, sans-serif;
       color: white;
-      min-height: 100vh;
-      padding-bottom: 140px;
       background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
+        linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.95)),
+        url('/images/brand/logo-music-label.png') center/cover no-repeat fixed;
     }
 
-    .page {
-      max-width: 1550px;
-      margin: 0 auto;
-      padding: 18px;
-    }
-
-    .topbar,
-    .hero,
-    .section,
-    .player-shell,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.8rem;
-      font-weight: 900;
-    }
-
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
     }
 
     .nav {
       display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
       flex-wrap: wrap;
       gap: 10px;
-      align-items: center;
     }
 
-    .nav a,
-    .nav button {
+    .nav a {
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
       text-decoration: none;
       color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+      font-weight: bold;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.16);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-
-    .hero-grid {
+    .hero {
       display: grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 250px 1fr;
       gap: 20px;
-      align-items: stretch;
+      margin-bottom: 20px;
     }
 
-    .hero-cover,
-    .hero-fallback,
-    .track-cover,
-    .track-fallback,
-    .player-cover,
-    .player-cover-fallback {
-      background: black;
-      object-fit: cover;
-      display: block;
-    }
-
-    .hero-cover {
+    .cover {
       width: 100%;
-      height: 320px;
-      border-radius: 22px;
+      border-radius: 20px;
     }
 
-    .hero-fallback {
-      width: 100%;
-      height: 320px;
-      border-radius: 22px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2.4rem;
-      color: var(--green);
-      font-weight: 900;
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 1.02;
-      color: var(--green);
-    }
-
-    .hero p,
-    .subtle {
+    .info h1 {
       margin: 0;
-      color: var(--text);
-      line-height: 1.75;
+      font-size: 36px;
     }
 
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-      font-weight: 900;
-      font-size: 0.84rem;
-    }
-
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-danger,
-    .btn-gold {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--green);
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 18px;
-    }
-
-    .track-list {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .track-row {
-      display: grid;
-      grid-template-columns: 74px 1fr auto;
-      gap: 14px;
-      align-items: center;
-      padding: 14px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .track-cover {
-      width: 74px;
-      height: 74px;
-      border-radius: 12px;
-    }
-
-    .track-fallback {
-      width: 74px;
-      height: 74px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--green);
-      font-weight: 900;
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
-    }
-
-    .track-title {
-      font-size: 1.05rem;
-      font-weight: 900;
-      color: var(--green);
-      margin-bottom: 6px;
-    }
-
-    .track-text {
-      color: var(--text);
-      line-height: 1.55;
-      white-space: pre-wrap;
-    }
-
-    .track-actions {
-      display: grid;
-      gap: 8px;
-      min-width: 130px;
-    }
-
-    .catalog-grid {
-      display: grid;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .catalog-row {
-      display: grid;
-      grid-template-columns: 72px 1fr auto;
-      gap: 14px;
-      align-items: center;
-      padding: 14px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .catalog-actions {
-      display: grid;
-      gap: 8px;
-      min-width: 130px;
-    }
-
-    .filter-row {
-      display: grid;
-      grid-template-columns: 1fr 180px;
-      gap: 12px;
-      margin-top: 14px;
-    }
-
-    .filter-row input,
-    .filter-row select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .player-shell {
-      position: fixed;
-      left: 16px;
-      right: 16px;
-      bottom: 12px;
-      padding: 14px;
-      z-index: 999;
-    }
-
-    .player-grid {
-      display: grid;
-      grid-template-columns: 84px 1fr auto;
-      gap: 14px;
-      align-items: center;
-    }
-
-    .player-cover {
-      width: 84px;
-      height: 84px;
-      border-radius: 14px;
-    }
-
-    .player-cover-fallback {
-      width: 84px;
-      height: 84px;
-      border-radius: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--green);
-      font-weight: 900;
-      background: rgba(125,255,113,0.08);
-      border: 1px solid rgba(125,255,113,0.16);
-    }
-
-    .player-title {
-      color: var(--green);
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .player-meta {
-      color: var(--text);
-      margin-bottom: 8px;
-      line-height: 1.5;
-      font-size: 0.95rem;
-    }
-
-    .player-controls {
+    .controls {
+      margin-top: 15px;
       display: flex;
       gap: 10px;
-      align-items: center;
       flex-wrap: wrap;
     }
 
-    .player-controls button {
-      padding: 12px 14px;
-      border-radius: 12px;
+    .controls button {
+      padding: 10px;
+      border-radius: 10px;
       border: none;
-      font-weight: 900;
+      font-weight: bold;
       cursor: pointer;
     }
 
-    .player-controls audio {
-      width: min(520px, 100%);
+    .play { background: gold; color: black; }
+    .radio { background: purple; }
+
+    .track {
+      background: rgba(255,255,255,0.05);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
+    .track button {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
     }
 
-    @media (max-width: 1200px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    audio {
+      width: 100%;
+      margin-top: 20px;
     }
 
-    @media (max-width: 1020px) {
-      .hero-grid,
-      .player-grid,
-      .filter-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 760px) {
-      .hero h1 {
-        font-size: 2.25rem;
-      }
-
-      .stats-row,
-      .track-row,
-      .catalog-row {
-        grid-template-columns: 1fr;
-      }
-
-      .player-shell {
-        left: 8px;
-        right: 8px;
-        bottom: 8px;
-      }
-    }
   </style>
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Playlist View</span>
-      </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
-        <a href="albums.html">Albums</a>
-        <a href="playlist.html" class="active">Playlists</a>
-        <a href="artist.html">Artist</a>
-        <a href="artist-channel-manage.html">Channel</a>
-        <a href="music-revenue.html">Revenue</a>
-        <a href="monetization.html">Monetize</a>
-        <a href="profile.html">Profile</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+<body>
+  <div class="container">
+
+    <div class="nav">
+      <div>
+        <a href="/index.html">Home</a>
+        <a href="/playlist.html">Back</a>
       </div>
+      <div id="global-session-nav"></div>
     </div>
 
     <div class="hero">
-      <div class="hero-grid">
-        <div id="heroCoverWrap">
-          <div class="hero-fallback">RB</div>
-        </div>
+      <img id="cover" class="cover" src="/images/brand/logo-music-label.png"/>
 
-        <div>
-          <div id="playlistPill" class="pill">PLAYLIST</div>
-          <h1 id="playlistTitle">Loading playlist...</h1>
-          <p id="playlistDescription">Loading playlist details...</p>
+      <div class="info">
+        <h1 id="title">Loading...</h1>
+        <p id="desc"></p>
 
-          <div class="hero-actions">
-            <button id="playAllBtn" class="btn-green" type="button">Play All</button>
-            <a class="btn-dark" href="playlist.html">Back To Playlists</a>
-            <a class="btn-gold" href="music.html">Open Music</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading playlist view...</div>
-
-          <div class="stats-row">
-            <div class="stat">
-              <div id="trackCountStat" class="stat-value">0</div>
-              <div class="stat-label">Tracks</div>
-            </div>
-            <div class="stat">
-              <div id="visibilityStat" class="stat-value">--</div>
-              <div class="stat-label">Visibility</div>
-            </div>
-            <div class="stat">
-              <div id="ownerStat" class="stat-value">--</div>
-              <div class="stat-label">Owner</div>
-            </div>
-            <div class="stat">
-              <div id="createdStat" class="stat-value">--</div>
-              <div class="stat-label">Created</div>
-            </div>
-          </div>
+        <div class="controls">
+          <button class="play" id="play-all">Play All</button>
+          <button class="radio" id="start-radio">Start Radio</button>
         </div>
       </div>
     </div>
 
-    <div class="layout">
-      <div class="section">
-        <h2>Playlist Tracks</h2>
-        <div class="subtle">Tracks already inside this playlist.</div>
-        <div id="playlistTracks" class="track-list"></div>
-      </div>
+    <div id="tracks"></div>
 
-      <div class="section">
-        <h2>Add Music</h2>
-        <div class="subtle">Search your music catalog and add tracks if you own this playlist.</div>
+    <audio id="player" controls></audio>
 
-        <div class="filter-row">
-          <input id="catalogSearchInput" type="text" placeholder="Search tracks to add..." />
-          <select id="catalogGenreFilter">
-            <option value="all">All Genres</option>
-          </select>
-        </div>
-
-        <div id="catalogList" class="catalog-grid"></div>
-      </div>
-    </div>
   </div>
 
-  <div class="player-shell">
-    <div class="player-grid">
-      <div id="playerCoverWrap">
-        <div class="player-cover-fallback">RB</div>
-      </div>
-
-      <div>
-        <div id="playerTitle" class="player-title">Nothing playing</div>
-        <div id="playerMeta" class="player-meta">Choose a track from the playlist.</div>
-
-        <div class="player-controls">
-          <button id="prevBtn" class="btn-dark" type="button">Prev</button>
-          <button id="nextBtn" class="btn-dark" type="button">Next</button>
-          <audio id="globalAudio" controls preload="none"></audio>
-        </div>
-      </div>
-
-      <div>
-        <button id="queueInfoBtn" class="btn-dark" type="button">Queue Ready</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const heroCoverWrap = document.getElementById("heroCoverWrap");
-      const playlistPill = document.getElementById("playlistPill");
-      const playlistTitle = document.getElementById("playlistTitle");
-      const playlistDescription = document.getElementById("playlistDescription");
-
-      const playAllBtn = document.getElementById("playAllBtn");
-
-      const trackCountStat = document.getElementById("trackCountStat");
-      const visibilityStat = document.getElementById("visibilityStat");
-      const ownerStat = document.getElementById("ownerStat");
-      const createdStat = document.getElementById("createdStat");
-
-      const playlistTracks = document.getElementById("playlistTracks");
-      const catalogSearchInput = document.getElementById("catalogSearchInput");
-      const catalogGenreFilter = document.getElementById("catalogGenreFilter");
-      const catalogList = document.getElementById("catalogList");
-
-      const playerCoverWrap = document.getElementById("playerCoverWrap");
-      const playerTitleEl = document.getElementById("playerTitle");
-      const playerMeta = document.getElementById("playerMeta");
-      const globalAudio = document.getElementById("globalAudio");
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      const queueInfoBtn = document.getElementById("queueInfoBtn");
-
-      let currentUser = null;
-      let currentPlaylist = null;
-      let playlistTrackRows = [];
-      let catalogTracks = [];
-      let currentQueue = [];
-      let currentTrackIndex = -1;
-      let currentPlayingTrack = null;
-      let playTrackedForCurrent = false;
-      let streamStartAt = 0;
-      let streamRecordedForCurrent = false;
-
-      function getPlaylistId() {
-        return new URLSearchParams(window.location.search).get("id");
-      }
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function emptyState(el, text) {
-        el.innerHTML = `<div class="empty-box">${escapeHtml(text)}</div>`;
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleDateString();
-      }
-
-      function isOwner() {
-        return !!(currentUser && currentPlaylist && currentPlaylist.user_id === currentUser.id);
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function getPremiumTrackRow(trackId) {
-        try {
-          const { data, error } = await supabase
-            .from("premium_tracks")
-            .select("*")
-            .eq("track_id", trackId)
-            .maybeSingle();
-
-          if (error) throw error;
-          return data || null;
-        } catch {
-          return null;
-        }
-      }
-
-      async function hasPremiumAccess(trackId, artistUserId) {
-        if (!currentUser) return false;
-        if (currentUser.id === artistUserId) return true;
-
-        try {
-          const { data: purchase } = await supabase
-            .from("premium_track_purchases")
-            .select("id,status")
-            .eq("buyer_user_id", currentUser.id)
-            .eq("track_id", trackId)
-            .eq("status", "paid")
-            .maybeSingle();
-
-          if (purchase) return true;
-
-          const { data: subscription } = await supabase
-            .from("fan_subscriptions")
-            .select("id,status")
-            .eq("fan_user_id", currentUser.id)
-            .eq("artist_user_id", artistUserId)
-            .eq("status", "active")
-            .maybeSingle();
-
-          return !!subscription;
-        } catch {
-          return false;
-        }
-      }
-
-      function fillGenreOptions(items) {
-        const genres = [...new Set(items.map(item => (item.genre || "").trim()).filter(Boolean))]
-          .sort((a, b) => a.localeCompare(b));
-
-        catalogGenreFilter.innerHTML =
-          `<option value="all">All Genres</option>` +
-          genres.map(genre => `<option value="${escapeHtml(genre)}">${escapeHtml(genre)}</option>`).join("");
-      }
-
-      function renderPlaylistHeader() {
-        if (!currentPlaylist) {
-          playlistTitle.textContent = "Playlist not found";
-          playlistDescription.textContent = "This playlist could not be loaded.";
-          heroCoverWrap.innerHTML = `<div class="hero-fallback">RB</div>`;
-          return;
-        }
-
-        playlistPill.textContent = currentPlaylist.is_public ? "PUBLIC PLAYLIST" : "PRIVATE PLAYLIST";
-        playlistTitle.textContent = currentPlaylist.title || "Untitled Playlist";
-        playlistDescription.textContent = currentPlaylist.description || "No playlist description yet.";
-
-        heroCoverWrap.innerHTML = currentPlaylist.cover_url
-          ? `<img class="hero-cover" src="${escapeHtml(currentPlaylist.cover_url)}" alt="playlist cover" />`
-          : `<div class="hero-fallback">RB</div>`;
-
-        trackCountStat.textContent = playlistTrackRows.length;
-        visibilityStat.textContent = currentPlaylist.is_public ? "PUBLIC" : "PRIVATE";
-        ownerStat.textContent = isOwner() ? "YOU" : "OPEN";
-        createdStat.textContent = formatDate(currentPlaylist.created_at);
-      }
-
-      function renderPlaylistTracks() {
-        if (!playlistTrackRows.length) {
-          emptyState(playlistTracks, "No tracks in this playlist yet.");
-          return;
-        }
-
-        playlistTracks.innerHTML = playlistTrackRows.map((row, index) => {
-          const track = row.music_tracks || {};
-          return `
-            <div class="track-row">
-              ${
-                track.cover_url
-                  ? `<img class="track-cover" src="${escapeHtml(track.cover_url)}" alt="track cover" />`
-                  : `<div class="track-fallback">RB</div>`
-              }
-
-              <div>
-                <div class="track-title">${index + 1}. ${escapeHtml(track.title || "Untitled Track")}</div>
-                <div class="track-text">
-${escapeHtml(track.artist_name || "Unknown Artist")} • ${escapeHtml(track.genre || "--")}
-Plays: ${escapeHtml(track.plays || 0)} • Likes: ${escapeHtml(track.likes || 0)}
-                </div>
-              </div>
-
-              <div class="track-actions">
-                <button class="btn-green" onclick="window.__playPlaylistTrack(${index})">Play</button>
-                ${
-                  isOwner()
-                    ? `<button class="btn-danger" onclick="window.__removeTrack(${row.id})">Remove</button>`
-                    : `<a class="btn-dark" href="artist.html?id=${encodeURIComponent(track.user_id || "")}">Artist</a>`
-                }
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderCatalogTracks() {
-        if (!isOwner()) {
-          emptyState(catalogList, "Only the playlist owner can add tracks.");
-          return;
-        }
-
-        let filtered = [...catalogTracks];
-        const search = catalogSearchInput.value.trim().toLowerCase();
-        const genre = catalogGenreFilter.value;
-
-        if (search) {
-          filtered = filtered.filter(track => {
-            const haystack = [
-              track.title || "",
-              track.artist_name || "",
-              track.genre || "",
-              track.description || ""
-            ].join(" ").toLowerCase();
-
-            return haystack.includes(search);
-          });
-        }
-
-        if (genre !== "all") {
-          filtered = filtered.filter(track => (track.genre || "").trim() === genre);
-        }
-
-        const existingIds = new Set(playlistTrackRows.map(row => Number(row.track_id)));
-
-        const available = filtered.filter(track => !existingIds.has(Number(track.id)));
-
-        if (!available.length) {
-          emptyState(catalogList, "No available tracks match your search.");
-          return;
-        }
-
-        catalogList.innerHTML = available.map(track => `
-          <div class="catalog-row">
-            ${
-              track.cover_url
-                ? `<img class="track-cover" src="${escapeHtml(track.cover_url)}" alt="track cover" />`
-                : `<div class="track-fallback">RB</div>`
-            }
-
-            <div>
-              <div class="track-title">${escapeHtml(track.title || "Untitled Track")}</div>
-              <div class="track-text">
-${escapeHtml(track.artist_name || "Unknown Artist")} • ${escapeHtml(track.genre || "--")}
-Plays: ${escapeHtml(track.plays || 0)} • Likes: ${escapeHtml(track.likes || 0)}
-              </div>
-            </div>
-
-            <div class="catalog-actions">
-              <button class="btn-green" onclick="window.__addTrack(${track.id})">Add</button>
-              <a class="btn-dark" href="artist.html?id=${encodeURIComponent(track.user_id || "")}">Artist</a>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      function updatePlayer(track) {
-        if (!track) {
-          playerCoverWrap.innerHTML = `<div class="player-cover-fallback">RB</div>`;
-          playerTitleEl.textContent = "Nothing playing";
-          playerMeta.textContent = "Choose a track from the playlist.";
-          globalAudio.removeAttribute("src");
-          globalAudio.load();
-          return;
-        }
-
-        playerCoverWrap.innerHTML = track.cover_url
-          ? `<img class="player-cover" src="${escapeHtml(track.cover_url)}" alt="cover" />`
-          : `<div class="player-cover-fallback">RB</div>`;
-
-        playerTitleEl.textContent = track.title || "Untitled Track";
-        playerMeta.textContent = `${track.artist_name || "Unknown Artist"} • ${track.genre || "--"} • Plays: ${track.plays || 0}`;
-        globalAudio.src = track.audio_url || "";
-        globalAudio.load();
-      }
-
-      async function playTrack(track, index) {
-        if (!track || !track.audio_url) return;
-
-        const premiumRow = await getPremiumTrackRow(track.id);
-        if (premiumRow) {
-          const allowed = await hasPremiumAccess(track.id, track.user_id);
-          if (!allowed) {
-            window.location.href = `music-unlock.html?track=${encodeURIComponent(track.id)}`;
-            return;
-          }
-        }
-
-        currentPlayingTrack = track;
-        currentTrackIndex = index;
-        streamStartAt = Date.now();
-        playTrackedForCurrent = false;
-        streamRecordedForCurrent = false;
-
-        updatePlayer(track);
-
-        try {
-          await globalAudio.play();
-        } catch (error) {
-          console.error(error);
-        }
-      }
-
-      async function incrementPlayOnce() {
-        if (playTrackedForCurrent) return;
-        if (currentTrackIndex < 0 || !currentQueue[currentTrackIndex]) return;
-
-        const track = currentQueue[currentTrackIndex];
-        playTrackedForCurrent = true;
-
-        try {
-          await supabase.rpc("increment_music_play_count", { track_id: Number(track.id) });
-          track.plays = Number(track.plays || 0) + 1;
-          playerMeta.textContent = `${track.artist_name || "Unknown Artist"} • ${track.genre || "--"} • Plays: ${track.plays || 0}`;
-        } catch (error) {
-          console.error("Play count error:", error.message);
-        }
-      }
-
-      async function recordStreamIfQualified() {
-        if (!currentPlayingTrack || streamRecordedForCurrent) return;
-
-        const playedSeconds = Math.floor((Date.now() - streamStartAt) / 1000);
-        if (playedSeconds < 30) return;
-
-        try {
-          const premiumRow = await getPremiumTrackRow(currentPlayingTrack.id);
-          const isPaidStream = !!premiumRow;
-
-          await supabase.rpc("record_music_stream", {
-            p_track_id: Number(currentPlayingTrack.id),
-            p_listener_id: currentUser?.id || null,
-            p_artist_user_id: currentPlayingTrack.user_id,
-            p_played_seconds: playedSeconds,
-            p_is_paid_stream: isPaidStream
-          });
-
-          streamRecordedForCurrent = true;
-        } catch (error) {
-          console.error("Stream record error:", error.message);
-        }
-      }
-
-      function playNext() {
-        if (!currentQueue.length) return;
-        if (currentTrackIndex < 0) {
-          playTrack(currentQueue[0], 0);
-          return;
-        }
-
-        const nextIndex = (currentTrackIndex + 1) % currentQueue.length;
-        playTrack(currentQueue[nextIndex], nextIndex);
-      }
-
-      function playPrev() {
-        if (!currentQueue.length) return;
-        if (currentTrackIndex < 0) {
-          playTrack(currentQueue[0], 0);
-          return;
-        }
-
-        const prevIndex = (currentTrackIndex - 1 + currentQueue.length) % currentQueue.length;
-        playTrack(currentQueue[prevIndex], prevIndex);
-      }
-
-      async function addTrackToPlaylist(trackId) {
-        try {
-          if (!isOwner()) {
-            throw new Error("Only the playlist owner can add tracks.");
-          }
-
-          const nextOrder = playlistTrackRows.length + 1;
-
-          const { error } = await supabase
-            .from("playlist_tracks")
-            .insert({
-              playlist_id: currentPlaylist.id,
-              track_id: trackId,
-              sort_order: nextOrder
-            });
-
-          if (error) throw error;
-
-          setStatus("Track added to playlist.");
-          await loadPlaylistView();
-        } catch (error) {
-          setStatus("Add track error: " + error.message);
-        }
-      }
-
-      async function removeTrackFromPlaylist(playlistTrackId) {
-        try {
-          if (!isOwner()) {
-            throw new Error("Only the playlist owner can remove tracks.");
-          }
-
-          const { error } = await supabase
-            .from("playlist_tracks")
-            .delete()
-            .eq("id", playlistTrackId);
-
-          if (error) throw error;
-
-          setStatus("Track removed from playlist.");
-          await loadPlaylistView();
-        } catch (error) {
-          setStatus("Remove track error: " + error.message);
-        }
-      }
-
-      async function loadPlaylistView() {
-        try {
-          setStatus("Loading playlist view...");
-          await loadSession();
-
-          const playlistId = getPlaylistId();
-          if (!playlistId) {
-            throw new Error("Missing playlist id in URL.");
-          }
-
-          const [{ data: playlist, error: playlistError }, { data: trackRows, error: trackError }] = await Promise.all([
-            supabase.from("playlists").select("*").eq("id", playlistId).maybeSingle(),
-            supabase
-              .from("playlist_tracks")
-              .select("id, playlist_id, track_id, sort_order, music_tracks(*)")
-              .eq("playlist_id", playlistId)
-              .order("sort_order", { ascending: true })
-          ]);
-
-          if (playlistError) throw playlistError;
-          if (trackError) throw trackError;
-          if (!playlist) throw new Error("Playlist not found.");
-
-          currentPlaylist = playlist;
-          playlistTrackRows = trackRows || [];
-          currentQueue = playlistTrackRows.map(row => row.music_tracks).filter(Boolean);
-          queueInfoBtn.textContent = `Queue: ${currentQueue.length}`;
-
-          renderPlaylistHeader();
-          renderPlaylistTracks();
-
-          if (isOwner()) {
-            const { data: musicRows, error: musicError } = await supabase
-              .from("music_tracks")
-              .select("*")
-              .eq("user_id", currentUser.id)
-              .order("created_at", { ascending: false });
-
-            if (musicError) throw musicError;
-
-            catalogTracks = musicRows || [];
-            fillGenreOptions(catalogTracks);
-          } else {
-            catalogTracks = [];
-            fillGenreOptions([]);
-          }
-
-          renderCatalogTracks();
-          setStatus("Playlist view loaded.");
-        } catch (error) {
-          setStatus("Playlist view error: " + error.message);
-          playlistTitle.textContent = "Playlist unavailable";
-          playlistDescription.textContent = error.message;
-          emptyState(playlistTracks, "Could not load playlist tracks.");
-          emptyState(catalogList, "Could not load music catalog.");
-        }
-      }
-
-      window.__playPlaylistTrack = (index) => {
-        if (!currentQueue[index]) return;
-        playTrack(currentQueue[index], index);
-      };
-
-      window.__addTrack = addTrackToPlaylist;
-      window.__removeTrack = removeTrackFromPlaylist;
-
-      playAllBtn.addEventListener("click", () => {
-        if (!currentQueue.length) return;
-        playTrack(currentQueue[0], 0);
-      });
-
-      catalogSearchInput.addEventListener("input", renderCatalogTracks);
-      catalogGenreFilter.addEventListener("change", renderCatalogTracks);
-      logoutBtn.addEventListener("click", logOut);
-      prevBtn.addEventListener("click", playPrev);
-      nextBtn.addEventListener("click", playNext);
-
-      globalAudio.addEventListener("play", incrementPlayOnce);
-      globalAudio.addEventListener("pause", recordStreamIfQualified);
-      globalAudio.addEventListener("ended", async () => {
-        await recordStreamIfQualified();
-        playNext();
-      });
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadPlaylistView();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Playlist View Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+  <script type="module">
+    import {
+      getPlaylistById,
+      getPlaylistTracks
+    } from "/src/music/playlist-api.js";
+
+    const url = new URL(location.href);
+    const id = url.searchParams.get("id");
+
+    const cover = document.getElementById("cover");
+    const title = document.getElementById("title");
+    const desc = document.getElementById("desc");
+    const tracksEl = document.getElementById("tracks");
+    const player = document.getElementById("player");
+
+    let tracks = [];
+    let index = 0;
+
+    function playTrack(i) {
+      const t = tracks[i];
+      if (!t?.audio_url) return;
+      index = i;
+      player.src = t.audio_url;
+      player.play();
     }
+
+    function renderTracks() {
+      tracksEl.innerHTML = tracks.map((t, i) => `
+        <div class="track">
+          <div>
+            <strong>${t.title}</strong><br/>
+            <small>${t.artist_name}</small>
+          </div>
+          <button onclick="playTrack(${i})">Play</button>
+        </div>
+      `).join("");
+    }
+
+    window.playTrack = playTrack;
+
+    async function load() {
+      const p = await getPlaylistById(id);
+      const t = await getPlaylistTracks(id);
+
+      cover.src = p.cover_url || cover.src;
+      title.textContent = p.title;
+      desc.textContent = p.description;
+
+      tracks = t;
+      renderTracks();
+    }
+
+    document.getElementById("play-all").onclick = () => playTrack(0);
+
+    document.getElementById("start-radio").onclick = () => {
+      window.location.href = "/radio.html";
+    };
+
+    player.onended = () => {
+      index++;
+      if (index < tracks.length) playTrack(index);
+    };
+
+    load();
   </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
