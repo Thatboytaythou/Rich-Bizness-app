@@ -3,799 +3,1021 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Upload</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; }
+  <title>Rich Bizness — Upload Center</title>
+  <meta
+    name="description"
+    content="Rich Bizness upload center for music, gallery, gaming, sports, and creator content."
+  />
 
+  <style>
+    :root {
+      --bg: #06100b;
+      --panel: rgba(8, 18, 13, 0.9);
+      --panel-2: rgba(12, 28, 20, 0.84);
+      --line: rgba(110, 255, 176, 0.16);
+      --line-strong: rgba(110, 255, 176, 0.34);
+      --text: #ecfff4;
+      --muted: #97b8a6;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --red: #ff6f82;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+      --max: 1380px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      color: #fff;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
       background:
-        linear-gradient(rgba(0,0,0,.55), rgba(0,0,0,.9)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed;
+        linear-gradient(180deg, rgba(4,9,5,0.54), rgba(6,16,11,0.92)),
+        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
+      background-color: #06100b;
     }
 
-    .page {
-      max-width: 1200px;
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    .page-shell {
+      width: min(var(--max), calc(100% - 24px));
       margin: 0 auto;
-      padding: 18px;
-    }
-
-    .shell {
-      background: rgba(0,0,0,.58);
-      border: 1px solid rgba(144, 255, 110, .18);
-      border-radius: 28px;
-      backdrop-filter: blur(10px);
-      overflow: hidden;
-      box-shadow: 0 0 0 1px rgba(255,255,255,.03) inset, 0 24px 80px rgba(0,0,0,.45);
+      padding: 18px 0 42px;
     }
 
     .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 60;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      gap: 12px;
-      padding: 18px;
-      border-bottom: 1px solid rgba(144,255,110,.12);
-      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      background: rgba(7, 16, 12, 0.78);
+      backdrop-filter: blur(14px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 12px;
+      min-width: 0;
     }
 
-    .brand img {
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid rgba(144,255,110,.35);
-      background: #111;
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
+      border: 1px solid var(--line-strong);
+      color: var(--green);
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(67,245,155,0.22);
+      flex-shrink: 0;
     }
 
-    .brand h1 {
+    .brand-copy h1 {
       margin: 0;
-      font-size: 2rem;
-      color: #9dff6b;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
     }
 
-    .brand p {
+    .brand-copy p {
       margin: 6px 0 0;
-      color: #d8e8d2;
-      font-size: 1rem;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .nav {
       display: flex;
+      align-items: center;
       gap: 10px;
       flex-wrap: wrap;
-      align-items: center;
+      justify-content: flex-end;
     }
 
-    .chip,
+    .nav-link,
     .btn,
-    .nav a {
-      border: 1px solid rgba(255,255,255,.1);
-      background: rgba(255,255,255,.06);
-      color: #fff;
-      border-radius: 18px;
-      text-decoration: none;
-      font-weight: 700;
-      padding: 12px 16px;
+    .btn-ghost {
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      min-height: 44px;
+      padding: 11px 15px;
+      border-radius: 14px;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      font-weight: 800;
       cursor: pointer;
+      border: 1px solid transparent;
     }
 
-    .nav a.active,
-    .btn-primary {
-      background: #98f063;
-      color: #081108;
-      border-color: transparent;
+    .nav-link:hover,
+    .btn:hover,
+    .btn-ghost:hover {
+      transform: translateY(-1px);
     }
 
-    .btn-secondary {
-      background: rgba(255,255,255,.08);
-      color: #fff;
+    .nav-link,
+    .btn-ghost {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.07);
+      color: var(--text);
     }
 
-    .hero {
-      padding: 22px 18px 10px;
+    .btn {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #062312;
+      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
     }
 
-    .hero-card {
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(144,255,110,.14);
-      border-radius: 26px;
-      padding: 24px;
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .upload-hero {
+      padding: 34px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,0.16), transparent 28%),
+        linear-gradient(180deg, rgba(8,19,14,0.72), rgba(7,15,12,0.84));
     }
 
     .eyebrow {
       display: inline-flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .eyebrow span {
-      background: rgba(152,240,99,.12);
-      color: #baff98;
-      border: 1px solid rgba(152,240,99,.18);
-      border-radius: 999px;
+      align-items: center;
+      width: fit-content;
+      min-height: 34px;
       padding: 7px 12px;
-      font-size: .82rem;
-      font-weight: 700;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      color: #d6ffe8;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
-    .hero h2 {
-      margin: 0 0 10px;
-      font-size: clamp(2rem, 5vw, 4rem);
-      line-height: 1.02;
-      color: #98f063;
-      max-width: 900px;
+    .upload-hero h2 {
+      margin: 20px 0 0;
+      font-size: clamp(38px, 5vw, 70px);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      max-width: 820px;
     }
 
-    .hero p {
-      margin: 0;
-      color: #eef5ea;
-      font-size: 1.15rem;
-      line-height: 1.7;
-      max-width: 900px;
+    .upload-hero p {
+      margin: 18px 0 0;
+      color: #d8f5e5;
+      font-size: 16px;
+      line-height: 1.8;
+      max-width: 760px;
     }
 
-    .content {
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .side-stack {
+      padding: 22px;
       display: grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap: 18px;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .side-card {
       padding: 18px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
     }
 
-    @media (max-width: 900px) {
-      .content {
-        grid-template-columns: 1fr;
-      }
+    .side-card strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
     }
 
-    .panel {
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(144,255,110,.14);
-      border-radius: 24px;
-      padding: 20px;
+    .side-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
     }
 
-    .section-title {
-      margin: 0 0 8px;
-      color: #98f063;
-      font-size: 2rem;
-      line-height: 1;
+    .notice {
+      display: none;
+      margin-bottom: 14px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      border: 1px solid transparent;
     }
 
-    .section-sub {
-      margin: 0 0 18px;
-      color: #dfe9d8;
-      font-size: 1rem;
-      line-height: 1.6;
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      border-color: rgba(255, 90, 115, 0.24);
+      color: #ffd0d8;
     }
 
-    .grid-2 {
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      border-color: rgba(67, 245, 155, 0.24);
+      color: #d8ffea;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+    }
+
+    .panel-head {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .panel-body {
+      padding: 22px;
+    }
+
+    .tab-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      color: var(--text);
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
+      border-color: var(--line-strong);
+      color: #dfffee;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
 
-    @media (max-width: 640px) {
-      .grid-2 {
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+      resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    }
+
+    .field textarea {
+      min-height: 110px;
+    }
+
+    .file-box {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px dashed rgba(110,255,176,0.22);
+      background: rgba(255,255,255,0.03);
+    }
+
+    .file-box input[type="file"] {
+      width: 100%;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 6px;
+    }
+
+    .preview-card,
+    .info-card,
+    .upload-card {
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .preview-card h4,
+    .info-card h4,
+    .upload-card h4 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    .preview-card p,
+    .info-card p,
+    .upload-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .preview-media {
+      margin-top: 14px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.03);
+      min-height: 220px;
+      display: grid;
+      place-items: center;
+    }
+
+    .preview-media img,
+    .preview-media video {
+      width: 100%;
+      max-height: 360px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .preview-placeholder {
+      padding: 24px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .recent-item {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .recent-item strong {
+      display: block;
+      font-size: 15px;
+      margin-bottom: 6px;
+    }
+
+    .recent-item span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding: 18px;
+      border-radius: 20px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .footer p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    @media (max-width: 1180px) {
+      .hero-grid,
+      .main-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 700;
-      color: #c8f3b4;
+    @media (max-width: 900px) {
+      .topbar {
+        position: static;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+        width: 100%;
+      }
+
+      .field-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
-    input,
-    select,
-    textarea {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.72);
-      color: #fff;
-      border-radius: 16px;
-      padding: 16px;
-      font-size: 1rem;
-      outline: none;
-    }
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 16px, 100%);
+      }
 
-    textarea {
-      min-height: 120px;
-      resize: vertical;
-    }
+      .nav-link,
+      .btn,
+      .btn-ghost,
+      .tab-btn {
+        width: 100%;
+      }
 
-    input:focus,
-    select:focus,
-    textarea:focus {
-      border-color: rgba(152,240,99,.5);
-      box-shadow: 0 0 0 3px rgba(152,240,99,.12);
-    }
+      #global-session-nav {
+        width: 100%;
+      }
 
-    .field {
-      margin-bottom: 16px;
-    }
-
-    .file-box {
-      border: 1px dashed rgba(152,240,99,.3);
-      border-radius: 22px;
-      background: rgba(255,255,255,.03);
-      padding: 16px;
-    }
-
-    .preview {
-      width: 100%;
-      min-height: 260px;
-      border-radius: 20px;
-      background: rgba(0,0,0,.48);
-      border: 1px solid rgba(255,255,255,.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      color: #d5dfcf;
-      text-align: center;
-      padding: 12px;
-      margin-top: 14px;
-    }
-
-    .preview img,
-    .preview video {
-      width: 100%;
-      max-height: 480px;
-      object-fit: contain;
-      border-radius: 16px;
-      display: block;
-    }
-
-    .btn-row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .btn {
-      min-width: 160px;
-      font-size: 1rem;
-    }
-
-    .btn:disabled {
-      opacity: .6;
-      cursor: not-allowed;
-    }
-
-    .status {
-      margin-top: 16px;
-      border-radius: 18px;
-      padding: 14px 16px;
-      font-weight: 700;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.04);
-      min-height: 54px;
-      display: flex;
-      align-items: center;
-    }
-
-    .status.ok {
-      color: #b6ff97;
-      border-color: rgba(152,240,99,.25);
-      background: rgba(152,240,99,.08);
-    }
-
-    .status.err {
-      color: #ffb7b7;
-      border-color: rgba(255,92,92,.25);
-      background: rgba(255,92,92,.08);
-    }
-
-    .stats {
-      display: grid;
-      gap: 14px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 22px;
-      padding: 20px;
-    }
-
-    .stat strong {
-      display: block;
-      color: #98f063;
-      font-size: 2rem;
-      margin-bottom: 6px;
-    }
-
-    .meta {
-      display: grid;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .meta-box {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.08);
-    }
-
-    .meta-box h4 {
-      margin: 0 0 8px;
-      color: #baff98;
-    }
-
-    .muted {
-      color: #d5e0cf;
-      opacity: .92;
+      #global-session-nav .nav-link,
+      #global-session-nav .btn,
+      #global-session-nav .btn-ghost {
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="shell">
-      <div class="topbar">
-        <div class="brand">
-          <img id="brandAvatar" src="rich-bizness-profile.jpg" alt="Rich Bizness" onerror="this.src='rich-bizness-profile.jpg'" />
-          <div>
-            <h1>Upload</h1>
-            <p>Drop music, art, photos, videos, and creator content into one real Rich Bizness lane.</p>
-          </div>
-        </div>
-
-        <div class="nav">
-          <span id="userChip" class="chip">Loading...</span>
-          <a href="index.html">Home</a>
-          <a href="feed.html">Feed</a>
-          <a href="gallery.html">Gallery</a>
-          <a href="artist.html">Artist</a>
-          <a href="profile.html">Profile</a>
-          <a href="upload.html" class="active">Upload</a>
-          <button id="logoutBtn" class="btn btn-secondary" type="button">Log Out</button>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness</h1>
+          <p>Upload Center • Music • Gallery • Gaming • Sports</p>
         </div>
       </div>
 
-      <section class="hero">
-        <div class="hero-card">
-          <div class="eyebrow">
-            <span>FULL UPLOAD CORE</span>
-            <span>SUPABASE SYNC</span>
-            <span>IMAGE + VIDEO</span>
-          </div>
-          <h2>Upload creator content and keep the whole platform in sync.</h2>
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+        <a class="nav-link" href="/music.html">Music</a>
+        <a class="nav-link" href="/gallery.html">Gallery</a>
+        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
+        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
+      </nav>
+    </header>
+
+    <div id="upload-error" class="notice error"></div>
+    <div id="upload-success" class="notice success"></div>
+
+    <section class="hero-grid">
+      <section class="panel upload-hero">
+        <div>
+          <div class="eyebrow">Upload center</div>
+          <h2>Push your music, visuals, and creator content into the platform clean.</h2>
           <p>
-            This upgraded uploader pulls your account session, syncs your profile data,
-            stores the file in Supabase Storage, and writes the upload record into your
-            main <strong>uploads</strong> table so your home, feed, gallery, and profile can read it.
+            Upload tracks, cover art, gallery visuals, gaming content, and sports media
+            from one creator command page built for expansion.
           </p>
+        </div>
+
+        <div class="hero-actions">
+          <button id="submit-upload-btn-top" class="btn" type="button">Submit Upload</button>
+          <a class="btn-ghost" href="/music.html">Open Music</a>
+          <a class="btn-ghost" href="/gallery.html">Open Gallery</a>
         </div>
       </section>
 
-      <section class="content">
-        <div class="panel">
-          <h2 class="section-title">Main Upload</h2>
-          <p class="section-sub">
-            Keep the bucket name the same if you already use <strong>artworks</strong>.
-            If your storage bucket is different, change only the <strong>UPLOAD_BUCKET</strong> value in the script.
-          </p>
-
-          <form id="uploadForm">
-            <div class="grid-2">
-              <div class="field">
-                <label for="artistName">Artist / Creator Name</label>
-                <input id="artistName" type="text" placeholder="Auto-filled from profile" />
-              </div>
-
-              <div class="field">
-                <label for="category">Category</label>
-                <select id="category">
-                  <option value="art">Art</option>
-                  <option value="music">Music</option>
-                  <option value="gaming">Gaming</option>
-                  <option value="sports">Sports</option>
-                  <option value="photo">Photo</option>
-                  <option value="video">Video</option>
-                  <option value="creator">Creator</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="caption">Caption</label>
-              <textarea id="caption" placeholder="Say something about this upload..."></textarea>
-            </div>
-
-            <div class="field file-box">
-              <label for="fileInput">Choose Image or Video</label>
-              <input id="fileInput" type="file" accept="image/*,video/*" />
-              <div id="previewBox" class="preview">Your image or video preview will show here.</div>
-            </div>
-
-            <div class="btn-row">
-              <button id="uploadBtn" class="btn btn-primary" type="submit">Upload Now</button>
-              <button id="resetBtn" class="btn btn-secondary" type="button">Reset</button>
-            </div>
-
-            <div id="statusBox" class="status">Ready.</div>
-          </form>
+      <aside class="panel side-stack">
+        <div class="side-card">
+          <strong>Music ready</strong>
+          <span>Tracks table is ready, so music uploads can now go straight into your discovery lane.</span>
         </div>
 
-        <div class="panel">
-          <h2 class="section-title">Sync Status</h2>
-          <p class="section-sub">
-            These pull from your current session and profile so your uploader stays locked into the rest of the app.
-          </p>
+        <div class="side-card">
+          <strong>Creator flow</strong>
+          <span>Upload here, publish to your lane, then route people back through profile, live, and watch.</span>
+        </div>
 
-          <div class="stats">
-            <div class="stat">
-              <strong id="uploadCount">0</strong>
-              <span>Total uploads found for your account</span>
-            </div>
-            <div class="stat">
-              <strong id="sessionState">...</strong>
-              <span>Session state</span>
+        <div class="side-card">
+          <strong>Expansion ready</strong>
+          <span>Gaming uploads, sports clips, and gallery drops can all branch from the same center next.</span>
+        </div>
+      </aside>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Upload form</h3>
+            <p>Choose the lane and publish clean.</p>
+          </div>
+
+          <div class="tab-row">
+            <button class="tab-btn active" type="button" data-tab="music">Music</button>
+            <button class="tab-btn" type="button" data-tab="gallery">Gallery</button>
+            <button class="tab-btn" type="button" data-tab="gaming">Gaming</button>
+            <button class="tab-btn" type="button" data-tab="sports">Sports</button>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="tab-panel active" data-panel="music">
+            <div class="form-grid">
+              <div class="field">
+                <label for="music-title">Track title</label>
+                <input id="music-title" type="text" placeholder="Money Road Anthem" />
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="music-artist-name">Artist name</label>
+                  <input id="music-artist-name" type="text" placeholder="ThatboyTayThou" />
+                </div>
+
+                <div class="field">
+                  <label for="music-genre">Genre</label>
+                  <input id="music-genre" type="text" placeholder="Hip-Hop" />
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="music-description">Description</label>
+                <textarea id="music-description" placeholder="Describe the track, rollout, or creator vibe..."></textarea>
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="music-cover-url">Cover image URL</label>
+                  <input id="music-cover-url" type="text" placeholder="https://..." />
+                </div>
+
+                <div class="field">
+                  <label for="music-duration">Duration (seconds)</label>
+                  <input id="music-duration" type="number" min="0" step="1" placeholder="180" />
+                </div>
+              </div>
+
+              <div class="file-box">
+                <label for="music-audio-file" style="display:block;margin-bottom:8px;color:var(--muted);font-size:13px;font-weight:700;">Audio file</label>
+                <input id="music-audio-file" type="file" accept="audio/*" />
+              </div>
+
+              <div class="action-row">
+                <button id="submit-music-upload-btn" class="btn" type="button">Upload Track</button>
+                <button id="clear-upload-form-btn" class="btn-ghost" type="button">Clear</button>
+              </div>
             </div>
           </div>
 
-          <div class="meta">
-            <div class="meta-box">
-              <h4>Current Username</h4>
-              <div id="metaUsername" class="muted">Loading...</div>
+          <div class="tab-panel" data-panel="gallery">
+            <div class="upload-card">
+              <h4>Gallery uploads</h4>
+              <p>Gallery lane is next in the build stack. This panel is ready for image drop wiring.</p>
             </div>
-            <div class="meta-box">
-              <h4>Display Name</h4>
-              <div id="metaDisplayName" class="muted">Loading...</div>
+          </div>
+
+          <div class="tab-panel" data-panel="gaming">
+            <div class="upload-card">
+              <h4>Gaming uploads</h4>
+              <p>Gaming clips, challenges, and media uploads can branch out from this lane next.</p>
             </div>
-            <div class="meta-box">
-              <h4>Email</h4>
-              <div id="metaEmail" class="muted">Loading...</div>
-            </div>
-            <div class="meta-box">
-              <h4>Bucket</h4>
-              <div class="muted">artworks</div>
-            </div>
-            <div class="meta-box">
-              <h4>Table</h4>
-              <div class="muted">uploads</div>
+          </div>
+
+          <div class="tab-panel" data-panel="sports">
+            <div class="upload-card">
+              <h4>Sports uploads</h4>
+              <p>Sports content, highlights, and creator-led sports media can be connected here next.</p>
             </div>
           </div>
         </div>
       </section>
-    </div>
+
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Upload preview</h3>
+              <p>Quick visual check before publish.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="preview-card">
+              <h4 id="preview-title">No track title yet</h4>
+              <p id="preview-artist">Artist preview will show here.</p>
+
+              <div id="preview-media" class="preview-media">
+                <div class="preview-placeholder">
+                  Cover preview or upload state will appear here.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Recent uploads</h3>
+              <p>Latest music uploads from this account.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div id="recent-uploads-list" class="recent-list">
+              <div class="recent-item">
+                <strong>No uploads yet</strong>
+                <span>Your recent tracks will appear here after upload.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Upload direction</h3>
+              <p>Creator launch path.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="info-card">
+              <h4>Build the lane</h4>
+              <p>
+                Upload the track, push it into music discovery, connect it back to profile,
+                and grow it through live, watch, and creator branding.
+              </p>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="footer">
+      <p>Rich Bizness • upload center locked</p>
+      <div class="footer-links">
+        <a href="/index.html">Home</a>
+        <a href="/profile.html">Profile</a>
+        <a href="/music.html">Music</a>
+        <a href="/live.html">Live</a>
+        <a href="/watch.html">Watch</a>
+      </div>
+    </footer>
   </div>
 
   <script>
-    try {
-      // KEEP THESE AS YOUR CURRENT VALUES
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  </script>
 
-      // CHANGE THIS ONLY IF YOUR STORAGE BUCKET HAS A DIFFERENT NAME
-      const UPLOAD_BUCKET = "artworks";
+  <script>
+    (() => {
+      const buttons = Array.from(document.querySelectorAll(".tab-btn"));
+      const panels = Array.from(document.querySelectorAll(".tab-panel"));
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = button.getAttribute("data-tab");
+
+          buttons.forEach((btn) => btn.classList.remove("active"));
+          panels.forEach((panel) => panel.classList.remove("active"));
+
+          button.classList.add("active");
+          document.querySelector(`.tab-panel[data-panel="${target}"]`)?.classList.add("active");
+        });
       });
+    })();
+  </script>
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-      const artistNameInput = document.getElementById("artistName");
-      const categoryInput = document.getElementById("category");
-      const captionInput = document.getElementById("caption");
-      const fileInput = document.getElementById("fileInput");
-      const previewBox = document.getElementById("previewBox");
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+    );
 
-      const uploadForm = document.getElementById("uploadForm");
-      const uploadBtn = document.getElementById("uploadBtn");
-      const resetBtn = document.getElementById("resetBtn");
-      const statusBox = document.getElementById("statusBox");
+    const errorBox = document.getElementById("upload-error");
+    const successBox = document.getElementById("upload-success");
 
-      const uploadCount = document.getElementById("uploadCount");
-      const sessionState = document.getElementById("sessionState");
-      const metaUsername = document.getElementById("metaUsername");
-      const metaDisplayName = document.getElementById("metaDisplayName");
-      const metaEmail = document.getElementById("metaEmail");
-      const brandAvatar = document.getElementById("brandAvatar");
+    const musicTitle = document.getElementById("music-title");
+    const musicArtist = document.getElementById("music-artist-name");
+    const musicGenre = document.getElementById("music-genre");
+    const musicDescription = document.getElementById("music-description");
+    const musicCoverUrl = document.getElementById("music-cover-url");
+    const musicDuration = document.getElementById("music-duration");
+    const musicAudioFile = document.getElementById("music-audio-file");
 
-      let currentUser = null;
-      let currentProfile = null;
+    const previewTitle = document.getElementById("preview-title");
+    const previewArtist = document.getElementById("preview-artist");
+    const previewMedia = document.getElementById("preview-media");
+    const recentUploadsList = document.getElementById("recent-uploads-list");
 
-      function setStatus(message, type = "") {
-        statusBox.textContent = message;
-        statusBox.className = "status";
-        if (type) statusBox.classList.add(type);
-      }
+    const uploadButtons = [
+      document.getElementById("submit-music-upload-btn"),
+      document.getElementById("submit-upload-btn-top")
+    ];
 
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
+    function showError(message) {
+      errorBox.textContent = message || "";
+      errorBox.style.display = message ? "block" : "none";
+      successBox.style.display = "none";
+    }
 
-      function resetFormUI() {
-        captionInput.value = "";
-        fileInput.value = "";
-        previewBox.innerHTML = "Your image or video preview will show here.";
-      }
+    function showSuccess(message) {
+      successBox.textContent = message || "";
+      successBox.style.display = message ? "block" : "none";
+      errorBox.style.display = "none";
+    }
 
-      function slugifyName(value) {
-        return String(value || "")
-          .trim()
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
-
-      function fileExt(name) {
-        const parts = String(name || "").split(".");
-        return parts.length > 1 ? parts.pop().toLowerCase() : "";
-      }
-
-      function isVideo(file) {
-        return file && String(file.type || "").startsWith("video/");
-      }
-
-      function isImage(file) {
-        return file && String(file.type || "").startsWith("image/");
-      }
-
-      function renderPreview(file) {
-        if (!file) {
-          previewBox.innerHTML = "Your image or video preview will show here.";
-          return;
-        }
-
-        const objectUrl = URL.createObjectURL(file);
-
-        if (isImage(file)) {
-          previewBox.innerHTML = `<img src="${objectUrl}" alt="Preview" />`;
-          return;
-        }
-
-        if (isVideo(file)) {
-          previewBox.innerHTML = `<video controls src="${objectUrl}"></video>`;
-          return;
-        }
-
-        previewBox.innerHTML = `Selected file: ${escapeHtml(file.name)}`;
-      }
-
-      async function requireSession() {
-        const { data, error } = await supabase.auth.getUser();
-        if (error) throw error;
-        if (!data?.user) {
-          window.location.href = "auth.html";
-          return null;
-        }
-        return data.user;
-      }
-
-      async function loadProfile(user) {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
-          .limit(1)
-          .maybeSingle();
-
-        if (error) throw error;
-        return data || null;
-      }
-
-      async function ensureProfile(user) {
-        let profile = await loadProfile(user);
-        if (profile) return profile;
-
-        const email = user.email || "";
-        const baseUsername = slugifyName(email.split("@")[0] || "user");
-        const payload = {
-          id: user.id,
-          user_id: user.id,
-          email,
-          username: baseUsername,
-          display_name: baseUsername,
-          role: "creator",
-          onboarding_complete: true
-        };
-
-        const { error: insertError } = await supabase.from("profiles").upsert(payload);
-        if (insertError) throw insertError;
-
-        profile = await loadProfile(user);
-        return profile;
-      }
-
-      async function refreshCounts(user) {
-        const { count, error } = await supabase
-          .from("uploads")
-          .select("*", { count: "exact", head: true })
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-        uploadCount.textContent = count || 0;
-      }
-
-      async function syncTopbar(user, profile) {
-        const email = user.email || "Signed in";
-        const username = profile?.username || "no-username";
-        const displayName = profile?.display_name || profile?.username || email.split("@")[0] || "Creator";
-
-        userChip.textContent = email;
-        sessionState.textContent = "LIVE";
-        metaUsername.textContent = username;
-        metaDisplayName.textContent = displayName;
-        metaEmail.textContent = email;
-
-        artistNameInput.value = profile?.display_name || profile?.username || email.split("@")[0] || "";
-
-        if (profile?.avatar_url) {
-          brandAvatar.src = profile.avatar_url;
-        }
-      }
-
-      async function boot() {
-        setStatus("Checking session...");
-        const user = await requireSession();
-        if (!user) return;
-
-        currentUser = user;
-        const profile = await ensureProfile(user);
-        currentProfile = profile;
-
-        await syncTopbar(user, profile);
-        await refreshCounts(user);
-
-        setStatus("Uploader fully synced and ready.", "ok");
-      }
-
-      async function uploadFileToStorage(file, user, profile) {
-        const ext = fileExt(file.name) || (isVideo(file) ? "mp4" : "png");
-        const mediaType = isVideo(file) ? "video" : isImage(file) ? "image" : "file";
-        const username = profile?.username || slugifyName(user.email?.split("@")[0] || "user");
-        const safeCategory = slugifyName(categoryInput.value || "creator");
-        const path = `${username}/${safeCategory}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-
-        const { error: storageError } = await supabase
-          .storage
-          .from(UPLOAD_BUCKET)
-          .upload(path, file, {
-            cacheControl: "3600",
-            upsert: false
-          });
-
-        if (storageError) throw storageError;
-
-        const { data: publicData } = supabase
-          .storage
-          .from(UPLOAD_BUCKET)
-          .getPublicUrl(path);
-
-        return {
-          mediaType,
-          storagePath: path,
-          publicUrl: publicData?.publicUrl || ""
-        };
-      }
-
-      async function insertUploadRow({ user, profile, file, uploadInfo }) {
-        const artistName =
-          artistNameInput.value.trim() ||
-          profile?.display_name ||
-          profile?.username ||
-          user.email?.split("@")[0] ||
-          "Rich Bizness Creator";
-
-        const category = categoryInput.value.trim() || "creator";
-        const caption = captionInput.value.trim();
-
-        const row = {
-          user_id: user.id,
-          artist_name: artistName,
-          category,
-          caption,
-          media_type: uploadInfo.mediaType,
-          image_url: uploadInfo.mediaType === "image" ? uploadInfo.publicUrl : null,
-          file_url: uploadInfo.publicUrl,
-          likes: 0
-        };
-
-        const { data, error } = await supabase
-          .from("uploads")
-          .insert(row)
-          .select()
-          .single();
-
-        if (error) throw error;
-        return data;
-      }
-
-      async function handleUpload(event) {
-        event.preventDefault();
-
-        try {
-          uploadBtn.disabled = true;
-          setStatus("Preparing upload...");
-
-          const user = await requireSession();
-          if (!user) return;
-
-          const profile = await ensureProfile(user);
-          currentUser = user;
-          currentProfile = profile;
-
-          const file = fileInput.files?.[0];
-          if (!file) throw new Error("Choose an image or video first.");
-
-          if (!isImage(file) && !isVideo(file)) {
-            throw new Error("Only image or video uploads are supported here.");
-          }
-
-          setStatus("Uploading file to Supabase Storage...");
-          const uploadInfo = await uploadFileToStorage(file, user, profile);
-
-          setStatus("Saving upload record...");
-          await insertUploadRow({ user, profile, file, uploadInfo });
-
-          await refreshCounts(user);
-          setStatus("Upload complete and synced across your app.", "ok");
-          resetFormUI();
-        } catch (error) {
-          console.error(error);
-          setStatus(`Upload error: ${error.message || error}`, "err");
-        } finally {
-          uploadBtn.disabled = false;
-        }
-      }
-
-      async function handleLogout() {
-        await supabase.auth.signOut();
-        window.location.href = "auth.html";
-      }
-
-      fileInput.addEventListener("change", () => renderPreview(fileInput.files?.[0] || null));
-      uploadForm.addEventListener("submit", handleUpload);
-      resetBtn.addEventListener("click", resetFormUI);
-      logoutBtn.addEventListener("click", handleLogout);
-
-      supabase.auth.onAuthStateChange(async (_event, session) => {
-        if (!session?.user) return;
-        currentUser = session.user;
+    function setUploadButtonsBusy(isBusy) {
+      uploadButtons.forEach((button) => {
+        if (!button) return;
+        button.disabled = !!isBusy;
+        button.textContent = isBusy ? "Uploading..." : (button.id === "submit-upload-btn-top" ? "Submit Upload" : "Upload Track");
       });
+    }
 
-      boot();
-    } catch (error) {
-      console.error(error);
-      const box = document.getElementById("statusBox");
-      if (box) {
-        box.textContent = `Boot error: ${error.message || error}`;
-        box.className = "status err";
+    async function getCurrentUser() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) throw error;
+      return data?.session?.user || null;
+    }
+
+    function updatePreview() {
+      previewTitle.textContent = musicTitle.value.trim() || "No track title yet";
+      previewArtist.textContent = musicArtist.value.trim() || "Artist preview will show here.";
+
+      const cover = musicCoverUrl.value.trim();
+      if (cover) {
+        previewMedia.innerHTML = `<img src="${cover}" alt="Cover preview" onerror="this.parentNode.innerHTML='<div class=&quot;preview-placeholder&quot;>Cover preview failed to load.</div>';" />`;
+      } else {
+        previewMedia.innerHTML = `<div class="preview-placeholder">Cover preview or upload state will appear here.</div>`;
       }
     }
+
+    function clearForm() {
+      musicTitle.value = "";
+      musicArtist.value = "";
+      musicGenre.value = "";
+      musicDescription.value = "";
+      musicCoverUrl.value = "";
+      musicDuration.value = "";
+      musicAudioFile.value = "";
+      updatePreview();
+      showError("");
+      showSuccess("");
+    }
+
+    async function uploadAudioFile(file, userId) {
+      const extension = file.name.split(".").pop()?.toLowerCase() || "mp3";
+      const filePath = `${userId}/tracks/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${extension}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("music")
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage.from("music").getPublicUrl(filePath);
+      return data?.publicUrl || null;
+    }
+
+    async function loadRecentUploads() {
+      try {
+        const user = await getCurrentUser();
+
+        let query = supabase
+          .from("tracks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(6);
+
+        if (user?.id) {
+          query = query.eq("creator_id", user.id);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          recentUploadsList.innerHTML = `
+            <div class="recent-item">
+              <strong>No uploads yet</strong>
+              <span>Your recent tracks will appear here after upload.</span>
+            </div>
+          `;
+          return;
+        }
+
+        recentUploadsList.innerHTML = data.map((track) => `
+          <div class="recent-item">
+            <strong>${track.title || "Untitled Track"}</strong>
+            <span>${track.artist_name || "Unknown Artist"} • ${track.genre || "No genre"} • ${track.audio_url ? "Audio ready" : "Missing audio"}</span>
+          </div>
+        `).join("");
+      } catch (error) {
+        console.error("[upload] loadRecentUploads error:", error);
+      }
+    }
+
+    async function handleMusicUpload() {
+      try {
+        showError("");
+        showSuccess("");
+        setUploadButtonsBusy(true);
+
+        const user = await getCurrentUser();
+        if (!user?.id) {
+          throw new Error("Log in first before uploading.");
+        }
+
+        const title = musicTitle.value.trim();
+        const artistName = musicArtist.value.trim();
+        const genre = musicGenre.value.trim();
+        const description = musicDescription.value.trim();
+        const coverUrl = musicCoverUrl.value.trim();
+        const durationSeconds = Number(musicDuration.value || 0);
+        const audioFile = musicAudioFile.files?.[0] || null;
+
+        if (!title) {
+          throw new Error("Track title is required.");
+        }
+
+        if (!audioFile) {
+          throw new Error("Choose an audio file first.");
+        }
+
+        const audioUrl = await uploadAudioFile(audioFile, user.id);
+
+        const { error } = await supabase.from("tracks").insert({
+          creator_id: user.id,
+          title,
+          artist_name: artistName || user.user_metadata?.display_name || user.email || "Artist",
+          description,
+          genre,
+          cover_url: coverUrl || null,
+          audio_url: audioUrl,
+          duration_seconds: Number.isFinite(durationSeconds) ? durationSeconds : 0
+        });
+
+        if (error) throw error;
+
+        showSuccess("Track uploaded successfully.");
+        clearForm();
+        await loadRecentUploads();
+      } catch (error) {
+        console.error("[upload] handleMusicUpload error:", error);
+        showError(error.message || "Upload failed.");
+      } finally {
+        setUploadButtonsBusy(false);
+      }
+    }
+
+    [
+      musicTitle,
+      musicArtist,
+      musicCoverUrl
+    ].forEach((input) => {
+      input?.addEventListener("input", updatePreview);
+    });
+
+    document.getElementById("clear-upload-form-btn")?.addEventListener("click", clearForm);
+    document.getElementById("submit-music-upload-btn")?.addEventListener("click", handleMusicUpload);
+    document.getElementById("submit-upload-btn-top")?.addEventListener("click", handleMusicUpload);
+
+    updatePreview();
+    loadRecentUploads();
   </script>
+
+  <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
