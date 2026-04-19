@@ -22,6 +22,7 @@ import {
 const LK = window.LivekitClient;
 let watchRoom = null;
 let attachedMedia = [];
+let chatChannel = null;
 
 function el(id) {
   return document.getElementById(id);
@@ -32,41 +33,15 @@ function getSlugFromUrl() {
   return url.searchParams.get("slug");
 }
 
-async function requestLivekitToken({
-  roomName,
-  participantName,
-  participantMetadata,
-  canPublish = true,
-  canSubscribe = true
-}) {
-  const response = await fetch("/api/livekit-token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      roomName,
-      participantName,
-      participantMetadata,
-      canPublish,
-      canSubscribe
-    })
-  });
-
-  const json = await response.json();
-
-  if (!response.ok) {
-    throw new Error(json?.error || "Failed to fetch LiveKit token");
-  }
-
-  return json;
-}
-
 function clearWatchStage() {
   const stage = el("watch-live-stage");
   if (!stage) return;
 
-  attachedMedia.forEach((node) => node?.remove?.());
+  attachedMedia.forEach((node) => {
+    try {
+      node?.remove?.();
+    } catch {}
+  });
   attachedMedia = [];
 
   stage.innerHTML = `
@@ -102,6 +77,36 @@ function attachSubscribedTrack(track) {
   }
 }
 
+async function requestLivekitToken({
+  roomName,
+  participantName,
+  participantMetadata,
+  canPublish = false,
+  canSubscribe = true
+}) {
+  const response = await fetch("/api/livekit-token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      roomName,
+      participantName,
+      participantMetadata,
+      canPublish,
+      canSubscribe
+    })
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(json?.error || "Failed to fetch LiveKit token");
+  }
+
+  return json;
+}
+
 async function connectWatchRoom(stream, user) {
   if (!LK) {
     throw new Error("LiveKit client failed to load");
@@ -111,7 +116,8 @@ async function connectWatchRoom(stream, user) {
     await disconnectWatchRoom();
   }
 
-  const participantId = user?.id || `guest-${Math.random().toString(36).slice(2, 8)}`;
+  const participantId =
+    user?.id || `guest-${Math.random().toString(36).slice(2, 8)}`;
 
   const tokenPayload = await requestLivekitToken({
     roomName: stream.livekit_room_name || stream.slug,
@@ -162,7 +168,11 @@ async function disconnectWatchRoom() {
   if (!watchRoom) return;
 
   try {
-    attachedMedia.forEach((node) => node?.remove?.());
+    attachedMedia.forEach((node) => {
+      try {
+        node?.remove?.();
+      } catch {}
+    });
     attachedMedia = [];
     await watchRoom.disconnect();
   } catch (error) {
@@ -170,58 +180,6 @@ async function disconnectWatchRoom() {
   } finally {
     watchRoom = null;
     clearWatchStage();
-  }
-}
-
-async function bootWatchPage() {
-  try {
-    resetWatchState();
-    resetChatState();
-    resetPresenceState();
-    showWatchError("");
-    showWatchSuccess("");
-    clearWatchStage();
-
-    const user = await getSessionUser();
-
-    setSessionState({
-      user,
-      ready: true
-    });
-
-    bindWatchActions();
-
-    const slug = getSlugFromUrl();
-    if (!slug) {
-      renderWatchStream(null);
-      showWatchError("Missing stream slug in URL.");
-      return;
-    }
-
-    const stream = await getStreamBySlug(slug);
-
-    if (!stream) {
-      renderWatchStream(null);
-      showWatchError("Stream not found.");
-      return;
-    }
-
-    setWatchState({
-      stream
-    });
-
-    setPresenceState({
-      viewers: Number(stream.viewer_count || 0)
-    });
-
-    renderWatchStream(stream);
-    renderWatchPresence(Number(stream.viewer_count || 0));
-
-    await loadChatMessages(stream.id);
-    subscribeToChat(stream.id);
-  } catch (error) {
-    console.error("[watch-client] boot error:", error);
-    showWatchError(error.message || "Failed to load watch page.");
   }
 }
 
@@ -250,8 +208,6 @@ async function loadChatMessages(streamId) {
     renderChatMessages([]);
   }
 }
-
-let chatChannel = null;
 
 function subscribeToChat(streamId) {
   try {
@@ -310,6 +266,12 @@ async function joinLiveFlow() {
 
     await joinStream(stream.id, user?.id || null);
     await connectWatchRoom(stream, user);
+
+    const nextViewerCount = Number(stream.viewer_count || 0) + 1;
+    setPresenceState({
+      viewers: nextViewerCount
+    });
+    renderWatchPresence(nextViewerCount);
 
     setWatchState({
       isJoining: false,
@@ -409,7 +371,66 @@ async function sendChatMessage() {
   }
 }
 
+async function bootWatchPage() {
+  try {
+    resetWatchState();
+    resetChatState();
+    resetPresenceState();
+    showWatchError("");
+    showWatchSuccess("");
+    clearWatchStage();
+
+    const user = await getSessionUser();
+
+    setSessionState({
+      user,
+      ready: true
+    });
+
+    bindWatchActions();
+
+    const slug = getSlugFromUrl();
+    if (!slug) {
+      renderWatchStream(null);
+      showWatchError("Missing stream slug in URL.");
+      return;
+    }
+
+    const stream = await getStreamBySlug(slug);
+
+    if (!stream) {
+      renderWatchStream(null);
+      showWatchError("Stream not found.");
+      return;
+    }
+
+    setWatchState({
+      stream
+    });
+
+    setPresenceState({
+      viewers: Number(stream.viewer_count || 0)
+    });
+
+    renderWatchStream(stream);
+    renderWatchPresence(Number(stream.viewer_count || 0));
+
+    await loadChatMessages(stream.id);
+    subscribeToChat(stream.id);
+  } catch (error) {
+    console.error("[watch-client] boot error:", error);
+    showWatchError(error.message || "Failed to load watch page.");
+  }
+}
+
 document.addEventListener("DOMContentLoaded", bootWatchPage);
+
 window.addEventListener("beforeunload", () => {
   disconnectWatchRoom();
+
+  if (chatChannel) {
+    try {
+      supabase.removeChannel(chatChannel);
+    } catch {}
+  }
 });
