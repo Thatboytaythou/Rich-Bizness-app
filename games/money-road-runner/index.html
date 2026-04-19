@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Money Road Runner — Rich Bizness</title>
+  <style>
+    :root {
+      --bg-1: #04110b;
+      --bg-2: #081b12;
+      --panel: rgba(10, 20, 14, 0.82);
+      --line: rgba(89, 255, 164, 0.22);
+      --line-strong: rgba(89, 255, 164, 0.42);
+      --text: #ecfff4;
+      --muted: #a5c9b4;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --gold: #f7d96a;
+      --red: #ff6d7a;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .game-shell {
+      width: min(100vw, 1100px);
+      height: 100vh;
+      max-height: 920px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-lg);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: var(--green);
+      border: 1px solid var(--line-strong);
+      background: linear-gradient(135deg, rgba(67,245,155,0.16), rgba(24,201,114,0.08));
+      box-shadow: 0 0 24px rgba(67,245,155,0.16);
+      flex-shrink: 0;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      min-height: 40px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .btn {
+      min-height: 42px;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      font-weight: 900;
+      color: #052113;
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      box-shadow: 0 12px 26px rgba(24,201,114,0.24);
+    }
+
+    .btn.secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border-color: var(--line);
+      box-shadow: none;
+    }
+
+    .arena {
+      position: relative;
+      min-height: 0;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(5,15,10,0.12), rgba(5,15,10,0.38)),
+        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat;
+      box-shadow: var(--shadow);
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background:
+        linear-gradient(180deg, rgba(9,24,15,0.22), rgba(9,24,15,0.44));
+    }
+
+    .hud {
+      position: absolute;
+      inset: 14px 14px auto 14px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .hud-card {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(4, 12, 9, 0.66);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(10px);
+      min-width: 0;
+    }
+
+    .hud-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .hud-card strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(3,8,5,0.36), rgba(3,8,5,0.62));
+      z-index: 4;
+    }
+
+    .overlay.hidden {
+      display: none;
+    }
+
+    .overlay-card {
+      width: min(680px, 100%);
+      padding: 28px;
+      border-radius: 24px;
+      border: 1px solid var(--line-strong);
+      background: rgba(6, 14, 10, 0.88);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      text-align: center;
+    }
+
+    .overlay-card h2 {
+      margin: 0;
+      font-size: clamp(34px, 6vw, 64px);
+      line-height: 0.94;
+      letter-spacing: -0.05em;
+    }
+
+    .overlay-card p {
+      margin: 16px auto 0;
+      max-width: 560px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .overlay-actions {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .tips {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .touch-controls {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .touch-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      border: 1px solid var(--line-strong);
+      background: rgba(7,18,12,0.84);
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      touch-action: manipulation;
+    }
+
+    .controls-note {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    @media (max-width: 920px) {
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      .controls-note {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .game-shell {
+        padding: 8px;
+        gap: 8px;
+      }
+
+      .topbar {
+        padding: 10px;
+      }
+
+      .top-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .pill,
+      .btn {
+        flex: 1 1 auto;
+      }
+
+      .overlay-card {
+        padding: 22px 16px;
+      }
+
+      .touch-btn {
+        width: 82px;
+        height: 82px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Money Road Runner</h1>
+          <p>Dodge • Collect • Survive • Submit Score</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a class="pill" href="/gaming.html">Back to Gaming</a>
+        <button class="btn secondary" id="muteBtn" type="button">Sound: On</button>
+        <button class="btn" id="pauseBtn" type="button">Pause</button>
+      </div>
+    </header>
+
+    <section class="arena">
+      <canvas id="gameCanvas"></canvas>
+
+      <div class="hud">
+        <div class="hud-card">
+          <span>Score</span>
+          <strong id="scoreValue">0</strong>
+        </div>
+        <div class="hud-card">
+          <span>Coins</span>
+          <strong id="coinsValue">0</strong>
+        </div>
+        <div class="hud-card">
+          <span>Speed</span>
+          <strong id="speedValue">1.0x</strong>
+        </div>
+        <div class="hud-card">
+          <span>Best</span>
+          <strong id="bestValue">0</strong>
+        </div>
+      </div>
+
+      <div class="overlay" id="startOverlay">
+        <div class="overlay-card">
+          <h2>Run the money road.</h2>
+          <p>
+            Slide through lanes, dodge blocks, grab money stacks, and stay alive long enough
+            to post a real Rich Bizness score.
+          </p>
+          <div class="overlay-actions">
+            <button class="btn" id="startBtn" type="button">Start Run</button>
+            <button class="btn secondary" id="howBtn" type="button">Controls</button>
+          </div>
+          <div class="tips">
+            Desktop: A / D or ← / → • Mobile: tap left / right
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay hidden" id="gameOverOverlay">
+        <div class="overlay-card">
+          <h2>Run over.</h2>
+          <p id="gameOverText">Your score is locked.</p>
+          <div class="overlay-actions">
+            <button class="btn" id="restartBtn" type="button">Run Again</button>
+            <button class="btn secondary" id="submitBtn" type="button">Submit Score</button>
+          </div>
+          <div class="tips" id="submitStatus">Your local best is saved automatically.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="controls">
+      <div class="touch-controls">
+        <button class="touch-btn" id="leftBtn" type="button">←</button>
+        <button class="touch-btn" id="rightBtn" type="button">→</button>
+      </div>
+      <div class="controls-note">
+        Avoid obstacles. Collect cash. Speed increases the longer you survive.
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const scoreValue = document.getElementById("scoreValue");
+      const coinsValue = document.getElementById("coinsValue");
+      const speedValue = document.getElementById("speedValue");
+      const bestValue = document.getElementById("bestValue");
+
+      const startOverlay = document.getElementById("startOverlay");
+      const gameOverOverlay = document.getElementById("gameOverOverlay");
+      const gameOverText = document.getElementById("gameOverText");
+      const submitStatus = document.getElementById("submitStatus");
+
+      const startBtn = document.getElementById("startBtn");
+      const restartBtn = document.getElementById("restartBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const pauseBtn = document.getElementById("pauseBtn");
+      const muteBtn = document.getElementById("muteBtn");
+      const howBtn = document.getElementById("howBtn");
+      const leftBtn = document.getElementById("leftBtn");
+      const rightBtn = document.getElementById("rightBtn");
+
+      const STORAGE_KEY = "rb_money_road_runner_best";
+      const LANES = 3;
+
+      let width = 0;
+      let height = 0;
+      let laneWidth = 0;
+      let roadLeft = 0;
+      let lastFrame = 0;
+      let animationFrame = null;
+
+      const state = {
+        running: false,
+        paused: false,
+        gameOver: false,
+        muted: false,
+        score: 0,
+        coins: 0,
+        speed: 1,
+        distance: 0,
+        best: Number(localStorage.getItem(STORAGE_KEY) || 0),
+        laneIndex: 1,
+        targetLaneIndex: 1,
+        playerY: 0,
+        playerX: 0,
+        obstacles: [],
+        coinsArr: [],
+        roadOffset: 0,
+        obstacleTimer: 0,
+        coinTimer: 0,
+        submitLock: false
+      };
+
+      bestValue.textContent = String(state.best);
+
+      function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        canvas.width = Math.floor(width * devicePixelRatio);
+        canvas.height = Math.floor(height * devicePixelRatio);
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
+        ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+
+        laneWidth = Math.min(170, width * 0.22);
+        const roadWidth = laneWidth * LANES;
+        roadLeft = (width - roadWidth) / 2;
+        state.playerY = height - 130;
+        state.playerX = laneToX(state.laneIndex);
+      }
+
+      function laneToX(lane) {
+        return roadLeft + lane * laneWidth + laneWidth / 2;
+      }
+
+      function resetGame() {
+        state.running = false;
+        state.paused = false;
+        state.gameOver = false;
+        state.score = 0;
+        state.coins = 0;
+        state.speed = 1;
+        state.distance = 0;
+        state.laneIndex = 1;
+        state.targetLaneIndex = 1;
+        state.playerX = laneToX(1);
+        state.obstacles = [];
+        state.coinsArr = [];
+        state.roadOffset = 0;
+        state.obstacleTimer = 0;
+        state.coinTimer = 0;
+        state.submitLock = false;
+        submitStatus.textContent = "Your local best is saved automatically.";
+        updateHud();
+      }
+
+      function startGame() {
+        resetGame();
+        state.running = true;
+        startOverlay.classList.add("hidden");
+        gameOverOverlay.classList.add("hidden");
+        lastFrame = performance.now();
+        cancelAnimationFrame(animationFrame);
+        animationFrame = requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        state.running = false;
+        state.gameOver = true;
+        gameOverText.textContent = `You scored ${state.score} and grabbed ${state.coins} cash stacks.`;
+        if (state.score > state.best) {
+          state.best = state.score;
+          localStorage.setItem(STORAGE_KEY, String(state.best));
+          bestValue.textContent = String(state.best);
+          submitStatus.textContent = "New local best locked in.";
+        }
+        gameOverOverlay.classList.remove("hidden");
+      }
+
+      function togglePause() {
+        if (!state.running || state.gameOver) return;
+        state.paused = !state.paused;
+        pauseBtn.textContent = state.paused ? "Resume" : "Pause";
+        if (!state.paused) {
+          lastFrame = performance.now();
+          animationFrame = requestAnimationFrame(loop);
+        }
+      }
+
+      function moveLeft() {
+        if (!state.running || state.paused) return;
+        state.targetLaneIndex = Math.max(0, state.targetLaneIndex - 1);
+      }
+
+      function moveRight() {
+        if (!state.running || state.paused) return;
+        state.targetLaneIndex = Math.min(LANES - 1, state.targetLaneIndex + 1);
+      }
+
+      function spawnObstacle() {
+        const lane = Math.floor(Math.random() * LANES);
+        const type = Math.random() > 0.5 ? "crate" : "cone";
+        state.obstacles.push({
+          lane,
+          x: laneToX(lane),
+          y: -80,
+          w: laneWidth * 0.48,
+          h: type === "crate" ? 48 : 70,
+          type
+        });
+      }
+
+      function spawnCoin() {
+        const lane = Math.floor(Math.random() * LANES);
+        state.coinsArr.push({
+          lane,
+          x: laneToX(lane),
+          y: -40,
+          r: Math.max(11, laneWidth * 0.12)
+        });
+      }
+
+      function rectsOverlap(a, b) {
+        return !(
+          a.x + a.w / 2 < b.x - b.w / 2 ||
+          a.x - a.w / 2 > b.x + b.w / 2 ||
+          a.y + a.h / 2 < b.y - b.h / 2 ||
+          a.y - a.h / 2 > b.y + b.h / 2
+        );
+      }
+
+      function playerRect() {
+        return {
+          x: state.playerX,
+          y: state.playerY,
+          w: laneWidth * 0.36,
+          h: 78
+        };
+      }
+
+      function update(dt) {
+        state.distance += dt * 0.16;
+        state.speed = 1 + Math.min(2.4, state.distance / 2200);
+        state.score += Math.floor(dt * 0.038 * state.speed);
+        state.roadOffset += dt * 0.52 * state.speed;
+
+        const targetX = laneToX(state.targetLaneIndex);
+        state.playerX += (targetX - state.playerX) * Math.min(1, dt * 0.015);
+
+        if (Math.abs(state.playerX - targetX) < 1) {
+          state.playerX = targetX;
+          state.laneIndex = state.targetLaneIndex;
+        }
+
+        state.obstacleTimer += dt;
+        state.coinTimer += dt;
+
+        const obstacleDelay = Math.max(360, 920 - state.distance * 0.18);
+        const coinDelay = Math.max(420, 700 - state.distance * 0.08);
+
+        if (state.obstacleTimer >= obstacleDelay) {
+          state.obstacleTimer = 0;
+          spawnObstacle();
+        }
+
+        if (state.coinTimer >= coinDelay) {
+          state.coinTimer = 0;
+          spawnCoin();
+        }
+
+        const velocity = dt * 0.48 * state.speed;
+
+        state.obstacles.forEach((obstacle) => {
+          obstacle.y += velocity;
+        });
+
+        state.coinsArr.forEach((coin) => {
+          coin.y += velocity * 0.94;
+        });
+
+        state.obstacles = state.obstacles.filter((obstacle) => obstacle.y < height + 120);
+        state.coinsArr = state.coinsArr.filter((coin) => coin.y < height + 80);
+
+        const player = playerRect();
+
+        for (const obstacle of state.obstacles) {
+          const obstacleRect = {
+            x: obstacle.x,
+            y: obstacle.y,
+            w: obstacle.w,
+            h: obstacle.h
+          };
+
+          if (rectsOverlap(player, obstacleRect)) {
+            endGame();
+            return;
+          }
+        }
+
+        state.coinsArr = state.coinsArr.filter((coin) => {
+          const coinRect = {
+            x: coin.x,
+            y: coin.y,
+            w: coin.r * 2,
+            h: coin.r * 2
+          };
+
+          if (rectsOverlap(player, coinRect)) {
+            state.coins += 1;
+            state.score += 150;
+            return false;
+          }
+
+          return true;
+        });
+
+        updateHud();
+      }
+
+      function drawBackground() {
+        ctx.clearRect(0, 0, width, height);
+
+        const sky = ctx.createLinearGradient(0, 0, 0, height);
+        sky.addColorStop(0, "rgba(6,24,15,0.12)");
+        sky.addColorStop(1, "rgba(4,12,8,0.34)");
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, width, height);
+
+        const roadWidth = laneWidth * LANES;
+        const roadRight = roadLeft + roadWidth;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(roadLeft + 70, height);
+        ctx.lineTo(roadRight - 70, height);
+        ctx.lineTo(roadRight - 16, 0);
+        ctx.lineTo(roadLeft + 16, 0);
+        ctx.closePath();
+
+        const roadGradient = ctx.createLinearGradient(0, 0, 0, height);
+        roadGradient.addColorStop(0, "rgba(225,255,233,0.10)");
+        roadGradient.addColorStop(1, "rgba(255,255,255,0.04)");
+        ctx.fillStyle = roadGradient;
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(133,255,186,0.28)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        for (let lane = 1; lane < LANES; lane += 1) {
+          const xTop = roadLeft + laneWidth * lane;
+          const xBottom = roadLeft + laneWidth * lane;
+          ctx.beginPath();
+          ctx.moveTo(xTop, 0);
+          ctx.lineTo(xBottom, height);
+          ctx.strokeStyle = "rgba(255,255,255,0.08)";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        const segmentHeight = 46;
+        for (let y = -segmentHeight; y < height + segmentHeight; y += segmentHeight) {
+          const offset = (y + state.roadOffset) % segmentHeight;
+          for (let lane = 0; lane < LANES; lane += 1) {
+            const x = roadLeft + lane * laneWidth + laneWidth * 0.14;
+            const w = laneWidth * 0.72;
+            const h = 24;
+            const py = y + offset;
+            ctx.fillStyle = "rgba(181,255,160,0.15)";
+            ctx.strokeStyle = "rgba(255,255,255,0.08)";
+            ctx.lineWidth = 1;
+            ctx.fillRect(x, py, w, h);
+            ctx.strokeRect(x, py, w, h);
+          }
+        }
+
+        ctx.restore();
+
+        for (let i = 0; i < 24; i += 1) {
+          const glowX = (i * 173 + state.roadOffset * 0.18) % (width + 100);
+          const glowY = ((i * 91) % height);
+          ctx.beginPath();
+          ctx.arc(glowX - 50, glowY, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(247,217,106,0.32)";
+          ctx.fill();
+        }
+      }
+
+      function drawPlayer() {
+        const x = state.playerX;
+        const y = state.playerY;
+        const w = laneWidth * 0.34;
+        const h = 84;
+
+        ctx.save();
+
+        const shadow = ctx.createRadialGradient(x, y + h * 0.42, 8, x, y + h * 0.42, w * 0.85);
+        shadow.addColorStop(0, "rgba(0,0,0,0.38)");
+        shadow.addColorStop(1, "rgba(0,0,0,0)");
+        ctx.fillStyle = shadow;
+        ctx.beginPath();
+        ctx.ellipse(x, y + h * 0.43, w * 0.75, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.translate(x, y);
+
+        ctx.fillStyle = "rgba(34, 255, 152, 0.95)";
+        ctx.strokeStyle = "rgba(220,255,237,0.88)";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(0, -h * 0.46);
+        ctx.lineTo(w * 0.36, -h * 0.10);
+        ctx.lineTo(w * 0.22, h * 0.42);
+        ctx.lineTo(-w * 0.22, h * 0.42);
+        ctx.lineTo(-w * 0.36, -h * 0.10);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(5,24,16,0.58)";
+        ctx.fillRect(-w * 0.12, -h * 0.10, w * 0.24, h * 0.44);
+
+        ctx.fillStyle = "rgba(247,217,106,0.96)";
+        ctx.fillRect(-w * 0.08, -h * 0.03, w * 0.16, h * 0.30);
+
+        ctx.restore();
+      }
+
+      function drawObstacle(obstacle) {
+        ctx.save();
+        ctx.translate(obstacle.x, obstacle.y);
+
+        if (obstacle.type === "crate") {
+          ctx.fillStyle = "rgba(71,49,25,0.95)";
+          ctx.strokeStyle = "rgba(219,189,131,0.82)";
+          ctx.lineWidth = 2;
+          ctx.fillRect(-obstacle.w / 2, -obstacle.h / 2, obstacle.w, obstacle.h);
+          ctx.strokeRect(-obstacle.w / 2, -obstacle.h / 2, obstacle.w, obstacle.h);
+          ctx.beginPath();
+          ctx.moveTo(-obstacle.w / 2, -obstacle.h / 2);
+          ctx.lineTo(obstacle.w / 2, obstacle.h / 2);
+          ctx.moveTo(obstacle.w / 2, -obstacle.h / 2);
+          ctx.lineTo(-obstacle.w / 2, obstacle.h / 2);
+          ctx.stroke();
+        } else {
+          ctx.fillStyle = "rgba(255,126,91,0.98)";
+          ctx.strokeStyle = "rgba(255,234,224,0.78)";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, -obstacle.h / 2);
+          ctx.lineTo(obstacle.w / 2, obstacle.h / 2);
+          ctx.lineTo(-obstacle.w / 2, obstacle.h / 2);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      function drawCoin(coin) {
+        ctx.save();
+        ctx.translate(coin.x, coin.y);
+        ctx.beginPath();
+        ctx.arc(0, 0, coin.r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(247,217,106,0.98)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,244,193,0.88)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(122,97,10,0.92)";
+        ctx.font = `900 ${Math.max(12, coin.r)}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("$", 0, 1);
+        ctx.restore();
+      }
+
+      function draw() {
+        drawBackground();
+        state.coinsArr.forEach(drawCoin);
+        state.obstacles.forEach(drawObstacle);
+        drawPlayer();
+      }
+
+      function updateHud() {
+        scoreValue.textContent = String(state.score);
+        coinsValue.textContent = String(state.coins);
+        speedValue.textContent = `${state.speed.toFixed(1)}x`;
+        bestValue.textContent = String(state.best);
+      }
+
+      function loop(timestamp) {
+        if (!state.running || state.paused || state.gameOver) return;
+
+        const dt = Math.min(40, timestamp - lastFrame || 16);
+        lastFrame = timestamp;
+
+        update(dt);
+        draw();
+
+        if (state.running && !state.paused && !state.gameOver) {
+          animationFrame = requestAnimationFrame(loop);
+        }
+      }
+
+      async function submitScore() {
+        if (state.submitLock) return;
+        state.submitLock = true;
+        submitStatus.textContent = "Submitting score...";
+
+        try {
+          const res = await fetch("/api/submit-game-score.js", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              gameSlug: "money-road-runner",
+              score: state.score,
+              mode: "Arcade",
+              metadata: {
+                coins: state.coins,
+                speed: Number(state.speed.toFixed(2))
+              }
+            })
+          });
+
+          if (!res.ok) {
+            throw new Error("Submit endpoint did not return success.");
+          }
+
+          submitStatus.textContent = "Score submitted to Rich Bizness leaderboard.";
+        } catch (error) {
+          console.error("[money-road-runner] submit score error:", error);
+          submitStatus.textContent = "Could not submit score yet. Local best is still saved.";
+        } finally {
+          state.submitLock = false;
+        }
+      }
+
+      function bindKeyboard() {
+        window.addEventListener("keydown", (event) => {
+          const key = event.key.toLowerCase();
+
+          if (key === "arrowleft" || key === "a") {
+            event.preventDefault();
+            if (!state.running && !state.gameOver) return;
+            moveLeft();
+          }
+
+          if (key === "arrowright" || key === "d") {
+            event.preventDefault();
+            if (!state.running && !state.gameOver) return;
+            moveRight();
+          }
+
+          if (key === " " || key === "p") {
+            event.preventDefault();
+            if (!state.running && !state.gameOver && !startOverlay.classList.contains("hidden")) {
+              startGame();
+            } else {
+              togglePause();
+            }
+          }
+
+          if (key === "enter" && state.gameOver) {
+            event.preventDefault();
+            startGame();
+          }
+        });
+      }
+
+      function bindTouch(button, handler) {
+        ["touchstart", "mousedown"].forEach((eventName) => {
+          button.addEventListener(eventName, (event) => {
+            event.preventDefault();
+            handler();
+          }, { passive: false });
+        });
+      }
+
+      startBtn.addEventListener("click", startGame);
+      restartBtn.addEventListener("click", startGame);
+      submitBtn.addEventListener("click", submitScore);
+      pauseBtn.addEventListener("click", togglePause);
+
+      muteBtn.addEventListener("click", () => {
+        state.muted = !state.muted;
+        muteBtn.textContent = state.muted ? "Sound: Off" : "Sound: On";
+      });
+
+      howBtn.addEventListener("click", () => {
+        alert("Desktop: A / D or Left / Right arrows\nMobile: tap left or right buttons\nPause: Space or P");
+      });
+
+      bindTouch(leftBtn, moveLeft);
+      bindTouch(rightBtn, moveRight);
+      bindKeyboard();
+
+      window.addEventListener("resize", () => {
+        resizeCanvas();
+        draw();
+      });
+
+      resizeCanvas();
+      draw();
+      updateHud();
+    })();
+  </script>
+</body>
+</html>
