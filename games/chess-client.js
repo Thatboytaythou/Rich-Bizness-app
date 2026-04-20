@@ -20,7 +20,8 @@ const state = {
   selectedSquare: null,
   chess: new Chess(),
   realtimeChannel: null,
-  clockInterval: null
+  clockInterval: null,
+  orientation: "white"
 };
 
 function el(id) {
@@ -78,9 +79,7 @@ function formatClock(ms = 0) {
 }
 
 function getLiveClockState(room) {
-  if (!room) {
-    return { white: 300000, black: 300000 };
-  }
+  if (!room) return { white: 300000, black: 300000 };
 
   let white = Number(room.white_time_ms || 0);
   let black = Number(room.black_time_ms || 0);
@@ -117,8 +116,10 @@ function setMeta() {
   el("room-status").textContent = room?.status || "Waiting";
   el("room-turn").textContent = getTurnLabel(room?.turn || "w");
   el("room-role").textContent = getRoleForUser(room);
+  el("room-type").textContent = room?.room_type || "casual";
   setInviteLink();
   updateClockDisplay();
+  renderCaptured();
 }
 
 function updateClockDisplay() {
@@ -127,7 +128,6 @@ function updateClockDisplay() {
   const blackCard = el("black-clock-card");
   const whiteClock = el("white-clock");
   const blackClock = el("black-clock");
-
   if (!whiteClock || !blackClock) return;
 
   const clocks = getLiveClockState(room);
@@ -136,13 +136,16 @@ function updateClockDisplay() {
 
   whiteCard?.classList.toggle("active", room?.turn === "w" && room?.status === "active");
   blackCard?.classList.toggle("active", room?.turn === "b" && room?.status === "active");
+
+  if (room?.status === "active") {
+    if (clocks.white <= 0) handleFlag("w");
+    if (clocks.black <= 0) handleFlag("b");
+  }
 }
 
 function startClockTicker() {
   stopClockTicker();
-  state.clockInterval = setInterval(() => {
-    updateClockDisplay();
-  }, 250);
+  state.clockInterval = setInterval(updateClockDisplay, 250);
 }
 
 function stopClockTicker() {
@@ -161,6 +164,19 @@ function canMovePiece(pieceColor) {
   return false;
 }
 
+function renderCaptured() {
+  const room = state.activeRoom;
+  const whiteEl = el("white-captured");
+  const blackEl = el("black-captured");
+  if (!whiteEl || !blackEl) return;
+
+  const whiteCaptured = Array.isArray(room?.white_captured) ? room.white_captured : [];
+  const blackCaptured = Array.isArray(room?.black_captured) ? room.black_captured : [];
+
+  whiteEl.innerHTML = whiteCaptured.map((code) => `<span>${PIECES[code] || ""}</span>`).join("");
+  blackEl.innerHTML = blackCaptured.map((code) => `<span>${PIECES[code] || ""}</span>`).join("");
+}
+
 function renderBoard() {
   const board = el("chess-board");
   if (!board) return;
@@ -169,16 +185,24 @@ function renderBoard() {
   const legalMoves = state.selectedSquare
     ? state.chess.moves({ square: state.selectedSquare, verbose: true })
     : [];
-
   const legalTargets = new Set(legalMoves.map((move) => move.to));
+
+  const ranks = state.orientation === "black"
+    ? [0,1,2,3,4,5,6,7]
+    : [7,6,5,4,3,2,1,0];
+
+  const files = state.orientation === "black"
+    ? [7,6,5,4,3,2,1,0]
+    : [0,1,2,3,4,5,6,7];
 
   let html = "";
 
-  for (let rank = 0; rank < 8; rank += 1) {
-    for (let file = 0; file < 8; file += 1) {
-      const squareName = "abcdefgh"[file] + (8 - rank);
-      const square = position[rank][file];
-      const colorClass = (rank + file) % 2 === 0 ? "light" : "dark";
+  for (const rankIndex of ranks) {
+    for (const fileIndex of files) {
+      const squareName = "abcdefgh"[fileIndex] + (rankIndex + 1);
+      const boardRank = 8 - (rankIndex + 1);
+      const square = position[boardRank][fileIndex];
+      const colorClass = ((boardRank + fileIndex) % 2 === 0) ? "light" : "dark";
       const isSelected = state.selectedSquare === squareName;
       const canMoveHere = legalTargets.has(squareName);
 
@@ -219,14 +243,13 @@ function renderRooms() {
   list.innerHTML = state.rooms.map((room) => `
     <button type="button" class="room-item ${state.activeRoom?.id === room.id ? "active" : ""}" data-room-id="${room.id}">
       <strong>${room.title}</strong>
-      <span>${room.slug} • ${room.status} • ${room.time_control}</span>
+      <span>${room.slug} • ${room.status} • ${room.time_control} • ${room.room_type}</span>
     </button>
   `).join("");
 
   list.querySelectorAll("[data-room-id]").forEach((button) => {
     button.addEventListener("click", async () => {
-      const roomId = button.getAttribute("data-room-id");
-      await openRoom(roomId);
+      await openRoom(button.getAttribute("data-room-id"));
     });
   });
 }
@@ -294,6 +317,7 @@ async function openRoom(roomId) {
   if (error) throw error;
 
   state.activeRoom = data;
+  state.orientation = data.orientation || "white";
   state.chess = new Chess(data.fen === "start" ? undefined : data.fen);
   state.selectedSquare = null;
 
@@ -354,6 +378,7 @@ async function createRoom() {
   const slugInput = el("create-room-slug").value.trim();
   const visibility = el("create-room-visibility").value || "public";
   const timeControl = el("create-room-time").value || "5|0";
+  const roomType = el("create-room-type").value || "casual";
   const slug = slugify(slugInput || title || `room-${Date.now()}`);
 
   const [minutesText, incrementText] = timeControl.split("|");
@@ -367,6 +392,8 @@ async function createRoom() {
       slug,
       host_id: state.user.id,
       visibility,
+      is_private: visibility === "private",
+      room_type: roomType,
       fen: "start",
       turn: "w",
       status: "waiting",
@@ -374,7 +401,10 @@ async function createRoom() {
       increment_ms: incrementSeconds * 1000,
       white_time_ms: minutes * 60 * 1000,
       black_time_ms: minutes * 60 * 1000,
-      last_clock_at: new Date().toISOString()
+      last_clock_at: new Date().toISOString(),
+      white_captured: [],
+      black_captured: [],
+      orientation: "white"
     })
     .select()
     .single();
@@ -384,7 +414,7 @@ async function createRoom() {
     return;
   }
 
-  showSuccess("Chess room created.");
+  showSuccess("Elite chess room created.");
   el("create-room-title").value = "";
   el("create-room-slug").value = "";
   await loadRooms();
@@ -501,6 +531,8 @@ async function requestRematch() {
         white_time_ms: minutes * 60 * 1000,
         black_time_ms: minutes * 60 * 1000,
         increment_ms: incrementSeconds * 1000,
+        white_captured: [],
+        black_captured: [],
         last_clock_at: new Date().toISOString()
       })
       .eq("id", state.activeRoom.id);
@@ -527,6 +559,41 @@ async function requestRematch() {
   }
 
   showSuccess("Rematch requested.");
+}
+
+async function handleFlag(colorFlagged) {
+  if (!state.activeRoom || state.activeRoom.status !== "active") return;
+
+  const winner = colorFlagged === "w" ? "b" : "w";
+
+  const { error } = await supabase
+    .from("chess_rooms")
+    .update({
+      status: "finished",
+      winner,
+      ended_reason: "timeout",
+      white_time_ms: Math.max(0, Number(state.activeRoom.white_time_ms || 0)),
+      black_time_ms: Math.max(0, Number(state.activeRoom.black_time_ms || 0))
+    })
+    .eq("id", state.activeRoom.id);
+
+  if (!error) {
+    showSuccess(`${winner === "w" ? "White" : "Black"} wins on time.`);
+  }
+}
+
+function currentCapturedArrays(move) {
+  const room = state.activeRoom;
+  const whiteCaptured = Array.isArray(room?.white_captured) ? [...room.white_captured] : [];
+  const blackCaptured = Array.isArray(room?.black_captured) ? [...room.black_captured] : [];
+
+  if (move.captured) {
+    const code = `${move.color === "w" ? "b" : "w"}${move.captured}`;
+    if (move.color === "w") whiteCaptured.push(code);
+    if (move.color === "b") blackCaptured.push(code);
+  }
+
+  return { whiteCaptured, blackCaptured };
 }
 
 async function onSquareClick(squareName) {
@@ -591,13 +658,23 @@ async function persistMove(move) {
   const nextFen = state.chess.fen();
   const nextTurn = state.chess.turn();
   const nextMoveNumber = Number(state.activeRoom.move_count || 0) + 1;
+  const { whiteCaptured, blackCaptured } = currentCapturedArrays(move);
 
-  const winner =
-    state.chess.isCheckmate()
-      ? (move.color === "w" ? "w" : "b")
-      : null;
+  let winner = null;
+  let endedReason = null;
+  let nextStatus = "active";
 
-  const nextStatus = winner ? "finished" : "active";
+  if (state.chess.isCheckmate()) {
+    winner = move.color;
+    endedReason = "checkmate";
+    nextStatus = "finished";
+  } else if (state.chess.isStalemate()) {
+    endedReason = "stalemate";
+    nextStatus = "finished";
+  } else if (state.chess.isDraw()) {
+    endedReason = "draw";
+    nextStatus = "finished";
+  }
 
   const { error: roomError } = await supabase
     .from("chess_rooms")
@@ -608,10 +685,12 @@ async function persistMove(move) {
       last_move: move.san,
       winner,
       status: nextStatus,
+      ended_reason: endedReason,
       white_time_ms: Math.max(0, Math.floor(whiteTime)),
       black_time_ms: Math.max(0, Math.floor(blackTime)),
-      last_clock_at: nowIso,
-      ended_reason: winner ? "checkmate" : null
+      white_captured: whiteCaptured,
+      black_captured: blackCaptured,
+      last_clock_at: nowIso
     })
     .eq("id", state.activeRoom.id);
 
@@ -638,8 +717,29 @@ async function persistMove(move) {
     return;
   }
 
-  if (winner) {
+  if (endedReason === "checkmate") {
     showSuccess(`Checkmate. ${winner === "w" ? "White" : "Black"} wins.`);
+  } else if (endedReason === "stalemate") {
+    showSuccess("Stalemate.");
+  } else if (endedReason === "draw") {
+    showSuccess("Draw.");
+  }
+}
+
+function flipBoard() {
+  state.orientation = state.orientation === "white" ? "black" : "white";
+  renderBoard();
+}
+
+async function copyInviteLink() {
+  const text = el("invite-link")?.textContent || "";
+  if (!text || text.includes("Open a room")) return;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    showSuccess("Invite link copied.");
+  } catch {
+    showError("Could not copy invite link.");
   }
 }
 
@@ -653,6 +753,8 @@ function bindUI() {
   });
   el("resign-btn")?.addEventListener("click", resignGame);
   el("rematch-btn")?.addEventListener("click", requestRematch);
+  el("flip-board-btn")?.addEventListener("click", flipBoard);
+  el("copy-link-btn")?.addEventListener("click", copyInviteLink);
 }
 
 async function boot() {
@@ -668,7 +770,7 @@ async function boot() {
     }
 
     startClockTicker();
-    showSuccess("Upgraded multiplayer chess pack loaded.");
+    showSuccess("Elite chess pack loaded.");
   } catch (error) {
     console.error("[chess-client] boot error:", error);
     showError(error.message || "Failed to load chess.");
