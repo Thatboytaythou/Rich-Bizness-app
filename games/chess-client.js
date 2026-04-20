@@ -19,7 +19,8 @@ const state = {
   moves: [],
   selectedSquare: null,
   chess: new Chess(),
-  realtimeChannel: null
+  realtimeChannel: null,
+  clockInterval: null
 };
 
 function el(id) {
@@ -69,12 +70,45 @@ function getTurnLabel(turn) {
   return turn === "b" ? "Black" : "White";
 }
 
-function canMovePiece(pieceColor) {
-  if (!state.activeRoom || !state.user) return false;
-  const role = getRoleForUser(state.activeRoom);
-  if (role === "White" && pieceColor === "w" && state.activeRoom.turn === "w") return true;
-  if (role === "Black" && pieceColor === "b" && state.activeRoom.turn === "b") return true;
-  return false;
+function formatClock(ms = 0) {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function getLiveClockState(room) {
+  if (!room) {
+    return { white: 300000, black: 300000 };
+  }
+
+  let white = Number(room.white_time_ms || 0);
+  let black = Number(room.black_time_ms || 0);
+
+  if (room.status === "active" && room.last_clock_at) {
+    const delta = Math.max(0, Date.now() - new Date(room.last_clock_at).getTime());
+    if (room.turn === "w") white -= delta;
+    if (room.turn === "b") black -= delta;
+  }
+
+  return {
+    white: Math.max(0, white),
+    black: Math.max(0, black)
+  };
+}
+
+function setInviteLink() {
+  const room = state.activeRoom;
+  const box = el("invite-link");
+  if (!box) return;
+
+  if (!room?.slug) {
+    box.textContent = "Open a room to generate an invite link.";
+    return;
+  }
+
+  const url = `${window.location.origin}/games/chess/index.html?room=${encodeURIComponent(room.slug)}`;
+  box.textContent = url;
 }
 
 function setMeta() {
@@ -83,6 +117,48 @@ function setMeta() {
   el("room-status").textContent = room?.status || "Waiting";
   el("room-turn").textContent = getTurnLabel(room?.turn || "w");
   el("room-role").textContent = getRoleForUser(room);
+  setInviteLink();
+  updateClockDisplay();
+}
+
+function updateClockDisplay() {
+  const room = state.activeRoom;
+  const whiteCard = el("white-clock-card");
+  const blackCard = el("black-clock-card");
+  const whiteClock = el("white-clock");
+  const blackClock = el("black-clock");
+
+  if (!whiteClock || !blackClock) return;
+
+  const clocks = getLiveClockState(room);
+  whiteClock.textContent = formatClock(clocks.white);
+  blackClock.textContent = formatClock(clocks.black);
+
+  whiteCard?.classList.toggle("active", room?.turn === "w" && room?.status === "active");
+  blackCard?.classList.toggle("active", room?.turn === "b" && room?.status === "active");
+}
+
+function startClockTicker() {
+  stopClockTicker();
+  state.clockInterval = setInterval(() => {
+    updateClockDisplay();
+  }, 250);
+}
+
+function stopClockTicker() {
+  if (state.clockInterval) {
+    clearInterval(state.clockInterval);
+    state.clockInterval = null;
+  }
+}
+
+function canMovePiece(pieceColor) {
+  if (!state.activeRoom || !state.user) return false;
+  const role = getRoleForUser(state.activeRoom);
+  if (state.activeRoom.status !== "active") return false;
+  if (role === "White" && pieceColor === "w" && state.activeRoom.turn === "w") return true;
+  if (role === "Black" && pieceColor === "b" && state.activeRoom.turn === "b") return true;
+  return false;
 }
 
 function renderBoard() {
@@ -143,7 +219,7 @@ function renderRooms() {
   list.innerHTML = state.rooms.map((room) => `
     <button type="button" class="room-item ${state.activeRoom?.id === room.id ? "active" : ""}" data-room-id="${room.id}">
       <strong>${room.title}</strong>
-      <span>${room.slug} • ${room.status} • ${getTurnLabel(room.turn)}</span>
+      <span>${room.slug} • ${room.status} • ${room.time_control}</span>
     </button>
   `).join("");
 
@@ -228,6 +304,17 @@ async function openRoom(roomId) {
   subscribeToRoom(roomId);
 }
 
+async function openRoomBySlug(slug) {
+  const { data, error } = await supabase
+    .from("chess_rooms")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  if (error) throw error;
+  await openRoom(data.id);
+}
+
 function subscribeToRoom(roomId) {
   if (state.realtimeChannel) {
     supabase.removeChannel(state.realtimeChannel);
@@ -266,7 +353,12 @@ async function createRoom() {
   const title = el("create-room-title").value.trim() || "Chess Room";
   const slugInput = el("create-room-slug").value.trim();
   const visibility = el("create-room-visibility").value || "public";
+  const timeControl = el("create-room-time").value || "5|0";
   const slug = slugify(slugInput || title || `room-${Date.now()}`);
+
+  const [minutesText, incrementText] = timeControl.split("|");
+  const minutes = Number(minutesText || 5);
+  const incrementSeconds = Number(incrementText || 0);
 
   const { data, error } = await supabase
     .from("chess_rooms")
@@ -277,7 +369,12 @@ async function createRoom() {
       visibility,
       fen: "start",
       turn: "w",
-      status: "waiting"
+      status: "waiting",
+      time_control: timeControl,
+      increment_ms: incrementSeconds * 1000,
+      white_time_ms: minutes * 60 * 1000,
+      black_time_ms: minutes * 60 * 1000,
+      last_clock_at: new Date().toISOString()
     })
     .select()
     .single();
@@ -320,7 +417,8 @@ async function joinColor(color) {
     .from("chess_rooms")
     .update({
       ...patch,
-      status: nextStatus
+      status: nextStatus,
+      last_clock_at: new Date().toISOString()
     })
     .eq("id", state.activeRoom.id);
 
@@ -331,6 +429,104 @@ async function joinColor(color) {
 
   showSuccess(color === "w" ? "Joined white." : "Joined black.");
   await openRoom(state.activeRoom.id);
+}
+
+async function resignGame() {
+  clearMessages();
+
+  if (!state.activeRoom || !state.user?.id) {
+    showError("Open a room first.");
+    return;
+  }
+
+  const role = getRoleForUser(state.activeRoom);
+  if (role !== "White" && role !== "Black") {
+    showError("Only players can resign.");
+    return;
+  }
+
+  const winner = role === "White" ? "b" : "w";
+
+  const { error } = await supabase
+    .from("chess_rooms")
+    .update({
+      status: "finished",
+      winner,
+      ended_reason: "resignation"
+    })
+    .eq("id", state.activeRoom.id);
+
+  if (error) {
+    showError(error.message || "Could not resign.");
+    return;
+  }
+
+  showSuccess(`${role} resigned. ${winner === "w" ? "White" : "Black"} wins.`);
+}
+
+async function requestRematch() {
+  clearMessages();
+
+  if (!state.activeRoom || !state.user?.id) {
+    showError("Open a room first.");
+    return;
+  }
+
+  if (state.activeRoom.rematch_requested_by && state.activeRoom.rematch_requested_by !== state.user.id) {
+    const { error: resetMovesError } = await supabase
+      .from("chess_moves")
+      .delete()
+      .eq("room_id", state.activeRoom.id);
+
+    if (resetMovesError) {
+      showError(resetMovesError.message || "Could not clear old moves.");
+      return;
+    }
+
+    const [minutesText, incrementText] = String(state.activeRoom.time_control || "5|0").split("|");
+    const minutes = Number(minutesText || 5);
+    const incrementSeconds = Number(incrementText || 0);
+
+    const { error } = await supabase
+      .from("chess_rooms")
+      .update({
+        fen: "start",
+        turn: "w",
+        winner: null,
+        status: "active",
+        move_count: 0,
+        last_move: null,
+        ended_reason: null,
+        rematch_requested_by: null,
+        white_time_ms: minutes * 60 * 1000,
+        black_time_ms: minutes * 60 * 1000,
+        increment_ms: incrementSeconds * 1000,
+        last_clock_at: new Date().toISOString()
+      })
+      .eq("id", state.activeRoom.id);
+
+    if (error) {
+      showError(error.message || "Could not start rematch.");
+      return;
+    }
+
+    showSuccess("Rematch started.");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("chess_rooms")
+    .update({
+      rematch_requested_by: state.user.id
+    })
+    .eq("id", state.activeRoom.id);
+
+  if (error) {
+    showError(error.message || "Could not request rematch.");
+    return;
+  }
+
+  showSuccess("Rematch requested.");
 }
 
 async function onSquareClick(squareName) {
@@ -383,6 +579,15 @@ async function persistMove(move) {
     return;
   }
 
+  const clocksBefore = getLiveClockState(state.activeRoom);
+  const nowIso = new Date().toISOString();
+
+  let whiteTime = clocksBefore.white;
+  let blackTime = clocksBefore.black;
+
+  if (move.color === "w") whiteTime += Number(state.activeRoom.increment_ms || 0);
+  if (move.color === "b") blackTime += Number(state.activeRoom.increment_ms || 0);
+
   const nextFen = state.chess.fen();
   const nextTurn = state.chess.turn();
   const nextMoveNumber = Number(state.activeRoom.move_count || 0) + 1;
@@ -392,9 +597,7 @@ async function persistMove(move) {
       ? (move.color === "w" ? "w" : "b")
       : null;
 
-  const nextStatus = winner
-    ? "finished"
-    : "active";
+  const nextStatus = winner ? "finished" : "active";
 
   const { error: roomError } = await supabase
     .from("chess_rooms")
@@ -404,7 +607,11 @@ async function persistMove(move) {
       move_count: nextMoveNumber,
       last_move: move.san,
       winner,
-      status: nextStatus
+      status: nextStatus,
+      white_time_ms: Math.max(0, Math.floor(whiteTime)),
+      black_time_ms: Math.max(0, Math.floor(blackTime)),
+      last_clock_at: nowIso,
+      ended_reason: winner ? "checkmate" : null
     })
     .eq("id", state.activeRoom.id);
 
@@ -444,6 +651,8 @@ function bindUI() {
     if (state.activeRoom?.id) await openRoom(state.activeRoom.id);
     else await loadRooms();
   });
+  el("resign-btn")?.addEventListener("click", resignGame);
+  el("rematch-btn")?.addEventListener("click", requestRematch);
 }
 
 async function boot() {
@@ -451,11 +660,26 @@ async function boot() {
     bindUI();
     await loadSession();
     await loadRooms();
-    showSuccess("Multiplayer chess pack loaded.");
+
+    const params = new URLSearchParams(window.location.search);
+    const roomSlug = params.get("room");
+    if (roomSlug) {
+      await openRoomBySlug(roomSlug);
+    }
+
+    startClockTicker();
+    showSuccess("Upgraded multiplayer chess pack loaded.");
   } catch (error) {
     console.error("[chess-client] boot error:", error);
     showError(error.message || "Failed to load chess.");
   }
 }
+
+window.addEventListener("beforeunload", () => {
+  stopClockTicker();
+  if (state.realtimeChannel) {
+    supabase.removeChannel(state.realtimeChannel);
+  }
+});
 
 document.addEventListener("DOMContentLoaded", boot);
