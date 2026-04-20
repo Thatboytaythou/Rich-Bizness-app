@@ -273,6 +273,7 @@
 
     button:hover{transform:translateY(-1px)}
     button:active{transform:translateY(1px) scale(.99)}
+    button:disabled{opacity:.55;cursor:not-allowed}
 
     .btn-primary{
       color:#062414;
@@ -288,11 +289,6 @@
       color:var(--text);
       background:#151d19;
       border:1px solid var(--line);
-    }
-
-    .btn-danger{
-      color:#fff;
-      background:linear-gradient(135deg,#ffacac,#ff7f7f);
     }
 
     .audio-shell{
@@ -375,11 +371,6 @@
       padding:14px 14px;
       font:inherit;
       outline:none;
-    }
-
-    .search-row input:focus{
-      border-color:var(--line-strong);
-      box-shadow:0 0 0 3px rgba(121,242,168,.08);
     }
 
     .station-list{
@@ -470,23 +461,15 @@
     }
 
     @media (max-width: 1180px){
-      .hero{
-        grid-template-columns:1fr;
-      }
+      .hero{grid-template-columns:1fr}
     }
 
     @media (max-width: 860px){
-      .player-grid{
-        grid-template-columns:1fr;
-      }
+      .player-grid{grid-template-columns:1fr}
     }
 
     @media (max-width: 680px){
-      .controls,
-      .stats,
-      .search-row{
-        grid-template-columns:1fr;
-      }
+      .controls,.stats,.search-row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -516,7 +499,7 @@
       <div class="card">
         <div class="card-header">
           <h2>Now playing</h2>
-          <p>Live station queue, active track, episode playback, and replay controls.</p>
+          <p>Live station queue, active track, episode playback, and real radio controls.</p>
         </div>
         <div class="card-body">
           <div class="player-grid">
@@ -531,9 +514,9 @@
 
             <div class="player-copy">
               <div class="eyebrow" id="modeLabel">No station</div>
-              <h2 class="title" id="title">No playlist stations yet</h2>
+              <h2 class="title" id="title">No radio station loaded yet</h2>
               <p class="subtitle" id="subtitle">
-                Create playlists and add tracks with real audio URLs, or load podcast shows and episodes into the radio lane.
+                Open a playlist station or podcast show and Rich Bizness Radio will start pulling real audio from your database.
               </p>
 
               <div class="meta-row">
@@ -566,7 +549,7 @@
       <div class="card">
         <div class="card-header">
           <h3>Station lane</h3>
-          <p>Switch between real playlists and real podcast shows.</p>
+          <p>Switch between real playlist radio and real podcast radio.</p>
         </div>
         <div class="card-body">
           <div class="stats">
@@ -596,7 +579,7 @@
           </div>
 
           <div class="search-row">
-            <input id="stationSearch" type="text" placeholder="Search playlists or podcast shows..." />
+            <input id="stationSearch" type="text" placeholder="Search playlist stations or podcast shows..." />
             <button class="btn-dark" id="reloadBtn">Reload Lane</button>
           </div>
 
@@ -638,8 +621,7 @@
       queue: [],
       currentIndex: 0,
       currentStationId: null,
-      currentStationTitle: null,
-      currentStationArtist: null
+      currentStationTitle: null
     };
 
     const els = {
@@ -700,38 +682,23 @@
     function normalizePlaylist(row) {
       return {
         id: row.id,
-        title: row.title || row.name || "Untitled Playlist",
+        title: row.title || "Untitled Playlist",
         description: row.description || "No playlist description yet.",
-        cover_url: row.cover_url || row.image_url || FALLBACK_COVER,
-        artist_name: row.artist_name || row.owner_name || "Rich Bizness",
-        artist_id: row.artist_id || row.owner_id || null,
-        category: row.category || "all",
-        is_featured: Boolean(row.is_featured),
-        created_at: row.created_at || null
-      };
-    }
-
-    function normalizePlaylistTrack(row) {
-      return {
-        id: row.id,
-        title: row.title || "Untitled Track",
-        description: row.description || "Playlist track",
-        audio_url: row.audio_url || row.file_url || "",
-        cover_url: row.cover_url || row.image_url || FALLBACK_COVER,
-        artist_name: row.artist_name || "Rich Bizness",
-        type: "track"
+        cover_url: row.cover_url || FALLBACK_COVER,
+        is_public: row.is_public !== false
       };
     }
 
     function normalizeShow(row) {
       return {
         id: row.id,
-        title: row.title || row.name || "Untitled Podcast Show",
+        title: row.title || "Untitled Podcast Show",
         description: row.description || "No show description yet.",
-        cover_url: row.cover_url || row.image_url || FALLBACK_COVER,
-        creator_name: row.creator_name || row.host_name || "Rich Bizness",
-        creator_id: row.creator_id || row.user_id || null,
-        created_at: row.created_at || null
+        cover_url: row.cover_url || FALLBACK_COVER,
+        creator_id: row.creator_id || null,
+        is_featured: Boolean(row.is_featured),
+        visibility: row.visibility || "public",
+        episode_count: row.episode_count || 0
       };
     }
 
@@ -740,9 +707,11 @@
         id: row.id,
         title: row.title || "Untitled Episode",
         description: row.description || "Podcast episode",
-        audio_url: row.audio_url || row.file_url || "",
-        cover_url: row.cover_url || row.image_url || FALLBACK_COVER,
-        artist_name: row.creator_name || row.host_name || "Rich Bizness",
+        audio_url: row.audio_url || "",
+        cover_url: row.cover_url || FALLBACK_COVER,
+        artist_name: "Rich Bizness",
+        episode_number: row.episode_number || 0,
+        duration_seconds: row.duration_seconds || 0,
         type: "episode"
       };
     }
@@ -750,7 +719,8 @@
     async function loadPlaylists() {
       const { data, error } = await supabase
         .from("playlists")
-        .select("*")
+        .select("id,title,description,cover_url,is_public")
+        .eq("is_public", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -760,11 +730,74 @@
     async function loadShows() {
       const { data, error } = await supabase
         .from("podcast_shows")
-        .select("*")
+        .select("id,creator_id,title,description,cover_url,is_featured,visibility,episode_count")
+        .eq("visibility", "public")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       state.shows = (data || []).map(normalizeShow);
+    }
+
+    async function loadPlaylistQueue(playlistId) {
+      const { data, error } = await supabase
+        .from("playlist_tracks")
+        .select(`
+          sort_order,
+          track_id,
+          tracks:track_id (
+            id,
+            title,
+            artist_name,
+            description,
+            cover_url,
+            audio_url,
+            duration_seconds
+          )
+        `)
+        .eq("playlist_id", playlistId)
+        .order("sort_order", { ascending: true });
+
+      if (error) throw error;
+
+      return (data || [])
+        .map((row) => {
+          const track = Array.isArray(row.tracks) ? row.tracks[0] : row.tracks;
+          if (!track) return null;
+
+          return {
+            id: track.id,
+            title: track.title || "Untitled Track",
+            description: track.description || "Playlist track",
+            audio_url: track.audio_url || "",
+            cover_url: track.cover_url || FALLBACK_COVER,
+            artist_name: track.artist_name || "Rich Bizness",
+            duration_seconds: track.duration_seconds || 0,
+            type: "track"
+          };
+        })
+        .filter(Boolean);
+    }
+
+    async function loadPodcastQueue(showId) {
+      const { data, error } = await supabase
+        .from("podcast_episodes")
+        .select(`
+          id,
+          show_id,
+          title,
+          description,
+          audio_url,
+          cover_url,
+          episode_number,
+          duration_seconds,
+          is_published
+        `)
+        .eq("show_id", showId)
+        .eq("is_published", true)
+        .order("episode_number", { ascending: true });
+
+      if (error) throw error;
+      return (data || []).map(normalizeEpisode);
     }
 
     function renderStats() {
@@ -780,7 +813,7 @@
       if (state.mode === "music") {
         return state.playlists.filter((item) => {
           if (!q) return true;
-          return [item.title, item.description, item.artist_name, item.category]
+          return [item.title, item.description]
             .filter(Boolean)
             .some((value) => String(value).toLowerCase().includes(q));
         });
@@ -788,7 +821,7 @@
 
       return state.shows.filter((item) => {
         if (!q) return true;
-        return [item.title, item.description, item.creator_name]
+        return [item.title, item.description]
           .filter(Boolean)
           .some((value) => String(value).toLowerCase().includes(q));
       });
@@ -820,7 +853,10 @@
             </div>
 
             <div class="station-meta">
-              <span class="pill">${escapeHtml(state.mode === "music" ? item.artist_name : item.creator_name)}</span>
+              ${state.mode === "music"
+                ? `<span class="pill">${item.is_public ? "public" : "private"}</span>`
+                : `<span class="pill">${escapeHtml(item.visibility || "public")}</span>`
+              }
               ${isActive ? '<span class="pill">live</span>' : ''}
             </div>
 
@@ -828,11 +864,6 @@
               <button class="btn-primary station-play-btn" data-id="${item.id}">
                 ${isActive ? "Reload Station" : "Play Station"}
               </button>
-              ${
-                state.mode === "music"
-                  ? `<a class="pill" href="/playlists.html">Open Playlist Lane</a>`
-                  : `<a class="pill" href="/podcast.html">Open Podcast Lane</a>`
-              }
             </div>
           </div>
         `;
@@ -887,7 +918,7 @@
         els.title.textContent = state.mode === "music" ? "No playlist stations yet" : "No podcast shows yet";
         els.subtitle.textContent =
           state.mode === "music"
-            ? "Create playlists and add tracks with real audio URLs to power radio."
+            ? "Create playlists and connect real tracks to power radio."
             : "Create podcast shows and upload real episodes to power podcast radio.";
         els.metaArtist.textContent = "Rich Bizness";
         els.metaCount.textContent = "0 items";
@@ -901,11 +932,7 @@
         return;
       }
 
-      els.modeLabel.textContent =
-        state.mode === "music"
-          ? `Playlist Station`
-          : `Podcast Show`;
-
+      els.modeLabel.textContent = state.mode === "music" ? "Playlist Station" : "Podcast Show";
       els.title.textContent = current.title || "Untitled";
       els.subtitle.textContent = current.description || "";
       els.metaArtist.textContent = current.artist_name || "Rich Bizness";
@@ -944,28 +971,6 @@
       playCurrent();
     }
 
-    async function loadPlaylistQueue(playlistId) {
-      const { data, error } = await supabase
-        .from("playlist_tracks")
-        .select("*")
-        .eq("playlist_id", playlistId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return (data || []).map(normalizePlaylistTrack);
-    }
-
-    async function loadPodcastQueue(showId) {
-      const { data, error } = await supabase
-        .from("podcast_episodes")
-        .select("*")
-        .eq("show_id", showId)
-        .order("created_at", { ascending: true });
-
-      if (error) throw error;
-      return (data || []).map(normalizeEpisode);
-    }
-
     async function loadStation(stationId) {
       clearBanner();
 
@@ -974,13 +979,11 @@
           const station = state.playlists.find((item) => String(item.id) === String(stationId));
           state.currentStationId = stationId;
           state.currentStationTitle = station?.title || "Playlist Station";
-          state.currentStationArtist = station?.artist_name || "Rich Bizness";
           state.queue = await loadPlaylistQueue(stationId);
         } else {
           const station = state.shows.find((item) => String(item.id) === String(stationId));
           state.currentStationId = stationId;
           state.currentStationTitle = station?.title || "Podcast Show";
-          state.currentStationArtist = station?.creator_name || "Rich Bizness";
           state.queue = await loadPodcastQueue(stationId);
         }
 
@@ -1003,7 +1006,6 @@
       state.mode = mode;
       state.currentStationId = null;
       state.currentStationTitle = null;
-      state.currentStationArtist = null;
       state.queue = [];
       state.currentIndex = 0;
 
@@ -1017,6 +1019,7 @@
 
     async function boot() {
       try {
+        clearBanner();
         await Promise.all([loadPlaylists(), loadShows()]);
         renderStats();
         renderStationList();
@@ -1028,9 +1031,7 @@
         const showId = params.get("show");
         const mode = params.get("mode");
 
-        if (mode === "podcast") {
-          setMode("podcast");
-        }
+        if (mode === "podcast") setMode("podcast");
 
         if (playlistId) {
           setMode("music");
