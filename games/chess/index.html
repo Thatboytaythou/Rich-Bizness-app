@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Rich Chess — Rich Bizness</title>
+  <style>
+    :root {
+      --bg-1: #04110b;
+      --bg-2: #081b12;
+      --panel: rgba(10, 20, 14, 0.84);
+      --line: rgba(89, 255, 164, 0.22);
+      --line-strong: rgba(89, 255, 164, 0.42);
+      --text: #ecfff4;
+      --muted: #a5c9b4;
+      --green: #43f59b;
+      --green-2: #18c972;
+      --gold: #f7d96a;
+      --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
+      --radius-xl: 26px;
+      --radius-lg: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Inter, system-ui, sans-serif;
+      background:
+        radial-gradient(circle at top, rgba(67,245,155,0.12), transparent 24%),
+        linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      color: var(--text);
+    }
+
+    .page {
+      width: min(1400px, calc(100% - 20px));
+      margin: 0 auto;
+      padding: 12px 0 28px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .topbar, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: var(--green);
+      border: 1px solid var(--line-strong);
+      background: linear-gradient(135deg, rgba(67,245,155,0.16), rgba(24,201,114,0.08));
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .brand-copy p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn, .pill, input, select {
+      min-height: 42px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      padding: 10px 14px;
+      font: inherit;
+    }
+
+    .btn {
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--green), var(--green-2));
+      color: #052113;
+      border-color: transparent;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 14px;
+    }
+
+    .panel-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-head h2, .panel-head h3 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    .panel-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .panel-body {
+      padding: 18px 20px;
+    }
+
+    .board-wrap {
+      display: grid;
+      gap: 14px;
+    }
+
+    .board-meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .meta-card {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .meta-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .meta-card strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .board {
+      width: 100%;
+      max-width: 720px;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      border: 1px solid var(--line-strong);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin: 0 auto;
+    }
+
+    .square {
+      display: grid;
+      place-items: center;
+      position: relative;
+      font-size: clamp(24px, 3vw, 54px);
+      cursor: pointer;
+    }
+
+    .square.light {
+      background: #d9e4d7;
+      color: #162018;
+    }
+
+    .square.dark {
+      background: #56725d;
+      color: #f8fffa;
+    }
+
+    .square.selected {
+      outline: 4px solid rgba(255, 211, 77, 0.88);
+      outline-offset: -4px;
+    }
+
+    .square.move-dot::after {
+      content: "";
+      width: 18%;
+      height: 18%;
+      border-radius: 999px;
+      background: rgba(24, 201, 114, 0.74);
+      position: absolute;
+    }
+
+    .piece {
+      line-height: 1;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.24));
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .room-list, .move-list {
+      display: grid;
+      gap: 10px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    .room-item, .move-item {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .room-item.active {
+      border-color: var(--line-strong);
+      background: rgba(67,245,155,0.08);
+    }
+
+    .room-item strong, .move-item strong {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .room-item span, .move-item span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .notice {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+    }
+
+    .notice.error {
+      background: rgba(255, 90, 115, 0.1);
+      color: #ffd0d8;
+      border: 1px solid rgba(255, 90, 115, 0.24);
+    }
+
+    .notice.success {
+      background: rgba(67, 245, 155, 0.1);
+      color: #d8ffea;
+      border: 1px solid rgba(67, 245, 155, 0.24);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    @media (max-width: 1100px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .board-meta, .row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .board-meta, .row {
+        grid-template-columns: 1fr;
+      }
+
+      .square {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Chess</h1>
+          <p>Multiplayer rooms • Realtime board • Creator challenge chess</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <a class="pill" href="/gaming.html">Back to Arcade</a>
+      </div>
+    </header>
+
+    <div id="chess-error" class="notice error"></div>
+    <div id="chess-success" class="notice success"></div>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Live Board</h2>
+          <p>Create a room, join white or black, and play live multiplayer chess.</p>
+        </div>
+
+        <div class="panel-body">
+          <div class="board-wrap">
+            <div class="board-meta">
+              <div class="meta-card">
+                <span>Room</span>
+                <strong id="room-title">No Room</strong>
+              </div>
+              <div class="meta-card">
+                <span>Status</span>
+                <strong id="room-status">Waiting</strong>
+              </div>
+              <div class="meta-card">
+                <span>Turn</span>
+                <strong id="room-turn">White</strong>
+              </div>
+              <div class="meta-card">
+                <span>You</span>
+                <strong id="room-role">Viewer</strong>
+              </div>
+            </div>
+
+            <div id="chess-board" class="board"></div>
+
+            <div class="actions">
+              <button class="btn primary" id="join-white-btn" type="button">Join White</button>
+              <button class="btn primary" id="join-black-btn" type="button">Join Black</button>
+              <button class="btn" id="refresh-room-btn" type="button">Refresh</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Create Room</h3>
+            <p>Spin up a new chess room for a challenge or private match.</p>
+          </div>
+
+          <div class="panel-body">
+            <div class="form-grid">
+              <input id="create-room-title" type="text" placeholder="High Stakes Match" />
+              <div class="row">
+                <input id="create-room-slug" type="text" placeholder="high-stakes-match" />
+                <select id="create-room-visibility">
+                  <option value="public">public</option>
+                  <option value="private">private</option>
+                </select>
+              </div>
+              <button class="btn primary" id="create-room-btn" type="button">Create Room</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Rooms</h3>
+            <p>Open a room and sync into the live board.</p>
+          </div>
+
+          <div class="panel-body">
+            <div id="room-list" class="room-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Moves</h3>
+            <p>Live move history for the active room.</p>
+          </div>
+
+          <div class="panel-body">
+            <div id="move-list" class="move-list"></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
+  <script type="module" src="/src/gaming/chess-client.js"></script>
+</body>
+</html>
