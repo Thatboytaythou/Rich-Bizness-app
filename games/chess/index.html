@@ -6,7 +6,7 @@
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
-  <title>Rich Chess — Rich Bizness</title>
+  <title>Rich Chess Elite — Rich Bizness</title>
   <style>
     :root {
       --bg-1: #04110b;
@@ -42,7 +42,7 @@
     }
 
     .page {
-      width: min(1440px, calc(100% - 20px));
+      width: min(1480px, calc(100% - 20px));
       margin: 0 auto;
       padding: 12px 0 28px;
       display: grid;
@@ -131,7 +131,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 1.05fr 0.95fr;
+      grid-template-columns: 1.08fr 0.92fr;
       gap: 14px;
     }
 
@@ -197,7 +197,7 @@
 
     .board-meta {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(5, minmax(0, 1fr));
       gap: 10px;
     }
 
@@ -223,9 +223,40 @@
       line-height: 1.1;
     }
 
+    .captured-rails {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .captured-box {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+      min-height: 72px;
+    }
+
+    .captured-box span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .captured-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 24px;
+      line-height: 1;
+    }
+
     .board {
       width: 100%;
-      max-width: 720px;
+      max-width: 760px;
       aspect-ratio: 1 / 1;
       display: grid;
       grid-template-columns: repeat(8, 1fr);
@@ -283,7 +314,7 @@
     .room-list, .move-list {
       display: grid;
       gap: 10px;
-      max-height: 280px;
+      max-height: 260px;
       overflow: auto;
     }
 
@@ -350,25 +381,26 @@
       color: var(--muted);
       font-size: 12px;
       line-height: 1.6;
+      margin-bottom: 10px;
     }
 
-    @media (max-width: 1100px) {
+    @media (max-width: 1180px) {
       .layout {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 700px) {
-      .board-meta, .row, .clock-row {
-        grid-template-columns: 1fr 1fr;
+    @media (max-width: 760px) {
+      .board-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .row, .clock-row, .captured-rails {
+        grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 520px) {
-      .board-meta, .row, .clock-row {
-        grid-template-columns: 1fr;
-      }
-
       .square {
         font-size: 34px;
       }
@@ -381,8 +413,8 @@
       <div class="brand">
         <div class="brand-mark">RB</div>
         <div class="brand-copy">
-          <h1>Rich Chess</h1>
-          <p>Multiplayer rooms • Realtime board • Creator challenge chess</p>
+          <h1>Rich Chess Elite</h1>
+          <p>Realtime multiplayer • Timers • Invite rooms • Spectator-ready</p>
         </div>
       </div>
 
@@ -397,8 +429,8 @@
     <div class="layout">
       <section class="panel">
         <div class="panel-head">
-          <h2>Live Board</h2>
-          <p>Create a room, join white or black, and play live multiplayer chess.</p>
+          <h2>Elite Board</h2>
+          <p>Create a room, join a side, and run live chess inside Rich Bizness.</p>
         </div>
 
         <div class="panel-body">
@@ -431,6 +463,21 @@
                 <span>You</span>
                 <strong id="room-role">Viewer</strong>
               </div>
+              <div class="meta-card">
+                <span>Type</span>
+                <strong id="room-type">Casual</strong>
+              </div>
+            </div>
+
+            <div class="captured-rails">
+              <div class="captured-box">
+                <span>Captured by White</span>
+                <div id="white-captured" class="captured-row"></div>
+              </div>
+              <div class="captured-box">
+                <span>Captured by Black</span>
+                <div id="black-captured" class="captured-row"></div>
+              </div>
             </div>
 
             <div id="chess-board" class="board"></div>
@@ -438,6 +485,7 @@
             <div class="actions">
               <button class="btn primary" id="join-white-btn" type="button">Join White</button>
               <button class="btn primary" id="join-black-btn" type="button">Join Black</button>
+              <button class="btn" id="flip-board-btn" type="button">Flip Board</button>
               <button class="btn" id="refresh-room-btn" type="button">Refresh</button>
               <button class="btn danger" id="resign-btn" type="button">Resign</button>
               <button class="btn" id="rematch-btn" type="button">Rematch</button>
@@ -450,7 +498,7 @@
         <section class="panel">
           <div class="panel-head">
             <h3>Create Room</h3>
-            <p>Spin up a new chess room for a challenge or private match.</p>
+            <p>Spin up a new elite chess room.</p>
           </div>
 
           <div class="panel-body">
@@ -470,8 +518,12 @@
                   <option value="10|0">10|0</option>
                   <option value="15|10">15|10</option>
                 </select>
-                <button class="btn primary" id="create-room-btn" type="button">Create Room</button>
+                <select id="create-room-type">
+                  <option value="casual">casual</option>
+                  <option value="ranked">ranked</option>
+                </select>
               </div>
+              <button class="btn primary" id="create-room-btn" type="button">Create Room</button>
             </div>
           </div>
         </section>
@@ -484,6 +536,7 @@
 
           <div class="panel-body">
             <div id="invite-link" class="invite-box">Open a room to generate an invite link.</div>
+            <button class="btn" id="copy-link-btn" type="button">Copy Invite Link</button>
           </div>
         </section>
 
