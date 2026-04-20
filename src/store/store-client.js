@@ -5,25 +5,21 @@ const supabase = createClient(
   window.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
+function getBanner() {
+  return document.getElementById("store-banner");
+}
+
 function showBanner(message, type = "success") {
-  let banner = document.getElementById("store-banner");
-
-  if (!banner) {
-    banner = document.createElement("div");
-    banner.id = "store-banner";
-    banner.style.margin = "0 0 16px 0";
-    banner.style.padding = "14px 16px";
-    banner.style.borderRadius = "14px";
-    banner.style.fontWeight = "700";
-    banner.style.border = "1px solid transparent";
-
-    const container = document.querySelector(".container");
-    const grid = document.getElementById("products");
-    container.insertBefore(banner, grid);
-  }
+  const banner = getBanner();
+  if (!banner) return;
 
   banner.textContent = message;
   banner.style.display = "block";
+  banner.style.margin = "0 0 16px 0";
+  banner.style.padding = "14px 16px";
+  banner.style.borderRadius = "14px";
+  banner.style.fontWeight = "700";
+  banner.style.border = "1px solid transparent";
 
   if (type === "error") {
     banner.style.background = "rgba(255, 90, 115, 0.12)";
@@ -36,12 +32,22 @@ function showBanner(message, type = "success") {
   }
 }
 
+function clearBanner() {
+  const banner = getBanner();
+  if (!banner) return;
+  banner.style.display = "none";
+  banner.textContent = "";
+}
+
 function checkCheckoutState() {
   const params = new URLSearchParams(window.location.search);
   const checkoutState = params.get("checkout");
 
   if (checkoutState === "success") {
-    showBanner("Payment completed successfully.", "success");
+    showBanner(
+      "Payment completed successfully. Your order is being confirmed.",
+      "success"
+    );
   }
 
   if (checkoutState === "cancel") {
@@ -62,33 +68,61 @@ async function loadProducts() {
     return [];
   }
 
+  console.log("[store] loaded products:", data);
   return data || [];
+}
+
+function getProductTitle(product) {
+  return (
+    product.title ||
+    product.name ||
+    product.description ||
+    "Untitled Product"
+  );
+}
+
+function getProductPrice(product) {
+  const cents = Number(product.price_cents ?? 0);
+  return Number.isFinite(cents) ? (cents / 100).toFixed(2) : "0.00";
+}
+
+function getProductImage(product) {
+  return (
+    product.image_url ||
+    "/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png"
+  );
 }
 
 async function createCheckout(productId) {
   try {
+    clearBanner();
+
+    if (!productId) {
+      throw new Error("Missing product id.");
+    }
+
     const response = await fetch("/api/create-store-checkout-session.js", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        productId,
+        productId: Number(productId),
         quantity: 1
       })
     });
 
-    const data = await response.json();
+    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to start checkout");
     }
 
-    if (!data.url) {
+    if (!data.url || typeof data.url !== "string") {
       throw new Error("Missing checkout url");
     }
 
-    window.location.href = data.url;
+    window.location.assign(data.url);
   } catch (error) {
     console.error("[store] createCheckout error:", error);
     showBanner(error.message || "Could not start checkout.", "error");
@@ -97,37 +131,47 @@ async function createCheckout(productId) {
 
 function renderProducts(products) {
   const container = document.getElementById("products");
+  if (!container) return;
 
   if (!products.length) {
     container.innerHTML = `<div class="empty">No products yet.</div>`;
     return;
   }
 
-  container.innerHTML = products.map((p) => `
-    <div class="card">
-      <img
-        src="${p.image_url || "/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png"}"
-        alt="${p.name || "Product"}"
-      />
+  container.innerHTML = products.map((product) => {
+    const title = getProductTitle(product);
+    const price = getProductPrice(product);
+    const image = getProductImage(product);
+    const id = product.id ?? "";
 
-      <div class="card-body">
-        <div class="title">${p.name || "Untitled Product"}</div>
-        <div class="price">$${Number(p.price || 0).toFixed(2)}</div>
+    return `
+      <div class="card">
+        <img
+          src="${image}"
+          alt="${title}"
+          onerror="this.src='/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png';"
+        />
 
-        <button class="btn buy" data-id="${p.id}">
-          Buy Now
-        </button>
+        <div class="card-body">
+          <div class="title">${title}</div>
+          <div class="price">$${price}</div>
+
+          <button class="btn buy" data-id="${id}">
+            Buy Now
+          </button>
+        </div>
       </div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 
   document.querySelectorAll(".buy").forEach((btn) => {
     btn.addEventListener("click", async () => {
+      const originalText = btn.textContent;
       btn.disabled = true;
       btn.textContent = "Loading...";
       await createCheckout(btn.dataset.id);
       btn.disabled = false;
-      btn.textContent = "Buy Now";
+      btn.textContent = originalText;
     });
   });
 }
