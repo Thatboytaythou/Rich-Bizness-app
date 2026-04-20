@@ -1,1 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness Studio Mode</title>
+  <style>
+    :root{
+      --bg:#070c0a;
+      --panel:rgba(10,16,14,.88);
+      --panel2:rgba(14,20,17,.94);
+      --line:rgba(120,255,180,.12);
+      --line2:rgba(120,255,180,.24);
+      --text:#f5fff8;
+      --muted:#9db9a7;
+      --gold:#f3b33e;
+      --gold2:#ffe08f;
+      --green:#78f0a8;
+      --green2:#39d17b;
+      --danger:#ff7f7f;
+      --shadow:0 24px 60px rgba(0,0,0,.38);
+      --radius:24px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        linear-gradient(180deg, rgba(4,8,7,.78), rgba(4,8,7,.95)),
+        url('/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png') center/cover fixed no-repeat;
+      overflow-x:hidden;
+    }
+
+    .shell{
+      width:min(1450px,95%);
+      margin:0 auto;
+      padding:18px 0 34px;
+    }
+
+    .topbar{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:20px;
+      padding:14px 18px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .brand-badge{
+      width:58px;
+      height:58px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      font-weight:900;
+      font-size:1.2rem;
+      color:#062515;
+      background:linear-gradient(135deg,var(--green),#ceffdf);
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:1.5rem;
+      line-height:1;
+    }
+
+    .brand p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .nav a{
+      text-decoration:none;
+      color:var(--text);
+      padding:12px 16px;
+      border-radius:14px;
+      background:rgba(10,17,14,.92);
+      border:1px solid var(--line);
+      font-weight:800;
+    }
+
+    .nav a:hover{
+      border-color:var(--line2);
+      background:rgba(15,28,22,.96);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      align-items:stretch;
+    }
+
+    .panel{
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter:blur(10px);
+    }
+
+    .panel-body{
+      padding:18px;
+    }
+
+    .stage{
+      position:relative;
+      min-height:780px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.06), rgba(0,0,0,.52)),
+        radial-gradient(circle at 70% 20%, rgba(243,179,62,.18), transparent 35%);
+    }
+
+    .title-block{
+      position:absolute;
+      top:22px;
+      left:22px;
+      z-index:4;
+      max-width:430px;
+      padding:18px;
+      border-radius:20px;
+      background:rgba(5,10,8,.54);
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(10px);
+    }
+
+    .title-block h2{
+      margin:0;
+      font-size:clamp(2.2rem,4vw,4.4rem);
+      line-height:.92;
+      color:var(--gold2);
+      letter-spacing:-.03em;
+    }
+
+    .title-block p{
+      margin:.8rem 0 0;
+      color:var(--muted);
+      font-weight:600;
+      line-height:1.5;
+    }
+
+    .status-strip{
+      position:absolute;
+      right:20px;
+      top:20px;
+      z-index:4;
+      display:grid;
+      gap:10px;
+      width:min(300px,90%);
+    }
+
+    .status-card{
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(8,14,11,.72);
+      border:1px solid rgba(255,255,255,.08);
+      backdrop-filter:blur(8px);
+    }
+
+    .status-card .label{
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.74rem;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .status-card .value{
+      font-size:1rem;
+      font-weight:900;
+    }
+
+    .avatar-wrap{
+      position:absolute;
+      left:50%;
+      bottom:28px;
+      transform:translateX(-50%);
+      width:min(36vw,360px);
+      aspect-ratio:.64;
+      z-index:2;
+    }
+
+    .avatar-shadow{
+      position:absolute;
+      bottom:-10px;
+      left:50%;
+      transform:translateX(-50%);
+      width:72%;
+      height:30px;
+      border-radius:50%;
+      background:rgba(0,0,0,.52);
+      filter:blur(8px);
+    }
+
+    .avatar{
+      position:absolute;
+      inset:0;
+      border-radius:34px;
+      overflow:hidden;
+      background:
+        linear-gradient(180deg, rgba(12,12,12,.88), rgba(8,8,8,.98)),
+        url('/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png') center/cover no-repeat;
+      border:1px solid rgba(255,223,143,.16);
+      box-shadow:inset 0 0 40px rgba(255,190,80,.12), 0 16px 40px rgba(0,0,0,.42);
+    }
+
+    .hud{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .hud-card{
+      background:var(--panel2);
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:18px;
+      padding:14px;
+    }
+
+    .hud-card .k{
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.78rem;
+      font-weight:800;
+    }
+
+    .hud-card .v{
+      margin-top:8px;
+      font-size:1.8rem;
+      font-weight:900;
+      color:var(--gold2);
+    }
+
+    .section-head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .section-head strong{
+      font-size:1rem;
+    }
+
+    .pill{
+      padding:7px 10px;
+      border-radius:999px;
+      background:#151d19;
+      color:var(--green);
+      border:1px solid var(--line);
+      font-weight:900;
+      font-size:.78rem;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .actions{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      border-radius:16px;
+      padding:14px 15px;
+      font:inherit;
+      font-weight:900;
+      transition:.15s ease;
+    }
+
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(1px) scale(.99)}
+
+    .primary{
+      color:#241704;
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      box-shadow:0 10px 24px rgba(243,179,62,.2);
+    }
+
+    .secondary{
+      color:var(--text);
+      background:#151c18;
+      border:1px solid var(--line);
+    }
+
+    .success{
+      color:#032415;
+      background:linear-gradient(135deg,var(--green),#c5ffd9);
+    }
+
+    .danger{
+      color:white;
+      background:linear-gradient(135deg,#ff9d8b,#ff6969);
+    }
+
+    .upgrade-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:14px;
+    }
+
+    .upgrade{
+      min-height:92px;
+      text-align:left;
+      background:#141b17;
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .upgrade strong{
+      display:block;
+      margin-bottom:6px;
+    }
+
+    .upgrade span{
+      display:block;
+      color:var(--muted);
+      font-size:.86rem;
+      line-height:1.45;
+    }
+
+    .meter{
+      height:12px;
+      border-radius:999px;
+      overflow:hidden;
+      background:#1a2420;
+      border:1px solid rgba(255,255,255,.05);
+      margin-top:10px;
+    }
+
+    .meter-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--gold),var(--gold2));
+      box-shadow:0 0 16px rgba(243,179,62,.34);
+      transition:width .2s ease;
+    }
+
+    .leaderboard{
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .leader-item{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:#131916;
+      border:1px solid rgba(255,255,255,.05);
+    }
+
+    .leader-item .name{
+      font-weight:800;
+    }
+
+    .leader-item .meta{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-top:3px;
+    }
+
+    .leader-item .score{
+      font-weight:900;
+      color:var(--green);
+      white-space:nowrap;
+    }
+
+    .log{
+      display:grid;
+      gap:10px;
+      max-height:260px;
+      overflow:auto;
+      margin-top:12px;
+      padding-right:4px;
+    }
+
+    .log-item{
+      padding:12px 14px;
+      border-radius:16px;
+      background:#131916;
+      border:1px solid rgba(255,255,255,.05);
+      color:#e8f6ed;
+      font-size:.94rem;
+    }
+
+    .save-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .floating{
+      position:absolute;
+      pointer-events:none;
+      font-weight:900;
+      opacity:1;
+      transition:transform 1.2s ease-out, opacity 1.2s ease-out;
+      text-shadow:0 0 14px rgba(255,255,255,.2);
+    }
+
+    .note{color:#ffdc80}
+    .cash{color:#84ffb2}
+    .fan{color:#9bd0ff}
+    .smoke{color:rgba(255,255,255,.55)}
+
+    .tiny{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.5;
+    }
+
+    @media (max-width:1050px){
+      .hero{grid-template-columns:1fr}
+      .stage{min-height:650px}
+    }
+
+    @media (max-width:680px){
+      .hud,.actions,.upgrade-grid{grid-template-columns:1fr}
+      .title-block{right:16px;max-width:none}
+      .avatar-wrap{width:min(60vw,320px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">RB</div>
+        <div>
+          <h1>Rich Bizness Studio Mode</h1>
+          <p>Music arcade • creator grind • leaderboard synced</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/gaming.html">Gaming</a>
+        <a href="/music.html">Music</a>
+        <a href="/radio.html">Radio</a>
+        <a href="/store.html">Store</a>
+        <a href="/profile.html">Profile</a>
+      </nav>
+    </div>
+
+    <div class="hero">
+      <section class="panel stage" id="stage">
+        <div class="title-block">
+          <h2>RICH BIZNESS<br>STUDIO MODE</h2>
+          <p>
+            Build tracks, run up your fan base, level up your studio,
+            and lock your best run into the Rich Bizness arcade system.
+          </p>
+        </div>
+
+        <div class="status-strip">
+          <div class="status-card">
+            <div class="label">Current profile</div>
+            <div class="value" id="profileName">Guest Creator</div>
+          </div>
+          <div class="status-card">
+            <div class="label">Game slug</div>
+            <div class="value">studio-mode</div>
+          </div>
+        </div>
+
+        <div class="avatar-wrap" id="avatarWrap">
+          <div class="avatar-shadow"></div>
+          <div class="avatar"></div>
+        </div>
+      </section>
+
+      <aside style="display:grid;gap:18px;">
+        <section class="panel">
+          <div class="panel-body">
+            <div class="hud">
+              <div class="hud-card">
+                <div class="k">Cash</div>
+                <div class="v" id="cashValue">$0</div>
+              </div>
+              <div class="hud-card">
+                <div class="k">Fans</div>
+                <div class="v" id="fansValue">0</div>
+              </div>
+              <div class="hud-card">
+                <div class="k">Hype</div>
+                <div class="v" id="hypeValue">0</div>
+              </div>
+              <div class="hud-card">
+                <div class="k">Level</div>
+                <div class="v" id="levelValue">1</div>
+              </div>
+            </div>
+
+            <div class="section-head">
+              <strong>Action lane</strong>
+              <div class="pill">Autosave local</div>
+            </div>
+
+            <div class="actions">
+              <button class="primary" id="recordBtn">🎙️ Record Track</button>
+              <button class="secondary" id="dropBtn">🚀 Drop Song</button>
+              <button class="success" id="performBtn">🎤 Perform Live</button>
+              <button class="danger" id="cashoutBtn">💸 Cash Out</button>
+            </div>
+
+            <div style="margin-top:16px;">
+              <div class="section-head">
+                <strong>Hype meter</strong>
+                <div class="pill" id="upgradeCount">0 / 4 owned</div>
+              </div>
+              <div class="meter"><div class="meter-fill" id="hypeMeter"></div></div>
+            </div>
+
+            <div class="upgrade-grid">
+              <button class="upgrade" id="upgradeMic">
+                <strong>Better Mic — $250</strong>
+                <span>Boost recording money and hype.</span>
+              </button>
+              <button class="upgrade" id="upgradeSpeakers">
+                <strong>Studio Speakers — $500</strong>
+                <span>Grow fans harder on every drop.</span>
+              </button>
+              <button class="upgrade" id="upgradeLights">
+                <strong>Neon Lights — $900</strong>
+                <span>Live performances hit with more energy.</span>
+              </button>
+              <button class="upgrade" id="upgradeCar">
+                <strong>Luxury Whip — $2000</strong>
+                <span>Raises your flex ceiling and score potential.</span>
+              </button>
+            </div>
+
+            <div class="save-row">
+              <button class="primary" id="saveRunBtn">Save Run To Leaderboard</button>
+              <button class="secondary" id="resetRunBtn">Reset Run</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="section-head">
+              <strong>Top studio runs</strong>
+              <div class="pill">Realtime pull</div>
+            </div>
+            <div id="leaderboard" class="leaderboard">
+              <div class="tiny">Leaderboard loading...</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-body">
+            <div class="section-head">
+              <strong>Session feed</strong>
+              <div class="pill">Live log</div>
+            </div>
+            <div id="log" class="log"></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const STORAGE_KEY = "rich_bizness_studio_mode_v2";
+    const GAME_SLUG = "studio-mode";
+
+    const defaultState = {
+      cash: 0,
+      fans: 0,
+      hype: 0,
+      level: 1,
+      score: 0,
+      upgrades: {
+        mic: false,
+        speakers: false,
+        lights: false,
+        car: false
+      },
+      logs: [
+        "Studio Mode ready. Record, drop, perform, and save your best run."
+      ]
+    };
+
+    const state = loadState();
+
+    const cashValue = document.getElementById("cashValue");
+    const fansValue = document.getElementById("fansValue");
+    const hypeValue = document.getElementById("hypeValue");
+    const levelValue = document.getElementById("levelValue");
+    const hypeMeter = document.getElementById("hypeMeter");
+    const upgradeCount = document.getElementById("upgradeCount");
+    const logEl = document.getElementById("log");
+    const leaderboardEl = document.getElementById("leaderboard");
+    const avatarWrap = document.getElementById("avatarWrap");
+    const stageEl = document.getElementById("stage");
+    const profileNameEl = document.getElementById("profileName");
+
+    const recordBtn = document.getElementById("recordBtn");
+    const dropBtn = document.getElementById("dropBtn");
+    const performBtn = document.getElementById("performBtn");
+    const cashoutBtn = document.getElementById("cashoutBtn");
+    const upgradeMic = document.getElementById("upgradeMic");
+    const upgradeSpeakers = document.getElementById("upgradeSpeakers");
+    const upgradeLights = document.getElementById("upgradeLights");
+    const upgradeCar = document.getElementById("upgradeCar");
+    const saveRunBtn = document.getElementById("saveRunBtn");
+    const resetRunBtn = document.getElementById("resetRunBtn");
+
+    let activeUser = null;
+    let activeProfile = null;
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(defaultState);
+        const parsed = JSON.parse(raw);
+        return {
+          ...structuredClone(defaultState),
+          ...parsed,
+          upgrades: { ...defaultState.upgrades, ...(parsed.upgrades || {}) },
+          logs: Array.isArray(parsed.logs) && parsed.logs.length ? parsed.logs : [...defaultState.logs]
+        };
+      } catch (error) {
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function formatCash(value) {
+      return "$" + Math.floor(value).toLocaleString();
+    }
+
+    function scoreFormula() {
+      return Math.floor(
+        state.cash * 0.08 +
+        state.fans * 1.15 +
+        state.hype * 6 +
+        state.level * 120 +
+        upgradeOwnedCount() * 180
+      );
+    }
+
+    function levelCheck() {
+      state.level = Math.max(
+        1,
+        1 + Math.floor((state.cash / 140 + state.fans / 85 + state.hype / 12))
+      );
+      state.score = scoreFormula();
+    }
+
+    function upgradeOwnedCount() {
+      return Object.values(state.upgrades).filter(Boolean).length;
+    }
+
+    function log(message) {
+      state.logs.unshift(message);
+      state.logs = state.logs.slice(0, 28);
+      render();
+      saveState();
+    }
+
+    function setUpgradeButton(button, owned, baseText, ownedText) {
+      const strong = button.querySelector("strong");
+      strong.textContent = owned ? ownedText : baseText;
+      button.disabled = owned;
+      button.style.opacity = owned ? ".55" : "1";
+      button.style.cursor = owned ? "default" : "pointer";
+    }
+
+    function render() {
+      levelCheck();
+
+      cashValue.textContent = formatCash(state.cash);
+      fansValue.textContent = Math.floor(state.fans).toLocaleString();
+      hypeValue.textContent = Math.floor(state.hype).toLocaleString();
+      levelValue.textContent = state.level;
+      hypeMeter.style.width = `${Math.min(100, state.hype)}%`;
+      upgradeCount.textContent = `${upgradeOwnedCount()} / 4 owned`;
+
+      logEl.innerHTML = "";
+      state.logs.forEach((item) => {
+        const div = document.createElement("div");
+        div.className = "log-item";
+        div.textContent = item;
+        logEl.appendChild(div);
+      });
+
+      setUpgradeButton(upgradeMic, state.upgrades.mic, "Better Mic — $250", "Better Mic — Owned");
+      setUpgradeButton(upgradeSpeakers, state.upgrades.speakers, "Studio Speakers — $500", "Studio Speakers — Owned");
+      setUpgradeButton(upgradeLights, state.upgrades.lights, "Neon Lights — $900", "Neon Lights — Owned");
+      setUpgradeButton(upgradeCar, state.upgrades.car, "Luxury Whip — $2000", "Luxury Whip — Owned");
+    }
+
+    function animateAvatar(power = 1) {
+      avatarWrap.style.transform = `translateX(-50%) translateY(${-4 * power}px) scale(${1 + power * 0.015})`;
+      setTimeout(() => {
+        avatarWrap.style.transform = "translateX(-50%)";
+      }, 150);
+    }
+
+    function spawnFloating(text, className, xPercent, yPercent, duration = 1200) {
+      const el = document.createElement("div");
+      el.className = `floating ${className}`;
+      el.textContent = text;
+      el.style.left = `${xPercent}%`;
+      el.style.top = `${yPercent}%`;
+      stageEl.appendChild(el);
+
+      requestAnimationFrame(() => {
+        el.style.transform = `translateY(-120px) scale(1.18)`;
+        el.style.opacity = "0";
+      });
+
+      setTimeout(() => el.remove(), duration + 50);
+    }
+
+    function shower(type, amount) {
+      for (let i = 0; i < amount; i++) {
+        setTimeout(() => {
+          const x = 30 + Math.random() * 40;
+          const y = 44 + Math.random() * 28;
+          if (type === "record") spawnFloating("♪", "note", x, y);
+          if (type === "cash") spawnFloating("$", "cash", x, y);
+          if (type === "fans") spawnFloating("★", "fan", x, y);
+          if (type === "smoke") spawnFloating("☁", "smoke", x, y, 1500);
+        }, i * 55);
+      }
+    }
+
+    function recordTrack() {
+      let cashGain = 65 + Math.random() * 90;
+      let hypeGain = 7 + Math.random() * 9;
+
+      if (state.upgrades.mic) {
+        cashGain *= 1.55;
+        hypeGain *= 1.35;
+      }
+
+      state.cash += cashGain;
+      state.hype = Math.min(state.upgrades.car ? 160 : 100, state.hype + hypeGain);
+
+      animateAvatar(1.2);
+      shower("record", 8);
+      shower("smoke", 4);
+      log(`Recorded a new track. +${formatCash(cashGain)} and +${Math.floor(hypeGain)} hype.`);
+      saveState();
+      render();
+    }
+
+    function dropSong() {
+      if (state.hype < 10) {
+        log("Not enough hype to drop a record yet. Build more buzz first.");
+        return;
+      }
+
+      let fanGain = 24 + Math.random() * 60 + state.hype * 1.45;
+      let cashGain = 50 + Math.random() * 95 + state.hype * 1.9;
+
+      if (state.upgrades.speakers) fanGain *= 1.65;
+      if (state.upgrades.mic) cashGain *= 1.15;
+
+      state.fans += fanGain;
+      state.cash += cashGain;
+      state.hype = Math.max(0, state.hype - (16 + Math.random() * 10));
+
+      animateAvatar(1.45);
+      shower("fans", 8);
+      shower("cash", 8);
+      shower("record", 6);
+
+      log(`Dropped a song. +${Math.floor(fanGain)} fans and +${formatCash(cashGain)}.`);
+      saveState();
+      render();
+    }
+
+    function performLive() {
+      if (state.hype < 20) {
+        log("Need more hype before the crowd will really turn up.");
+        return;
+      }
+
+      let cashGain = 130 + Math.random() * 180 + state.level * 18;
+      let fanGain = 38 + Math.random() * 80;
+
+      if (state.upgrades.lights) {
+        cashGain *= 1.45;
+        fanGain *= 1.4;
+      }
+      if (state.upgrades.car) {
+        fanGain *= 1.2;
+      }
+
+      state.cash += cashGain;
+      state.fans += fanGain;
+      state.hype = Math.max(0, state.hype - 22);
+
+      animateAvatar(1.9);
+      shower("fans", 10);
+      shower("cash", 9);
+      shower("record", 8);
+
+      log(`Performed live. +${formatCash(cashGain)} and +${Math.floor(fanGain)} fans.`);
+      saveState();
+      render();
+    }
+
+    function cashOut() {
+      const payout = Math.floor(state.cash * 0.12 + state.fans * 0.05 + state.level * 28);
+      state.cash += payout;
+
+      animateAvatar(1.25);
+      shower("cash", 12);
+
+      log(`Cashed out royalties and creator money. Bonus ${formatCash(payout)}.`);
+      saveState();
+      render();
+    }
+
+    function buyUpgrade(type, cost, successMessage) {
+      if (state.upgrades[type]) return;
+
+      if (state.cash < cost) {
+        log(`Need ${formatCash(cost)} to unlock this upgrade.`);
+        return;
+      }
+
+      state.cash -= cost;
+      state.upgrades[type] = true;
+      shower("cash", 6);
+      log(successMessage);
+      saveState();
+      render();
+    }
+
+    async function loadProfile() {
+      const { data: authData } = await supabase.auth.getUser();
+      activeUser = authData?.user || null;
+
+      if (!activeUser) {
+        profileNameEl.textContent = "Guest Creator";
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name, username")
+        .eq("id", activeUser.id)
+        .maybeSingle();
+
+      activeProfile = profile || null;
+      profileNameEl.textContent =
+        profile?.display_name ||
+        profile?.username ||
+        activeUser.email ||
+        "Signed-in Creator";
+    }
+
+    async function saveRun() {
+      if (!activeUser) {
+        log("Sign in first so your studio run can save to leaderboard.");
+        return;
+      }
+
+      levelCheck();
+
+      const payload = {
+        user_id: activeUser.id,
+        game_slug: GAME_SLUG,
+        score: state.score,
+        cash_earned: Math.floor(state.cash),
+        fans_earned: Math.floor(state.fans),
+        hype_earned: Math.floor(state.hype),
+        level_reached: state.level,
+        metadata: {
+          upgrades: state.upgrades,
+          profile_name: profileNameEl.textContent
+        }
+      };
+
+      const { error } = await supabase.from("arcade_runs").insert(payload);
+
+      if (error) {
+        console.error("[studio-mode] save run error:", error);
+        log(`Could not save run: ${error.message}`);
+        return;
+      }
+
+      log(`Run saved. Leaderboard score locked at ${state.score.toLocaleString()}.`);
+      await loadLeaderboard();
+    }
+
+    async function loadLeaderboard() {
+      const { data, error } = await supabase
+        .from("arcade_runs")
+        .select("id, user_id, score, cash_earned, fans_earned, level_reached, metadata, created_at")
+        .eq("game_slug", GAME_SLUG)
+        .order("score", { ascending: false })
+        .limit(8);
+
+      if (error) {
+        leaderboardEl.innerHTML = `<div class="tiny">Leaderboard could not load yet.</div>`;
+        return;
+      }
+
+      if (!data || !data.length) {
+        leaderboardEl.innerHTML = `<div class="tiny">No saved studio runs yet. Save the first one.</div>`;
+        return;
+      }
+
+      leaderboardEl.innerHTML = data.map((row, index) => {
+        const name =
+          row.metadata?.profile_name ||
+          `Creator ${String(row.user_id).slice(0, 6)}`;
+
+        return `
+          <div class="leader-item">
+            <div>
+              <div class="name">#${index + 1} ${name}</div>
+              <div class="meta">
+                Level ${row.level_reached} • ${Math.floor(row.fans_earned).toLocaleString()} fans
+              </div>
+            </div>
+            <div class="score">${Number(row.score || 0).toLocaleString()}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function resetRun() {
+      localStorage.removeItem(STORAGE_KEY);
+      Object.assign(state, structuredClone(defaultState));
+      log("Run reset. Studio cleared and ready for a new grind.");
+      saveState();
+      render();
+    }
+
+    recordBtn.addEventListener("click", recordTrack);
+    dropBtn.addEventListener("click", dropSong);
+    performBtn.addEventListener("click", performLive);
+    cashoutBtn.addEventListener("click", cashOut);
+    saveRunBtn.addEventListener("click", saveRun);
+    resetRunBtn.addEventListener("click", resetRun);
+
+    upgradeMic.addEventListener("click", () => buyUpgrade("mic", 250, "Bought a better mic. Recording quality jumped."));
+    upgradeSpeakers.addEventListener("click", () => buyUpgrade("speakers", 500, "Installed premium speakers. Every drop hits harder now."));
+    upgradeLights.addEventListener("click", () => buyUpgrade("lights", 900, "Neon lights installed. Live performances got way more cinematic."));
+    upgradeCar.addEventListener("click", () => buyUpgrade("car", 2000, "Luxury whip unlocked. Your flex level just went crazy."));
+
+    document.addEventListener("keydown", (event) => {
+      if (event.repeat) return;
+      const key = event.key.toLowerCase();
+      if (key === "r") recordTrack();
+      if (key === "d") dropSong();
+      if (key === "p") performLive();
+      if (key === "c") cashOut();
+    });
+
+    setInterval(() => {
+      if (Math.random() > 0.48) shower("smoke", 1);
+    }, 1400);
+
+    render();
+    await loadProfile();
+    await loadLeaderboard();
+  </script>
+</body>
+</html>
 
