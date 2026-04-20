@@ -101,7 +101,7 @@ async function createCheckout(productId) {
       throw new Error("Missing product id.");
     }
 
-    const response = await fetch("/api/create-store-checkout-session.js", {
+    const response = await fetch("/api/create-store-checkout-session", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
