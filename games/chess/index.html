@@ -19,6 +19,7 @@
       --green: #43f59b;
       --green-2: #18c972;
       --gold: #f7d96a;
+      --red: #ff6d7a;
       --shadow: 0 22px 60px rgba(0, 0, 0, 0.44);
       --radius-xl: 26px;
       --radius-lg: 18px;
@@ -41,7 +42,7 @@
     }
 
     .page {
-      width: min(1400px, calc(100% - 20px));
+      width: min(1440px, calc(100% - 20px));
       margin: 0 auto;
       padding: 12px 0 28px;
       display: grid;
@@ -122,6 +123,12 @@
       border-color: transparent;
     }
 
+    .btn.danger {
+      background: rgba(255,109,122,0.12);
+      border-color: rgba(255,109,122,0.24);
+      color: #ffd7dc;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: 1.05fr 0.95fr;
@@ -152,6 +159,40 @@
     .board-wrap {
       display: grid;
       gap: 14px;
+    }
+
+    .clock-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .clock-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--line);
+    }
+
+    .clock-card.active {
+      border-color: var(--line-strong);
+      background: rgba(67,245,155,0.08);
+    }
+
+    .clock-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .clock-card strong {
+      display: block;
+      font-size: 32px;
+      line-height: 1;
+      letter-spacing: -0.04em;
     }
 
     .board-meta {
@@ -242,7 +283,7 @@
     .room-list, .move-list {
       display: grid;
       gap: 10px;
-      max-height: 320px;
+      max-height: 280px;
       overflow: auto;
     }
 
@@ -300,6 +341,17 @@
       gap: 10px;
     }
 
+    .invite-box {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.04);
+      word-break: break-all;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
     @media (max-width: 1100px) {
       .layout {
         grid-template-columns: 1fr;
@@ -307,13 +359,13 @@
     }
 
     @media (max-width: 700px) {
-      .board-meta, .row {
+      .board-meta, .row, .clock-row {
         grid-template-columns: 1fr 1fr;
       }
     }
 
     @media (max-width: 520px) {
-      .board-meta, .row {
+      .board-meta, .row, .clock-row {
         grid-template-columns: 1fr;
       }
 
@@ -351,6 +403,17 @@
 
         <div class="panel-body">
           <div class="board-wrap">
+            <div class="clock-row">
+              <div id="white-clock-card" class="clock-card">
+                <span>White Clock</span>
+                <strong id="white-clock">05:00</strong>
+              </div>
+              <div id="black-clock-card" class="clock-card">
+                <span>Black Clock</span>
+                <strong id="black-clock">05:00</strong>
+              </div>
+            </div>
+
             <div class="board-meta">
               <div class="meta-card">
                 <span>Room</span>
@@ -376,6 +439,8 @@
               <button class="btn primary" id="join-white-btn" type="button">Join White</button>
               <button class="btn primary" id="join-black-btn" type="button">Join Black</button>
               <button class="btn" id="refresh-room-btn" type="button">Refresh</button>
+              <button class="btn danger" id="resign-btn" type="button">Resign</button>
+              <button class="btn" id="rematch-btn" type="button">Rematch</button>
             </div>
           </div>
         </div>
@@ -398,8 +463,27 @@
                   <option value="private">private</option>
                 </select>
               </div>
-              <button class="btn primary" id="create-room-btn" type="button">Create Room</button>
+              <div class="row">
+                <select id="create-room-time">
+                  <option value="5|0">5|0</option>
+                  <option value="3|2">3|2</option>
+                  <option value="10|0">10|0</option>
+                  <option value="15|10">15|10</option>
+                </select>
+                <button class="btn primary" id="create-room-btn" type="button">Create Room</button>
+              </div>
             </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Invite Link</h3>
+            <p>Share the active room.</p>
+          </div>
+
+          <div class="panel-body">
+            <div id="invite-link" class="invite-box">Open a room to generate an invite link.</div>
           </div>
         </section>
 
