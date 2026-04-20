@@ -3,534 +3,519 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Gaming Leaderboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <title>Rich Bizness — Gaming Leaderboard</title>
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
+    :root{
+      --bg:#07110c;
+      --panel:rgba(8,16,12,.84);
+      --line:rgba(93,255,170,.14);
+      --line-strong:rgba(93,255,170,.34);
+      --text:#ecfff4;
+      --muted:#9fbea9;
+      --green:#43f59b;
+      --green-2:#18c972;
+      --gold:#f2c767;
+      --blue:#55c8ff;
+      --shadow:0 24px 60px rgba(0,0,0,.42);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+      --max:1460px;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;
+      padding:0;
+      min-height:100%;
+      font-family:Inter,system-ui,sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,0.46), rgba(0,0,0,0.92)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
+        linear-gradient(180deg, rgba(3,7,5,.56), rgba(7,17,12,.94)),
+        url('/images/brand/DA020CC3-8296-4089-832E-5825D02435FA.png') center top / cover no-repeat fixed;
+      background-color:var(--bg);
     }
 
-    .page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 50px;
+    a{color:inherit;text-decoration:none}
+    button,input,select{font:inherit}
+    img{display:block;max-width:100%}
+
+    .page-shell{
+      width:min(var(--max), calc(100% - 24px));
+      margin:0 auto;
+      padding:18px 0 42px;
     }
 
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .topbar{
+      position:sticky;
+      top:12px;
+      z-index:50;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      flex-wrap:wrap;
+      padding:14px 16px;
+      margin-bottom:18px;
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(8,15,11,.84);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.85rem;
-      font-weight: 900;
+    .brand-logo{
+      width:58px;
+      height:58px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      background:rgba(255,255,255,.04);
+      flex-shrink:0;
     }
 
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.08);
+    .brand-logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
     }
 
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
+    .brand-copy h1{
+      margin:0;
+      font-size:20px;
     }
 
-    .nav a, .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .brand-copy p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
+    .nav-link,.btn,.pill,.tab-btn{
+      min-height:44px;
+      padding:11px 15px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-weight:800;
+      cursor:pointer;
     }
 
-    .hero, .section {
-      padding: 24px;
-      margin-bottom: 18px;
+    .btn{
+      background:linear-gradient(135deg,var(--green),var(--green-2));
+      color:#062312;
+      border-color:transparent;
     }
 
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 2.8rem;
-      line-height: 0.96;
-      color: var(--green);
+    .tab-btn.active{
+      border-color:var(--line-strong);
+      background:rgba(67,245,155,.12);
+      color:#dfffee;
     }
 
-    .subtle, .status-box {
-      color: var(--text);
-      line-height: 1.75;
+    .notice{
+      display:none;
+      margin-bottom:14px;
+      padding:14px 16px;
+      border-radius:16px;
+      font-size:14px;
     }
 
-    .hero-kicker, .pill-green, .pill-gold {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
+    .notice.error{
+      background:rgba(255,90,115,.1);
+      border:1px solid rgba(255,90,115,.22);
+      color:#ffd0d8;
     }
 
-    .hero-kicker, .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
+    .notice.success{
+      background:rgba(67,245,155,.1);
+      border:1px solid rgba(67,245,155,.22);
+      color:#d8ffea;
     }
 
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
+    .hero{
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      background:
+        linear-gradient(90deg, rgba(5,11,8,.88), rgba(5,11,8,.58)),
+        url('/images/brand/9B78765E-1848-4173-8FD4-11B4C908104D.png') center center / cover no-repeat;
+      padding:34px;
+      margin-bottom:18px;
+      box-shadow:var(--shadow);
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
+    .hero h2{
+      margin:0;
+      font-size:clamp(38px,5vw,72px);
+      line-height:.94;
+      letter-spacing:-.05em;
+      max-width:760px;
     }
 
-    .btn-green, .btn-dark, .btn-gold {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
+    .hero p{
+      margin:16px 0 0;
+      max-width:760px;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.8;
     }
 
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:20px;
     }
 
-    .filters {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 18px;
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:18px;
     }
 
-    .filters select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
+    .stat-card{
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(8,16,12,.82);
+      box-shadow:var(--shadow);
     }
 
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
+    .stat-card span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
     }
 
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
+    .stat-card strong{
+      font-size:30px;
+      letter-spacing:-.04em;
     }
 
-    .stat-value {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--green);
+    .panel{
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      overflow:hidden;
+      background:linear-gradient(180deg, rgba(10,18,14,.9), rgba(7,14,11,.94));
+      box-shadow:var(--shadow);
+      margin-bottom:18px;
     }
 
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
+    .panel-head{
+      padding:20px 22px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:center;
+      flex-wrap:wrap;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
+    .panel-head h3{
+      margin:0;
+      font-size:26px;
     }
 
-    th, td {
-      text-align: left;
-      padding: 14px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+    .panel-head p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
     }
 
-    th {
-      color: var(--green);
-      font-size: 0.95rem;
+    .panel-body{
+      padding:22px;
     }
 
-    td {
-      color: var(--text);
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr auto auto;
+      gap:12px;
+      margin-bottom:16px;
     }
 
-    .rank {
-      font-weight: 900;
-      color: var(--gold);
+    .toolbar input,.toolbar select{
+      width:100%;
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:12px 14px;
+      outline:none;
     }
 
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+    .tab-bar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
     }
 
-    @media (max-width: 900px) {
-      .filters, .stats-row {
-        grid-template-columns: 1fr;
-      }
+    .leaderboard-list{
+      display:grid;
+      gap:12px;
+    }
 
-      .hero h1 {
-        font-size: 2.2rem;
-      }
+    .leaderboard-item{
+      display:grid;
+      grid-template-columns:auto 92px 1fr auto;
+      gap:14px;
+      align-items:center;
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
 
-      table, thead, tbody, th, td, tr {
-        display: block;
-      }
+    .rank-pill{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:var(--green);
+      border:1px solid var(--line-strong);
+      background:rgba(67,245,155,.12);
+      font-size:18px;
+    }
 
-      thead {
-        display: none;
-      }
+    .game-thumb{
+      width:92px;
+      height:92px;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
 
-      tr {
-        margin-bottom: 14px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        padding: 10px;
-      }
+    .game-thumb img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
 
-      td {
-        border-bottom: none;
-        padding: 8px 6px;
-      }
+    .item-title{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+    }
+
+    .item-sub{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .pill-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .score-pill{
+      min-width:108px;
+      min-height:44px;
+      padding:10px 14px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.05);
+      font-weight:900;
+      color:var(--gold);
+      font-size:18px;
+    }
+
+    .mini-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .mini-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .mini-card{
+      padding:16px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+
+    .mini-card h4{
+      margin:0;
+      font-size:18px;
+    }
+
+    .meta{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .empty-state{
+      min-height:170px;
+      border-radius:18px;
+      border:1px dashed rgba(67,245,155,.18);
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding:20px;
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width: 1180px){
+      .stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .mini-grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 900px){
+      .toolbar{grid-template-columns:1fr}
+      .leaderboard-item{grid-template-columns:auto 1fr}
+      .game-thumb{display:none}
+    }
+
+    @media (max-width: 760px){
+      .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="topbar">
+  <div class="page-shell">
+    <header class="topbar">
       <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Gaming Leaderboard</span>
+        <a class="brand-logo" href="/profile.html" title="Open profile">
+          <img src="/images/brand/rich-bizness-profile.jpg" alt="Rich Bizness profile" onerror="this.src='/images/brand/9B78765E-1848-4173-8FD4-11B4C908104D.png';" />
+        </a>
+
+        <div class="brand-copy">
+          <h1>Rich Bizness Leaderboard</h1>
+          <p>Top scores • Per-game ranking • Ecosystem score tracking</p>
+        </div>
       </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="gaming.html">Gaming</a>
-        <a href="money-road-runner.html">Money Road Runner</a>
-        <a href="gaming-leaderboard.html" class="active">Leaderboard</a>
-      </div>
-    </div>
+      <nav class="nav">
+        <a class="nav-link" href="/index.html">Home</a>
+        <a class="nav-link" href="/gaming.html">Gaming Hub</a>
+        <a class="nav-link" href="/gaming-admin.html">Gaming Admin</a>
+        <a class="nav-link" href="/gaming-tournaments.html">Tournaments</a>
+        <a class="btn" href="/upload-gaming.html">Upload Game</a>
+      </nav>
+    </header>
 
-    <div class="hero">
-      <div class="hero-kicker">COMPETITION LANE</div>
-      <h1>Track top scores and start building your Rich Bizness arcade rankings.</h1>
-      <div class="subtle">
-        This leaderboard is ready for Money Road Runner first, then future games after that.
-      </div>
+    <div id="leaderboard-error" class="notice error"></div>
+    <div id="leaderboard-success" class="notice success"></div>
+
+    <section class="hero">
+      <h2>Top players. Top scores. Full pressure lane.</h2>
+      <p>
+        This leaderboard stays tied to the same gaming ecosystem you already built:
+        games, score submissions, tournaments, and challenges all read from the same lane.
+      </p>
 
       <div class="hero-actions">
-        <a class="btn-green" href="money-road-runner.html">Play Money Road Runner</a>
-        <a class="btn-dark" href="gaming.html">Back to Gaming</a>
+        <a class="btn" href="/gaming.html">Back to Gaming Hub</a>
+        <a class="nav-link" href="/games/chess/index.html">Open Rich Chess</a>
       </div>
+    </section>
 
-      <div id="statusBox" class="status-box">Loading leaderboard...</div>
+    <section class="stats-grid">
+      <div class="stat-card"><span>Total Score Rows</span><strong id="stat-total-rows">0</strong></div>
+      <div class="stat-card"><span>Top Score</span><strong id="stat-top-score">0</strong></div>
+      <div class="stat-card"><span>Games With Scores</span><strong id="stat-games-covered">0</strong></div>
+      <div class="stat-card"><span>Money Road Runner</span><strong id="stat-mrr-top">0</strong></div>
+      <div class="stat-card"><span>Rich Chess</span><strong id="stat-chess-top">0</strong></div>
+    </section>
 
-      <div class="filters">
-        <select id="gameFilter">
-          <option value="money-road-runner">Money Road Runner</option>
-        </select>
-
-        <select id="timeFilter">
-          <option value="all">All Time</option>
-          <option value="week">Last 7 Days</option>
-          <option value="day">Last 24 Hours</option>
-        </select>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat">
-          <div id="entriesStat" class="stat-value">0</div>
-          <div class="stat-label">Entries</div>
-        </div>
-        <div class="stat">
-          <div id="topScoreStat" class="stat-value">0</div>
-          <div class="stat-label">Top Score</div>
-        </div>
-        <div class="stat">
-          <div id="playersStat" class="stat-value">0</div>
-          <div class="stat-label">Players</div>
-        </div>
-        <div class="stat">
-          <div id="myBestStat" class="stat-value">--</div>
-          <div class="stat-label">My Best</div>
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h3>Leaderboard Control</h3>
+          <p>Filter the score lane by game, mode, or player.</p>
         </div>
       </div>
-    </div>
 
-    <div class="section">
-      <div id="tableWrap">
-        <div class="empty-box">Loading scores...</div>
+      <div class="panel-body">
+        <div class="toolbar">
+          <input id="leaderboard-search" type="text" placeholder="Search player, game, mode..." />
+          <select id="leaderboard-game-filter">
+            <option value="all">All Games</option>
+          </select>
+          <select id="leaderboard-sort">
+            <option value="top">Top Score</option>
+            <option value="recent">Most Recent</option>
+          </select>
+        </div>
+
+        <div class="tab-bar">
+          <button class="tab-btn active" data-mode="all" type="button">All Modes</button>
+          <button class="tab-btn" data-mode="Arcade" type="button">Arcade</button>
+          <button class="tab-btn" data-mode="Beat Tap" type="button">Beat Tap</button>
+          <button class="tab-btn" data-mode="Chess" type="button">Chess</button>
+        </div>
+
+        <div id="leaderboard-list" class="leaderboard-list"></div>
       </div>
-    </div>
+    </section>
+
+    <section class="mini-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Top By Game</h3>
+            <p>Best current score in each game lane.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="top-by-game-list" class="mini-list"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Recent Score Activity</h3>
+            <p>Latest score drops hitting the system.</p>
+          </div>
+        </div>
+        <div class="panel-body">
+          <div id="recent-scores-list" class="mini-list"></div>
+        </div>
+      </section>
+    </section>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const statusBox = document.getElementById("statusBox");
-      const gameFilter = document.getElementById("gameFilter");
-      const timeFilter = document.getElementById("timeFilter");
-      const tableWrap = document.getElementById("tableWrap");
-
-      const entriesStat = document.getElementById("entriesStat");
-      const topScoreStat = document.getElementById("topScoreStat");
-      const playersStat = document.getElementById("playersStat");
-      const myBestStat = document.getElementById("myBestStat");
-
-      let currentUser = null;
-      let profileMap = {};
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function loadProfiles(userIds) {
-        const ids = [...new Set(userIds.filter(Boolean))];
-        if (!ids.length) return;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("id, username, display_name, email")
-          .in("id", ids);
-
-        if (error && error.code !== "42P01") throw error;
-
-        profileMap = {};
-        (data || []).forEach(profile => {
-          profileMap[profile.id] = profile;
-        });
-      }
-
-      function getPlayerName(userId) {
-        const profile = profileMap[userId] || {};
-        return profile.display_name || profile.username || profile.email || "Player";
-      }
-
-      function getStartDateForFilter(value) {
-        const now = new Date();
-        if (value === "day") {
-          now.setHours(now.getHours() - 24);
-          return now.toISOString();
-        }
-        if (value === "week") {
-          now.setDate(now.getDate() - 7);
-          return now.toISOString();
-        }
-        return null;
-      }
-
-      async function loadLeaderboard() {
-        try {
-          setStatus("Loading leaderboard...");
-
-          const slug = gameFilter.value;
-          const startDate = getStartDateForFilter(timeFilter.value);
-
-          let query = supabase
-            .from("game_scores")
-            .select("*")
-            .eq("game_slug", slug)
-            .order("score", { ascending: false })
-            .order("created_at", { ascending: true })
-            .limit(100);
-
-          if (startDate) {
-            query = query.gte("created_at", startDate);
-          }
-
-          const { data, error } = await query;
-
-          if (error && error.code !== "42P01") throw error;
-
-          const rows = data || [];
-          await loadProfiles(rows.map(row => row.user_id));
-
-          entriesStat.textContent = String(rows.length);
-          topScoreStat.textContent = String(rows[0]?.score || 0);
-          playersStat.textContent = String(new Set(rows.map(r => r.user_id).filter(Boolean)).size);
-
-          const myRows = currentUser ? rows.filter(r => r.user_id === currentUser.id) : [];
-          myBestStat.textContent = myRows.length ? String(Math.max(...myRows.map(r => Number(r.score || 0)))) : "--";
-
-          if (!rows.length) {
-            tableWrap.innerHTML = `<div class="empty-box">No scores yet. Be the first to post one.</div>`;
-            setStatus("No scores yet.");
-            return;
-          }
-
-          tableWrap.innerHTML = `
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th>Score</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rows.map((row, index) => `
-                  <tr>
-                    <td class="rank">#${index + 1}</td>
-                    <td>${getPlayerName(row.user_id)}</td>
-                    <td>${row.score}</td>
-                    <td>${formatDate(row.created_at)}</td>
-                  </tr>
-                `).join("")}
-              </tbody>
-            </table>
-          `;
-
-          setStatus("✅ Leaderboard loaded.");
-        } catch (error) {
-          console.error("Leaderboard load error:", error);
-          setStatus("❌ Leaderboard load error: " + error.message);
-          tableWrap.innerHTML = `<div class="empty-box">Could not load leaderboard right now.</div>`;
-        }
-      }
-
-      gameFilter.addEventListener("change", loadLeaderboard);
-      timeFilter.addEventListener("change", loadLeaderboard);
-
-      async function init() {
-        await loadSession();
-        await loadLeaderboard();
-      }
-
-      init();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Leaderboard Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
-    }
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
   </script>
+  <script type="module" src="/src/gaming/gaming-leaderboard.js"></script>
+  <script type="module" src="/src/shared/navbar-session.js"></script>
 </body>
 </html>
