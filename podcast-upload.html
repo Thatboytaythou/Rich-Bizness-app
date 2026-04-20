@@ -1,1 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness | Podcast Upload</title>
+  <style>
+    :root{
+      --bg:#07100c;
+      --panel:rgba(9,17,14,.90);
+      --panel-2:rgba(12,22,18,.96);
+      --line:rgba(120,255,180,.12);
+      --line-strong:rgba(120,255,180,.24);
+      --text:#f4fff8;
+      --muted:#9ab8a6;
+      --green:#79f2a8;
+      --green-2:#48d987;
+      --gold:#f2c864;
+      --gold-2:#ffe7a7;
+      --danger:#ff9393;
+      --blue:#9fc7ff;
+      --radius:24px;
+      --shadow:0 24px 60px rgba(0,0,0,.38);
+    }
 
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:
+        linear-gradient(180deg, rgba(5,8,7,.82), rgba(5,8,7,.96)),
+        url('/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png') center/cover fixed no-repeat;
+      overflow-x:hidden;
+    }
+
+    a{text-decoration:none;color:inherit}
+
+    .shell{
+      width:min(1480px,95%);
+      margin:0 auto;
+      padding:20px 0 42px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      padding:15px 18px;
+      border-radius:20px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .brand-badge{
+      width:60px;
+      height:60px;
+      border-radius:18px;
+      display:grid;
+      place-items:center;
+      font-size:1.2rem;
+      font-weight:900;
+      color:#201504;
+      background:linear-gradient(135deg,var(--gold-2),var(--gold));
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:1.7rem;
+      line-height:1;
+    }
+
+    .brand p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      font-weight:700;
+      font-size:.96rem;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .nav a{
+      padding:12px 17px;
+      border-radius:15px;
+      border:1px solid var(--line);
+      background:rgba(10,18,14,.92);
+      font-weight:900;
+    }
+
+    .nav a.active,
+    .nav a:hover{
+      border-color:var(--line-strong);
+      background:rgba(18,34,27,.98);
+    }
+
+    .banner{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 16px;
+      border-radius:16px;
+      font-weight:900;
+      border:1px solid transparent;
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.04fr .96fr;
+      gap:18px;
+      margin-bottom:18px;
+      align-items:start;
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter:blur(10px);
+    }
+
+    .card-header{
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .card-header h2,
+    .card-header h3{
+      margin:0;
+    }
+
+    .card-header p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      font-weight:600;
+      line-height:1.5;
+    }
+
+    .card-body{
+      padding:18px 20px 20px;
+    }
+
+    .hero-copy h2{
+      margin:0;
+      font-size:clamp(2rem,4vw,3.6rem);
+      line-height:.95;
+      letter-spacing:-.05em;
+    }
+
+    .hero-copy p{
+      margin:14px 0 0;
+      color:var(--muted);
+      font-size:1rem;
+      line-height:1.65;
+      max-width:760px;
+    }
+
+    .action-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .stat{
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:15px;
+      background:var(--panel-2);
+    }
+
+    .stat .k{
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.78rem;
+      font-weight:800;
+    }
+
+    .stat .v{
+      margin-top:7px;
+      font-size:1.8rem;
+      font-weight:900;
+      color:var(--gold-2);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:18px;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field label{
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform:uppercase;
+    }
+
+    .field input,
+    .field textarea,
+    .field select{
+      width:100%;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(8,14,11,.94);
+      color:var(--text);
+      padding:14px;
+      font:inherit;
+      outline:none;
+    }
+
+    .field textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus{
+      border-color:var(--line-strong);
+      box-shadow:0 0 0 3px rgba(121,242,168,.08);
+    }
+
+    .split{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      cursor:pointer;
+      border-radius:16px;
+      padding:14px 16px;
+      font:inherit;
+      font-weight:900;
+      transition:.15s ease;
+    }
+
+    button:hover{transform:translateY(-1px)}
+    button:active{transform:translateY(1px) scale(.99)}
+    button:disabled{opacity:.55;cursor:not-allowed}
+
+    .btn-primary{
+      color:#201504;
+      background:linear-gradient(135deg,var(--gold-2),var(--gold));
+    }
+
+    .btn-green{
+      color:#062414;
+      background:linear-gradient(135deg,var(--green),#d2ffe2);
+    }
+
+    .btn-dark{
+      color:var(--text);
+      background:#151d19;
+      border:1px solid var(--line);
+    }
+
+    .show-list{
+      display:grid;
+      gap:12px;
+      max-height:700px;
+      overflow:auto;
+      padding-right:4px;
+    }
+
+    .show-item{
+      border:1px solid var(--line);
+      border-radius:18px;
+      background:rgba(10,18,14,.95);
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .show-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .show-title{
+      font-size:1.02rem;
+      font-weight:900;
+      line-height:1.15;
+    }
+
+    .show-desc{
+      margin-top:4px;
+      color:var(--muted);
+      font-size:.92rem;
+      line-height:1.5;
+    }
+
+    .pill-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:8px 11px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(12,21,17,.95);
+      color:var(--text);
+      font-size:.78rem;
+      font-weight:900;
+    }
+
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      border:1px dashed var(--line);
+      border-radius:18px;
+      padding:28px 16px;
+      background:rgba(8,14,11,.72);
+      font-weight:700;
+    }
+
+    .tiny{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.5;
+    }
+
+    @media (max-width:1180px){
+      .hero,.grid{grid-template-columns:1fr}
+    }
+
+    @media (max-width:700px){
+      .split,.stats{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">RB</div>
+        <div>
+          <h1>Podcast Upload</h1>
+          <p>Create real shows and publish real episodes into your Rich Bizness podcast lane.</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/radio.html">Radio</a>
+        <a href="/podcast.html">Podcast</a>
+        <a class="active" href="/podcast-upload.html">Podcast Upload</a>
+        <a href="/music.html">Music</a>
+      </nav>
+    </div>
+
+    <div id="banner" class="banner"></div>
+
+    <section class="hero">
+      <div class="card">
+        <div class="card-body hero-copy">
+          <h2>Lock in podcast shows and episodes the right way.</h2>
+          <p>
+            This upload page stays synced to your real tables, uses your signed-in creator ID,
+            and feeds the live podcast page and radio page without fake placeholder layers.
+          </p>
+
+          <div class="action-row">
+            <a href="/podcast.html" class="btn-dark" style="display:inline-flex;align-items:center;">Open Podcast</a>
+            <a href="/radio.html?mode=podcast" class="btn-dark" style="display:inline-flex;align-items:center;">Open Radio</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="k">Creator status</div>
+              <div id="statCreator" class="v">Guest</div>
+            </div>
+            <div class="stat">
+              <div class="k">Public shows</div>
+              <div id="statShows" class="v">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Published episodes</div>
+              <div id="statEpisodes" class="v">0</div>
+            </div>
+            <div class="stat">
+              <div class="k">Selected show</div>
+              <div id="statSelected" class="v">None</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <div class="card-header">
+          <h3>Create Podcast Show</h3>
+          <p>Make a real public show row in <code>podcast_shows</code>.</p>
+        </div>
+        <div class="card-body">
+          <form id="showForm" class="form-grid">
+            <div class="field">
+              <label for="showTitle">Show Title</label>
+              <input id="showTitle" type="text" placeholder="Rich Bizness Talks" required />
+            </div>
+
+            <div class="field">
+              <label for="showSlug">Slug</label>
+              <input id="showSlug" type="text" placeholder="rich-bizness-talks" />
+            </div>
+
+            <div class="field">
+              <label for="showDesc">Description</label>
+              <textarea id="showDesc" placeholder="Culture, creator talk, live ideas, and music lane conversations."></textarea>
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="showCover">Cover URL</label>
+                <input id="showCover" type="text" placeholder="/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png" />
+              </div>
+
+              <div class="field">
+                <label for="showVisibility">Visibility</label>
+                <select id="showVisibility">
+                  <option value="public">public</option>
+                  <option value="private">private</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="showFeatured">Featured</label>
+                <select id="showFeatured">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="showEpisodeCount">Episode Count</label>
+                <input id="showEpisodeCount" type="number" min="0" step="1" value="0" />
+              </div>
+            </div>
+
+            <button id="createShowBtn" type="submit" class="btn-primary">Create Show</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Upload Episode</h3>
+          <p>Create a real episode row in <code>podcast_episodes</code> for the selected show.</p>
+        </div>
+        <div class="card-body">
+          <form id="episodeForm" class="form-grid">
+            <div class="field">
+              <label for="episodeShow">Select Show</label>
+              <select id="episodeShow"></select>
+            </div>
+
+            <div class="field">
+              <label for="episodeTitle">Episode Title</label>
+              <input id="episodeTitle" type="text" placeholder="Episode 1 - Welcome To Rich Bizness Radio" required />
+            </div>
+
+            <div class="field">
+              <label for="episodeDesc">Episode Description</label>
+              <textarea id="episodeDesc" placeholder="First podcast lane test episode."></textarea>
+            </div>
+
+            <div class="field">
+              <label for="episodeAudio">Audio URL</label>
+              <input id="episodeAudio" type="text" placeholder="https://..." required />
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="episodeCover">Cover URL</label>
+                <input id="episodeCover" type="text" placeholder="/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png" />
+              </div>
+
+              <div class="field">
+                <label for="episodeNumber">Episode Number</label>
+                <input id="episodeNumber" type="number" min="1" step="1" placeholder="auto" />
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="episodeDuration">Duration Seconds</label>
+                <input id="episodeDuration" type="number" min="1" step="1" placeholder="180" />
+              </div>
+
+              <div class="field">
+                <label for="episodePublished">Published</label>
+                <select id="episodePublished">
+                  <option value="true">true</option>
+                  <option value="false">false</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="split">
+              <div class="field">
+                <label for="episodeFeatured">Featured</label>
+                <select id="episodeFeatured">
+                  <option value="false">false</option>
+                  <option value="true">true</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Selected Show Info</label>
+                <div class="tiny" id="selectedShowInfo">Select a show first.</div>
+              </div>
+            </div>
+
+            <button id="createEpisodeBtn" type="submit" class="btn-green">Upload Episode</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px;">
+      <div class="card-header">
+        <h3>Existing Podcast Shows</h3>
+        <p>Select a show, review it, and upload directly into the right lane.</p>
+      </div>
+      <div class="card-body">
+        <div id="showList" class="show-list"></div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const FALLBACK_COVER = "/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png";
+
+    const state = {
+      user: null,
+      profile: null,
+      shows: [],
+      episodes: [],
+      selectedShowId: null
+    };
+
+    const el = {
+      banner: document.getElementById("banner"),
+      statCreator: document.getElementById("statCreator"),
+      statShows: document.getElementById("statShows"),
+      statEpisodes: document.getElementById("statEpisodes"),
+      statSelected: document.getElementById("statSelected"),
+
+      showForm: document.getElementById("showForm"),
+      showTitle: document.getElementById("showTitle"),
+      showSlug: document.getElementById("showSlug"),
+      showDesc: document.getElementById("showDesc"),
+      showCover: document.getElementById("showCover"),
+      showVisibility: document.getElementById("showVisibility"),
+      showFeatured: document.getElementById("showFeatured"),
+      showEpisodeCount: document.getElementById("showEpisodeCount"),
+      createShowBtn: document.getElementById("createShowBtn"),
+
+      episodeForm: document.getElementById("episodeForm"),
+      episodeShow: document.getElementById("episodeShow"),
+      episodeTitle: document.getElementById("episodeTitle"),
+      episodeDesc: document.getElementById("episodeDesc"),
+      episodeAudio: document.getElementById("episodeAudio"),
+      episodeCover: document.getElementById("episodeCover"),
+      episodeNumber: document.getElementById("episodeNumber"),
+      episodeDuration: document.getElementById("episodeDuration"),
+      episodePublished: document.getElementById("episodePublished"),
+      episodeFeatured: document.getElementById("episodeFeatured"),
+      selectedShowInfo: document.getElementById("selectedShowInfo"),
+      createEpisodeBtn: document.getElementById("createEpisodeBtn"),
+
+      showList: document.getElementById("showList")
+    };
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function slugify(text = "") {
+      return String(text)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    }
+
+    function showBanner(message, type = "success") {
+      el.banner.style.display = "block";
+      el.banner.textContent = message;
+
+      if (type === "error") {
+        el.banner.style.background = "rgba(255,147,147,.12)";
+        el.banner.style.borderColor = "rgba(255,147,147,.24)";
+        el.banner.style.color = "#ffe5e5";
+      } else {
+        el.banner.style.background = "rgba(121,242,168,.12)";
+        el.banner.style.borderColor = "rgba(121,242,168,.24)";
+        el.banner.style.color = "#e3ffee";
+      }
+    }
+
+    function clearBanner() {
+      el.banner.style.display = "none";
+      el.banner.textContent = "";
+    }
+
+    function getSelectedShow() {
+      return state.shows.find((show) => String(show.id) === String(state.selectedShowId)) || null;
+    }
+
+    function updateStats() {
+      el.statShows.textContent = String(state.shows.length);
+      el.statEpisodes.textContent = String(state.episodes.length);
+      el.statCreator.textContent =
+        state.profile?.display_name ||
+        state.profile?.username ||
+        state.user?.email ||
+        "Guest";
+
+      const selected = getSelectedShow();
+      el.statSelected.textContent = selected ? selected.title : "None";
+    }
+
+    async function loadSessionAndProfile() {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      state.user = userData?.user || null;
+
+      if (!state.user) {
+        state.profile = null;
+        updateStats();
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id,display_name,username")
+        .eq("id", state.user.id)
+        .maybeSingle();
+
+      state.profile = profile || null;
+    }
+
+    async function loadShows() {
+      const { data, error } = await supabase
+        .from("podcast_shows")
+        .select(`
+          id,
+          creator_id,
+          title,
+          slug,
+          description,
+          cover_url,
+          is_featured,
+          visibility,
+          episode_count,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      state.shows = data || [];
+
+      if (!state.selectedShowId && state.shows.length) {
+        state.selectedShowId = state.shows[0].id;
+      }
+    }
+
+    async function loadEpisodes() {
+      const { data, error } = await supabase
+        .from("podcast_episodes")
+        .select(`
+          id,
+          show_id,
+          creator_id,
+          title,
+          description,
+          audio_url,
+          cover_url,
+          episode_number,
+          duration_seconds,
+          is_featured,
+          is_published,
+          created_at
+        `)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      state.episodes = data || [];
+    }
+
+    function renderShowSelect() {
+      if (!state.shows.length) {
+        el.episodeShow.innerHTML = `<option value="">No shows yet</option>`;
+        el.selectedShowInfo.textContent = "Create a show first.";
+        return;
+      }
+
+      el.episodeShow.innerHTML = state.shows.map((show) => `
+        <option value="${show.id}" ${String(show.id) === String(state.selectedShowId) ? "selected" : ""}>
+          ${escapeHtml(show.title)}
+        </option>
+      `).join("");
+
+      updateSelectedShowInfo();
+    }
+
+    function updateSelectedShowInfo() {
+      const selected = getSelectedShow();
+
+      if (!selected) {
+        el.selectedShowInfo.textContent = "Select a show first.";
+        return;
+      }
+
+      const episodeCount = state.episodes.filter((ep) => String(ep.show_id) === String(selected.id)).length;
+      el.selectedShowInfo.textContent = `${selected.title} • ${selected.visibility} • ${episodeCount} current episodes`;
+    }
+
+    function renderShowList() {
+      if (!state.shows.length) {
+        el.showList.innerHTML = `<div class="empty">No podcast shows yet. Create the first one above.</div>`;
+        return;
+      }
+
+      el.showList.innerHTML = state.shows.map((show) => {
+        const selected = String(show.id) === String(state.selectedShowId);
+        const episodeCount = state.episodes.filter((ep) => String(ep.show_id) === String(show.id)).length;
+
+        return `
+          <div class="show-item">
+            <div class="show-top">
+              <div>
+                <div class="show-title">${escapeHtml(show.title)}</div>
+                <div class="show-desc">${escapeHtml(show.description || "")}</div>
+              </div>
+              <span class="pill">${escapeHtml(show.visibility || "public")}</span>
+            </div>
+
+            <div class="pill-row">
+              ${show.is_featured ? `<span class="pill">featured</span>` : ``}
+              <span class="pill">${episodeCount} episodes</span>
+              <span class="pill">${escapeHtml(show.slug || "no slug")}</span>
+            </div>
+
+            <div class="action-row" style="margin-top:0;">
+              <button class="btn-dark select-show-btn" data-id="${show.id}">
+                ${selected ? "Selected" : "Select Show"}
+              </button>
+              <a class="btn-dark" href="/podcast.html?show=${encodeURIComponent(show.id)}" style="display:inline-flex;align-items:center;">Open Podcast</a>
+              <a class="btn-dark" href="/radio.html?mode=podcast&show=${encodeURIComponent(show.id)}" style="display:inline-flex;align-items:center;">Open Radio</a>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".select-show-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          state.selectedShowId = btn.dataset.id;
+          el.episodeShow.value = btn.dataset.id;
+          updateSelectedShowInfo();
+          updateStats();
+          renderShowList();
+        });
+      });
+    }
+
+    async function createShow(event) {
+      event.preventDefault();
+      clearBanner();
+
+      if (!state.user) {
+        showBanner("Sign in first so your show can save under your creator account.", "error");
+        return;
+      }
+
+      const title = el.showTitle.value.trim();
+      const slug = slugify(el.showSlug.value.trim() || title);
+      const description = el.showDesc.value.trim() || null;
+      const cover_url = el.showCover.value.trim() || FALLBACK_COVER;
+      const visibility = el.showVisibility.value;
+      const is_featured = el.showFeatured.value === "true";
+      const episode_count = Number(el.showEpisodeCount.value || 0);
+
+      if (!title) {
+        showBanner("Show title is required.", "error");
+        return;
+      }
+
+      el.createShowBtn.disabled = true;
+      el.createShowBtn.textContent = "Creating...";
+
+      const payload = {
+        creator_id: state.user.id,
+        title,
+        slug,
+        description,
+        cover_url,
+        is_featured,
+        visibility,
+        episode_count
+      };
+
+      const { data, error } = await supabase
+        .from("podcast_shows")
+        .insert(payload)
+        .select()
+        .single();
+
+      el.createShowBtn.disabled = false;
+      el.createShowBtn.textContent = "Create Show";
+
+      if (error) {
+        console.error("[podcast-upload] create show error:", error);
+        showBanner(error.message || "Could not create show.", "error");
+        return;
+      }
+
+      showBanner("Podcast show created.");
+      el.showForm.reset();
+      el.showVisibility.value = "public";
+      el.showFeatured.value = "true";
+      el.showEpisodeCount.value = "0";
+
+      await loadShows();
+      await loadEpisodes();
+      state.selectedShowId = data.id;
+      renderShowSelect();
+      renderShowList();
+      updateStats();
+    }
+
+    async function createEpisode(event) {
+      event.preventDefault();
+      clearBanner();
+
+      if (!state.user) {
+        showBanner("Sign in first so your episode can save under your creator account.", "error");
+        return;
+      }
+
+      const show_id = el.episodeShow.value;
+      const title = el.episodeTitle.value.trim();
+      const description = el.episodeDesc.value.trim() || null;
+      const audio_url = el.episodeAudio.value.trim();
+      const cover_url = el.episodeCover.value.trim() || FALLBACK_COVER;
+      const is_published = el.episodePublished.value === "true";
+      const is_featured = el.episodeFeatured.value === "true";
+      const duration_seconds = Number(el.episodeDuration.value || 0);
+
+      if (!show_id) {
+        showBanner("Select a show first.", "error");
+        return;
+      }
+
+      if (!title) {
+        showBanner("Episode title is required.", "error");
+        return;
+      }
+
+      if (!audio_url) {
+        showBanner("Audio URL is required.", "error");
+        return;
+      }
+
+      const existingForShow = state.episodes.filter((ep) => String(ep.show_id) === String(show_id));
+      const highestEpisode = existingForShow.reduce((max, ep) => Math.max(max, Number(ep.episode_number || 0)), 0);
+      const episode_number = Number(el.episodeNumber.value || 0) || highestEpisode + 1;
+
+      el.createEpisodeBtn.disabled = true;
+      el.createEpisodeBtn.textContent = "Uploading...";
+
+      const payload = {
+        show_id,
+        creator_id: state.user.id,
+        title,
+        description,
+        audio_url,
+        cover_url,
+        episode_number,
+        duration_seconds,
+        is_featured,
+        is_published
+      };
+
+      const { error } = await supabase
+        .from("podcast_episodes")
+        .insert(payload);
+
+      el.createEpisodeBtn.disabled = false;
+      el.createEpisodeBtn.textContent = "Upload Episode";
+
+      if (error) {
+        console.error("[podcast-upload] create episode error:", error);
+        showBanner(error.message || "Could not upload episode.", "error");
+        return;
+      }
+
+      const selectedShow = state.shows.find((show) => String(show.id) === String(show_id));
+
+      if (selectedShow) {
+        await supabase
+          .from("podcast_shows")
+          .update({
+            episode_count: Number(selectedShow.episode_count || 0) + 1
+          })
+          .eq("id", show_id);
+      }
+
+      showBanner("Podcast episode uploaded.");
+      el.episodeForm.reset();
+      el.episodePublished.value = "true";
+      el.episodeFeatured.value = "false";
+      el.episodeShow.value = show_id;
+      state.selectedShowId = show_id;
+
+      await loadShows();
+      await loadEpisodes();
+      renderShowSelect();
+      renderShowList();
+      updateStats();
+    }
+
+    async function boot() {
+      try {
+        clearBanner();
+        await loadSessionAndProfile();
+        await Promise.all([loadShows(), loadEpisodes()]);
+        renderShowSelect();
+        renderShowList();
+        updateStats();
+
+        const params = new URLSearchParams(window.location.search);
+        const showId = params.get("show");
+        if (showId && state.shows.some((show) => String(show.id) === String(showId))) {
+          state.selectedShowId = showId;
+          renderShowSelect();
+          renderShowList();
+          updateStats();
+        }
+      } catch (error) {
+        console.error("[podcast-upload] boot error:", error);
+        showBanner(error.message || "Could not load podcast upload sync.", "error");
+      }
+    }
+
+    el.showTitle.addEventListener("input", () => {
+      if (!el.showSlug.value.trim()) {
+        el.showSlug.placeholder = slugify(el.showTitle.value.trim() || "rich-bizness-talks");
+      }
+    });
+
+    el.episodeShow.addEventListener("change", () => {
+      state.selectedShowId = el.episodeShow.value || null;
+      updateSelectedShowInfo();
+      updateStats();
+      renderShowList();
+    });
+
+    el.showForm.addEventListener("submit", createShow);
+    el.episodeForm.addEventListener("submit", createEpisode);
+
+    boot();
+  </script>
+</body>
+</html>
