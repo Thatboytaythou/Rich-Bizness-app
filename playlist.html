@@ -4,209 +4,920 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness — Playlists</title>
-
   <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      color: #fff;
+    :root{
+      --bg:#06110b;
+      --bg2:#081712;
+      --panel:rgba(8,17,13,.88);
+      --panel-2:rgba(10,20,15,.92);
+      --line:rgba(80,255,170,.12);
+      --line-strong:rgba(80,255,170,.24);
+      --text:#ecfff2;
+      --muted:#98b8a4;
+      --green:#79f2a8;
+      --green-2:#43d37c;
+      --gold:#f1d16b;
+      --blue:#8ebcff;
+      --danger:#ff8ea1;
+      --radius:22px;
+      --shadow:0 28px 64px rgba(0,0,0,.38);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{
+      min-height:100vh;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.95)),
-        url('/images/brand/logo-music-label.png') center/cover no-repeat fixed;
+        linear-gradient(180deg, rgba(4,10,8,.9), rgba(4,14,10,.95)),
+        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center/cover fixed no-repeat;
     }
 
-    .container {
-      max-width: 1300px;
-      margin: auto;
-      padding: 20px;
+    a{color:inherit;text-decoration:none}
+
+    .shell{
+      width:min(1380px,94%);
+      margin:0 auto;
+      padding:24px 0 50px;
     }
 
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
     }
 
-    .nav a, .btn {
-      padding: 10px 14px;
-      border-radius: 10px;
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      font-weight: bold;
-      cursor: pointer;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:14px 18px;
+      backdrop-filter:blur(10px);
     }
 
-    .btn {
-      background: gold;
-      color: black;
+    .brand-badge{
+      width:58px;
+      height:58px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      font-size:1.15rem;
+      color:#072214;
+      background:linear-gradient(135deg,var(--green),#c7ffd8);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
     }
 
-    .hero {
-      padding: 30px;
-      border-radius: 20px;
-      background: rgba(0,0,0,0.6);
-      margin-bottom: 20px;
+    .brand h1{
+      margin:0;
+      font-size:1.65rem;
+      line-height:1;
     }
 
-    .hero h1 {
-      font-size: 42px;
-      margin: 0;
+    .brand p{
+      margin:.4rem 0 0;
+      color:var(--muted);
+      font-weight:700;
+      font-size:.94rem;
     }
 
-    .toolbar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    input {
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      width: 100%;
-      max-width: 400px;
+    .nav a{
+      padding:12px 16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(12,20,16,.9);
+      font-weight:800;
     }
 
-    .filters button {
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      background: rgba(255,255,255,0.1);
-      color: white;
+    .nav a.active,
+    .nav a:hover{
+      background:rgba(18,38,28,.96);
+      border-color:var(--line-strong);
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
-      gap: 16px;
+    .banner{
+      display:none;
+      margin-bottom:16px;
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid transparent;
+      font-weight:800;
     }
 
-    .card {
-      background: rgba(0,0,0,0.6);
-      border-radius: 16px;
-      overflow: hidden;
-      border: 1px solid rgba(255,255,255,0.1);
+    .hero{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      margin-bottom:18px;
     }
 
-    .card img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      background:var(--panel);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      backdrop-filter:blur(10px);
     }
 
-    .card-body {
-      padding: 14px;
+    .card-header{
+      padding:18px 20px 14px;
+      border-bottom:1px solid var(--line);
     }
 
-    .card h3 {
-      margin: 0 0 6px;
+    .card-header h2,
+    .card-header h3{
+      margin:0;
     }
 
-    .card p {
-      font-size: 13px;
-      color: #ccc;
+    .card-header p{
+      margin:.45rem 0 0;
+      color:var(--muted);
+      font-weight:600;
     }
 
-    .actions {
-      margin-top: 10px;
-      display: flex;
-      gap: 10px;
+    .card-body{
+      padding:18px 20px 20px;
     }
 
-    .actions button {
-      flex: 1;
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
+    .hero-copy h2{
+      margin:0;
+      font-size:clamp(2.2rem,4vw,3.9rem);
+      line-height:.94;
+      letter-spacing:-.04em;
+      max-width:760px;
     }
 
-    .actions button:first-child {
-      background: gold;
-      color: black;
+    .hero-copy p{
+      margin:14px 0 18px;
+      color:var(--muted);
+      max-width:720px;
+      font-size:1rem;
+      line-height:1.6;
     }
 
-    .actions button:last-child {
-      background: rgba(255,255,255,0.1);
-      color: white;
+    .hero-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
     }
 
-    .notice {
-      display: none;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
+    .btn{
+      border:none;
+      cursor:pointer;
+      border-radius:14px;
+      padding:13px 16px;
+      font-weight:900;
+      transition:.18s ease;
+      font:inherit;
     }
 
-    .error {
-      background: #ff3b5c;
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{
+      color:#062416;
+      background:linear-gradient(135deg,var(--green),#b8ffd1);
+    }
+    .btn-gold{
+      color:#241800;
+      background:linear-gradient(135deg,var(--gold),#ffe9aa);
+    }
+    .btn-dark{
+      color:var(--text);
+      background:rgba(13,22,17,.95);
+      border:1px solid var(--line);
     }
 
-    .success {
-      background: #28d17c;
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .stat{
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      border-radius:16px;
+      padding:16px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-size:.8rem;
+      font-weight:800;
+    }
+
+    .stat-value{
+      margin-top:8px;
+      font-size:1.7rem;
+      font-weight:900;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:14px;
+      align-items:center;
+      margin-bottom:18px;
+    }
+
+    .search-wrap{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .search-wrap input{
+      flex:1 1 280px;
+      min-width:220px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(8,14,11,.95);
+      color:var(--text);
+      padding:14px 14px;
+      font:inherit;
+      outline:none;
+    }
+
+    .search-wrap input:focus{
+      border-color:var(--line-strong);
+      box-shadow:0 0 0 3px rgba(121,242,168,.08);
+    }
+
+    .filters{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .filter-chip{
+      border:1px solid var(--line);
+      background:rgba(11,19,15,.95);
+      color:var(--text);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .filter-chip.active{
+      background:rgba(22,44,33,.96);
+      border-color:var(--line-strong);
+      color:var(--green);
+    }
+
+    .playlist-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+      gap:16px;
+    }
+
+    .playlist-card{
+      border:1px solid var(--line);
+      background:rgba(8,17,13,.95);
+      border-radius:20px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:100%;
+      box-shadow:var(--shadow);
+    }
+
+    .playlist-cover{
+      position:relative;
+      height:230px;
+      background:#0b140f;
+      overflow:hidden;
+    }
+
+    .playlist-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .playlist-overlay{
+      position:absolute;
+      inset:auto 12px 12px 12px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:.76rem;
+      font-weight:900;
+      background:rgba(7,16,12,.88);
+      border:1px solid rgba(255,255,255,.08);
+      color:#eafff2;
+      backdrop-filter:blur(6px);
+    }
+
+    .playlist-body{
+      padding:16px;
+      display:grid;
+      gap:10px;
+      flex:1;
+    }
+
+    .playlist-title{
+      font-size:1.12rem;
+      font-weight:900;
+      line-height:1.14;
+    }
+
+    .playlist-desc{
+      color:var(--muted);
+      font-size:.94rem;
+      line-height:1.5;
+      min-height:42px;
+    }
+
+    .playlist-meta{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:.84rem;
+      font-weight:800;
+    }
+
+    .playlist-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:auto;
+    }
+
+    .section-grid{
+      display:grid;
+      grid-template-columns:420px 1fr;
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field label{
+      color:var(--muted);
+      font-size:.86rem;
+      font-weight:800;
+      letter-spacing:.04em;
+    }
+
+    .field input,
+    .field select,
+    .field textarea{
+      width:100%;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(7,14,11,.94);
+      color:var(--text);
+      padding:13px 14px;
+      font:inherit;
+      outline:none;
+    }
+
+    .field textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus{
+      border-color:var(--line-strong);
+      box-shadow:0 0 0 3px rgba(121,242,168,.08);
+    }
+
+    .inline{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .empty{
+      color:var(--muted);
+      text-align:center;
+      padding:28px 16px;
+      border:1px dashed var(--line);
+      border-radius:18px;
+      background:rgba(8,15,12,.72);
+      font-weight:700;
+    }
+
+    .station-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .station-item{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:rgba(10,18,14,.94);
+      padding:14px;
+      display:grid;
+      gap:6px;
+    }
+
+    .station-item strong{
+      font-size:1rem;
+    }
+
+    .muted{color:var(--muted)}
+
+    @media (max-width: 1100px){
+      .hero,
+      .section-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 720px){
+      .toolbar{
+        grid-template-columns:1fr;
+      }
+      .stats,
+      .inline{
+        grid-template-columns:1fr;
+      }
+      .hero-copy h2{
+        font-size:2.5rem;
+      }
     }
   </style>
 </head>
-
 <body>
-  <div class="container">
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-badge">RB</div>
+        <div>
+          <h1>Playlist System</h1>
+          <p>Build playlists, run radio, control your music flow.</p>
+        </div>
+      </div>
 
-    <div class="nav">
-      <div>
+      <nav class="nav">
         <a href="/index.html">Home</a>
         <a href="/music.html">Music</a>
-        <a href="/artist/">Artist</a>
-      </div>
-
-      <div>
-        <a href="/live.html" class="btn">WE LIT 🔥</a>
-        <div id="global-session-nav"></div>
-      </div>
+        <a href="/radio.html">Radio</a>
+        <a class="active" href="/playlists.html">Playlists</a>
+        <a href="/artist/index.html">Artist</a>
+      </nav>
     </div>
 
-    <div id="playlist-error" class="notice error"></div>
-    <div id="playlist-success" class="notice success"></div>
+    <div id="playlist-banner" class="banner"></div>
 
-    <div class="hero">
-      <h1>Playlist System</h1>
-      <p>Build playlists, run radio, control your music flow.</p>
-
-      <div style="margin-top:15px;">
-        <button class="btn" id="create-playlist-btn">Create Playlist</button>
+    <section class="hero">
+      <div class="card">
+        <div class="card-body hero-copy">
+          <h2>Real playlists. Real stations. Real artist rotation.</h2>
+          <p>
+            This page is now set to pull real playlist rows from Supabase,
+            let creators build stations, and keep radio + artist channel
+            views tied together instead of floating as placeholders.
+          </p>
+          <div class="hero-actions">
+            <button class="btn btn-gold" id="jump-create-btn">Create Playlist</button>
+            <a class="btn btn-dark" href="/radio.html">Open Radio</a>
+          </div>
+        </div>
       </div>
-    </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Playlist stats</h3>
+          <p>Quick numbers for your music lane.</p>
+        </div>
+        <div class="card-body">
+          <div class="stats">
+            <div class="stat">
+              <div class="stat-label">Playlists</div>
+              <div class="stat-value" id="stat-playlists">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Featured</div>
+              <div class="stat-value" id="stat-featured">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Artist-made</div>
+              <div class="stat-value" id="stat-artist">0</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Night sets</div>
+              <div class="stat-value" id="stat-night">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <div class="toolbar">
-      <input id="playlist-search" placeholder="Search playlists..." />
+      <div class="search-wrap">
+        <input id="playlist-search" type="text" placeholder="Search playlists..." />
+        <button class="btn btn-dark" id="reload-playlists-btn">Reload</button>
+      </div>
 
       <div class="filters">
-        <button data-filter="all">All</button>
-        <button data-filter="featured">Featured</button>
-        <button data-filter="artist">Artist</button>
-        <button data-filter="night">Night</button>
+        <button class="filter-chip active" data-filter="all">All</button>
+        <button class="filter-chip" data-filter="featured">Featured</button>
+        <button class="filter-chip" data-filter="artist">Artist</button>
+        <button class="filter-chip" data-filter="night">Night</button>
       </div>
     </div>
 
-    <div id="playlist-grid" class="grid"></div>
+    <section class="card">
+      <div class="card-header">
+        <h3>Playlist lane</h3>
+        <p>Click any playlist to open the radio lane or jump into artist flow.</p>
+      </div>
+      <div class="card-body">
+        <div id="playlist-grid" class="playlist-grid"></div>
+      </div>
+    </section>
 
-    <div id="playlist-empty" style="display:none;text-align:center;margin-top:40px;">
-      <h3>No playlists yet</h3>
-      <p>Create one to get started.</p>
-    </div>
+    <section class="section-grid">
+      <div class="card" id="playlist-form-card">
+        <div class="card-header">
+          <h3>Create Playlist</h3>
+          <p>Add a playlist that can also feed your radio station page.</p>
+        </div>
+        <div class="card-body">
+          <form id="playlist-form" class="form-grid">
+            <div class="field">
+              <label for="playlist-title">Title</label>
+              <input id="playlist-title" placeholder="Smoke City Late Night" required />
+            </div>
 
+            <div class="field">
+              <label for="playlist-description">Description</label>
+              <textarea id="playlist-description" placeholder="Describe the playlist mood, scene, or station style."></textarea>
+            </div>
+
+            <div class="inline">
+              <div class="field">
+                <label for="playlist-category">Category</label>
+                <select id="playlist-category">
+                  <option value="all">all</option>
+                  <option value="featured">featured</option>
+                  <option value="artist">artist</option>
+                  <option value="night">night</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="playlist-featured">Featured</label>
+                <select id="playlist-featured">
+                  <option value="false">false</option>
+                  <option value="true">true</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="inline">
+              <div class="field">
+                <label for="playlist-cover-url">Cover URL</label>
+                <input id="playlist-cover-url" placeholder="/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png" />
+              </div>
+
+              <div class="field">
+                <label for="playlist-artist-name">Artist Name</label>
+                <input id="playlist-artist-name" placeholder="thatboytay3d" />
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="playlist-artist-id">Artist/Profile ID</label>
+              <input id="playlist-artist-id" placeholder="optional uuid / linked creator id" />
+            </div>
+
+            <button class="btn btn-primary" type="submit">Save Playlist</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3>Station preview</h3>
+          <p>These playlist rows are what your radio page can rotate through.</p>
+        </div>
+        <div class="card-body">
+          <div id="station-list" class="station-list"></div>
+        </div>
+      </div>
+    </section>
   </div>
 
-  <!-- PLAYLIST SYSTEM -->
-  <script type="module" src="/src/music/playlist-client.js"></script>
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
 
-  <!-- NAVBAR SESSION -->
-  <script type="module" src="/src/shared/navbar-session.js"></script>
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const state = {
+      playlists: [],
+      filter: "all"
+    };
+
+    const els = {
+      banner: document.getElementById("playlist-banner"),
+      grid: document.getElementById("playlist-grid"),
+      search: document.getElementById("playlist-search"),
+      reloadBtn: document.getElementById("reload-playlists-btn"),
+      chips: Array.from(document.querySelectorAll(".filter-chip")),
+      jumpCreateBtn: document.getElementById("jump-create-btn"),
+      formCard: document.getElementById("playlist-form-card"),
+      form: document.getElementById("playlist-form"),
+      title: document.getElementById("playlist-title"),
+      description: document.getElementById("playlist-description"),
+      category: document.getElementById("playlist-category"),
+      featured: document.getElementById("playlist-featured"),
+      coverUrl: document.getElementById("playlist-cover-url"),
+      artistName: document.getElementById("playlist-artist-name"),
+      artistId: document.getElementById("playlist-artist-id"),
+      stationList: document.getElementById("station-list"),
+      statPlaylists: document.getElementById("stat-playlists"),
+      statFeatured: document.getElementById("stat-featured"),
+      statArtist: document.getElementById("stat-artist"),
+      statNight: document.getElementById("stat-night")
+    };
+
+    function showBanner(message, type = "success") {
+      els.banner.style.display = "block";
+      els.banner.textContent = message;
+
+      if (type === "error") {
+        els.banner.style.background = "rgba(255,142,161,.13)";
+        els.banner.style.borderColor = "rgba(255,142,161,.28)";
+        els.banner.style.color = "#ffd7df";
+      } else {
+        els.banner.style.background = "rgba(121,242,168,.12)";
+        els.banner.style.borderColor = "rgba(121,242,168,.24)";
+        els.banner.style.color = "#ddffea";
+      }
+    }
+
+    function clearBanner() {
+      els.banner.style.display = "none";
+      els.banner.textContent = "";
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function normalizePlaylistRow(row) {
+      return {
+        id: row.id,
+        title: row.title || row.name || "Untitled Playlist",
+        description: row.description || "No playlist description yet.",
+        cover_url:
+          row.cover_url ||
+          row.image_url ||
+          "/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png",
+        category: row.category || "all",
+        is_featured: Boolean(row.is_featured),
+        artist_name: row.artist_name || row.owner_name || "Rich Bizness",
+        artist_id: row.artist_id || row.owner_id || null,
+        created_at: row.created_at || null
+      };
+    }
+
+    async function loadPlaylists() {
+      clearBanner();
+
+      const attempts = [
+        async () => supabase.from("playlists").select("*").order("created_at", { ascending: false }),
+        async () => supabase.from("playlists").select("*"),
+      ];
+
+      let data = null;
+      let error = null;
+
+      for (const attempt of attempts) {
+        const result = await attempt();
+        data = result.data;
+        error = result.error;
+        if (!error) break;
+      }
+
+      if (error) {
+        console.error("[playlists] load error:", error);
+        showBanner("Could not load playlists yet. We may need to tighten the playlists table shape next.", "error");
+        state.playlists = [];
+        renderAll();
+        return;
+      }
+
+      state.playlists = (data || []).map(normalizePlaylistRow);
+      renderAll();
+    }
+
+    function getFilteredPlaylists() {
+      const q = els.search.value.trim().toLowerCase();
+
+      return state.playlists.filter((playlist) => {
+        const passesSearch =
+          !q ||
+          [playlist.title, playlist.description, playlist.artist_name, playlist.category]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(q));
+
+        let passesFilter = true;
+        if (state.filter === "featured") passesFilter = playlist.is_featured;
+        if (state.filter === "artist") passesFilter = playlist.category === "artist" || !!playlist.artist_id;
+        if (state.filter === "night") passesFilter = playlist.category === "night";
+
+        return passesSearch && passesFilter;
+      });
+    }
+
+    function renderStats() {
+      const all = state.playlists;
+      els.statPlaylists.textContent = String(all.length);
+      els.statFeatured.textContent = String(all.filter((p) => p.is_featured).length);
+      els.statArtist.textContent = String(all.filter((p) => p.category === "artist" || p.artist_id).length);
+      els.statNight.textContent = String(all.filter((p) => p.category === "night").length);
+    }
+
+    function renderGrid() {
+      const playlists = getFilteredPlaylists();
+
+      if (!playlists.length) {
+        els.grid.innerHTML = `<div class="empty">No playlists matched your current lane yet.</div>`;
+        return;
+      }
+
+      els.grid.innerHTML = playlists.map((playlist) => `
+        <article class="playlist-card">
+          <div class="playlist-cover">
+            <img
+              src="${escapeHtml(playlist.cover_url)}"
+              alt="${escapeHtml(playlist.title)}"
+              onerror="this.src='/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png';"
+            />
+            <div class="playlist-overlay">
+              <span class="pill">${escapeHtml(playlist.category)}</span>
+              ${playlist.is_featured ? '<span class="pill">featured</span>' : ''}
+              <span class="pill">${escapeHtml(playlist.artist_name)}</span>
+            </div>
+          </div>
+
+          <div class="playlist-body">
+            <div class="playlist-title">${escapeHtml(playlist.title)}</div>
+            <div class="playlist-desc">${escapeHtml(playlist.description)}</div>
+
+            <div class="playlist-meta">
+              <span>${playlist.created_at ? new Date(playlist.created_at).toLocaleDateString() : "new drop"}</span>
+              <span>•</span>
+              <span>${escapeHtml(playlist.artist_name)}</span>
+            </div>
+
+            <div class="playlist-actions">
+              <a class="btn btn-primary" href="/radio.html?playlist=${encodeURIComponent(playlist.id)}">Open Radio</a>
+              <a class="btn btn-dark" href="/artist/index.html${playlist.artist_id ? `?artist=${encodeURIComponent(playlist.artist_id)}` : ""}">Artist</a>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderStations() {
+      const featured = [...state.playlists]
+        .filter((playlist) => playlist.is_featured || playlist.category === "artist" || playlist.category === "night")
+        .slice(0, 6);
+
+      if (!featured.length) {
+        els.stationList.innerHTML = `<div class="empty">No station-ready playlists yet. Create one from the left lane.</div>`;
+        return;
+      }
+
+      els.stationList.innerHTML = featured.map((playlist) => `
+        <div class="station-item">
+          <strong>${escapeHtml(playlist.title)}</strong>
+          <div class="muted">${escapeHtml(playlist.description)}</div>
+          <div class="playlist-actions">
+            <a class="btn btn-gold" href="/radio.html?playlist=${encodeURIComponent(playlist.id)}">Play Station</a>
+            <a class="btn btn-dark" href="/artist/index.html${playlist.artist_id ? `?artist=${encodeURIComponent(playlist.artist_id)}` : ""}">
+              View Artist
+            </a>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderAll() {
+      renderStats();
+      renderGrid();
+      renderStations();
+    }
+
+    async function createPlaylist(event) {
+      event.preventDefault();
+      clearBanner();
+
+      const payload = {
+        title: els.title.value.trim(),
+        description: els.description.value.trim() || null,
+        category: els.category.value || "all",
+        is_featured: els.featured.value === "true",
+        cover_url: els.coverUrl.value.trim() || null,
+        artist_name: els.artistName.value.trim() || null,
+        artist_id: els.artistId.value.trim() || null
+      };
+
+      if (!payload.title) {
+        showBanner("Playlist title is required.", "error");
+        return;
+      }
+
+      const { error } = await supabase.from("playlists").insert(payload);
+
+      if (error) {
+        console.error("[playlists] create error:", error);
+        showBanner(error.message || "Could not create playlist.", "error");
+        return;
+      }
+
+      showBanner("Playlist created.");
+      els.form.reset();
+      els.category.value = "all";
+      els.featured.value = "false";
+      await loadPlaylists();
+    }
+
+    function bindEvents() {
+      els.reloadBtn.addEventListener("click", loadPlaylists);
+      els.search.addEventListener("input", renderGrid);
+
+      els.chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          state.filter = chip.dataset.filter || "all";
+          els.chips.forEach((item) => item.classList.remove("active"));
+          chip.classList.add("active");
+          renderGrid();
+        });
+      });
+
+      els.jumpCreateBtn.addEventListener("click", () => {
+        els.formCard.scrollIntoView({ behavior: "smooth", block: "start" });
+        els.title.focus();
+      });
+
+      els.form.addEventListener("submit", createPlaylist);
+    }
+
+    async function boot() {
+      bindEvents();
+      await loadPlaylists();
+    }
+
+    boot();
+  </script>
 </body>
 </html>
