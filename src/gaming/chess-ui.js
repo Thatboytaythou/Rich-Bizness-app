@@ -1,366 +1,225 @@
-// src/gaming/chess-ui.js
-
 import {
-  FILES,
-  RANKS_WHITE,
-  RANKS_BLACK,
-  coordsToSquare,
-  squareToCoords,
-  getCapturedPiecesFromMoves,
-  getMaterialScore
+  formatSeconds,
+  getOrderedFiles,
+  getOrderedRanks,
+  PIECES,
+  squareToCoord,
+  coordToSquare,
+  getPieceAt,
+  getPieceColor
 } from "./chess-state.js";
-
-export const PIECE_ICONS = {
-  wp: "♙",
-  wr: "♖",
-  wn: "♘",
-  wb: "♗",
-  wq: "♕",
-  wk: "♔",
-  bp: "♟",
-  br: "♜",
-  bn: "♞",
-  bb: "♝",
-  bq: "♛",
-  bk: "♚"
-};
-
-function safeText(el, value) {
-  if (!el) return;
-  el.textContent = value ?? "";
-}
-
-function safeHTML(el, value) {
-  if (!el) return;
-  el.innerHTML = value ?? "";
-}
-
-export function formatClock(seconds = 0) {
-  const safe = Math.max(0, Math.floor(Number(seconds) || 0));
-  const mins = String(Math.floor(safe / 60)).padStart(2, "0");
-  const secs = String(safe % 60).padStart(2, "0");
-  return `${mins}:${secs}`;
-}
-
-export function updateClockUI(state, el = {}) {
-  safeText(el.whiteClock, formatClock(state.whiteTime));
-  safeText(el.blackClock, formatClock(state.blackTime));
-
-  el.whiteClockCard?.classList.toggle("active", state.turn === "white");
-  el.blackClockCard?.classList.toggle("active", state.turn === "black");
-}
-
-export function updateMetaUI(state, el = {}) {
-  safeText(el.roomTitle, state.roomTitle || "No Room");
-  safeText(el.roomStatus, state.roomStatus || state.status || "Waiting");
-  safeText(
-    el.roomTurn,
-    state.turn ? state.turn.charAt(0).toUpperCase() + state.turn.slice(1) : "White"
-  );
-  safeText(el.roomRole, state.roomRole || "Viewer");
-  safeText(el.roomType, state.roomType || state.mode || "Casual");
-
-  safeText(el.gameResultTitle, state.resultTitle || "Match ready");
-  safeText(
-    el.gameResultText,
-    state.resultText || "Start a game and lock in your first move."
-  );
-}
-
-export function updateInviteLink(link, el = {}) {
-  safeText(
-    el.inviteLink,
-    link || "Open a live room to generate an invite link."
-  );
-}
-
-export function updateModeButtons(state, el = {}) {
-  const map = {
-    cpu: el.modeCpu,
-    local: el.modeLocal,
-    room: el.modeRoom,
-    view: el.modeView
-  };
-
-  Object.entries(map).forEach(([key, node]) => {
-    node?.classList.toggle("active", state.mode === key);
-  });
-}
-
-export function updateCapturedUI(state, el = {}) {
-  const captured =
-    state.whiteCaptured && state.blackCaptured
-      ? { whiteCaptured: state.whiteCaptured, blackCaptured: state.blackCaptured }
-      : getCapturedPiecesFromMoves(state.moves || []);
-
-  const whiteIcons = captured.whiteCaptured.map((p) => PIECE_ICONS[p] || "");
-  const blackIcons = captured.blackCaptured.map((p) => PIECE_ICONS[p] || "");
-
-  safeHTML(
-    el.whiteCaptured,
-    whiteIcons.length
-      ? whiteIcons.map((icon) => `<span>${icon}</span>`).join("")
-      : `<span style="opacity:.45;font-size:14px;">—</span>`
-  );
-
-  safeHTML(
-    el.blackCaptured,
-    blackIcons.length
-      ? blackIcons.map((icon) => `<span>${icon}</span>`).join("")
-      : `<span style="opacity:.45;font-size:14px;">—</span>`
-  );
-
-  const whiteScore = getMaterialScore(captured.whiteCaptured);
-  const blackScore = getMaterialScore(captured.blackCaptured);
-
-  if (el.whiteCapturedLabel) {
-    el.whiteCapturedLabel.textContent =
-      whiteScore > 0 ? `Captured by White (+${whiteScore})` : "Captured by White";
-  }
-
-  if (el.blackCapturedLabel) {
-    el.blackCapturedLabel.textContent =
-      blackScore > 0 ? `Captured by Black (+${blackScore})` : "Captured by Black";
-  }
-}
-
-export function renderMoves(moves = [], container) {
-  if (!container) return;
-
-  if (!moves.length) {
-    safeHTML(
-      container,
-      `<div class="move-item"><strong>No moves yet</strong><span>Start a match to build history.</span></div>`
-    );
-    return;
-  }
-
-  container.innerHTML = moves
-    .map((move, index) => {
-      const side = move.color
-        ? move.color.charAt(0).toUpperCase() + move.color.slice(1)
-        : index % 2 === 0
-          ? "White"
-          : "Black";
-
-      return `
-        <div class="move-item">
-          <strong>#${index + 1} • ${side}</strong>
-          <span>${move.san || `${move.from}-${move.to}`}</span>
-        </div>
-      `;
-    })
-    .join("");
-}
-
-export function renderRooms(rooms = [], activeRoomId, container, onSelect) {
-  if (!container) return;
-
-  if (!rooms.length) {
-    safeHTML(
-      container,
-      `<div class="room-item"><strong>No live rooms loaded</strong><span>Create one when you are ready to run live chess.</span></div>`
-    );
-    return;
-  }
-
-  container.innerHTML = "";
-  rooms.forEach((room) => {
-    const item = document.createElement("button");
-    item.type = "button";
-    item.className = "room-item";
-    if (room.id === activeRoomId) item.classList.add("active");
-
-    item.innerHTML = `
-      <strong>${room.title || room.slug || "Untitled Room"}</strong>
-      <span>
-        ${(room.visibility || "public")} • ${(room.room_type || room.type || "casual")} •
-        ${(room.status || "waiting")}
-      </span>
-    `;
-
-    item.addEventListener("click", () => {
-      if (typeof onSelect === "function") onSelect(room);
-    });
-
-    container.appendChild(item);
-  });
-}
-
-export function showNotice(type, message, el = {}) {
-  const errorEl = el.errorNotice;
-  const successEl = el.successNotice;
-
-  if (errorEl) {
-    errorEl.style.display = "none";
-    errorEl.textContent = "";
-  }
-
-  if (successEl) {
-    successEl.style.display = "none";
-    successEl.textContent = "";
-  }
-
-  if (!message) return;
-
-  if (type === "error" && errorEl) {
-    errorEl.textContent = message;
-    errorEl.style.display = "block";
-  }
-
-  if (type === "success" && successEl) {
-    successEl.textContent = message;
-    successEl.style.display = "block";
-  }
-}
-
-export function clearNotices(el = {}) {
-  showNotice(null, "", el);
-}
-
-export function renderBoard(state, boardEl, handlers = {}) {
-  if (!boardEl) return;
-
-  const orientation = state.orientation === "black" ? "black" : "white";
-  const rankOrder = orientation === "white" ? RANKS_WHITE : RANKS_BLACK;
-  const fileOrder = orientation === "white" ? FILES : [...FILES].reverse();
-
-  boardEl.innerHTML = "";
-
-  rankOrder.forEach((rank, visualRow) => {
-    fileOrder.forEach((file, visualCol) => {
-      const square = `${file}${rank}`;
-      const coords = squareToCoords(square);
-      const piece = coords ? state.board[coords.row][coords.col] : null;
-
-      const squareEl = document.createElement("button");
-      squareEl.type = "button";
-      squareEl.className = "square";
-
-      const actualCol = FILES.indexOf(file);
-      const actualRow = 8 - rank;
-      const isLight = (actualRow + actualCol) % 2 === 0;
-
-      squareEl.classList.add(isLight ? "light" : "dark");
-      squareEl.dataset.square = square;
-      squareEl.dataset.row = String(visualRow);
-      squareEl.dataset.col = String(visualCol);
-
-      if (state.selectedSquare === square) {
-        squareEl.classList.add("selected");
-      }
-
-      const legalMoves = Array.isArray(state.legalMoves) ? state.legalMoves : [];
-      const legalForSquare = legalMoves.find((m) => m.to === square);
-
-      if (legalForSquare) {
-        if (legalForSquare.capture) {
-          squareEl.classList.add("capture-dot");
-        } else {
-          squareEl.classList.add("move-dot");
-        }
-      }
-
-      if (state.lastMove && (state.lastMove.from === square || state.lastMove.to === square)) {
-        squareEl.classList.add("last-move");
-      }
-
-      if (state.checkSquare === square) {
-        squareEl.classList.add("in-check");
-      }
-
-      if (piece) {
-        const pieceEl = document.createElement("span");
-        pieceEl.className = "piece";
-        pieceEl.textContent = PIECE_ICONS[piece] || "";
-        squareEl.appendChild(pieceEl);
-      }
-
-      squareEl.addEventListener("click", () => {
-        if (typeof handlers.onSquareClick === "function") {
-          handlers.onSquareClick(square);
-        }
-      });
-
-      boardEl.appendChild(squareEl);
-    });
-  });
-}
-
-export function updateBoardFileLabels(state, topEl, bottomEl) {
-  const files = state.orientation === "black" ? [...FILES].reverse() : FILES;
-
-  const render = (node) => {
-    if (!node) return;
-    node.innerHTML = files.map((f) => `<span>${f}</span>`).join("");
-  };
-
-  render(topEl);
-  render(bottomEl);
-}
 
 export function collectChessElements() {
   return {
+    error: document.getElementById("chess-error"),
+    success: document.getElementById("chess-success"),
     board: document.getElementById("chess-board"),
-    whiteClock: document.getElementById("white-clock"),
-    blackClock: document.getElementById("black-clock"),
-    whiteClockCard: document.getElementById("white-clock-card"),
-    blackClockCard: document.getElementById("black-clock-card"),
-
     roomTitle: document.getElementById("room-title"),
     roomStatus: document.getElementById("room-status"),
     roomTurn: document.getElementById("room-turn"),
     roomRole: document.getElementById("room-role"),
     roomType: document.getElementById("room-type"),
-
+    whiteClock: document.getElementById("white-clock"),
+    blackClock: document.getElementById("black-clock"),
+    whiteClockCard: document.getElementById("white-clock-card"),
+    blackClockCard: document.getElementById("black-clock-card"),
     whiteCaptured: document.getElementById("white-captured"),
     blackCaptured: document.getElementById("black-captured"),
-
-    gameResultTitle: document.getElementById("game-result-title"),
-    gameResultText: document.getElementById("game-result-text"),
-
-    roomList: document.getElementById("room-list"),
-    moveList: document.getElementById("move-list"),
-
-    inviteLink: document.getElementById("invite-link"),
-
-    errorNotice: document.getElementById("chess-error"),
-    successNotice: document.getElementById("chess-success"),
-
+    resultTitle: document.getElementById("game-result-title"),
+    resultText: document.getElementById("game-result-text"),
     modeCpu: document.getElementById("mode-cpu"),
     modeLocal: document.getElementById("mode-local"),
     modeRoom: document.getElementById("mode-room"),
     modeView: document.getElementById("mode-view"),
-
-    boardFilesTop: document.getElementById("board-files-top"),
-    boardFilesBottom: document.getElementById("board-files-bottom")
+    cpuDifficulty: document.getElementById("cpu-difficulty"),
+    playerColor: document.getElementById("player-color"),
+    gameTime: document.getElementById("game-time"),
+    startCpuBtn: document.getElementById("start-cpu-btn"),
+    newLocalBtn: document.getElementById("new-local-btn"),
+    joinWhiteBtn: document.getElementById("join-white-btn"),
+    joinBlackBtn: document.getElementById("join-black-btn"),
+    flipBoardBtn: document.getElementById("flip-board-btn"),
+    refreshRoomBtn: document.getElementById("refresh-room-btn"),
+    resignBtn: document.getElementById("resign-btn"),
+    resetBtn: document.getElementById("reset-btn"),
+    rematchBtn: document.getElementById("rematch-btn"),
+    createRoomTitle: document.getElementById("create-room-title"),
+    createRoomSlug: document.getElementById("create-room-slug"),
+    createRoomVisibility: document.getElementById("create-room-visibility"),
+    createRoomTime: document.getElementById("create-room-time"),
+    createRoomType: document.getElementById("create-room-type"),
+    createRoomBtn: document.getElementById("create-room-btn"),
+    inviteLink: document.getElementById("invite-link"),
+    copyLinkBtn: document.getElementById("copy-link-btn"),
+    roomList: document.getElementById("room-list"),
+    moveList: document.getElementById("move-list"),
+    filesTop: document.getElementById("board-files-top"),
+    filesBottom: document.getElementById("board-files-bottom")
   };
 }
 
-export function renderAll(state, el, handlers = {}) {
-  renderBoard(state, el.board, handlers);
-  updateClockUI(state, el);
-  updateMetaUI(state, el);
-  updateCapturedUI(state, el);
-  renderMoves(state.moves || [], el.moveList);
-  updateBoardFileLabels(state, el.boardFilesTop, el.boardFilesBottom);
-  updateModeButtons(state, el);
+export function showNotice(el, type, message) {
+  const target = type === "error" ? el.error : el.success;
+  const other = type === "error" ? el.success : el.error;
+  if (other) {
+    other.style.display = "none";
+    other.textContent = "";
+  }
+  if (!target) return;
+  target.textContent = message;
+  target.style.display = "block";
+  window.clearTimeout(target._hideTimer);
+  target._hideTimer = window.setTimeout(() => {
+    target.style.display = "none";
+  }, 2400);
 }
 
-export default {
-  PIECE_ICONS,
-  formatClock,
-  updateClockUI,
-  updateMetaUI,
-  updateInviteLink,
-  updateModeButtons,
-  updateCapturedUI,
-  renderMoves,
-  renderRooms,
-  showNotice,
-  clearNotices,
-  renderBoard,
-  updateBoardFileLabels,
-  collectChessElements,
-  renderAll
-};
+export function renderFiles(el, orientation) {
+  const files = getOrderedFiles(orientation);
+  [el.filesTop, el.filesBottom].forEach((row) => {
+    if (!row) return;
+    row.innerHTML = files.map((file) => `<span>${file}</span>`).join("");
+  });
+}
+
+export function renderCaptured(el, state) {
+  if (el.whiteCaptured) {
+    el.whiteCaptured.innerHTML = state.whiteCaptured.map((piece) => `<span>${PIECES[piece] || ""}</span>`).join("");
+  }
+  if (el.blackCaptured) {
+    el.blackCaptured.innerHTML = state.blackCaptured.map((piece) => `<span>${PIECES[piece] || ""}</span>`).join("");
+  }
+}
+
+export function renderMeta(el, state) {
+  if (el.roomTitle) el.roomTitle.textContent = state.roomTitle || "No Room";
+  if (el.roomStatus) el.roomStatus.textContent = state.roomStatus || "Ready";
+  if (el.roomTurn) el.roomTurn.textContent = state.turn[0].toUpperCase() + state.turn.slice(1);
+  if (el.roomRole) el.roomRole.textContent = state.roomRole || "Viewer";
+  if (el.roomType) el.roomType.textContent = state.roomType || "CPU";
+  if (el.resultTitle) el.resultTitle.textContent = state.result?.title || "Match ready";
+  if (el.resultText) el.resultText.textContent = state.result?.text || "Start a game and lock in your first move.";
+}
+
+export function renderClocks(el, state) {
+  if (el.whiteClock) el.whiteClock.textContent = formatSeconds(state.whiteTime);
+  if (el.blackClock) el.blackClock.textContent = formatSeconds(state.blackTime);
+
+  el.whiteClockCard?.classList.toggle("active", state.turn === "white" && !state.gameOver);
+  el.blackClockCard?.classList.toggle("active", state.turn === "black" && !state.gameOver);
+}
+
+export function renderRooms(el, state) {
+  if (!el.roomList) return;
+  if (!state.rooms?.length) {
+    el.roomList.innerHTML = `<div class="room-item"><strong>No live rooms loaded</strong><span>Create one when you are ready to run live room mode.</span></div>`;
+    return;
+  }
+
+  el.roomList.innerHTML = state.rooms
+    .map((room) => {
+      const active = room.id === state.currentRoomId ? "active" : "";
+      return `
+        <button class="room-item ${active}" data-room-id="${room.id}" type="button">
+          <strong>${room.title || room.slug || "Chess Room"}</strong>
+          <span>${room.visibility || "public"} • ${room.room_type || room.type || "casual"}</span>
+        </button>
+      `;
+    })
+    .join("");
+}
+
+export function renderMoves(el, state) {
+  if (!el.moveList) return;
+  if (!state.moveHistory.length) {
+    el.moveList.innerHTML = `<div class="move-item"><strong>No moves yet</strong><span>Live move history for the active match.</span></div>`;
+    return;
+  }
+
+  el.moveList.innerHTML = state.moveHistory
+    .map((move, index) => `
+      <div class="move-item">
+        <strong>#${index + 1} • ${move.color[0].toUpperCase() + move.color.slice(1)}</strong>
+        <span>${move.notation}</span>
+      </div>
+    `)
+    .join("");
+}
+
+export function renderModeButtons(el, state) {
+  el.modeCpu?.classList.toggle("active", state.mode === "cpu");
+  el.modeLocal?.classList.toggle("active", state.mode === "local");
+  el.modeRoom?.classList.toggle("active", state.mode === "room");
+  el.modeView?.classList.toggle("active", state.mode === "view");
+}
+
+export function renderBoard(state, el, onSquareClick) {
+  if (!el.board) return;
+
+  const files = getOrderedFiles(state.orientation);
+  const ranks = getOrderedRanks(state.orientation);
+
+  const selected = state.selectedSquare;
+  const legalSet = new Set(state.legalTargets || []);
+  const captureSet = new Set(state.captureTargets || []);
+  const lastFrom = state.lastMove?.from;
+  const lastTo = state.lastMove?.to;
+
+  const inCheckSquare = (() => {
+    if (!state.result?.title?.toLowerCase().includes("check") && !state.result?.text?.toLowerCase().includes("check")) return null;
+    for (const rank of ranks) {
+      for (const file of files) {
+        const square = `${file}${rank}`;
+        const piece = getPieceAt(state.board, square);
+        if (piece === (state.turn === "white" ? "wk" : "bk")) return square;
+      }
+    }
+    return null;
+  })();
+
+  const html = [];
+
+  ranks.forEach((rank) => {
+    files.forEach((file) => {
+      const square = `${file}${rank}`;
+      const coord = squareToCoord(square);
+      const piece = state.board[coord.row][coord.col];
+      const isLight = (coord.row + coord.col) % 2 === 0;
+      const classes = ["square", isLight ? "light" : "dark"];
+      if (selected === square) classes.push("selected");
+      if (legalSet.has(square)) classes.push("move-dot");
+      if (captureSet.has(square)) classes.push("capture-dot");
+      if (square === lastFrom || square === lastTo) classes.push("last-move");
+      if (square === inCheckSquare) classes.push("in-check");
+
+      html.push(`
+        <button class="${classes.join(" ")}" type="button" data-square="${square}">
+          <span class="piece">${piece ? PIECES[piece] : ""}</span>
+        </button>
+      `);
+    });
+  });
+
+  el.board.innerHTML = html.join("");
+
+  el.board.querySelectorAll("[data-square]").forEach((node) => {
+    node.addEventListener("click", () => onSquareClick(node.dataset.square));
+  });
+}
+
+export function renderAll(state, el, { onSquareClick }) {
+  renderFiles(el, state.orientation);
+  renderModeButtons(el, state);
+  renderMeta(el, state);
+  renderClocks(el, state);
+  renderCaptured(el, state);
+  renderBoard(state, el, onSquareClick);
+  renderRooms(el, state);
+  renderMoves(el, state);
+
+  if (el.inviteLink) {
+    el.inviteLink.textContent = state.roomSlug
+      ? `${window.location.origin}/games/chess/index.html?room=${encodeURIComponent(state.roomSlug)}`
+      : "Open a live room to generate an invite link.";
+  }
+}
