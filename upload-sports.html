@@ -2,209 +2,798 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Bizness | Upload Sports</title>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Upload Sports</title>
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green:#7dff71;
-      --gold:#f5d76e;
-      --blue:#67b7ff;
-      --bg:rgba(0,0,0,0.6);
+    :root{
+      --bg:#05090a;
+      --bg2:#091317;
+      --panel:rgba(9,15,18,.9);
+      --panel2:rgba(12,20,24,.96);
+      --line:rgba(103,243,158,.12);
+      --line-strong:rgba(103,243,158,.24);
+      --text:#effff6;
+      --muted:#98b7ab;
+      --green:#67f39e;
+      --green2:#26c96f;
+      --gold:#f0d06d;
+      --gold2:#ffe89a;
+      --danger:#ff7f7f;
+      --shadow:0 28px 80px rgba(0,0,0,.44);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
     }
 
-    body {
-      margin:0;
-      font-family:Arial;
-      color:white;
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.95)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed;
+        radial-gradient(circle at top, rgba(103,243,158,.08), transparent 22%),
+        linear-gradient(180deg,var(--bg2),var(--bg));
+      overflow-x:hidden;
     }
 
-    .page { max-width:900px; margin:auto; padding:20px; }
+    a{text-decoration:none;color:inherit}
+    button,input,select,textarea{font:inherit}
+    img{display:block;max-width:100%}
 
-    .box {
-      background:var(--bg);
-      border:1px solid rgba(125,255,113,0.2);
-      border-radius:20px;
-      padding:20px;
+    .page{
+      width:min(1520px, calc(100% - 20px));
+      margin:0 auto;
+      padding:14px 0 34px;
+      display:grid;
+      gap:14px;
     }
 
-    h1 { color:var(--green); }
-
-    input,select,textarea {
-      width:100%;
-      padding:14px;
-      margin-top:10px;
-      border-radius:12px;
-      border:none;
-      background:#111;
-      color:white;
+    .topbar,.section,.panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
     }
 
-    button {
-      margin-top:15px;
-      padding:14px;
-      border:none;
-      border-radius:12px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-mark{
+      width:52px;
+      height:52px;
+      border-radius:17px;
+      display:grid;
+      place-items:center;
       font-weight:900;
-      background:var(--green);
+      color:#072114;
+      background:linear-gradient(135deg,var(--green),#d7ffe8);
+    }
+
+    .brand-copy h1{
+      margin:0;
+      font-size:20px;
+      line-height:1;
+    }
+
+    .brand-copy p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .nav a,
+    .btn,
+    input,
+    select,
+    textarea{
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+    }
+
+    .nav a{font-weight:800}
+    input,select,textarea{outline:none;width:100%}
+    textarea{min-height:110px;resize:vertical}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
       cursor:pointer;
+      font-weight:900;
+      transition:.18s ease;
+      min-height:46px;
     }
 
-    .status {
-      margin-top:15px;
-      padding:12px;
-      background:#111;
-      border-radius:10px;
-      white-space:pre-wrap;
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      color:#051a10;
+      border-color:transparent;
+    }
+    .btn.gold{
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:#2a1c03;
+      border-color:transparent;
+    }
+    .btn.danger{
+      background:rgba(255,127,127,.12);
+      border-color:rgba(255,127,127,.22);
+      color:#ffd6d6;
     }
 
-    .preview {
-      margin-top:15px;
-      background:#111;
-      padding:10px;
-      border-radius:10px;
+    .hero{
+      min-height:340px;
+      position:relative;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.82)),
+        url('/images/brand/8FE83A11-A7F6-45D7-9840-D8A066A88684.png') center/cover no-repeat;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255,232,154,.18), transparent 24%),
+        linear-gradient(180deg, transparent, rgba(0,0,0,.84));
+    }
+
+    .hero-copy{
+      position:absolute;
+      left:24px;
+      right:24px;
+      bottom:24px;
+      z-index:2;
+      display:grid;
+      gap:12px;
+      max-width:860px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      width:max-content;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.34);
+      color:var(--green);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .hero-copy h2{
+      margin:0;
+      font-size:clamp(34px, 6vw, 70px);
+      line-height:.92;
+      letter-spacing:-.05em;
+    }
+
+    .hero-copy p{
+      margin:0;
+      color:#d8f4e2;
+      font-size:15px;
+      line-height:1.65;
+      max-width:760px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel-head{
+      padding:18px 20px 0;
+    }
+
+    .panel-head h3{
+      margin:0;
+      font-size:24px;
+    }
+
+    .panel-head p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .panel-body{
+      padding:18px 20px 20px;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .triple{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    .status-box{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .preview-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:6px;
+    }
+
+    .preview-card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:20px;
+      overflow:hidden;
+      min-height:280px;
+      display:grid;
+      grid-template-rows:auto 1fr;
+    }
+
+    .preview-card h4{
+      margin:0;
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      font-size:16px;
+    }
+
+    .preview-body{
+      padding:14px;
+      display:grid;
+      align-items:center;
+      justify-items:center;
+      color:var(--muted);
+    }
+
+    .preview-body img,
+    .preview-body video{
+      width:100%;
+      max-height:360px;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.08);
+      background:#0b1110;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(0,0,0,.35);
+      color:#fff;
+    }
+
+    .badge.live{
+      color:#03180e;
+      background:linear-gradient(135deg,var(--green),#d6ffe7);
+      border-color:transparent;
+    }
+
+    .badge.gold{
+      color:#2c1d02;
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      border-color:transparent;
+    }
+
+    .rail{
+      display:grid;
+      gap:12px;
+    }
+
+    .rail-card{
+      position:relative;
+      min-height:170px;
+      overflow:hidden;
+      border-radius:20px;
+      border:1px solid var(--line);
+      background:#091111;
+    }
+
+    .rail-bg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      transform:scale(1.03);
+    }
+
+    .rail-shade{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.84));
+    }
+
+    .rail-content{
+      position:relative;
+      z-index:2;
+      height:100%;
+      padding:16px;
+      display:grid;
+      gap:10px;
+      align-content:end;
+    }
+
+    .rail-content h4{
+      margin:0;
+      font-size:20px;
+      line-height:1.02;
+    }
+
+    .rail-content p{
+      margin:0;
+      color:#d8f1e1;
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .hint-list{
+      display:grid;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .hint-item{
+      padding:14px;
+      border-radius:16px;
+      background:var(--panel2);
+      border:1px solid var(--line);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    @media (max-width:1180px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:900px){
+      .preview-grid,
+      .triple{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:640px){
+      .row{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
-
 <body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness — Upload Sports</h1>
+          <p>Elite sports upload lane • highlights • reels • clips • thumbnails • featured motion</p>
+        </div>
+      </div>
 
-<div class="page">
-  <div class="box">
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/sports.html">Sports</a>
+        <a href="/sports-picks.html">Sports Picks</a>
+        <a href="/sports-leaderboard.html">Leaderboard</a>
+        <a href="/live.html">Live</a>
+      </nav>
+    </header>
 
-    <h1>Upload Sports</h1>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Sports upload desk</div>
+        <h2>Upload sports clips into the Rich Bizness sports ecosystem.</h2>
+        <p>
+          Drop highlights, interviews, reactions, score clips, training footage,
+          reels, and featured sports content straight into your synced sports lane.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#uploadPanel">Upload Now</a>
+          <a class="btn gold" href="/sports.html">Back To Sports</a>
+        </div>
+      </div>
+    </section>
 
-    <input id="title" placeholder="Title (Highlight, Take, Clip)">
-    <input id="sport" placeholder="Sport (NBA, NFL, etc)">
-    <input id="team" placeholder="Team (optional)">
-    <textarea id="caption" placeholder="Caption / take / analysis"></textarea>
+    <div class="layout">
+      <section class="panel" id="uploadPanel">
+        <div class="panel-head">
+          <h3>Upload Sports Content</h3>
+          <p>Connected to your <strong>sports-media</strong> storage bucket and <strong>sports_uploads</strong> table.</p>
+        </div>
 
-    <select id="featured">
-      <option value="false">Normal Post</option>
-      <option value="true">Featured Post</option>
-    </select>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="row">
+              <input id="titleInput" type="text" placeholder="Title" />
+              <select id="contentTypeInput">
+                <option value="clip">clip</option>
+                <option value="highlight">highlight</option>
+                <option value="interview">interview</option>
+                <option value="reaction">reaction</option>
+                <option value="short">short</option>
+                <option value="reel">reel</option>
+              </select>
+            </div>
 
-    <input id="media" type="file" accept="video/*,image/*">
-    <input id="thumb" type="file" accept="image/*">
+            <div class="triple">
+              <input id="sportNameInput" type="text" placeholder="Sport name" />
+              <input id="teamNameInput" type="text" placeholder="Team name" />
+              <input id="athleteNameInput" type="text" placeholder="Athlete name" />
+            </div>
 
-    <button id="uploadBtn">Upload Sports Content</button>
+            <div class="row">
+              <input id="positionNameInput" type="text" placeholder="Position name" />
+              <input id="clipTypeInput" type="text" placeholder="Clip type (Win / Drill / Play / Recap)" />
+            </div>
 
-    <div id="status" class="status"></div>
-    <div id="preview" class="preview"></div>
+            <textarea id="captionInput" placeholder="Tell people what happened in this clip..."></textarea>
 
+            <div class="row">
+              <div>
+                <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:13px;">Main File</label>
+                <input id="mainFileInput" type="file" accept="image/*,video/*" />
+              </div>
+              <div>
+                <label style="display:block;margin-bottom:8px;color:var(--muted);font-size:13px;">Thumbnail File (optional)</label>
+                <input id="thumbFileInput" type="file" accept="image/*" />
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <label style="display:flex;align-items:center;gap:8px;font-weight:800;">
+                <input id="featuredToggle" type="checkbox" style="width:auto;min-height:auto;" />
+                Mark as featured
+              </label>
+              <span class="badge gold">Bucket: sports-media</span>
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <button class="btn primary" id="uploadBtn" type="button">Upload Sports Content</button>
+              <a class="btn" href="/sports.html">Back To Sports</a>
+              <a class="btn gold" href="/live.html">Go Live</a>
+            </div>
+
+            <div id="statusBox" class="status-box">Ready to upload into the sports lane.</div>
+          </div>
+
+          <div class="preview-grid">
+            <div class="preview-card">
+              <h4>Main File Preview</h4>
+              <div id="mainPreview" class="preview-body">No file selected yet.</div>
+            </div>
+
+            <div class="preview-card">
+              <h4>Thumbnail Preview</h4>
+              <div id="thumbPreview" class="preview-body">No thumbnail selected yet.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside style="display:grid;gap:14px;align-content:start;">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Sports Live Rail</h3>
+            <p>ESPN-type motion tied into your Rich Bizness sports section.</p>
+          </div>
+          <div class="panel-body">
+            <div class="rail">
+              <article class="rail-card">
+                <div class="rail-bg" style="background-image:url('/images/brand/8FE83A11-A7F6-45D7-9840-D8A066A88684.png')"></div>
+                <div class="rail-shade"></div>
+                <div class="rail-content">
+                  <span class="badge live">Live Ready</span>
+                  <h4>Basketball Highlight Lane</h4>
+                  <p>Drop crossover clips, dunks, recaps, training runs, and elite basketball motion.</p>
+                </div>
+              </article>
+
+              <article class="rail-card">
+                <div class="rail-bg" style="background-image:url('/images/brand/6F26FF98-8FFE-4A1C-B9FB-C4233274CF8A.png')"></div>
+                <div class="rail-shade"></div>
+                <div class="rail-content">
+                  <span class="badge gold">Featured</span>
+                  <h4>Baseball Reel Desk</h4>
+                  <p>Upload bat flips, catches, wins, dugout reactions, and stadium content.</p>
+                </div>
+              </article>
+
+              <article class="rail-card">
+                <div class="rail-bg" style="background-image:url('/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png')"></div>
+                <div class="rail-shade"></div>
+                <div class="rail-content">
+                  <span class="badge live">Prime Time</span>
+                  <h4>Football Highlight Motion</h4>
+                  <p>Score clips, drive recaps, player interviews, and game-day uploads all in one lane.</p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Upload Notes</h3>
+            <p>Keep sports uploads synced and clean.</p>
+          </div>
+          <div class="panel-body">
+            <div class="hint-list">
+              <div class="hint-item">Use the main file for the actual clip, image, or sports media asset.</div>
+              <div class="hint-item">Use the thumbnail file when you want a custom card image for sports rails and lists.</div>
+              <div class="hint-item">Featured uploads can be used on the sports homepage, sports rail, and live sports decks.</div>
+              <div class="hint-item">This page writes to your <strong>sports_uploads</strong> table and uploads media into the <strong>sports-media</strong> bucket.</div>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
   </div>
-</div>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
-)
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
 
-const statusBox = document.getElementById("status")
-const previewBox = document.getElementById("preview")
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-function status(msg){ statusBox.textContent = msg }
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
 
-function slugify(text){
-  return text.toLowerCase().replace(/[^a-z0-9]+/g,"-")
-}
+    const SPORTS_BUCKET = "sports-media";
 
-async function upload(){
+    const el = {
+      titleInput: document.getElementById("titleInput"),
+      contentTypeInput: document.getElementById("contentTypeInput"),
+      sportNameInput: document.getElementById("sportNameInput"),
+      teamNameInput: document.getElementById("teamNameInput"),
+      athleteNameInput: document.getElementById("athleteNameInput"),
+      positionNameInput: document.getElementById("positionNameInput"),
+      clipTypeInput: document.getElementById("clipTypeInput"),
+      captionInput: document.getElementById("captionInput"),
+      mainFileInput: document.getElementById("mainFileInput"),
+      thumbFileInput: document.getElementById("thumbFileInput"),
+      featuredToggle: document.getElementById("featuredToggle"),
+      uploadBtn: document.getElementById("uploadBtn"),
+      statusBox: document.getElementById("statusBox"),
+      mainPreview: document.getElementById("mainPreview"),
+      thumbPreview: document.getElementById("thumbPreview")
+    };
 
-  try{
-    status("Uploading sports content...")
+    let currentUser = null;
 
-    const {data} = await supabase.auth.getSession()
-    const user = data.session?.user
-    if(!user) throw new Error("Login required")
-
-    const title = document.getElementById("title").value
-    const sport = document.getElementById("sport").value
-    const team = document.getElementById("team").value
-    const caption = document.getElementById("caption").value
-    const featured = document.getElementById("featured").value === "true"
-
-    const mediaFile = document.getElementById("media").files[0]
-    const thumbFile = document.getElementById("thumb").files[0]
-
-    if(!title || !mediaFile) throw new Error("Missing title or media")
-
-    const slug = slugify(title + "-" + Date.now())
-
-    // upload media
-    const mediaPath = `${user.id}/${slug}`
-    const {error:mediaErr} = await supabase.storage
-      .from("sports-media")
-      .upload(mediaPath, mediaFile)
-
-    if(mediaErr) throw mediaErr
-
-    const {data:mediaUrlData} = supabase.storage
-      .from("sports-media")
-      .getPublicUrl(mediaPath)
-
-    let thumbUrl = ""
-
-    if(thumbFile){
-      const thumbPath = `${user.id}/${slug}-thumb`
-      await supabase.storage
-        .from("sports-thumbnails")
-        .upload(thumbPath, thumbFile)
-
-      const {data:thumbUrlData} = supabase.storage
-        .from("sports-thumbnails")
-        .getPublicUrl(thumbPath)
-
-      thumbUrl = thumbUrlData.publicUrl
+    function setStatus(message, type = "normal") {
+      el.statusBox.textContent = message;
+      el.statusBox.style.color =
+        type === "error" ? "#ffd5d5" :
+        type === "success" ? "#dcffe9" :
+        "var(--muted)";
+      el.statusBox.style.borderColor =
+        type === "error" ? "rgba(255,127,127,.22)" :
+        type === "success" ? "rgba(103,243,158,.22)" :
+        "var(--line)";
+      el.statusBox.style.background =
+        type === "error" ? "rgba(255,127,127,.08)" :
+        type === "success" ? "rgba(103,243,158,.08)" :
+        "rgba(255,255,255,.04)";
     }
 
-    const isVideo = mediaFile.type.startsWith("video")
-
-    // save to DB
-    const {error:dbErr} = await supabase
-      .from("sports_uploads")
-      .insert([{
-        user_id:user.id,
-        title,
-        caption,
-        sport_name:sport,
-        team_name:team,
-        video_url: isVideo ? mediaUrlData.publicUrl : "",
-        file_url: !isVideo ? mediaUrlData.publicUrl : "",
-        thumbnail_url:thumbUrl,
-        is_featured:featured,
-        views:0,
-        likes:0
-      }])
-
-    if(dbErr) throw dbErr
-
-    status("SUCCESS sports uploaded")
-
-    previewBox.innerHTML = `
-      <p><strong>${title}</strong></p>
-      <p>${caption}</p>
-      ${isVideo 
-        ? `<video src="${mediaUrlData.publicUrl}" controls width="100%"></video>` 
-        : `<img src="${mediaUrlData.publicUrl}" width="100%">`
+    async function ensureUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) throw error;
+      currentUser = data?.user || null;
+      if (!currentUser) {
+        throw new Error("You need to sign in before uploading sports content.");
       }
-    `
+      return currentUser;
+    }
 
-  }catch(err){
-    status("ERROR: "+err.message)
-  }
-}
+    function slugify(value) {
+      return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
+    }
 
-document.getElementById("uploadBtn").onclick = upload
-</script>
+    function randomName(prefix, fileName) {
+      const ext = (fileName.split(".").pop() || "bin").toLowerCase();
+      return `${prefix}/${crypto.randomUUID()}.${ext}`;
+    }
 
+    function previewFile(file, target) {
+      if (!file) {
+        target.innerHTML = "No file selected yet.";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+
+      if (file.type.startsWith("video/")) {
+        target.innerHTML = `<video controls src="${url}"></video>`;
+      } else if (file.type.startsWith("image/")) {
+        target.innerHTML = `<img src="${url}" alt="preview" />`;
+      } else {
+        target.innerHTML = `<div>${file.name}</div>`;
+      }
+    }
+
+    async function uploadToBucket(path, file) {
+      const { error } = await supabase.storage
+        .from(SPORTS_BUCKET)
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data } = supabase.storage.from(SPORTS_BUCKET).getPublicUrl(path);
+      return data?.publicUrl || "";
+    }
+
+    async function saveUpload() {
+      try {
+        await ensureUser();
+
+        const title = el.titleInput.value.trim();
+        const contentType = el.contentTypeInput.value;
+        const sportName = el.sportNameInput.value.trim();
+        const teamName = el.teamNameInput.value.trim();
+        const athleteName = el.athleteNameInput.value.trim();
+        const positionName = el.positionNameInput.value.trim();
+        const clipType = el.clipTypeInput.value.trim();
+        const caption = el.captionInput.value.trim();
+        const mainFile = el.mainFileInput.files?.[0] || null;
+        const thumbFile = el.thumbFileInput.files?.[0] || null;
+        const isFeatured = el.featuredToggle.checked;
+
+        if (!title) throw new Error("Title is required.");
+        if (!mainFile) throw new Error("Main file is required.");
+
+        el.uploadBtn.disabled = true;
+        el.uploadBtn.textContent = "Uploading...";
+        setStatus("Uploading sports media...", "normal");
+
+        const folder = `${currentUser.id}/${slugify(sportName || "sports")}`;
+        const mainPath = randomName(folder, mainFile.name);
+        const fileUrl = await uploadToBucket(mainPath, mainFile);
+
+        let thumbnailUrl = "";
+        if (thumbFile) {
+          const thumbPath = randomName(`${folder}/thumbs`, thumbFile.name);
+          thumbnailUrl = await uploadToBucket(thumbPath, thumbFile);
+        } else if (mainFile.type.startsWith("image/")) {
+          thumbnailUrl = fileUrl;
+        }
+
+        const payload = {
+          user_id: currentUser.id,
+          title,
+          caption,
+          sport_name: sportName,
+          team_name: teamName,
+          athlete_name: athleteName,
+          position_name: positionName,
+          content_type: contentType,
+          clip_type: clipType,
+          file_url: fileUrl,
+          thumbnail_url: thumbnailUrl,
+          views: 0,
+          likes: 0,
+          is_featured: isFeatured,
+          created_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase.from("sports_uploads").insert(payload);
+        if (error) throw error;
+
+        setStatus("Sports content uploaded successfully.", "success");
+
+        el.titleInput.value = "";
+        el.contentTypeInput.value = "clip";
+        el.sportNameInput.value = "";
+        el.teamNameInput.value = "";
+        el.athleteNameInput.value = "";
+        el.positionNameInput.value = "";
+        el.clipTypeInput.value = "";
+        el.captionInput.value = "";
+        el.mainFileInput.value = "";
+        el.thumbFileInput.value = "";
+        el.featuredToggle.checked = false;
+        el.mainPreview.innerHTML = "No file selected yet.";
+        el.thumbPreview.innerHTML = "No thumbnail selected yet.";
+      } catch (error) {
+        console.error("[upload-sports] error:", error);
+        setStatus(error.message || "Could not upload sports content.", "error");
+      } finally {
+        el.uploadBtn.disabled = false;
+        el.uploadBtn.textContent = "Upload Sports Content";
+      }
+    }
+
+    function bindEvents() {
+      el.mainFileInput.addEventListener("change", () => {
+        previewFile(el.mainFileInput.files?.[0] || null, el.mainPreview);
+      });
+
+      el.thumbFileInput.addEventListener("change", () => {
+        previewFile(el.thumbFileInput.files?.[0] || null, el.thumbPreview);
+      });
+
+      el.uploadBtn.addEventListener("click", saveUpload);
+    }
+
+    bindEvents();
+  </script>
 </body>
 </html>
