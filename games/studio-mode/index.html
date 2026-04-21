@@ -33,6 +33,8 @@
       overflow-x:hidden;
     }
 
+    button, input, select { font: inherit; }
+
     .shell{
       width:min(1450px,95%);
       margin:0 auto;
@@ -168,7 +170,7 @@
       z-index:4;
       display:grid;
       gap:10px;
-      width:min(300px,90%);
+      width:min(320px,90%);
     }
 
     .status-card{
@@ -201,6 +203,7 @@
       width:min(36vw,360px);
       aspect-ratio:.64;
       z-index:2;
+      transition:transform .15s ease;
     }
 
     .avatar-shadow{
@@ -226,6 +229,34 @@
       border:1px solid rgba(255,223,143,.16);
       box-shadow:inset 0 0 40px rgba(255,190,80,.12), 0 16px 40px rgba(0,0,0,.42);
     }
+
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:999;
+      min-width:260px;
+      max-width:420px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(8,14,11,.94);
+      border:1px solid var(--line2);
+      color:var(--text);
+      box-shadow:var(--shadow);
+      opacity:0;
+      transform:translateY(16px);
+      pointer-events:none;
+      transition:.22s ease;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+
+    .toast.success{ border-color:rgba(120,255,180,.24); }
+    .toast.error{ border-color:rgba(255,127,127,.28); }
+    .toast.warn{ border-color:rgba(243,179,62,.28); }
 
     .hud{
       display:grid;
@@ -262,6 +293,7 @@
       align-items:center;
       gap:12px;
       margin-bottom:14px;
+      flex-wrap:wrap;
     }
 
     .section-head strong{
@@ -292,13 +324,17 @@
       cursor:pointer;
       border-radius:16px;
       padding:14px 15px;
-      font:inherit;
       font-weight:900;
       transition:.15s ease;
     }
 
     button:hover{transform:translateY(-1px)}
     button:active{transform:translateY(1px) scale(.99)}
+    button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none !important;
+    }
 
     .primary{
       color:#241704;
@@ -430,6 +466,7 @@
       opacity:1;
       transition:transform 1.2s ease-out, opacity 1.2s ease-out;
       text-shadow:0 0 14px rgba(255,255,255,.2);
+      z-index:5;
     }
 
     .note{color:#ffdc80}
@@ -452,6 +489,7 @@
       .hud,.actions,.upgrade-grid{grid-template-columns:1fr}
       .title-block{right:16px;max-width:none}
       .avatar-wrap{width:min(60vw,320px)}
+      .status-strip{position:static;width:100%;padding:18px;}
     }
   </style>
 </head>
@@ -493,6 +531,10 @@
           <div class="status-card">
             <div class="label">Game slug</div>
             <div class="value">studio-mode</div>
+          </div>
+          <div class="status-card">
+            <div class="label">Run status</div>
+            <div class="value" id="runStatus">Idle</div>
           </div>
         </div>
 
@@ -595,6 +637,8 @@
     </div>
   </div>
 
+  <div id="toast" class="toast"></div>
+
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
@@ -608,7 +652,7 @@
       window.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
 
-    const STORAGE_KEY = "rich_bizness_studio_mode_v2";
+    const STORAGE_KEY = "rich_bizness_studio_mode_v3";
     const GAME_SLUG = "studio-mode";
 
     const defaultState = {
@@ -641,6 +685,8 @@
     const avatarWrap = document.getElementById("avatarWrap");
     const stageEl = document.getElementById("stage");
     const profileNameEl = document.getElementById("profileName");
+    const runStatusEl = document.getElementById("runStatus");
+    const toastEl = document.getElementById("toast");
 
     const recordBtn = document.getElementById("recordBtn");
     const dropBtn = document.getElementById("dropBtn");
@@ -655,6 +701,7 @@
 
     let activeUser = null;
     let activeProfile = null;
+    let toastTimer = null;
 
     function loadState() {
       try {
@@ -676,8 +723,21 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
 
+    function showToast(message, type = "success") {
+      toastEl.textContent = message;
+      toastEl.className = `toast ${type} show`;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.className = `toast ${type}`;
+      }, 2200);
+    }
+
     function formatCash(value) {
       return "$" + Math.floor(value).toLocaleString();
+    }
+
+    function upgradeOwnedCount() {
+      return Object.values(state.upgrades).filter(Boolean).length;
     }
 
     function scoreFormula() {
@@ -698,8 +758,8 @@
       state.score = scoreFormula();
     }
 
-    function upgradeOwnedCount() {
-      return Object.values(state.upgrades).filter(Boolean).length;
+    function updateRunStatus(text) {
+      runStatusEl.textContent = text;
     }
 
     function log(message) {
@@ -713,8 +773,6 @@
       const strong = button.querySelector("strong");
       strong.textContent = owned ? ownedText : baseText;
       button.disabled = owned;
-      button.style.opacity = owned ? ".55" : "1";
-      button.style.cursor = owned ? "default" : "pointer";
     }
 
     function render() {
@@ -792,7 +850,10 @@
       animateAvatar(1.2);
       shower("record", 8);
       shower("smoke", 4);
+
+      updateRunStatus("Recording");
       log(`Recorded a new track. +${formatCash(cashGain)} and +${Math.floor(hypeGain)} hype.`);
+      showToast("Track recorded 🎙️", "success");
       saveState();
       render();
     }
@@ -800,6 +861,7 @@
     function dropSong() {
       if (state.hype < 10) {
         log("Not enough hype to drop a record yet. Build more buzz first.");
+        showToast("Need more hype before dropping a song.", "warn");
         return;
       }
 
@@ -818,7 +880,9 @@
       shower("cash", 8);
       shower("record", 6);
 
+      updateRunStatus("Song Dropped");
       log(`Dropped a song. +${Math.floor(fanGain)} fans and +${formatCash(cashGain)}.`);
+      showToast("Song dropped 🚀", "success");
       saveState();
       render();
     }
@@ -826,6 +890,7 @@
     function performLive() {
       if (state.hype < 20) {
         log("Need more hype before the crowd will really turn up.");
+        showToast("You need more hype to perform live.", "warn");
         return;
       }
 
@@ -849,7 +914,9 @@
       shower("cash", 9);
       shower("record", 8);
 
+      updateRunStatus("Live Performance");
       log(`Performed live. +${formatCash(cashGain)} and +${Math.floor(fanGain)} fans.`);
+      showToast("Performance went up 🎤", "success");
       saveState();
       render();
     }
@@ -861,7 +928,9 @@
       animateAvatar(1.25);
       shower("cash", 12);
 
+      updateRunStatus("Cashing Out");
       log(`Cashed out royalties and creator money. Bonus ${formatCash(payout)}.`);
+      showToast(`Cashed out ${formatCash(payout)} 💸`, "success");
       saveState();
       render();
     }
@@ -871,43 +940,51 @@
 
       if (state.cash < cost) {
         log(`Need ${formatCash(cost)} to unlock this upgrade.`);
+        showToast(`Need ${formatCash(cost)} first.`, "warn");
         return;
       }
 
       state.cash -= cost;
       state.upgrades[type] = true;
       shower("cash", 6);
+      updateRunStatus("Studio Upgraded");
       log(successMessage);
+      showToast("Upgrade purchased ✅", "success");
       saveState();
       render();
     }
 
     async function loadProfile() {
-      const { data: authData } = await supabase.auth.getUser();
-      activeUser = authData?.user || null;
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        activeUser = authData?.user || null;
 
-      if (!activeUser) {
-        profileNameEl.textContent = "Guest Creator";
-        return;
+        if (!activeUser) {
+          profileNameEl.textContent = "Guest Creator";
+          return;
+        }
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("display_name, username")
+          .eq("id", activeUser.id)
+          .maybeSingle();
+
+        activeProfile = profile || null;
+        profileNameEl.textContent =
+          profile?.display_name ||
+          profile?.username ||
+          activeUser.email ||
+          "Signed-in Creator";
+      } catch (error) {
+        console.error("[studio-mode] loadProfile error:", error);
       }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("display_name, username")
-        .eq("id", activeUser.id)
-        .maybeSingle();
-
-      activeProfile = profile || null;
-      profileNameEl.textContent =
-        profile?.display_name ||
-        profile?.username ||
-        activeUser.email ||
-        "Signed-in Creator";
     }
 
     async function saveRun() {
       if (!activeUser) {
         log("Sign in first so your studio run can save to leaderboard.");
+        showToast("Sign in first to save your run.", "warn");
         return;
       }
 
@@ -932,54 +1009,63 @@
       if (error) {
         console.error("[studio-mode] save run error:", error);
         log(`Could not save run: ${error.message}`);
+        showToast("Run could not save yet.", "error");
         return;
       }
 
+      updateRunStatus("Run Saved");
       log(`Run saved. Leaderboard score locked at ${state.score.toLocaleString()}.`);
+      showToast("Run saved to leaderboard 🏆", "success");
       await loadLeaderboard();
     }
 
     async function loadLeaderboard() {
-      const { data, error } = await supabase
-        .from("arcade_runs")
-        .select("id, user_id, score, cash_earned, fans_earned, level_reached, metadata, created_at")
-        .eq("game_slug", GAME_SLUG)
-        .order("score", { ascending: false })
-        .limit(8);
+      try {
+        const { data, error } = await supabase
+          .from("arcade_runs")
+          .select("id, user_id, score, cash_earned, fans_earned, level_reached, metadata, created_at")
+          .eq("game_slug", GAME_SLUG)
+          .order("score", { ascending: false })
+          .limit(8);
 
-      if (error) {
-        leaderboardEl.innerHTML = `<div class="tiny">Leaderboard could not load yet.</div>`;
-        return;
-      }
+        if (error) {
+          leaderboardEl.innerHTML = `<div class="tiny">Leaderboard could not load yet.</div>`;
+          return;
+        }
 
-      if (!data || !data.length) {
-        leaderboardEl.innerHTML = `<div class="tiny">No saved studio runs yet. Save the first one.</div>`;
-        return;
-      }
+        if (!data || !data.length) {
+          leaderboardEl.innerHTML = `<div class="tiny">No saved studio runs yet. Save the first one.</div>`;
+          return;
+        }
 
-      leaderboardEl.innerHTML = data.map((row, index) => {
-        const name =
-          row.metadata?.profile_name ||
-          `Creator ${String(row.user_id).slice(0, 6)}`;
+        leaderboardEl.innerHTML = data.map((row, index) => {
+          const name =
+            row.metadata?.profile_name ||
+            `Creator ${String(row.user_id).slice(0, 6)}`;
 
-        return `
-          <div class="leader-item">
-            <div>
-              <div class="name">#${index + 1} ${name}</div>
-              <div class="meta">
-                Level ${row.level_reached} • ${Math.floor(row.fans_earned).toLocaleString()} fans
+          return `
+            <div class="leader-item">
+              <div>
+                <div class="name">#${index + 1} ${name}</div>
+                <div class="meta">
+                  Level ${row.level_reached} • ${Math.floor(row.fans_earned).toLocaleString()} fans
+                </div>
               </div>
+              <div class="score">${Number(row.score || 0).toLocaleString()}</div>
             </div>
-            <div class="score">${Number(row.score || 0).toLocaleString()}</div>
-          </div>
-        `;
-      }).join("");
+          `;
+        }).join("");
+      } catch (error) {
+        leaderboardEl.innerHTML = `<div class="tiny">Leaderboard could not load yet.</div>`;
+      }
     }
 
     function resetRun() {
       localStorage.removeItem(STORAGE_KEY);
       Object.assign(state, structuredClone(defaultState));
+      updateRunStatus("Reset");
       log("Run reset. Studio cleared and ready for a new grind.");
+      showToast("Studio run reset.", "success");
       saveState();
       render();
     }
@@ -1015,4 +1101,3 @@
   </script>
 </body>
 </html>
-
