@@ -1,1 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Artist Manager — Rich Bizness</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg-1:#03140d;
+      --bg-2:#071d14;
+      --panel:rgba(8,18,14,.82);
+      --panel-2:rgba(11,26,18,.92);
+      --line:rgba(76,255,166,.18);
+      --line-strong:rgba(76,255,166,.36);
+      --text:#ecfff5;
+      --muted:#9dc8b1;
+      --green:#43f59b;
+      --green-2:#14d46f;
+      --gold:#ffd86b;
+      --red:#ff6e7b;
+      --blue:#86d8ff;
+      --shadow:0 18px 50px rgba(0,0,0,.38);
+      --radius:22px;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,.10), transparent 26%),
+        radial-gradient(circle at top right, rgba(255,216,107,.08), transparent 20%),
+        linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      color:var(--text);
+      font-family:Inter,Arial,Helvetica,sans-serif;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+    button,input,select,textarea{ font:inherit; }
+
+    .app{
+      width:min(1460px,94vw);
+      margin:0 auto;
+      padding:18px 0 60px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      backdrop-filter:blur(18px);
+      background:rgba(3,10,7,.62);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      margin:10px auto 18px;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:48px;
+      height:48px;
+      border-radius:15px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(135deg, rgba(67,245,155,.22), rgba(255,216,107,.12));
+      box-shadow:0 0 28px rgba(67,245,155,.12);
+      flex-shrink:0;
+    }
+
+    .brand-badge img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .brand-title{
+      font-size:1rem;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+
+    .brand-sub{
+      color:var(--muted);
+      font-size:.78rem;
+      margin-top:2px;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .nav a{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:.93rem;
+      transition:.2s ease;
+    }
+
+    .nav a:hover,
+    .nav a.active{
+      color:var(--text);
+      border-color:var(--line-strong);
+      background:rgba(67,245,155,.12);
+      box-shadow:0 0 20px rgba(67,245,155,.10);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .hero-card,
+    .side-card,
+    .panel,
+    .stat-card,
+    .track-card,
+    .editor-card,
+    .quick-card{
+      border:1px solid var(--line);
+      background:var(--panel);
+      backdrop-filter:blur(14px);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      min-height:340px;
+      overflow:hidden;
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.82)),
+        url('/images/brand/A4F9E199-6D52-4DD4-BFAB-3430A9C13074.png') center/cover no-repeat,
+        var(--panel);
+    }
+
+    .hero-glow{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(67,245,155,.16), transparent 28%),
+        radial-gradient(circle at 82% 26%, rgba(255,216,107,.12), transparent 24%);
+      pointer-events:none;
+    }
+
+    .hero-content{
+      position:relative;
+      z-index:2;
+      padding:28px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.28);
+      color:var(--green);
+      font-weight:800;
+      font-size:.84rem;
+      margin-bottom:14px;
+    }
+
+    .hero h1{
+      font-size:clamp(2rem,4vw,3.2rem);
+      line-height:1.03;
+      margin-bottom:12px;
+      max-width:700px;
+    }
+
+    .hero p{
+      color:#d7f6e7;
+      max-width:720px;
+      line-height:1.55;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:22px;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      border-radius:14px;
+      padding:13px 16px;
+      transition:.2s ease;
+      font-size:.95rem;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--green),var(--green-2));
+      color:#052012;
+      box-shadow:0 14px 28px rgba(20,212,111,.20);
+    }
+
+    .btn-secondary{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid var(--line-strong);
+    }
+
+    .btn-gold{
+      background:linear-gradient(135deg,#ffe187,#f2b84b);
+      color:#1c1200;
+      box-shadow:0 14px 28px rgba(242,184,75,.20);
+    }
+
+    .btn-danger{
+      background:linear-gradient(135deg,#ff958f,#ff6e7b);
+      color:#240709;
+      box-shadow:0 14px 28px rgba(255,110,123,.18);
+    }
+
+    .btn-blue{
+      background:linear-gradient(135deg,#9be4ff,#6fc8ff);
+      color:#062033;
+      box-shadow:0 14px 28px rgba(111,200,255,.18);
+    }
+
+    .btn:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .btn:hover:not(:disabled){
+      transform:translateY(-1px);
+      filter:brightness(1.04);
+    }
+
+    .side-stack{
+      display:grid;
+      gap:18px;
+    }
+
+    .side-card{
+      padding:18px;
+    }
+
+    .profile-head{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .avatar{
+      width:76px;
+      height:76px;
+      border-radius:20px;
+      overflow:hidden;
+      background:linear-gradient(135deg, rgba(67,245,155,.18), rgba(255,216,107,.10));
+      border:1px solid var(--line-strong);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      font-size:1.2rem;
+      flex-shrink:0;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .profile-name{
+      font-size:1.18rem;
+      font-weight:900;
+    }
+
+    .profile-meta{
+      color:var(--muted);
+      font-size:.92rem;
+      margin-top:4px;
+      line-height:1.4;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .status-box{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .status-label{
+      color:var(--muted);
+      font-size:.8rem;
+      margin-bottom:6px;
+    }
+
+    .status-value{
+      font-size:1.05rem;
+      font-weight:900;
+    }
+
+    .visual-card{
+      overflow:hidden;
+      border-radius:20px;
+      border:1px solid var(--line);
+      margin-top:14px;
+      min-height:220px;
+      background:#08120d;
+    }
+
+    .visual-card img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .stat-card{
+      padding:18px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:.84rem;
+      margin-bottom:10px;
+    }
+
+    .stat-value{
+      font-size:1.85rem;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:8px;
+    }
+
+    .stat-note{
+      color:#d8f7e8;
+      font-size:.86rem;
+      line-height:1.45;
+    }
+
+    .control-bar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr .8fr auto;
+      gap:12px;
+      margin-bottom:18px;
+    }
+
+    .control-bar input,
+    .control-bar select{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:14px 14px;
+      font-size:.95rem;
+    }
+
+    .control-bar input::placeholder{
+      color:#90bba5;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:18px;
+      align-items:start;
+    }
+
+    .panel{
+      padding:18px;
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .panel-title{
+      font-size:1.15rem;
+      font-weight:900;
+    }
+
+    .panel-sub{
+      color:var(--muted);
+      font-size:.9rem;
+      margin-top:4px;
+      line-height:1.45;
+    }
+
+    .tiny-link{
+      color:var(--green);
+      font-weight:800;
+      font-size:.92rem;
+    }
+
+    .track-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .track-card{
+      padding:14px;
+      background:var(--panel-2);
+      border-radius:20px;
+    }
+
+    .track-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .track-main{
+      display:flex;
+      gap:12px;
+      min-width:0;
+    }
+
+    .track-cover{
+      width:84px;
+      height:84px;
+      border-radius:16px;
+      overflow:hidden;
+      flex-shrink:0;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      font-size:.8rem;
+      text-align:center;
+      padding:8px;
+    }
+
+    .track-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .track-title{
+      font-size:1rem;
+      font-weight:900;
+      margin-bottom:6px;
+      word-break:break-word;
+    }
+
+    .track-meta{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .pill-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:8px;
+    }
+
+    .pill{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:.75rem;
+      font-weight:800;
+    }
+
+    .pill.public{ color:#89ffbf; }
+    .pill.private{ color:#ffcc9f; }
+    .pill.premium{ color:#ffe28d; }
+    .pill.featured{ color:#9cdfff; }
+
+    .track-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .mini-btn{
+      border:none;
+      cursor:pointer;
+      border-radius:12px;
+      padding:10px 12px;
+      font-weight:800;
+      font-size:.84rem;
+      transition:.2s ease;
+    }
+
+    .mini-btn.edit{
+      background:rgba(67,245,155,.12);
+      color:#dffbea;
+      border:1px solid var(--line);
+    }
+
+    .mini-btn.play{
+      background:rgba(111,200,255,.12);
+      color:#dff3ff;
+      border:1px solid rgba(111,200,255,.28);
+    }
+
+    .mini-btn.delete{
+      background:rgba(255,110,123,.12);
+      color:#ffd8dc;
+      border:1px solid rgba(255,110,123,.26);
+    }
+
+    .mini-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .track-audio{
+      margin-top:12px;
+    }
+
+    audio{
+      width:100%;
+      filter:invert(1) hue-rotate(65deg) saturate(1.2);
+    }
+
+    .editor-card{
+      padding:18px;
+      background:var(--panel-2);
+      position:sticky;
+      top:92px;
+    }
+
+    .editor-empty{
+      padding:22px;
+      border-radius:18px;
+      border:1px dashed var(--line-strong);
+      background:rgba(255,255,255,.02);
+      color:var(--muted);
+      text-align:center;
+      line-height:1.55;
+    }
+
+    .editor-form{
+      display:grid;
+      gap:14px;
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field label{
+      font-size:.9rem;
+      font-weight:800;
+      color:#dffbea;
+    }
+
+    .field input,
+    .field textarea,
+    .field select{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:14px 14px;
+      font-size:.95rem;
+    }
+
+    .field textarea{
+      min-height:110px;
+      resize:vertical;
+    }
+
+    .toggle-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    .toggle-card{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .toggle-card input{
+      margin-right:8px;
+      transform:translateY(1px);
+    }
+
+    .editor-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+    }
+
+    .status-message{
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color:#dffbea;
+      line-height:1.5;
+      display:none;
+      margin-bottom:14px;
+    }
+
+    .status-message.show{
+      display:block;
+    }
+
+    .status-message.error{
+      border-color:rgba(255,110,123,.42);
+      color:#ffd7db;
+      background:rgba(255,110,123,.08);
+    }
+
+    .status-message.success{
+      border-color:rgba(67,245,155,.38);
+      color:#dffbea;
+      background:rgba(67,245,155,.08);
+    }
+
+    .empty-state{
+      padding:26px;
+      border-radius:18px;
+      border:1px dashed var(--line-strong);
+      background:rgba(255,255,255,.02);
+      color:var(--muted);
+      text-align:center;
+      line-height:1.55;
+    }
+
+    .footer-space{ height:20px; }
+
+    @media (max-width: 1240px){
+      .hero,
+      .main-grid{
+        grid-template-columns:1fr;
+      }
+
+      .stats-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+
+      .editor-card{
+        position:static;
+      }
+    }
+
+    @media (max-width: 860px){
+      .topbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .nav{
+        justify-content:flex-start;
+      }
+
+      .control-bar,
+      .field-row,
+      .toggle-grid,
+      .status-grid{
+        grid-template-columns:1fr;
+      }
+
+      .track-top{
+        flex-direction:column;
+      }
+
+      .track-main{
+        flex-direction:column;
+      }
+
+      .stats-grid{
+        grid-template-columns:1fr;
+      }
+
+      .panel-head{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .hero-content{
+        padding:22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">
+          <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Rich Bizness brand" />
+        </div>
+        <div>
+          <div class="brand-title">Rich Bizness Artist Manager</div>
+          <div class="brand-sub">Manage releases, edit track info, control visibility, and move like a platform.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/playlist.html">Playlist</a>
+        <a href="/live.html">Live</a>
+        <a href="/gallery.html">Gallery</a>
+        <a href="/artist/index.html">Artist</a>
+        <a href="/artist/upload.html">Upload</a>
+        <a href="/artist/analytics.html">Analytics</a>
+        <a href="/artist/manage.html" class="active">Manage</a>
+        <a href="/profile.html">Profile</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+          <div class="eyebrow">🎛️ Rich Bizness Artist Manager</div>
+          <h1>Control Your Catalog Like a Real Artist Platform.</h1>
+          <p>
+            Edit track details, organize visibility, manage premium releases, feature your strongest work,
+            and keep your artist catalog synced across playlist, artist hub, upload flow, and analytics.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="goTo('/artist/upload.html')">Upload New Track</button>
+            <button class="btn btn-secondary" onclick="goTo('/artist/analytics.html')">Open Analytics</button>
+            <button class="btn btn-gold" onclick="reloadManager()">Refresh Catalog</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <aside class="side-card">
+          <div class="profile-head">
+            <div class="avatar" id="artistAvatar">🎤</div>
+            <div>
+              <div class="profile-name" id="artistName">Artist Loading...</div>
+              <div class="profile-meta" id="artistMeta">Checking manager session and creator profile...</div>
+            </div>
+          </div>
+
+          <div class="status-grid">
+            <div class="status-box">
+              <div class="status-label">Manager State</div>
+              <div class="status-value">Elite</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Catalog Sync</div>
+              <div class="status-value" id="catalogSync">On</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Edit Mode</div>
+              <div class="status-value" id="editMode">Ready</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Creator Access</div>
+              <div class="status-value" id="creatorAccess">Live</div>
+            </div>
+          </div>
+
+          <div class="visual-card">
+            <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Artist visual" />
+          </div>
+        </aside>
+
+        <aside class="side-card">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Quick Links</div>
+              <div class="panel-sub">Move fast across your creator system.</div>
+            </div>
+          </div>
+
+          <div style="display:grid;gap:10px;">
+            <a class="quick-card" href="/artist/index.html" style="padding:14px;">Artist Hub</a>
+            <a class="quick-card" href="/artist/upload.html" style="padding:14px;">Upload Center</a>
+            <a class="quick-card" href="/artist/analytics.html" style="padding:14px;">Analytics</a>
+            <a class="quick-card" href="/playlist.html" style="padding:14px;">Playlist</a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Catalog Size</div>
+        <div class="stat-value" id="statTracks">0</div>
+        <div class="stat-note">Tracks currently found for your artist account.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Public Tracks</div>
+        <div class="stat-value" id="statPublic">0</div>
+        <div class="stat-note">Tracks visible in your broader music flow.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Premium Tracks</div>
+        <div class="stat-value" id="statPremium">0</div>
+        <div class="stat-note">Exclusive or gated releases in your catalog.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Featured Tracks</div>
+        <div class="stat-value" id="statFeatured">0</div>
+        <div class="stat-note">Priority releases highlighted for the artist page.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Catalog Controls</div>
+          <div class="panel-sub">Search and filter your catalog before editing.</div>
+        </div>
+        <a class="tiny-link" href="/artist/upload.html">Add another release</a>
+      </div>
+
+      <div class="control-bar">
+        <input id="searchInput" type="text" placeholder="Search title, artist, genre, release type..." />
+        <select id="visibilityFilter">
+          <option value="all">All visibility</option>
+          <option value="public">Public only</option>
+          <option value="private">Private only</option>
+          <option value="premium">Premium only</option>
+        </select>
+        <select id="featureFilter">
+          <option value="all">All feature states</option>
+          <option value="featured">Featured only</option>
+          <option value="not_featured">Not featured</option>
+        </select>
+        <button class="btn btn-blue" type="button" onclick="clearFilters()">Clear</button>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Track Catalog</div>
+            <div class="panel-sub">Select a track to edit it on the right.</div>
+          </div>
+        </div>
+
+        <div id="statusMessage" class="status-message"></div>
+
+        <div id="trackList" class="track-list">
+          <div class="empty-state">Loading your artist catalog...</div>
+        </div>
+      </section>
+
+      <aside class="editor-card">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Track Editor</div>
+            <div class="panel-sub">Edit the selected release and save it back to Supabase.</div>
+          </div>
+        </div>
+
+        <div id="editorEmpty" class="editor-empty">
+          Select a track from the catalog to start editing.
+        </div>
+
+        <form id="editorForm" class="editor-form" style="display:none;">
+          <input type="hidden" id="editTrackId" />
+
+          <div class="field">
+            <label for="editTitle">Title</label>
+            <input id="editTitle" type="text" placeholder="Track title" />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="editArtist">Artist</label>
+              <input id="editArtist" type="text" placeholder="Artist name" />
+            </div>
+            <div class="field">
+              <label for="editGenre">Genre</label>
+              <input id="editGenre" type="text" placeholder="Genre" />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="editReleaseType">Release Type</label>
+              <input id="editReleaseType" type="text" placeholder="Single / EP / Album Track" />
+            </div>
+            <div class="field">
+              <label for="editPrice">Price</label>
+              <input id="editPrice" type="number" step="0.01" min="0" placeholder="0.00" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="editTags">Tags</label>
+            <input id="editTags" type="text" placeholder="rich bizness, exclusive, live" />
+          </div>
+
+          <div class="field">
+            <label for="editDescription">Description</label>
+            <textarea id="editDescription" placeholder="Track description"></textarea>
+          </div>
+
+          <div class="toggle-grid">
+            <label class="toggle-card">
+              <input id="editPublic" type="checkbox" />
+              Public
+            </label>
+            <label class="toggle-card">
+              <input id="editPremium" type="checkbox" />
+              Premium
+            </label>
+            <label class="toggle-card">
+              <input id="editFeatured" type="checkbox" />
+              Featured
+            </label>
+          </div>
+
+          <div class="editor-actions">
+            <button class="btn btn-primary" type="submit" id="saveBtn">Save Changes</button>
+            <button class="btn btn-secondary" type="button" onclick="resetEditor()">Cancel</button>
+            <button class="btn btn-danger" type="button" onclick="deleteCurrentTrack()" id="deleteBtn">Delete Track</button>
+          </div>
+        </form>
+      </aside>
+    </section>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let currentProfile = null;
+    let allTracks = [];
+    let filteredTracks = [];
+    let selectedTrack = null;
+
+    function goTo(path) {
+      window.location.href = path;
+    }
+
+    function safeText(value, fallback = "") {
+      if (value === null || value === undefined || value === "") return fallback;
+      return String(value);
+    }
+
+    function formatNumber(value) {
+      return new Intl.NumberFormat().format(Number(value || 0));
+    }
+
+    function formatDate(value) {
+      if (!value) return "No date";
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return "No date";
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function formatMoney(value) {
+      const num = Number(value || 0);
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+        maximumFractionDigits: 2
+      }).format(num);
+    }
+
+    function initialsFromName(name) {
+      if (!name) return "🎤";
+      const parts = name.trim().split(/\s+/).slice(0, 2);
+      return parts.map(p => p[0]?.toUpperCase() || "").join("") || "🎤";
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        })[m];
+      });
+    }
+
+    function showStatus(message, type = "") {
+      const box = document.getElementById("statusMessage");
+      box.className = "status-message show";
+      if (type) box.classList.add(type);
+      box.innerHTML = message;
+    }
+
+    function hideStatus() {
+      const box = document.getElementById("statusMessage");
+      box.className = "status-message";
+      box.innerHTML = "";
+    }
+
+    function setAvatar(profile) {
+      const avatar = document.getElementById("artistAvatar");
+      const avatarUrl =
+        profile?.avatar_url ||
+        profile?.profile_image_url ||
+        profile?.image_url ||
+        "";
+
+      if (avatarUrl) {
+        avatar.innerHTML = '<img src="' + avatarUrl + '" alt="Artist avatar" />';
+      } else {
+        avatar.textContent = initialsFromName(
+          profile?.display_name ||
+          profile?.username ||
+          currentUser?.user_metadata?.display_name ||
+          currentUser?.email?.split("@")[0] ||
+          "Artist"
+        );
+      }
+    }
+
+    async function loadProfile() {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data?.user || null;
+
+      const nameEl = document.getElementById("artistName");
+      const metaEl = document.getElementById("artistMeta");
+
+      if (!currentUser) {
+        nameEl.textContent = "Guest Artist";
+        metaEl.textContent = "Sign in to load and manage your track catalog.";
+        setAvatar(null);
+        document.getElementById("creatorAccess").textContent = "Guest";
+        return;
+      }
+
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+
+        currentProfile = profile || null;
+
+        const displayName =
+          profile?.display_name ||
+          profile?.username ||
+          currentUser.user_metadata?.display_name ||
+          currentUser.user_metadata?.full_name ||
+          currentUser.email?.split("@")[0] ||
+          "Rich Bizness Artist";
+
+        nameEl.textContent = displayName;
+        metaEl.textContent =
+          safeText(profile?.bio, "Artist manager synced and ready for catalog control.");
+
+        setAvatar(profile);
+      } catch (error) {
+        nameEl.textContent = "Artist Manager";
+        metaEl.textContent = "Profile lookup had an issue, but the manager page is loaded.";
+      }
+    }
+
+    async function loadTracks() {
+      if (!currentUser) {
+        allTracks = [];
+        renderTracks();
+        updateStats();
+        return;
+      }
+
+      const userId = currentUser.id;
+      const tries = [
+        () => supabase.from("tracks").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
+        () => supabase.from("tracks").select("*").eq("artist_id", userId).order("created_at", { ascending: false }),
+        () => supabase.from("tracks").select("*").order("created_at", { ascending: false })
+      ];
+
+      let data = [];
+      for (const run of tries) {
+        try {
+          const result = await run();
+          if (!result.error && Array.isArray(result.data)) {
+            data = result.data;
+            break;
+          }
+        } catch (e) {}
+      }
+
+      if (!Array.isArray(data)) data = [];
+
+      allTracks = dedupeTracks(data);
+      applyFilters();
+    }
+
+    function dedupeTracks(list) {
+      const map = new Map();
+      for (const item of list) {
+        const key = item.id || `${item.title}-${item.created_at}-${item.audio_url}`;
+        if (!map.has(key)) map.set(key, item);
+      }
+      return Array.from(map.values());
+    }
+
+    function updateStats() {
+      const publicCount = allTracks.filter(t => getBoolean(t.is_public, true)).length;
+      const premiumCount = allTracks.filter(t => getBoolean(t.is_premium, false)).length;
+      const featuredCount = allTracks.filter(t => getFeatured(t)).length;
+
+      document.getElementById("statTracks").textContent = formatNumber(allTracks.length);
+      document.getElementById("statPublic").textContent = formatNumber(publicCount);
+      document.getElementById("statPremium").textContent = formatNumber(premiumCount);
+      document.getElementById("statFeatured").textContent = formatNumber(featuredCount);
+    }
+
+    function getBoolean(value, fallback = false) {
+      if (typeof value === "boolean") return value;
+      if (value === null || value === undefined) return fallback;
+      if (typeof value === "string") {
+        return ["true", "1", "yes", "on"].includes(value.toLowerCase());
+      }
+      return Boolean(value);
+    }
+
+    function getFeatured(track) {
+      return getBoolean(track.featured_artist_page, false) || getBoolean(track.is_featured, false);
+    }
+
+    function applyFilters() {
+      const search = document.getElementById("searchInput").value.trim().toLowerCase();
+      const visibility = document.getElementById("visibilityFilter").value;
+      const feature = document.getElementById("featureFilter").value;
+
+      filteredTracks = allTracks.filter(track => {
+        const haystack = [
+          track.title,
+          track.artist,
+          track.genre,
+          track.release_type,
+          track.tags,
+          track.description
+        ].map(v => safeText(v).toLowerCase()).join(" ");
+
+        if (search && !haystack.includes(search)) return false;
+
+        const isPublic = getBoolean(track.is_public, true);
+        const isPremium = getBoolean(track.is_premium, false);
+        const isFeatured = getFeatured(track);
+
+        if (visibility === "public" && !isPublic) return false;
+        if (visibility === "private" && isPublic) return false;
+        if (visibility === "premium" && !isPremium) return false;
+
+        if (feature === "featured" && !isFeatured) return false;
+        if (feature === "not_featured" && isFeatured) return false;
+
+        return true;
+      });
+
+      renderTracks();
+      updateStats();
+    }
+
+    function renderTracks() {
+      const box = document.getElementById("trackList");
+
+      if (!currentUser) {
+        box.innerHTML = `
+          <div class="empty-state">
+            Sign in to manage your artist catalog.
+          </div>
+        `;
+        return;
+      }
+
+      if (!filteredTracks.length) {
+        box.innerHTML = `
+          <div class="empty-state">
+            No tracks matched your current filters.<br />
+            Try clearing filters or upload a new track.
+          </div>
+        `;
+        return;
+      }
+
+      box.innerHTML = filteredTracks.map(track => {
+        const title = escapeHtml(safeText(track.title, "Untitled Track"));
+        const artist = escapeHtml(safeText(track.artist, "Artist"));
+        const genre = escapeHtml(safeText(track.genre, "Music"));
+        const releaseType = escapeHtml(safeText(track.release_type, "Track"));
+        const desc = escapeHtml(safeText(track.description, "No description yet."));
+        const createdAt = formatDate(track.created_at);
+        const cover = track.cover_url || track.artwork_url || "";
+        const audio = track.audio_url || track.file_url || track.music_url || "";
+        const isPublic = getBoolean(track.is_public, true);
+        const isPremium = getBoolean(track.is_premium, false);
+        const isFeatured = getFeatured(track);
+
+        return `
+          <div class="track-card">
+            <div class="track-top">
+              <div class="track-main">
+                <div class="track-cover">
+                  ${cover ? `<img src="${cover}" alt="${title} cover" />` : `No Cover`}
+                </div>
+                <div>
+                  <div class="track-title">${title}</div>
+                  <div class="track-meta">
+                    ${artist} · ${genre} · ${releaseType}<br />
+                    ${createdAt}<br />
+                    ${desc}
+                  </div>
+                  <div class="pill-row">
+                    <div class="pill ${isPublic ? "public" : "private"}">${isPublic ? "Public" : "Private"}</div>
+                    ${isPremium ? `<div class="pill premium">Premium</div>` : ``}
+                    ${isFeatured ? `<div class="pill featured">Featured</div>` : ``}
+                    ${track.price !== null && track.price !== undefined ? `<div class="pill">${formatMoney(track.price || 0)}</div>` : ``}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="track-actions">
+              <button class="mini-btn edit" type="button" onclick="selectTrack('${String(track.id).replace(/'/g, "\\'")}')">Edit</button>
+              ${audio ? `<button class="mini-btn play" type="button" onclick="toggleAudio('audio-${track.id}')">Preview</button>` : ``}
+              <button class="mini-btn delete" type="button" onclick="quickDeleteTrack('${String(track.id).replace(/'/g, "\\'")}')">Delete</button>
+            </div>
+
+            ${audio ? `
+              <div class="track-audio" id="audio-wrap-${track.id}" style="display:none;">
+                <audio id="audio-${track.id}" controls src="${audio}"></audio>
+              </div>
+            ` : ``}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function toggleAudio(id) {
+      const wrapId = id.replace("audio-", "audio-wrap-");
+      const wrap = document.getElementById(wrapId);
+      if (!wrap) return;
+      wrap.style.display = wrap.style.display === "none" ? "block" : "none";
+    }
+
+    function selectTrack(id) {
+      const track = allTracks.find(t => String(t.id) === String(id));
+      if (!track) return;
+
+      selectedTrack = track;
+      document.getElementById("editMode").textContent = "Editing";
+      document.getElementById("editorEmpty").style.display = "none";
+      document.getElementById("editorForm").style.display = "grid";
+
+      document.getElementById("editTrackId").value = safeText(track.id);
+      document.getElementById("editTitle").value = safeText(track.title);
+      document.getElementById("editArtist").value = safeText(track.artist);
+      document.getElementById("editGenre").value = safeText(track.genre);
+      document.getElementById("editReleaseType").value = safeText(track.release_type);
+      document.getElementById("editPrice").value = track.price ?? "";
+      document.getElementById("editTags").value = safeText(track.tags);
+      document.getElementById("editDescription").value = safeText(track.description);
+      document.getElementById("editPublic").checked = getBoolean(track.is_public, true);
+      document.getElementById("editPremium").checked = getBoolean(track.is_premium, false);
+      document.getElementById("editFeatured").checked = getFeatured(track);
+
+      hideStatus();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function resetEditor() {
+      selectedTrack = null;
+      document.getElementById("editMode").textContent = "Ready";
+      document.getElementById("editorEmpty").style.display = "block";
+      document.getElementById("editorForm").style.display = "none";
+      document.getElementById("editorForm").reset();
+    }
+
+    async function saveTrackChanges(event) {
+      event.preventDefault();
+      hideStatus();
+
+      if (!selectedTrack) {
+        showStatus("Select a track before trying to save changes.", "error");
+        return;
+      }
+
+      const saveBtn = document.getElementById("saveBtn");
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+
+      const trackId = document.getElementById("editTrackId").value;
+      const payload = {
+        title: document.getElementById("editTitle").value.trim(),
+        artist: document.getElementById("editArtist").value.trim(),
+        genre: document.getElementById("editGenre").value.trim(),
+        release_type: document.getElementById("editReleaseType").value.trim(),
+        tags: document.getElementById("editTags").value.trim() || null,
+        description: document.getElementById("editDescription").value.trim() || null,
+        is_public: document.getElementById("editPublic").checked,
+        is_premium: document.getElementById("editPremium").checked,
+        featured_artist_page: document.getElementById("editFeatured").checked
+      };
+
+      const priceRaw = document.getElementById("editPrice").value.trim();
+      if (priceRaw !== "") payload.price = Number(priceRaw);
+
+      try {
+        let updated = false;
+
+        try {
+          const { error } = await supabase
+            .from("tracks")
+            .update(payload)
+            .eq("id", trackId);
+
+          if (!error) updated = true;
+        } catch (e) {}
+
+        if (!updated) {
+          const fallbackPayload = {
+            title: payload.title,
+            artist: payload.artist,
+            genre: payload.genre,
+            description: payload.description
+          };
+
+          const { error: fallbackError } = await supabase
+            .from("tracks")
+            .update(fallbackPayload)
+            .eq("id", trackId);
+
+          if (fallbackError) throw fallbackError;
+        }
+
+        showStatus("Track updated successfully.", "success");
+        await loadTracks();
+
+        const refreshed = allTracks.find(t => String(t.id) === String(trackId));
+        if (refreshed) {
+          selectTrack(trackId);
+        } else {
+          resetEditor();
+        }
+      } catch (error) {
+        console.error("Save error:", error);
+        showStatus("Update failed. Check your table columns and row permissions.", "error");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save Changes";
+      }
+    }
+
+    async function quickDeleteTrack(id) {
+      const track = allTracks.find(t => String(t.id) === String(id));
+      const label = track?.title || "this track";
+      const ok = window.confirm(`Delete "${label}"? This will remove the database record.`);
+      if (!ok) return;
+      await runDelete(id);
+    }
+
+    async function deleteCurrentTrack() {
+      if (!selectedTrack) {
+        showStatus("Select a track before deleting.", "error");
+        return;
+      }
+      const ok = window.confirm(`Delete "${selectedTrack.title || "this track"}"? This will remove the database record.`);
+      if (!ok) return;
+      await runDelete(selectedTrack.id);
+    }
+
+    async function runDelete(trackId) {
+      hideStatus();
+      document.getElementById("deleteBtn").disabled = true;
+      document.getElementById("deleteBtn").textContent = "Deleting...";
+
+      try {
+        const { error } = await supabase
+          .from("tracks")
+          .delete()
+          .eq("id", trackId);
+
+        if (error) throw error;
+
+        showStatus("Track deleted successfully.", "success");
+        if (selectedTrack && String(selectedTrack.id) === String(trackId)) {
+          resetEditor();
+        }
+        await loadTracks();
+      } catch (error) {
+        console.error("Delete error:", error);
+        showStatus("Delete failed. Check your row permissions before trying again.", "error");
+      } finally {
+        document.getElementById("deleteBtn").disabled = false;
+        document.getElementById("deleteBtn").textContent = "Delete Track";
+      }
+    }
+
+    function clearFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("visibilityFilter").value = "all";
+      document.getElementById("featureFilter").value = "all";
+      applyFilters();
+    }
+
+    async function reloadManager() {
+      hideStatus();
+      await loadProfile();
+      await loadTracks();
+    }
+
+    function bindControls() {
+      document.getElementById("searchInput").addEventListener("input", applyFilters);
+      document.getElementById("visibilityFilter").addEventListener("change", applyFilters);
+      document.getElementById("featureFilter").addEventListener("change", applyFilters);
+      document.getElementById("editorForm").addEventListener("submit", saveTrackChanges);
+    }
+
+    async function initManager() {
+      bindControls();
+      await loadProfile();
+      await loadTracks();
+    }
+
+    initManager();
+  </script>
+</body>
+</html>
