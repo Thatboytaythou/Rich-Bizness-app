@@ -1,111 +1,1173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sports Picks</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness Sports Picks</title>
+  <style>
+    :root{
+      --bg:#050809;
+      --bg2:#091217;
+      --panel:rgba(8,14,17,.88);
+      --panel2:rgba(10,18,22,.96);
+      --line:rgba(108,255,170,.12);
+      --line-strong:rgba(108,255,170,.24);
+      --text:#effff6;
+      --muted:#97b7aa;
+      --green:#67f39e;
+      --green2:#27ca70;
+      --gold:#f0d06d;
+      --gold2:#ffe89a;
+      --blue:#7bc7ff;
+      --danger:#ff7e7e;
+      --shadow:0 28px 80px rgba(0,0,0,.44);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+    }
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(103,243,158,.08), transparent 22%),
+        linear-gradient(180deg,var(--bg2),var(--bg));
+      overflow-x:hidden;
+    }
 
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#000;
-  color:white;
-}
+    a{text-decoration:none;color:inherit}
+    button,input,select,textarea{font:inherit}
+    img{display:block;max-width:100%}
 
-.page{max-width:900px;margin:auto;padding:20px}
+    .page{
+      width:min(1520px, calc(100% - 20px));
+      margin:0 auto;
+      padding:14px 0 34px;
+      display:grid;
+      gap:14px;
+    }
 
-input,select,textarea{
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-  background:#111;
-  color:white;
-  border:none;
-}
+    .topbar,.section,.panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
 
-button{
-  margin-top:15px;
-  padding:12px;
-  background:#7dff71;
-  border:none;
-  border-radius:10px;
-  font-weight:900;
-}
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      flex-wrap:wrap;
+    }
 
-.pick{
-  background:#111;
-  padding:12px;
-  margin-top:10px;
-  border-radius:10px;
-}
-</style>
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-mark{
+      width:52px;
+      height:52px;
+      border-radius:17px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#072114;
+      background:linear-gradient(135deg,var(--green),#d7ffe8);
+    }
+
+    .brand-copy h1{
+      margin:0;
+      font-size:20px;
+      line-height:1;
+    }
+
+    .brand-copy p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .nav a,
+    .btn,
+    input,
+    select,
+    textarea{
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+    }
+
+    .nav a{font-weight:800}
+    input,select,textarea{outline:none;width:100%}
+    textarea{min-height:110px;resize:vertical}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-weight:900;
+      transition:.18s ease;
+      min-height:46px;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      color:#051a10;
+      border-color:transparent;
+    }
+    .btn.gold{
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:#2a1c03;
+      border-color:transparent;
+    }
+    .btn.danger{
+      background:rgba(255,126,126,.12);
+      border-color:rgba(255,126,126,.2);
+      color:#ffdada;
+    }
+
+    .hero{
+      min-height:360px;
+      position:relative;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.82)),
+        url('/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png') center/cover no-repeat;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255,232,154,.14), transparent 24%),
+        linear-gradient(180deg, transparent, rgba(0,0,0,.84));
+    }
+
+    .hero-copy{
+      position:absolute;
+      left:24px;
+      right:24px;
+      bottom:24px;
+      z-index:2;
+      display:grid;
+      gap:12px;
+      max-width:860px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      width:max-content;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.34);
+      color:var(--green);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .hero-copy h2{
+      margin:0;
+      font-size:clamp(34px, 6vw, 72px);
+      line-height:.92;
+      letter-spacing:-.05em;
+    }
+
+    .hero-copy p{
+      margin:0;
+      color:#d9f6e4;
+      font-size:15px;
+      line-height:1.65;
+      max-width:760px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .section{
+      padding:18px;
+    }
+
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .section-title h3{
+      margin:0;
+      font-size:28px;
+    }
+
+    .section-title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .stat-card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:14px;
+      min-height:98px;
+    }
+
+    .stat-card span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:8px;
+      font-weight:800;
+    }
+
+    .stat-card strong{
+      display:block;
+      font-size:30px;
+      line-height:1;
+      letter-spacing:-.04em;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel-head{
+      padding:18px 20px 0;
+    }
+
+    .panel-head h3{
+      margin:0;
+      font-size:24px;
+    }
+
+    .panel-head p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .panel-body{
+      padding:18px 20px 20px;
+    }
+
+    .form-grid{
+      display:grid;
+      gap:10px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .triple{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    .status-box{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(0,0,0,.35);
+      color:#fff;
+    }
+
+    .badge.live{
+      color:#03180e;
+      background:linear-gradient(135deg,var(--green),#d6ffe7);
+      border-color:transparent;
+    }
+
+    .badge.gold{
+      color:#2c1d02;
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      border-color:transparent;
+    }
+
+    .pick-list{
+      display:grid;
+      gap:12px;
+      max-height:920px;
+      overflow:auto;
+    }
+
+    .pick-card{
+      background:var(--panel2);
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:16px;
+      display:grid;
+      gap:12px;
+      transition:.18s ease;
+    }
+
+    .pick-card:hover{
+      transform:translateY(-2px);
+      border-color:var(--line-strong);
+    }
+
+    .pick-head{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:start;
+    }
+
+    .pick-head h4{
+      margin:0;
+      font-size:24px;
+      line-height:.98;
+      letter-spacing:-.03em;
+    }
+
+    .pick-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .pick-score{
+      text-align:right;
+    }
+
+    .pick-score strong{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      color:var(--gold2);
+    }
+
+    .pick-score span{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .mini{
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .mini span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+      font-weight:800;
+    }
+
+    .mini strong{
+      display:block;
+      font-size:14px;
+      line-height:1.15;
+      word-break:break-word;
+    }
+
+    .pick-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .pick-actions button,
+    .pick-actions a{
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:12px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      cursor:pointer;
+    }
+
+    .pick-actions .primary{
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      color:#05180f;
+      border-color:transparent;
+    }
+
+    .pick-actions .gold{
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:#2b1c03;
+      border-color:transparent;
+    }
+
+    .feed-list,
+    .live-rail{
+      display:grid;
+      gap:10px;
+    }
+
+    .feed-item{
+      padding:14px;
+      border-radius:16px;
+      background:var(--panel2);
+      border:1px solid var(--line);
+    }
+
+    .feed-item strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .feed-item span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .live-card{
+      min-height:180px;
+      border-radius:20px;
+      overflow:hidden;
+      position:relative;
+      border:1px solid var(--line);
+      background:#091111;
+    }
+
+    .live-bg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      transform:scale(1.03);
+    }
+
+    .live-shade{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.84));
+    }
+
+    .live-content{
+      position:relative;
+      z-index:2;
+      height:100%;
+      padding:16px;
+      display:grid;
+      gap:10px;
+      align-content:end;
+    }
+
+    .live-content h4{
+      margin:0;
+      font-size:20px;
+      line-height:1.04;
+    }
+
+    .live-content p{
+      margin:0;
+      color:#d9eee2;
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .empty{
+      padding:18px;
+      border-radius:16px;
+      border:1px dashed var(--line-strong);
+      color:var(--muted);
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width:1180px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:920px){
+      .stats-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .meta-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+
+      .triple{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:640px){
+      .stats-grid,
+      .meta-grid,
+      .row{
+        grid-template-columns:1fr;
+      }
+
+      .pick-head{
+        grid-template-columns:1fr;
+      }
+
+      .pick-score{
+        text-align:left;
+      }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness Sports Picks</h1>
+          <p>Elite pick center • community calls • score tracking • sports talk motion</p>
+        </div>
+      </div>
 
-<div class="page">
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/sports.html">Sports</a>
+        <a href="/sports-leaderboard.html">Sports Leaderboard</a>
+        <a href="/live.html">Live</a>
+        <a href="/watch.html">Watch</a>
+      </nav>
+    </header>
 
-<h1>Top Picks</h1>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Pick center unlocked</div>
+        <h2>Make sports picks and build a real winner lane.</h2>
+        <p>
+          This is your elite Rich Bizness sports picks desk. Post game predictions,
+          player calls, line reads, results, and community sports takes in one
+          true sports environment with live rail energy.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#picksSection">Open Picks</a>
+          <a class="btn gold" href="#makePickSection">Make A Pick</a>
+        </div>
+      </div>
+    </section>
 
-<input id="match" placeholder="Match (Lakers vs Celtics)">
-<input id="pick" placeholder="Your Pick">
-<select id="confidence">
-  <option>Low</option>
-  <option>Medium</option>
-  <option>High</option>
-</select>
+    <section class="section">
+      <div class="section-title">
+        <div>
+          <h3>Pick Stats</h3>
+          <p>Track total picks, wins, losses, pending calls, and scored points.</p>
+        </div>
+      </div>
 
-<textarea id="take" placeholder="Your take"></textarea>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span>Total Picks</span>
+          <strong id="statTotal">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Wins</span>
+          <strong id="statWins">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Losses</span>
+          <strong id="statLosses">0</strong>
+        </div>
+        <div class="stat-card">
+          <span>Total Points</span>
+          <strong id="statPoints">0</strong>
+        </div>
+      </div>
+    </section>
 
-<button onclick="submitPick()">Submit Pick</button>
+    <section class="section" id="makePickSection">
+      <div class="section-title">
+        <div>
+          <h3>Drop A Sports Pick</h3>
+          <p>Post a prediction into your synced sports picks table.</p>
+        </div>
+      </div>
 
-<div id="feed"></div>
+      <div class="layout">
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Pick Form</h3>
+            <p>Game, player, prediction, line, and result all tied into your sports picks table.</p>
+          </div>
+          <div class="panel-body">
+            <div class="form-grid">
+              <div class="row">
+                <input id="gameInput" type="text" placeholder="NBA Finals Game 2" />
+                <input id="playerInput" type="text" placeholder="Player or Team" />
+              </div>
 
-</div>
+              <div class="triple">
+                <select id="sportInput">
+                  <option value="Basketball">Basketball</option>
+                  <option value="Football">Football</option>
+                  <option value="Baseball">Baseball</option>
+                  <option value="Golf">Golf</option>
+                  <option value="Gym">Gym</option>
+                  <option value="Other">Other</option>
+                </select>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://ksvdequymkceevocgpdj.supabase.co",
-  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
-)
+                <input id="lineInput" type="text" placeholder="-5.5 / O 220.5 / Moneyline" />
 
-async function submitPick(){
-  const {data} = await supabase.auth.getSession()
-  const user = data.session?.user
+                <select id="resultInput">
+                  <option value="pending">pending</option>
+                  <option value="win">win</option>
+                  <option value="loss">loss</option>
+                </select>
+              </div>
 
-  await supabase.from("sports_picks").insert([{
-    user_id:user.id,
-    match:match.value,
-    pick:pick.value,
-    confidence:confidence.value,
-    take:take.value
-  }])
+              <textarea id="predictionInput" placeholder="Write the full prediction here..."></textarea>
 
-  loadPicks()
-}
+              <div class="row">
+                <input id="pointsInput" type="number" min="0" step="1" placeholder="Points" />
+                <input id="searchInput" type="text" placeholder="Search picks..." />
+              </div>
 
-async function loadPicks(){
-  const {data} = await supabase
-    .from("sports_picks")
-    .select("*")
-    .order("created_at",{ascending:false})
+              <div class="row">
+                <select id="sortSelect">
+                  <option value="newest">Sort by Newest</option>
+                  <option value="points">Sort by Points</option>
+                  <option value="wins">Sort Wins First</option>
+                  <option value="pending">Sort Pending First</option>
+                </select>
 
-  feed.innerHTML = data.map(p=>`
-    <div class="pick">
-      <strong>${p.match}</strong><br>
-      Pick: ${p.pick}<br>
-      Confidence: ${p.confidence}<br>
-      ${p.take}
-    </div>
-  `).join("")
-}
+                <select id="resultFilter">
+                  <option value="all">All Results</option>
+                  <option value="pending">Pending</option>
+                  <option value="win">Wins</option>
+                  <option value="loss">Losses</option>
+                </select>
+              </div>
 
-loadPicks()
-</script>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn primary" id="savePickBtn" type="button">Save Pick</button>
+                <button class="btn gold" id="resetFormBtn" type="button">Reset Form</button>
+              </div>
 
+              <div id="statusBox" class="status-box">Ready to lock in your next sports pick.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h3>Sports Live Rail</h3>
+            <p>ESPN-style side motion, but Rich Bizness and synced to your section.</p>
+          </div>
+          <div class="panel-body">
+            <div id="liveRail" class="live-rail"></div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section id="picksSection" class="section">
+      <div class="section-title">
+        <div>
+          <h3>All Sports Picks</h3>
+          <p>Community picks, scored calls, and elite sports prediction cards.</p>
+        </div>
+      </div>
+
+      <div class="layout">
+        <div id="pickList" class="pick-list"></div>
+
+        <div style="display:grid;gap:14px;align-content:start;">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Pick Feed</h3>
+              <p>Quick sports conversation motion.</p>
+            </div>
+            <div class="panel-body">
+              <div id="feedList" class="feed-list"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+    const supabase = createClient(
+      window.NEXT_PUBLIC_SUPABASE_URL,
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    );
+
+    const BRAND_IMAGES = {
+      baseball: "/images/brand/6F26FF98-8FFE-4A1C-B9FB-C4233274CF8A.png",
+      basketball: "/images/brand/8FE83A11-A7F6-45D7-9840-D8A066A88684.png",
+      football: "/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png",
+      ecosystem: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
+    };
+
+    const el = {
+      statTotal: document.getElementById("statTotal"),
+      statWins: document.getElementById("statWins"),
+      statLosses: document.getElementById("statLosses"),
+      statPoints: document.getElementById("statPoints"),
+
+      gameInput: document.getElementById("gameInput"),
+      playerInput: document.getElementById("playerInput"),
+      sportInput: document.getElementById("sportInput"),
+      lineInput: document.getElementById("lineInput"),
+      resultInput: document.getElementById("resultInput"),
+      predictionInput: document.getElementById("predictionInput"),
+      pointsInput: document.getElementById("pointsInput"),
+      savePickBtn: document.getElementById("savePickBtn"),
+      resetFormBtn: document.getElementById("resetFormBtn"),
+      statusBox: document.getElementById("statusBox"),
+
+      searchInput: document.getElementById("searchInput"),
+      sortSelect: document.getElementById("sortSelect"),
+      resultFilter: document.getElementById("resultFilter"),
+
+      pickList: document.getElementById("pickList"),
+      feedList: document.getElementById("feedList"),
+      liveRail: document.getElementById("liveRail")
+    };
+
+    let currentUser = null;
+    let picks = [];
+
+    function safeNum(v) {
+      return Number(v || 0);
+    }
+
+    function formatNum(v) {
+      return safeNum(v).toLocaleString();
+    }
+
+    function setStatus(message, type = "normal") {
+      el.statusBox.textContent = message;
+      el.statusBox.style.color =
+        type === "error" ? "#ffd5d5" :
+        type === "success" ? "#dcffe9" :
+        "var(--muted)";
+      el.statusBox.style.borderColor =
+        type === "error" ? "rgba(255,126,126,.22)" :
+        type === "success" ? "rgba(103,243,158,.22)" :
+        "var(--line)";
+      el.statusBox.style.background =
+        type === "error" ? "rgba(255,126,126,.08)" :
+        type === "success" ? "rgba(103,243,158,.08)" :
+        "rgba(255,255,255,.04)";
+    }
+
+    function getSportImage(sport) {
+      const value = String(sport || "").toLowerCase();
+      if (value.includes("baseball")) return BRAND_IMAGES.baseball;
+      if (value.includes("basketball")) return BRAND_IMAGES.basketball;
+      if (value.includes("football")) return BRAND_IMAGES.football;
+      return BRAND_IMAGES.ecosystem;
+    }
+
+    function badgeForResult(result) {
+      const value = String(result || "pending").toLowerCase();
+      if (value === "win") return `<span class="badge live">Win</span>`;
+      if (value === "loss") return `<span class="badge danger" style="background:rgba(255,126,126,.14);border-color:rgba(255,126,126,.2);color:#ffd8d8;">Loss</span>`;
+      return `<span class="badge gold">Pending</span>`;
+    }
+
+    function filteredRows() {
+      const q = el.searchInput.value.trim().toLowerCase();
+      const resultFilter = el.resultFilter.value;
+      const sort = el.sortSelect.value;
+
+      let rows = picks.filter(row => {
+        const matchesResult = resultFilter === "all"
+          ? true
+          : String(row.result || "pending").toLowerCase() === resultFilter;
+
+        const blob = [
+          row.game,
+          row.player,
+          row.prediction,
+          row.line,
+          row.result
+        ].join(" ").toLowerCase();
+
+        return matchesResult && (!q || blob.includes(q));
+      });
+
+      if (sort === "newest") {
+        rows.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      } else if (sort === "points") {
+        rows.sort((a, b) => safeNum(b.points) - safeNum(a.points));
+      } else if (sort === "wins") {
+        rows.sort((a, b) => (String(b.result).toLowerCase() === "win") - (String(a.result).toLowerCase() === "win") || safeNum(b.points) - safeNum(a.points));
+      } else if (sort === "pending") {
+        rows.sort((a, b) => (String(b.result).toLowerCase() === "pending") - (String(a.result).toLowerCase() === "pending") || new Date(b.created_at || 0) - new Date(a.created_at || 0));
+      }
+
+      return rows;
+    }
+
+    function renderStats() {
+      const total = picks.length;
+      const wins = picks.filter(row => String(row.result || "").toLowerCase() === "win").length;
+      const losses = picks.filter(row => String(row.result || "").toLowerCase() === "loss").length;
+      const points = picks.reduce((sum, row) => sum + safeNum(row.points), 0);
+
+      el.statTotal.textContent = formatNum(total);
+      el.statWins.textContent = formatNum(wins);
+      el.statLosses.textContent = formatNum(losses);
+      el.statPoints.textContent = formatNum(points);
+    }
+
+    function renderPickList() {
+      const rows = filteredRows();
+
+      if (!rows.length) {
+        el.pickList.innerHTML = `<div class="empty">No sports picks loaded yet. Drop the first pick into the lane.</div>`;
+        return;
+      }
+
+      el.pickList.innerHTML = rows.map((row, index) => {
+        const game = row.game || "Sports Match";
+        const player = row.player || "Sports Call";
+        const prediction = row.prediction || "Prediction pending";
+        const line = row.line || "No line";
+        const result = String(row.result || "pending").toLowerCase();
+        const points = safeNum(row.points);
+        const created = row.created_at ? new Date(row.created_at).toLocaleDateString() : "Recent";
+        const sport = row.sport || "Sports";
+
+        return `
+          <article class="pick-card">
+            <div class="pick-head">
+              <div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                  <span class="badge blue">${sport}</span>
+                  ${badgeForResult(result)}
+                </div>
+                <h4 style="margin-top:10px;">${game}</h4>
+                <p>${prediction}</p>
+              </div>
+
+              <div class="pick-score">
+                <strong>${points}</strong>
+                <span>points</span>
+              </div>
+            </div>
+
+            <div class="meta-grid">
+              <div class="mini">
+                <span>Player / Team</span>
+                <strong>${player}</strong>
+              </div>
+              <div class="mini">
+                <span>Line</span>
+                <strong>${line}</strong>
+              </div>
+              <div class="mini">
+                <span>Result</span>
+                <strong>${result}</strong>
+              </div>
+              <div class="mini">
+                <span>Date</span>
+                <strong>${created}</strong>
+              </div>
+            </div>
+
+            <div class="pick-actions">
+              <button class="primary" data-action="win" data-id="${row.id}">Mark Win</button>
+              <button class="gold" data-action="pending" data-id="${row.id}">Mark Pending</button>
+              <button data-action="loss" data-id="${row.id}">Mark Loss</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      [...el.pickList.querySelectorAll("button[data-action]")].forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const action = btn.dataset.action;
+          await updatePickResult(id, action);
+        });
+      });
+    }
+
+    function renderFeed() {
+      if (!picks.length) {
+        el.feedList.innerHTML = `<div class="empty">Sports feed will show after picks land.</div>`;
+        return;
+      }
+
+      el.feedList.innerHTML = picks.slice(0, 10).map(row => `
+        <div class="feed-item">
+          <strong>${row.game || "Sports pick update"}</strong>
+          <span>${row.player || "Team"} • ${row.prediction || "Prediction"} • ${row.result || "pending"}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderLiveRail() {
+      const rows = filteredRows().slice(0, 3);
+
+      const cards = rows.length ? rows.map(row => ({
+        title: row.game || "Sports Pick Night",
+        desc: row.prediction || "Sports talk locked into the live rail.",
+        image: getSportImage(row.sport),
+        meta: [row.sport || "Sports", row.player || "Team", row.result || "pending"]
+      })) : [
+        {
+          title: "Football Pick Center",
+          desc: "Prime-time football takes, score calls, and real sports desk energy.",
+          image: BRAND_IMAGES.football,
+          meta: ["Football", "Prime Time", "Pick Center"]
+        },
+        {
+          title: "Hoops Betting Desk",
+          desc: "Basketball picks and hot player takes inside the sports lane.",
+          image: BRAND_IMAGES.basketball,
+          meta: ["Basketball", "Hot Takes", "Elite"]
+        },
+        {
+          title: "All Sports Motion",
+          desc: "The Rich Bizness sports ecosystem tied together with community calls.",
+          image: BRAND_IMAGES.ecosystem,
+          meta: ["All Sports", "Community", "Leaderboard"]
+        }
+      ];
+
+      el.liveRail.innerHTML = cards.map(card => `
+        <article class="live-card">
+          <div class="live-bg" style="background-image:url('${card.image}')"></div>
+          <div class="live-shade"></div>
+          <div class="live-content">
+            <span class="badge live">Live Rail</span>
+            <h4>${card.title}</h4>
+            <p>${card.desc}</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${card.meta.map(m => `<span class="badge blue">${m}</span>`).join("")}
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function resetForm() {
+      el.gameInput.value = "";
+      el.playerInput.value = "";
+      el.sportInput.value = "Basketball";
+      el.lineInput.value = "";
+      el.resultInput.value = "pending";
+      el.predictionInput.value = "";
+      el.pointsInput.value = "";
+      setStatus("Form reset. Ready for the next sports pick.");
+    }
+
+    async function loadCurrentUser() {
+      const { data, error } = await supabase.auth.getUser();
+      if (error) return null;
+      currentUser = data?.user || null;
+      return currentUser;
+    }
+
+    async function fetchPicks() {
+      const { data, error } = await supabase
+        .from("picks")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(120);
+
+      if (error) {
+        console.error("[sports-picks] fetch error:", error);
+        setStatus(`Could not load picks: ${error.message}`, "error");
+        picks = [];
+        return;
+      }
+
+      picks = data || [];
+    }
+
+    async function savePick() {
+      const user = await loadCurrentUser();
+
+      if (!user) {
+        setStatus("You need to sign in before saving a sports pick.", "error");
+        return;
+      }
+
+      const payload = {
+        user_id: user.id,
+        game: el.gameInput.value.trim(),
+        player: el.playerInput.value.trim(),
+        prediction: el.predictionInput.value.trim(),
+        line: el.lineInput.value.trim(),
+        result: el.resultInput.value,
+        points: safeNum(el.pointsInput.value),
+        sport: el.sportInput.value
+      };
+
+      if (!payload.game || !payload.prediction) {
+        setStatus("Game and prediction are required.", "error");
+        return;
+      }
+
+      const { error } = await supabase.from("picks").insert(payload);
+
+      if (error) {
+        console.error("[sports-picks] save error:", error);
+        setStatus(`Could not save pick: ${error.message}`, "error");
+        return;
+      }
+
+      setStatus("Sports pick saved successfully.", "success");
+      resetForm();
+      await fetchPicks();
+      renderAll();
+    }
+
+    async function updatePickResult(id, result) {
+      const points =
+        result === "win" ? 3 :
+        result === "loss" ? 0 :
+        1;
+
+      const { error } = await supabase
+        .from("sports_pick_results")
+        .upsert({
+          pick_id: id,
+          user_id: currentUser?.id || null,
+          result,
+          points,
+          created_at: new Date().toISOString()
+        }, { onConflict: "pick_id" });
+
+      if (error) {
+        console.error("[sports-picks] result save error:", error);
+      }
+
+      const { error: pickError } = await supabase
+        .from("picks")
+        .update({ result, points })
+        .eq("id", id);
+
+      if (pickError) {
+        console.error("[sports-picks] pick update error:", pickError);
+        setStatus(`Could not update result: ${pickError.message}`, "error");
+        return;
+      }
+
+      setStatus(`Pick updated to ${result}.`, "success");
+      await fetchPicks();
+      renderAll();
+    }
+
+    function bindEvents() {
+      el.savePickBtn.addEventListener("click", savePick);
+      el.resetFormBtn.addEventListener("click", resetForm);
+
+      el.searchInput.addEventListener("input", renderAll);
+      el.sortSelect.addEventListener("change", renderAll);
+      el.resultFilter.addEventListener("change", renderAll);
+    }
+
+    function renderAll() {
+      renderStats();
+      renderPickList();
+      renderFeed();
+      renderLiveRail();
+    }
+
+    async function boot() {
+      bindEvents();
+      await loadCurrentUser();
+      await fetchPicks();
+      renderAll();
+    }
+
+    boot();
+  </script>
 </body>
 </html>
