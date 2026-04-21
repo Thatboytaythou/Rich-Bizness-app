@@ -2,1154 +2,1257 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Artist</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    * { box-sizing: border-box; }
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Artist Hub — Rich Bizness</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
     :root{
-      --bg:#06110a;
-      --panel:rgba(0,0,0,.58);
-      --panel-2:rgba(7,20,10,.72);
-      --line:rgba(145,245,109,.20);
-      --line-2:rgba(145,245,109,.10);
-      --green:#97f35f;
-      --green-2:#7be248;
-      --text:#f5fff1;
-      --muted:#cdd9ca;
-      --soft:#9fb59b;
-      --gold:#f2d979;
-      --blue:#89b8ff;
-      --danger:#ff7575;
-      --shadow:0 18px 60px rgba(0,0,0,.38);
-      --radius:28px;
+      --bg-1:#03140d;
+      --bg-2:#071d14;
+      --panel:rgba(8,18,14,.82);
+      --panel-2:rgba(11,26,18,.92);
+      --line:rgba(76,255,166,.18);
+      --line-strong:rgba(76,255,166,.36);
+      --text:#ecfff5;
+      --muted:#9dc8b1;
+      --green:#43f59b;
+      --green-2:#14d46f;
+      --gold:#ffd86b;
+      --red:#ff6e7b;
+      --blue:#7dcfff;
+      --shadow:0 18px 50px rgba(0,0,0,.38);
+      --radius:22px;
     }
 
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:Arial, Helvetica, sans-serif;
-      color:var(--text);
+    *{ box-sizing:border-box; margin:0; padding:0; }
+
+    html, body{
+      min-height:100%;
       background:
-        linear-gradient(rgba(0,0,0,.40), rgba(0,0,0,.72)),
-        radial-gradient(circle at top left, rgba(67,132,67,.20), transparent 28%),
-        radial-gradient(circle at top right, rgba(145,245,109,.10), transparent 24%),
-        radial-gradient(circle at bottom center, rgba(91,171,91,.12), transparent 28%),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat fixed,
-        #08110b;
+        radial-gradient(circle at top left, rgba(67,245,155,.10), transparent 26%),
+        radial-gradient(circle at top right, rgba(255,216,107,.08), transparent 20%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-2));
+      color:var(--text);
+      font-family:Inter, Arial, Helvetica, sans-serif;
     }
 
     a{ color:inherit; text-decoration:none; }
 
-    .page{
-      width:min(1400px, calc(100% - 24px));
-      margin:16px auto 40px;
-    }
+    img{ max-width:100%; display:block; }
 
-    .shell{
-      background:linear-gradient(180deg, rgba(0,0,0,.48), rgba(0,0,0,.64));
-      border:1px solid var(--line);
-      border-radius:34px;
-      overflow:hidden;
-      box-shadow:var(--shadow);
-      backdrop-filter: blur(10px);
+    .app{
+      width:min(1440px, 94vw);
+      margin:0 auto;
+      padding:18px 0 60px;
     }
 
     .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      backdrop-filter:blur(18px);
+      background:rgba(3,10,7,.62);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      margin:10px auto 18px;
+      padding:12px 16px;
       display:flex;
-      justify-content:space-between;
       align-items:center;
+      justify-content:space-between;
       gap:14px;
-      padding:18px 20px;
-      border-bottom:1px solid var(--line-2);
-      background:rgba(0,0,0,.22);
-      flex-wrap:wrap;
     }
 
     .brand{
       display:flex;
       align-items:center;
-      gap:14px;
+      gap:12px;
       min-width:0;
     }
 
-    .brand-logo{
-      width:62px;
-      height:62px;
-      border-radius:18px;
+    .brand-badge{
+      width:48px;
+      height:48px;
+      border-radius:15px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg, rgba(67,245,155,.22), rgba(255,216,107,.12));
+      border:1px solid var(--line-strong);
+      font-size:1.15rem;
+      box-shadow:0 0 28px rgba(67,245,155,.12);
+      overflow:hidden;
+    }
+
+    .brand-badge img{
+      width:100%;
+      height:100%;
       object-fit:cover;
-      background:#041008;
-      border:1px solid var(--line);
-      box-shadow:0 0 0 4px rgba(145,245,109,.06);
     }
 
-    .brand-text h1{
-      margin:0;
-      font-size:2rem;
-      line-height:1;
-      color:var(--green);
-      letter-spacing:-.02em;
+    .brand-text{
+      min-width:0;
     }
 
-    .brand-text p{
-      margin:6px 0 0;
-      color:var(--muted);
+    .brand-title{
       font-size:1rem;
+      font-weight:900;
+      letter-spacing:.02em;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .brand-sub{
+      color:var(--muted);
+      font-size:.78rem;
+      margin-top:2px;
     }
 
     .nav{
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
-      align-items:center;
       justify-content:flex-end;
+      gap:10px;
     }
 
-    .chip, .btn, .pill{
-      border:none;
-      cursor:pointer;
-      border-radius:18px;
-      padding:13px 18px;
-      font-weight:800;
-      font-size:1rem;
-      transition:.18s ease;
+    .nav a{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:.93rem;
+      transition:.2s ease;
     }
 
-    .chip, .pill{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.10);
-    }
-
-    .chip:hover, .pill:hover{
-      transform:translateY(-1px);
-      background:rgba(255,255,255,.12);
-    }
-
-    .btn-green{
-      background:var(--green);
-      color:#091006;
-    }
-
-    .btn-green:hover{ background:var(--green-2); transform:translateY(-1px); }
-
-    .btn-dark{
-      background:rgba(255,255,255,.08);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.10);
-    }
-
-    .btn-gold{
-      background:var(--gold);
-      color:#171305;
-    }
-
-    .btn-blue{
-      background:var(--blue);
-      color:#08111f;
+    .nav a:hover,
+    .nav a.active{
+      color:var(--text);
+      border-color:var(--line-strong);
+      background:rgba(67,245,155,.12);
+      box-shadow:0 0 20px rgba(67,245,155,.10);
     }
 
     .hero{
-      padding:24px;
-      border-bottom:1px solid var(--line-2);
+      display:grid;
+      grid-template-columns:1.35fr .95fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .hero-card,
+    .side-card,
+    .panel,
+    .stat-card,
+    .track-card,
+    .link-card,
+    .activity-item,
+    .insight-card{
+      border:1px solid var(--line);
+      background:var(--panel);
+      backdrop-filter:blur(14px);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
     }
 
     .hero-card{
-      display:grid;
-      grid-template-columns:300px 1fr;
-      gap:22px;
-      background:linear-gradient(180deg, rgba(0,0,0,.34), rgba(0,0,0,.48));
-      border:1px solid var(--line);
-      border-radius:30px;
       overflow:hidden;
-      padding:20px;
-    }
-
-    .artist-media{
-      background:rgba(0,0,0,.28);
-      border:1px solid var(--line-2);
-      border-radius:26px;
-      padding:18px;
+      position:relative;
+      min-height:380px;
       display:flex;
       flex-direction:column;
-      gap:14px;
-      align-items:center;
-      justify-content:flex-start;
-      min-height:100%;
-    }
-
-    .avatar{
-      width:220px;
-      height:220px;
-      border-radius:28px;
-      object-fit:cover;
-      background:#08120a;
-      border:1px solid var(--line);
-      box-shadow:0 0 0 8px rgba(145,245,109,.05);
-    }
-
-    .avatar-fallback{
-      width:220px;
-      height:220px;
-      border-radius:28px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      padding:18px;
-      font-weight:800;
-      font-size:1.2rem;
-      color:#d8e9d0;
+      justify-content:flex-end;
       background:
-        linear-gradient(rgba(0,0,0,.42), rgba(0,0,0,.58)),
-        url("images/brand/rich-bizness-profile.jpg") center/cover no-repeat;
-      border:1px solid var(--line);
-      box-shadow:0 0 0 8px rgba(145,245,109,.05);
+        linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.80)),
+        url('/images/brand/A4F9E199-6D52-4DD4-BFAB-3430A9C13074.png') center/cover no-repeat,
+        var(--panel);
     }
 
-    .tag-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      width:100%;
-      justify-content:center;
+    .hero-glow{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(67,245,155,.16), transparent 28%),
+        radial-gradient(circle at 80% 30%, rgba(255,216,107,.11), transparent 24%);
+      pointer-events:none;
     }
 
-    .tag{
-      padding:7px 11px;
-      border-radius:999px;
-      font-size:.78rem;
-      font-weight:900;
-      background:rgba(145,245,109,.10);
-      color:#dbffd0;
-      border:1px solid rgba(145,245,109,.18);
-      text-transform:uppercase;
-      letter-spacing:.06em;
-    }
-
-    .tag.blue{
-      background:rgba(137,184,255,.12);
-      border-color:rgba(137,184,255,.25);
-      color:#d8e8ff;
-    }
-
-    .tag.gold{
-      background:rgba(242,217,121,.12);
-      border-color:rgba(242,217,121,.26);
-      color:#fff2b8;
-    }
-
-    .artist-main{
-      display:flex;
-      flex-direction:column;
-      gap:16px;
-      min-width:0;
+    .hero-content{
+      position:relative;
+      z-index:2;
+      padding:30px;
     }
 
     .eyebrow{
-      display:flex;
+      display:inline-flex;
+      align-items:center;
       gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .artist-name{
-      margin:0;
-      font-size:4rem;
-      line-height:.95;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.28);
       color:var(--green);
-      letter-spacing:-.04em;
-      overflow-wrap:anywhere;
-    }
-
-    .artist-handle{
-      margin:0;
-      font-size:1.2rem;
-      color:#f5fff1;
       font-weight:800;
-      overflow-wrap:anywhere;
+      font-size:.85rem;
+      margin-bottom:14px;
     }
 
-    .artist-sub{
-      display:flex;
-      flex-wrap:wrap;
-      gap:14px;
-      color:var(--muted);
+    .hero h1{
+      font-size:clamp(2rem, 4vw, 3.4rem);
+      line-height:1.02;
+      margin-bottom:12px;
+      max-width:720px;
+    }
+
+    .hero p{
+      max-width:720px;
+      color:#d7f6e7;
       font-size:1rem;
+      line-height:1.55;
     }
 
-    .bio{
-      font-size:1.08rem;
-      line-height:1.65;
-      color:#eef8e8;
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:22px;
-      padding:16px 18px;
-    }
-
-    .action-row{
+    .hero-actions{
       display:flex;
-      gap:10px;
       flex-wrap:wrap;
-      align-items:center;
+      gap:12px;
+      margin-top:22px;
     }
 
-    .status{
-      padding:14px 16px;
-      border-radius:18px;
-      border:1px solid rgba(145,245,109,.18);
-      background:rgba(6,22,8,.76);
-      color:#e5f8d8;
-      font-weight:700;
+    .btn{
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      border-radius:14px;
+      padding:13px 16px;
+      transition:.2s ease;
+      font-size:.95rem;
     }
 
-    .status.error{
-      border-color:rgba(255,117,117,.32);
-      color:#ffd5d5;
-      background:rgba(45,0,0,.28);
+    .btn-primary{
+      background:linear-gradient(135deg, var(--green), var(--green-2));
+      color:#052012;
+      box-shadow:0 14px 28px rgba(20,212,111,.20);
     }
 
-    .content{
-      padding:24px;
+    .btn-secondary{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid var(--line-strong);
+    }
+
+    .btn-gold{
+      background:linear-gradient(135deg, #ffe187, #f2b84b);
+      color:#1c1200;
+      box-shadow:0 14px 28px rgba(242,184,75,.20);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.04);
+    }
+
+    .side-stack{
       display:grid;
-      gap:22px;
+      gap:18px;
     }
 
-    .stats{
-      display:grid;
-      grid-template-columns:repeat(4, minmax(0, 1fr));
-      gap:14px;
-    }
-
-    .stat{
-      background:linear-gradient(180deg, rgba(0,0,0,.30), rgba(0,0,0,.42));
-      border:1px solid var(--line);
-      border-radius:24px;
+    .side-card{
       padding:18px;
-      text-align:center;
-      min-height:120px;
+    }
+
+    .profile-head{
       display:flex;
-      flex-direction:column;
-      justify-content:center;
+      align-items:center;
+      gap:14px;
+      margin-bottom:14px;
     }
 
-    .stat strong{
-      font-size:2.2rem;
-      color:var(--green);
-      line-height:1;
-    }
-
-    .stat span{
-      margin-top:8px;
-      color:#dfe9da;
-      font-weight:700;
-    }
-
-    .grid{
+    .avatar{
+      width:76px;
+      height:76px;
+      border-radius:20px;
+      overflow:hidden;
+      background:linear-gradient(135deg, rgba(67,245,155,.18), rgba(255,216,107,.10));
+      border:1px solid var(--line-strong);
       display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:22px;
+      place-items:center;
+      font-size:1.4rem;
+      font-weight:900;
+      flex-shrink:0;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .profile-name{
+      font-size:1.22rem;
+      font-weight:900;
+    }
+
+    .profile-meta{
+      color:var(--muted);
+      font-size:.92rem;
+      margin-top:4px;
+      line-height:1.4;
+    }
+
+    .badge-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .badge{
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(67,245,155,.10);
+      border:1px solid var(--line);
+      color:#dffbea;
+      font-size:.82rem;
+    }
+
+    .artist-visual-card{
+      overflow:hidden;
+      border-radius:20px;
+      border:1px solid var(--line);
+      margin-top:14px;
+      min-height:220px;
+      background:#08120d;
+    }
+
+    .artist-visual-card img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .mini-stats{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .mini-stat{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .mini-stat .label{
+      color:var(--muted);
+      font-size:.8rem;
+      margin-bottom:6px;
+    }
+
+    .mini-stat .value{
+      font-size:1.1rem;
+      font-weight:900;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-bottom:18px;
+    }
+
+    .stat-card{
+      padding:18px;
+    }
+
+    .stat-label{
+      color:var(--muted);
+      font-size:.85rem;
+      margin-bottom:10px;
+    }
+
+    .stat-value{
+      font-size:1.85rem;
+      font-weight:900;
+      line-height:1;
+      margin-bottom:8px;
+    }
+
+    .stat-note{
+      color:#cfeede;
+      font-size:.88rem;
+      line-height:1.4;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      margin-top:18px;
     }
 
     .panel{
-      background:linear-gradient(180deg, rgba(0,0,0,.32), rgba(0,0,0,.46));
-      border:1px solid var(--line);
-      border-radius:28px;
-      padding:20px;
-      min-width:0;
+      padding:18px;
     }
 
-    .panel h2{
-      margin:0 0 6px;
-      color:var(--green);
-      font-size:2rem;
-      letter-spacing:-.02em;
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
     }
 
-    .panel p.lead{
-      margin:0 0 18px;
+    .panel-title{
+      font-size:1.15rem;
+      font-weight:900;
+    }
+
+    .panel-sub{
       color:var(--muted);
-      line-height:1.6;
+      font-size:.9rem;
+      margin-top:4px;
+      line-height:1.45;
     }
 
-    .list{
+    .tiny-link{
+      color:var(--green);
+      font-weight:800;
+      font-size:.92rem;
+    }
+
+    .track-list{
       display:grid;
       gap:12px;
     }
 
-    .card{
-      background:rgba(255,255,255,.03);
-      border:1px solid rgba(255,255,255,.07);
-      border-radius:22px;
-      padding:15px;
+    .track-card{
+      padding:14px;
+      background:var(--panel-2);
+    }
+
+    .track-top{
       display:flex;
-      gap:14px;
-      align-items:flex-start;
-      min-width:0;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:10px;
     }
 
-    .thumb{
-      width:84px;
-      height:84px;
-      border-radius:18px;
-      object-fit:cover;
-      background:#08120b;
-      flex:0 0 auto;
-      border:1px solid rgba(255,255,255,.08);
+    .track-title{
+      font-size:1rem;
+      font-weight:900;
     }
 
-    .card-body{
-      min-width:0;
-      flex:1;
+    .track-meta{
+      color:var(--muted);
+      font-size:.88rem;
+      margin-top:4px;
+      line-height:1.4;
     }
 
-    .card-body h3{
-      margin:0 0 6px;
-      font-size:1.15rem;
-      color:#f7fff3;
-      overflow-wrap:anywhere;
+    .track-tag{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--gold);
+      font-size:.78rem;
+      white-space:nowrap;
     }
 
-    .meta{
-      color:#d1ddcb;
-      font-size:.95rem;
-      line-height:1.45;
-      overflow-wrap:anywhere;
+    audio{
+      width:100%;
+      margin-top:8px;
+      filter:invert(1) hue-rotate(65deg) saturate(1.2);
     }
 
-    .mini-actions{
-      margin-top:10px;
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    .empty{
-      border:1px dashed rgba(255,255,255,.12);
-      border-radius:22px;
-      padding:26px 18px;
-      text-align:center;
-      color:#ced9c8;
-      background:rgba(255,255,255,.02);
-    }
-
-    .links{
+    .quick-links{
       display:grid;
+      grid-template-columns:1fr 1fr;
       gap:12px;
     }
 
     .link-card{
-      display:flex;
-      justify-content:space-between;
+      padding:16px;
+      transition:.2s ease;
+    }
+
+    .link-card:hover{
+      transform:translateY(-2px);
+      border-color:var(--line-strong);
+      box-shadow:0 0 22px rgba(67,245,155,.10);
+    }
+
+    .link-icon{
+      width:44px;
+      height:44px;
+      border-radius:14px;
+      display:grid;
+      place-items:center;
+      background:rgba(67,245,155,.10);
+      border:1px solid var(--line);
+      margin-bottom:12px;
+      font-size:1.2rem;
+    }
+
+    .link-title{
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .link-text{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.45;
+    }
+
+    .activity-list{
+      display:grid;
       gap:12px;
-      align-items:center;
-      padding:14px 15px;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:18px;
+    }
+
+    .activity-item{
+      padding:14px;
+      background:var(--panel-2);
+    }
+
+    .activity-row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .activity-title{
+      font-weight:800;
+      margin-bottom:6px;
+    }
+
+    .activity-meta{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .status-pill{
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      font-size:.76rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .status-live{ color:#7dffbe; }
+    .status-ready{ color:#ffe28d; }
+    .status-growth{ color:#8fd6ff; }
+
+    .brand-art-panel{
+      margin-top:18px;
+      padding:18px;
+    }
+
+    .brand-art-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:16px;
+    }
+
+    .brand-art-card{
+      position:relative;
+      overflow:hidden;
+      border-radius:22px;
+      border:1px solid var(--line);
       background:rgba(255,255,255,.03);
+      min-height:320px;
+      box-shadow:var(--shadow);
     }
 
-    .link-card strong{
-      color:#f5fff0;
+    .brand-art-card img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
       display:block;
-      margin-bottom:4px;
     }
 
-    .link-card span{
-      color:#cdddca;
-      font-size:.95rem;
-      overflow-wrap:anywhere;
+    .brand-art-card::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,.32));
+      pointer-events:none;
     }
 
-    .footer-space{ height:10px; }
+    .brand-art-label{
+      position:absolute;
+      left:16px;
+      bottom:16px;
+      z-index:2;
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.40);
+      border:1px solid var(--line-strong);
+      font-size:.84rem;
+      font-weight:800;
+    }
 
-    @media (max-width: 1100px){
-      .hero-card{
+    .insights-grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+
+    .insight-card{
+      padding:16px;
+      background:var(--panel-2);
+    }
+
+    .insight-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+
+    .insight-title{
+      font-weight:900;
+      font-size:.96rem;
+    }
+
+    .insight-value{
+      font-size:1.45rem;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .insight-text{
+      color:var(--muted);
+      font-size:.88rem;
+      line-height:1.45;
+    }
+
+    .footer-space{
+      height:20px;
+    }
+
+    .empty-state{
+      padding:24px;
+      border-radius:18px;
+      border:1px dashed var(--line-strong);
+      background:rgba(255,255,255,.02);
+      color:var(--muted);
+      text-align:center;
+      line-height:1.55;
+    }
+
+    @media (max-width: 1180px){
+      .hero,
+      .main-grid{
         grid-template-columns:1fr;
       }
-      .artist-media{
-        align-items:flex-start;
+
+      .stats-grid{
+        grid-template-columns:repeat(2,1fr);
       }
-      .tag-row{
+
+      .insights-grid{
+        grid-template-columns:1fr 1fr;
+      }
+    }
+
+    @media (max-width: 780px){
+      .topbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .nav{
         justify-content:flex-start;
       }
-      .grid{
+
+      .stats-grid,
+      .quick-links,
+      .brand-art-grid,
+      .insights-grid{
         grid-template-columns:1fr;
       }
-      .stats{
-        grid-template-columns:repeat(2, minmax(0, 1fr));
-      }
-      .artist-name{
-        font-size:3.15rem;
-      }
-    }
 
-    @media (max-width: 700px){
-      .page{ width:min(100% - 14px, 100%); }
-      .topbar, .hero, .content{ padding:14px; }
-      .hero-card, .panel{ padding:14px; border-radius:22px; }
-      .brand-logo{ width:54px; height:54px; border-radius:16px; }
-      .brand-text h1{ font-size:1.65rem; }
-      .artist-name{ font-size:2.45rem; }
-      .avatar, .avatar-fallback{ width:100%; max-width:260px; height:260px; }
-      .stats{ grid-template-columns:1fr; }
-      .action-row .btn, .action-row .chip, .action-row .pill{ width:100%; }
-      .card{ flex-direction:column; }
-      .thumb{ width:100%; height:180px; }
-      .link-card{ flex-direction:column; align-items:flex-start; }
-      .nav{ justify-content:flex-start; }
+      .hero-content{
+        padding:22px;
+      }
+
+      .hero-card{
+        min-height:340px;
+      }
+
+      .panel-head,
+      .track-top,
+      .activity-row{
+        flex-direction:column;
+        align-items:flex-start;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="page">
-    <div class="shell">
-      <div class="topbar">
-        <div class="brand">
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">
+          <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Rich Bizness brand" />
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Rich Bizness Artist Hub</div>
+          <div class="brand-sub">Music. Brand. Live. Monetization. Motion.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/playlist.html">Playlist</a>
+        <a href="/live.html">Live</a>
+        <a href="/gallery.html">Gallery</a>
+        <a href="/upload.html">Upload</a>
+        <a href="/artist/index.html" class="active">Artist</a>
+        <a href="/profile.html">Profile</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+          <div class="eyebrow">🎵 Rich Bizness Artist Hub</div>
+          <h1>Build Your Sound. Run Your Brand. Go Live.</h1>
+          <p>
+            This is the elite creator command center for Rich Bizness. Drop music,
+            push visuals, level up your artist identity, manage releases, connect
+            with your fans, and move like a full digital empire across music, live,
+            gallery, gaming, and monetization.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="goTo('/artist/upload.html')">Upload Music</button>
+            <button class="btn btn-secondary" onclick="goTo('/playlist.html')">Open Playlist</button>
+            <button class="btn btn-gold" onclick="goTo('/live.html')">Go Live</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <aside class="side-card">
+          <div class="profile-head">
+            <div class="avatar" id="artistAvatar">🎤</div>
+            <div>
+              <div class="profile-name" id="artistName">Artist Loading...</div>
+              <div class="profile-meta" id="artistMeta">
+                Syncing profile, uploads, and creator presence...
+              </div>
+            </div>
+          </div>
+
+          <div class="badge-row">
+            <div class="badge">Creator Ready</div>
+            <div class="badge">Music Synced</div>
+            <div class="badge">Live Enabled</div>
+            <div class="badge">Brand Visuals Locked</div>
+          </div>
+
+          <div class="artist-visual-card">
+            <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Artist visual" />
+          </div>
+
+          <div class="mini-stats">
+            <div class="mini-stat">
+              <div class="label">Artist Mode</div>
+              <div class="value" id="artistMode">Elite</div>
+            </div>
+            <div class="mini-stat">
+              <div class="label">Release State</div>
+              <div class="value" id="releaseState">Active</div>
+            </div>
+            <div class="mini-stat">
+              <div class="label">Profile Sync</div>
+              <div class="value" id="profileSync">On</div>
+            </div>
+            <div class="mini-stat">
+              <div class="label">Fan Reach</div>
+              <div class="value" id="fanReach">Growing</div>
+            </div>
+          </div>
+        </aside>
+
+        <aside class="side-card">
+          <div class="panel-head">
+            <div>
+              <div class="panel-title">Artist Command Links</div>
+              <div class="panel-sub">Fast access to the sections that move your brand.</div>
+            </div>
+          </div>
+
+          <div class="quick-links">
+            <a class="link-card" href="/artist/upload.html">
+              <div class="link-icon">⬆️</div>
+              <div class="link-title">Upload</div>
+              <div class="link-text">Drop songs, artwork, promos, and creator content.</div>
+            </a>
+
+            <a class="link-card" href="/playlist.html">
+              <div class="link-icon">🎧</div>
+              <div class="link-title">Playlist</div>
+              <div class="link-text">Preview music, arrange tracks, and build your flow.</div>
+            </a>
+
+            <a class="link-card" href="/live.html">
+              <div class="link-icon">🔥</div>
+              <div class="link-title">Live</div>
+              <div class="link-text">Run streams, interact with fans, and push paid access.</div>
+            </a>
+
+            <a class="link-card" href="/gallery.html">
+              <div class="link-icon">🖼️</div>
+              <div class="link-title">Gallery</div>
+              <div class="link-text">Show visuals, cover art, promo cards, and brand energy.</div>
+            </a>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Tracks</div>
+        <div class="stat-value" id="statTracks">0</div>
+        <div class="stat-note">Music entries currently connected to the artist page.</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Profile Followers</div>
+        <div class="stat-value" id="statFollowers">0</div>
+        <div class="stat-note">Audience growth tied to your creator profile system.</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Live Sessions</div>
+        <div class="stat-value" id="statLives">0</div>
+        <div class="stat-note">Streams linked to the live foundation and creator flow.</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Premium Unlocks</div>
+        <div class="stat-value" id="statUnlocks">0</div>
+        <div class="stat-note">Future-ready for paid content, tips, and fan access.</div>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Recent Music</div>
+            <div class="panel-sub">Latest tracks pulled into the artist experience.</div>
+          </div>
+          <a class="tiny-link" href="/playlist.html">View full playlist</a>
+        </div>
+
+        <div id="trackList" class="track-list">
+          <div class="empty-state">Loading artist tracks...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Artist Activity</div>
+            <div class="panel-sub">A command-center style view of artist momentum.</div>
+          </div>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-row">
+              <div>
+                <div class="activity-title">Music page synced</div>
+                <div class="activity-meta">Your artist hub, playlist flow, and music direction are connected.</div>
+              </div>
+              <div class="status-pill status-ready">Ready</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-row">
+              <div>
+                <div class="activity-title">Live artist flow active</div>
+                <div class="activity-meta">Jump from artist mode straight into streams and fan interaction.</div>
+              </div>
+              <div class="status-pill status-live">Live</div>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-row">
+              <div>
+                <div class="activity-title">Brand visuals upgraded</div>
+                <div class="activity-meta">Your image set is now part of the artist page identity.</div>
+              </div>
+              <div class="status-pill status-growth">Growth</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="brand-art-panel panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Brand Energy</div>
+          <div class="panel-sub">Rich Bizness visuals embedded into the artist experience.</div>
+        </div>
+      </div>
+
+      <div class="brand-art-grid">
+        <div class="brand-art-card">
           <img
-            class="brand-logo"
-            id="brandLogo"
-            src="images/brand/rich-bizness-profile.jpg"
-            alt="Rich Bizness"
-            onerror="this.src='images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png';"
+            src="/images/brand/A4F9E199-6D52-4DD4-BFAB-3430A9C13074.png"
+            alt="Rich Bizness neon artist art"
           />
-          <div class="brand-text">
-            <h1>Artist Channel</h1>
-            <p id="userChip">Loading artist identity...</p>
-          </div>
+          <div class="brand-art-label">Neon Artist Vision</div>
         </div>
 
-        <div class="nav">
-          <a class="chip" href="index.html">Home</a>
-          <a class="chip" href="music.html">Music</a>
-          <a class="chip" href="store.html">Store</a>
-          <a class="chip" href="artist.html">Artist</a>
-          <a class="chip" href="profile.html">Profile</a>
-          <button class="chip" id="logoutBtn" type="button">Log Out</button>
+        <div class="brand-art-card">
+          <img
+            src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png"
+            alt="Rich Bizness gold green artist art"
+          />
+          <div class="brand-art-label">Earth + Fire Artist Energy</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-top">
+          <div class="insight-title">Fan Conversion</div>
+          <div>📈</div>
+        </div>
+        <div class="insight-value" id="insightConversion">--</div>
+        <div class="insight-text">
+          Keep tracks, live sessions, and premium drops tied together so your page pushes actual fan movement.
         </div>
       </div>
 
-      <div class="hero">
-        <div class="hero-card">
-          <div class="artist-media">
-            <img id="avatarImg" class="avatar" alt="Artist avatar" style="display:none;" />
-            <div id="avatarFallback" class="avatar-fallback">No Avatar</div>
-
-            <div class="tag-row">
-              <div class="tag">Synced Artist Channel</div>
-              <div class="tag blue">Music</div>
-              <div class="tag gold">Store</div>
-              <div class="tag">Live</div>
-            </div>
-          </div>
-
-          <div class="artist-main">
-            <div class="eyebrow">
-              <div class="tag">Artist</div>
-              <div class="tag blue" id="roleTag">Creator</div>
-              <div class="tag gold" id="teamTag">Favorite Team</div>
-            </div>
-
-            <h2 id="artistName" class="artist-name">Loading...</h2>
-            <p id="artistHandle" class="artist-handle">@loading</p>
-
-            <div class="artist-sub">
-              <div id="artistEmail">Loading email...</div>
-              <div id="artistFavoriteTeam">Favorite Team: --</div>
-            </div>
-
-            <div id="artistBio" class="bio">Loading artist bio...</div>
-
-            <div class="action-row">
-              <a id="openStoreBtn" class="btn btn-green" href="store.html">Open Store</a>
-              <a id="openProfileBtn" class="btn btn-dark" href="profile.html">Profile</a>
-              <button id="messageArtistBtn" class="btn btn-dark" type="button">Message Artist</button>
-              <a id="watchBtn" class="btn btn-gold" href="watch.html">Watch</a>
-              <button id="copyArtistLinkBtn" class="btn btn-blue" type="button">Copy Artist Link</button>
-            </div>
-
-            <div id="statusBox" class="status">Artist page loading...</div>
-          </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <div class="insight-title">Creator Value</div>
+          <div>💎</div>
+        </div>
+        <div class="insight-value" id="insightValue">High</div>
+        <div class="insight-text">
+          This page is built to become the center of uploads, visuals, monetization, and artist identity.
         </div>
       </div>
 
-      <div class="content">
-        <div class="stats">
-          <div class="stat">
-            <strong id="musicCount">0</strong>
-            <span>Music</span>
-          </div>
-          <div class="stat">
-            <strong id="storeCount">0</strong>
-            <span>Store Items</span>
-          </div>
-          <div class="stat">
-            <strong id="sportsCount">0</strong>
-            <span>Sports Posts</span>
-          </div>
-          <div class="stat">
-            <strong id="followersCount">0</strong>
-            <span>Followers</span>
-          </div>
+      <div class="insight-card">
+        <div class="insight-top">
+          <div class="insight-title">Metaverse Ready</div>
+          <div>🌌</div>
         </div>
-
-        <div class="grid">
-          <div class="panel">
-            <h2>Latest Music</h2>
-            <p class="lead">Recent drops from this artist lane. This section stays tied to your synced platform records.</p>
-            <div id="musicList" class="list">
-              <div class="empty">Loading music...</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h2>Artist Links</h2>
-            <p class="lead">Profile and channel links that keep the artist identity connected across Rich Bizness.</p>
-            <div class="links">
-              <a id="instagramLink" class="link-card" href="#" target="_blank" rel="noopener" style="display:none;">
-                <div>
-                  <strong>Instagram</strong>
-                  <span id="instagramText"></span>
-                </div>
-                <span class="pill">Open</span>
-              </a>
-
-              <a id="youtubeLink" class="link-card" href="#" target="_blank" rel="noopener" style="display:none;">
-                <div>
-                  <strong>YouTube</strong>
-                  <span id="youtubeText"></span>
-                </div>
-                <span class="pill">Open</span>
-              </a>
-
-              <a id="websiteLink" class="link-card" href="#" target="_blank" rel="noopener" style="display:none;">
-                <div>
-                  <strong>Website</strong>
-                  <span id="websiteText"></span>
-                </div>
-                <span class="pill">Open</span>
-              </a>
-
-              <div id="noLinksBox" class="empty">No artist links added yet.</div>
-            </div>
-          </div>
+        <div class="insight-value" id="insightMeta">On</div>
+        <div class="insight-text">
+          The layout is already pointed toward premium creator motion, live immersion, and future expansion.
         </div>
-
-        <div class="grid">
-          <div class="panel">
-            <h2>Featured Sports Uploads</h2>
-            <p class="lead">Sports lane content connected to this same artist identity.</p>
-            <div id="sportsList" class="list">
-              <div class="empty">Loading sports uploads...</div>
-            </div>
-          </div>
-
-          <div class="panel">
-            <h2>Store Preview</h2>
-            <p class="lead">Quick preview of products tied to this creator profile.</p>
-            <div id="storeList" class="list">
-              <div class="empty">Loading store items...</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="footer-space"></div>
       </div>
-    </div>
+    </section>
+
+    <div class="footer-space"></div>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const AVATAR_BUCKET = "profile-images";
+    const SUPABASE_URL = "https://YOUR_PROJECT.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const avatarImg = document.getElementById("avatarImg");
-      const avatarFallback = document.getElementById("avatarFallback");
-      const roleTag = document.getElementById("roleTag");
-      const teamTag = document.getElementById("teamTag");
-      const artistName = document.getElementById("artistName");
-      const artistHandle = document.getElementById("artistHandle");
-      const artistEmail = document.getElementById("artistEmail");
-      const artistFavoriteTeam = document.getElementById("artistFavoriteTeam");
-      const artistBio = document.getElementById("artistBio");
-      const statusBox = document.getElementById("statusBox");
+    function goTo(path) {
+      window.location.href = path;
+    }
 
-      const openStoreBtn = document.getElementById("openStoreBtn");
-      const openProfileBtn = document.getElementById("openProfileBtn");
-      const messageArtistBtn = document.getElementById("messageArtistBtn");
-      const watchBtn = document.getElementById("watchBtn");
-      const copyArtistLinkBtn = document.getElementById("copyArtistLinkBtn");
+    function safeText(value, fallback = "") {
+      if (value === null || value === undefined) return fallback;
+      return String(value);
+    }
 
-      const musicCount = document.getElementById("musicCount");
-      const storeCount = document.getElementById("storeCount");
-      const sportsCount = document.getElementById("sportsCount");
-      const followersCount = document.getElementById("followersCount");
+    function initialsFromName(name) {
+      if (!name) return "🎤";
+      const parts = name.trim().split(/\s+/).slice(0, 2);
+      if (!parts.length) return "🎤";
+      return parts.map(p => p[0]?.toUpperCase() || "").join("");
+    }
 
-      const musicList = document.getElementById("musicList");
-      const sportsList = document.getElementById("sportsList");
-      const storeList = document.getElementById("storeList");
+    function formatNumber(value) {
+      const num = Number(value || 0);
+      return new Intl.NumberFormat().format(num);
+    }
 
-      const instagramLink = document.getElementById("instagramLink");
-      const youtubeLink = document.getElementById("youtubeLink");
-      const websiteLink = document.getElementById("websiteLink");
-      const instagramText = document.getElementById("instagramText");
-      const youtubeText = document.getElementById("youtubeText");
-      const websiteText = document.getElementById("websiteText");
-      const noLinksBox = document.getElementById("noLinksBox");
+    function setAvatar(profile) {
+      const avatar = document.getElementById("artistAvatar");
+      const avatarUrl =
+        profile?.avatar_url ||
+        profile?.profile_image_url ||
+        profile?.image_url ||
+        "";
 
-      const query = new URLSearchParams(window.location.search);
-      const requestedUsername = (query.get("username") || "").trim();
-
-      let currentUser = null;
-      let currentProfile = null;
-      let viewedProfile = null;
-      let viewedChannel = null;
-
-      function setStatus(message, isError = false) {
-        statusBox.textContent = message;
-        statusBox.className = isError ? "status error" : "status";
+      if (avatarUrl) {
+        avatar.innerHTML = '<img src="' + avatarUrl + '" alt="Artist avatar" />';
+      } else {
+        avatar.textContent = initialsFromName(profile?.display_name || profile?.username || "Artist");
       }
+    }
 
-      function safeText(value, fallback = "--") {
-        return value && String(value).trim() ? String(value).trim() : fallback;
-      }
+    async function loadArtistProfile(user) {
+      const nameEl = document.getElementById("artistName");
+      const metaEl = document.getElementById("artistMeta");
 
-      function slugify(value) {
-        return String(value || "")
-          .toLowerCase()
-          .trim()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
-
-      function escapeHtml(value) {
-        return String(value ?? "")
-          .replaceAll("&", "&amp;")
-          .replaceAll("<", "&lt;")
-          .replaceAll(">", "&gt;")
-          .replaceAll('"', "&quot;")
-          .replaceAll("'", "&#039;");
-      }
-
-      function normalizeUrl(url) {
-        const raw = String(url || "").trim();
-        if (!raw) return "";
-        if (raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-        return "https://" + raw;
-      }
-
-      function buildStorageUrl(path) {
-        if (!path) return "";
-        if (/^https?:\/\//i.test(path)) return path;
-        const { data } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
-        return data?.publicUrl || "";
-      }
-
-      function renderAvatar(url, nameValue) {
-        const finalUrl = buildStorageUrl(url);
-        if (finalUrl) {
-          avatarImg.src = finalUrl;
-          avatarImg.style.display = "block";
-          avatarFallback.style.display = "none";
-          avatarImg.onerror = () => {
-            avatarImg.style.display = "none";
-            avatarFallback.style.display = "flex";
-            avatarFallback.textContent = nameValue ? nameValue.charAt(0).toUpperCase() : "No Avatar";
-          };
-        } else {
-          avatarImg.style.display = "none";
-          avatarFallback.style.display = "flex";
-          avatarFallback.textContent = "No Avatar";
-        }
-      }
-
-      function renderLinks(profile, channel) {
-        const instagram = normalizeUrl(channel?.instagram_url || profile?.instagram_url || "");
-        const youtube = normalizeUrl(channel?.youtube_url || profile?.youtube_url || "");
-        const website = normalizeUrl(channel?.website_url || profile?.website_url || "");
-
-        let shown = 0;
-
-        if (instagram) {
-          instagramLink.style.display = "flex";
-          instagramLink.href = instagram;
-          instagramText.textContent = instagram;
-          shown++;
-        } else {
-          instagramLink.style.display = "none";
-        }
-
-        if (youtube) {
-          youtubeLink.style.display = "flex";
-          youtubeLink.href = youtube;
-          youtubeText.textContent = youtube;
-          shown++;
-        } else {
-          youtubeLink.style.display = "none";
-        }
-
-        if (website) {
-          websiteLink.style.display = "flex";
-          websiteLink.href = website;
-          websiteText.textContent = website;
-          shown++;
-        } else {
-          websiteLink.style.display = "none";
-        }
-
-        noLinksBox.style.display = shown ? "none" : "block";
-      }
-
-      function renderMusic(rows) {
-        if (!rows || !rows.length) {
-          musicList.innerHTML = `<div class="empty">No music uploaded yet.</div>`;
-          return;
-        }
-
-        musicList.innerHTML = rows.map(row => {
-          const cover = row.cover_url || row.thumbnail_url || "images/brand/rich-bizness-profile.jpg";
-          const title = escapeHtml(row.title || "Untitled Track");
-          const artist = escapeHtml(row.artist_name || viewedProfile?.display_name || viewedProfile?.username || "Artist");
-          const genre = escapeHtml(row.genre || "Music");
-          const album = escapeHtml(row.album_name || "Single");
-          return `
-            <div class="card">
-              <img class="thumb" src="${cover}" alt="${title}" onerror="this.src='images/brand/rich-bizness-profile.jpg';" />
-              <div class="card-body">
-                <h3>${title}</h3>
-                <div class="meta">${artist} • ${genre} • ${album}</div>
-                <div class="mini-actions">
-                  <a class="pill" href="music.html">Open Music</a>
-                  <a class="pill" href="watch.html">Preview</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderSports(rows) {
-        if (!rows || !rows.length) {
-          sportsList.innerHTML = `<div class="empty">No sports uploads yet.</div>`;
-          return;
-        }
-
-        sportsList.innerHTML = rows.map(row => {
-          const thumb = row.thumbnail_url || "images/brand/rich-bizness-profile.jpg";
-          const title = escapeHtml(row.title || row.caption || "Sports Upload");
-          const sport = escapeHtml(row.sport_name || row.category || "Sports");
-          const team = escapeHtml(row.team_name || row.athlete_name || "Rich Bizness");
-          return `
-            <div class="card">
-              <img class="thumb" src="${thumb}" alt="${title}" onerror="this.src='images/brand/rich-bizness-profile.jpg';" />
-              <div class="card-body">
-                <h3>${title}</h3>
-                <div class="meta">${sport} • ${team}</div>
-                <div class="mini-actions">
-                  <a class="pill" href="sports.html">Open Sports</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      function renderStore(rows) {
-        if (!rows || !rows.length) {
-          storeList.innerHTML = `<div class="empty">No store items yet.</div>`;
-          return;
-        }
-
-        storeList.innerHTML = rows.map(row => {
-          const image = row.image_url || "images/brand/rich-bizness-profile.jpg";
-          const title = escapeHtml(row.title || "Store Item");
-          const description = escapeHtml(row.description || "Rich Bizness product");
-          const price = Number(row.price_cents || 0) > 0 ? `$${(Number(row.price_cents) / 100).toFixed(2)}` : "Price coming soon";
-          return `
-            <div class="card">
-              <img class="thumb" src="${image}" alt="${title}" onerror="this.src='images/brand/rich-bizness-profile.jpg';" />
-              <div class="card-body">
-                <h3>${title}</h3>
-                <div class="meta">${description}</div>
-                <div class="mini-actions">
-                  <span class="pill">${price}</span>
-                  <a class="pill" href="store.html">Open Store</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      async function getCurrentSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        currentUser = data?.session?.user || null;
-        return currentUser;
-      }
-
-      async function getProfileByCurrentUser(user) {
-        if (!user) return null;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
-          .limit(1);
-
-        if (error) throw error;
-        return data?.[0] || null;
-      }
-
-      async function getViewedProfile() {
-        if (requestedUsername) {
-          const lower = requestedUsername.toLowerCase();
-
-          const { data, error } = await supabase
-            .from("profiles")
-            .select("*")
-            .ilike("username", lower)
-            .limit(1);
-
-          if (error) throw error;
-          if (data?.length) return data[0];
-        }
-
-        if (currentProfile) return currentProfile;
-
+      if (!user) {
+        nameEl.textContent = "Guest Artist";
+        metaEl.textContent = "Sign in to sync your artist profile, tracks, and creator stats.";
+        setAvatar(null);
         return null;
       }
 
-      async function getArtistChannel(profile) {
-        if (!profile) return null;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
 
-        const possibleUserId = profile.user_id || profile.id;
-        let rows = [];
-        let err = null;
+      const displayName =
+        profile?.display_name ||
+        profile?.username ||
+        user.user_metadata?.display_name ||
+        user.user_metadata?.full_name ||
+        user.email?.split("@")[0] ||
+        "Rich Bizness Artist";
 
-        if (possibleUserId) {
-          const channelRes = await supabase
-            .from("artist_channels")
-            .select("*")
-            .eq("user_id", possibleUserId)
-            .limit(1);
+      nameEl.textContent = displayName;
+      metaEl.textContent =
+        (profile?.bio && String(profile.bio).slice(0, 120)) ||
+        "Creator dashboard synced for music, visuals, live, and premium growth.";
 
-          rows = channelRes.data || [];
-          err = channelRes.error;
-        }
+      setAvatar(profile);
 
-        if (err) throw err;
-        return rows[0] || null;
-      }
+      return profile;
+    }
 
-      async function getMusicUploads(profile) {
-        if (!profile) return [];
-        const possibleUserId = profile.user_id || profile.id;
+    async function loadFollowerCount(user) {
+      if (!user) return 0;
 
-        const { data, error } = await supabase
-          .from("music_uploads")
-          .select("*")
-          .eq("user_id", possibleUserId)
-          .order("created_at", { ascending: false })
-          .limit(4);
-
-        if (error) {
-          console.warn("music_uploads read failed:", error.message);
-          return [];
-        }
-
-        return data || [];
-      }
-
-      async function getSportsUploads(profile) {
-        if (!profile) return [];
-        const possibleUserId = profile.user_id || profile.id;
-
-        const { data, error } = await supabase
-          .from("sports_uploads")
-          .select("*")
-          .eq("user_id", possibleUserId)
-          .order("created_at", { ascending: false })
-          .limit(4);
-
-        if (error) {
-          console.warn("sports_uploads read failed:", error.message);
-          return [];
-        }
-
-        return data || [];
-      }
-
-      async function getProducts(profile) {
-        if (!profile) return [];
-        const possibleUserId = profile.user_id || profile.id;
-
-        const { data, error } = await supabase
-          .from("products")
-          .select("*")
-          .eq("user_id", possibleUserId)
-          .order("created_at", { ascending: false })
-          .limit(4);
-
-        if (error) {
-          console.warn("products read failed:", error.message);
-          return [];
-        }
-
-        return data || [];
-      }
-
-      async function getFollowersCount(profile) {
-        if (!profile) return 0;
-        const possibleUserId = profile.user_id || profile.id;
-
+      try {
         const { count, error } = await supabase
           .from("followers")
           .select("*", { count: "exact", head: true })
-          .eq("following_id", possibleUserId);
+          .eq("following_id", user.id);
 
-        if (error) {
-          console.warn("followers count failed:", error.message);
-          return 0;
-        }
-
+        if (error) throw error;
         return count || 0;
+      } catch (e) {
+        return 0;
       }
-
-      function buildArtistDisplay(profile, channel) {
-        const displayName =
-          channel?.channel_name ||
-          profile?.display_name ||
-          profile?.username ||
-          "Rich Bizness Artist";
-
-        const username =
-          profile?.username ||
-          slugify(channel?.channel_name) ||
-          "artist";
-
-        const role =
-          profile?.role ||
-          "creator";
-
-        const favoriteTeam =
-          profile?.favorite_team ||
-          "—";
-
-        const emailValue =
-          profile?.email ||
-          currentUser?.email ||
-          "No email found";
-
-        const bioValue =
-          channel?.bio ||
-          profile?.bio ||
-          "No artist bio yet.";
-
-        artistName.textContent = displayName;
-        artistHandle.textContent = `@${username}`;
-        artistEmail.textContent = emailValue;
-        artistFavoriteTeam.textContent = `Favorite Team: ${favoriteTeam}`;
-        artistBio.textContent = bioValue;
-        roleTag.textContent = role;
-        teamTag.textContent = favoriteTeam;
-        userChip.textContent = emailValue;
-
-        renderAvatar(channel?.avatar_url || profile?.avatar_url || "", displayName);
-
-        openProfileBtn.href = `profile.html${username ? `?username=${encodeURIComponent(username)}` : ""}`;
-        openStoreBtn.href = `store.html${username ? `?username=${encodeURIComponent(username)}` : ""}`;
-        watchBtn.href = `watch.html${username ? `?username=${encodeURIComponent(username)}` : ""}`;
-
-        messageArtistBtn.onclick = () => {
-          window.location.href = `messages.html?username=${encodeURIComponent(username)}`;
-        };
-
-        copyArtistLinkBtn.onclick = async () => {
-          const link = `${window.location.origin}/artist.html?username=${encodeURIComponent(username)}`;
-          try {
-            await navigator.clipboard.writeText(link);
-            setStatus("Artist link copied.");
-          } catch {
-            setStatus("Could not copy artist link on this device.", true);
-          }
-        };
-      }
-
-      async function hydrateArtistPage() {
-        setStatus("Loading artist page...");
-        await getCurrentSession();
-        currentProfile = await getProfileByCurrentUser(currentUser);
-        viewedProfile = await getViewedProfile();
-
-        if (!viewedProfile) {
-          setStatus("Artist profile not found.", true);
-          artistName.textContent = "Artist Not Found";
-          artistHandle.textContent = "@missing";
-          artistBio.textContent = "This artist profile could not be loaded.";
-          musicList.innerHTML = `<div class="empty">No artist profile found.</div>`;
-          sportsList.innerHTML = `<div class="empty">No artist profile found.</div>`;
-          storeList.innerHTML = `<div class="empty">No artist profile found.</div>`;
-          return;
-        }
-
-        viewedChannel = await getArtistChannel(viewedProfile);
-        buildArtistDisplay(viewedProfile, viewedChannel);
-        renderLinks(viewedProfile, viewedChannel);
-
-        const [musicRows, sportsRows, productRows, followerTotal] = await Promise.all([
-          getMusicUploads(viewedProfile),
-          getSportsUploads(viewedProfile),
-          getProducts(viewedProfile),
-          getFollowersCount(viewedProfile)
-        ]);
-
-        musicCount.textContent = String(musicRows.length || 0);
-        sportsCount.textContent = String(sportsRows.length || 0);
-        storeCount.textContent = String(productRows.length || 0);
-        followersCount.textContent = String(followerTotal || 0);
-
-        renderMusic(musicRows);
-        renderSports(sportsRows);
-        renderStore(productRows);
-
-        setStatus("Artist page fully synced with fallback.");
-      }
-
-      logoutBtn.addEventListener("click", async () => {
-        await supabase.auth.signOut();
-        window.location.href = "auth.html";
-      });
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-      });
-
-      hydrateArtistPage().catch((error) => {
-        console.error(error);
-        setStatus(`Artist page error: ${error.message}`, true);
-      });
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:24px;font-family:Arial,sans-serif;color:white;background:#08110b;min-height:100vh;">
-          <h1 style="color:#ff8b8b;">Artist page crash</h1>
-          <p>${String(error.message || error)}</p>
-        </div>
-      `;
     }
+
+    async function loadLiveCount(user) {
+      if (!user) return 0;
+
+      const tablesToTry = [
+        { table: "live_streams", column: "creator_id" },
+        { table: "live_streams", column: "user_id" },
+        { table: "live_streams", column: "host_id" }
+      ];
+
+      for (const option of tablesToTry) {
+        try {
+          const { count, error } = await supabase
+            .from(option.table)
+            .select("*", { count: "exact", head: true })
+            .eq(option.column, user.id);
+
+          if (!error) return count || 0;
+        } catch (e) {}
+      }
+
+      return 0;
+    }
+
+    async function loadUnlockCount(user) {
+      if (!user) return 0;
+
+      const tries = [
+        { table: "music_unlocks", column: "user_id" },
+        { table: "user_product_unlocks", column: "user_id" },
+        { table: "vip_live_access", column: "user_id" }
+      ];
+
+      let total = 0;
+
+      for (const t of tries) {
+        try {
+          const { count, error } = await supabase
+            .from(t.table)
+            .select("*", { count: "exact", head: true })
+            .eq(t.column, user.id);
+
+          if (!error) total += (count || 0);
+        } catch (e) {}
+      }
+
+      return total;
+    }
+
+    async function loadTracks(user) {
+      const trackList = document.getElementById("trackList");
+      trackList.innerHTML = '<div class="empty-state">Loading artist tracks...</div>';
+
+      const queries = [];
+
+      if (user) {
+        queries.push(
+          supabase
+            .from("tracks")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(6)
+        );
+
+        queries.push(
+          supabase
+            .from("tracks")
+            .select("*")
+            .eq("artist_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(6)
+        );
+      }
+
+      queries.push(
+        supabase
+          .from("tracks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(6)
+      );
+
+      let tracks = [];
+      for (const q of queries) {
+        try {
+          const { data, error } = await q;
+          if (!error && Array.isArray(data) && data.length) {
+            tracks = data;
+            break;
+          }
+        } catch (e) {}
+      }
+
+      document.getElementById("statTracks").textContent = formatNumber(tracks.length);
+
+      if (!tracks.length) {
+        trackList.innerHTML = `
+          <div class="empty-state">
+            No tracks found yet.<br />
+            Add music through your upload or playlist flow and this section will light up.
+          </div>
+        `;
+        return;
+      }
+
+      trackList.innerHTML = tracks.map(track => {
+        const title = safeText(track.title, "Untitled Track");
+        const artist = safeText(track.artist, "Rich Bizness Artist");
+        const genre = safeText(track.genre, "Music");
+        const cover = track.cover_url || track.artwork_url || "";
+        const audioUrl = track.audio_url || track.file_url || track.music_url || "";
+
+        return `
+          <div class="track-card">
+            <div class="track-top">
+              <div>
+                <div class="track-title">${escapeHtml(title)}</div>
+                <div class="track-meta">
+                  ${escapeHtml(artist)} · ${escapeHtml(genre)}
+                </div>
+              </div>
+              <div class="track-tag">Featured</div>
+            </div>
+            ${cover ? `<img src="${cover}" alt="${escapeHtml(title)} cover" style="width:100%;height:180px;object-fit:cover;border-radius:16px;border:1px solid rgba(76,255,166,.12);margin-bottom:12px;">` : ""}
+            ${audioUrl ? `<audio controls src="${audioUrl}"></audio>` : `<div class="track-meta">No preview URL connected yet.</div>`}
+          </div>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        })[m];
+      });
+    }
+
+    async function loadStats(user) {
+      const followerCount = await loadFollowerCount(user);
+      const liveCount = await loadLiveCount(user);
+      const unlockCount = await loadUnlockCount(user);
+
+      document.getElementById("statFollowers").textContent = formatNumber(followerCount);
+      document.getElementById("statLives").textContent = formatNumber(liveCount);
+      document.getElementById("statUnlocks").textContent = formatNumber(unlockCount);
+
+      const conversion = followerCount > 0
+        ? Math.max(1, Math.round((unlockCount / followerCount) * 100))
+        : 0;
+
+      document.getElementById("insightConversion").textContent = conversion ? conversion + "%" : "--";
+    }
+
+    async function initArtistHub() {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const user = authData?.user || null;
+
+        await loadArtistProfile(user);
+        await loadTracks(user);
+        await loadStats(user);
+      } catch (error) {
+        console.error("Artist hub load error:", error);
+
+        document.getElementById("artistName").textContent = "Artist Hub Ready";
+        document.getElementById("artistMeta").textContent =
+          "Page loaded, but your Supabase URL or table structure still needs to be connected.";
+
+        document.getElementById("trackList").innerHTML = `
+          <div class="empty-state">
+            Artist UI is loaded.<br />
+            Replace the Supabase URL and connect your live tables to populate everything.
+          </div>
+        `;
+      }
+    }
+
+    initArtistHub();
   </script>
 </body>
 </html>
