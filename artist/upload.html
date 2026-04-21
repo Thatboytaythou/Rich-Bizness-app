@@ -1,1 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>Artist Upload — Rich Bizness</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root{
+      --bg-1:#03140d;
+      --bg-2:#071d14;
+      --panel:rgba(8,18,14,.82);
+      --panel-2:rgba(11,26,18,.92);
+      --line:rgba(76,255,166,.18);
+      --line-strong:rgba(76,255,166,.36);
+      --text:#ecfff5;
+      --muted:#9dc8b1;
+      --green:#43f59b;
+      --green-2:#14d46f;
+      --gold:#ffd86b;
+      --red:#ff6e7b;
+      --blue:#86d8ff;
+      --shadow:0 18px 50px rgba(0,0,0,.38);
+      --radius:22px;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+
+    html,body{
+      min-height:100%;
+      background:
+        radial-gradient(circle at top left, rgba(67,245,155,.10), transparent 26%),
+        radial-gradient(circle at top right, rgba(255,216,107,.08), transparent 20%),
+        linear-gradient(180deg,var(--bg-1),var(--bg-2));
+      color:var(--text);
+      font-family:Inter,Arial,Helvetica,sans-serif;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    img{ max-width:100%; display:block; }
+
+    .app{
+      width:min(1440px,94vw);
+      margin:0 auto;
+      padding:18px 0 60px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:100;
+      backdrop-filter:blur(18px);
+      background:rgba(3,10,7,.62);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+      border-radius:20px;
+      margin:10px auto 18px;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width:0;
+    }
+
+    .brand-badge{
+      width:48px;
+      height:48px;
+      border-radius:15px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      background:linear-gradient(135deg, rgba(67,245,155,.22), rgba(255,216,107,.12));
+      box-shadow:0 0 28px rgba(67,245,155,.12);
+      flex-shrink:0;
+    }
+
+    .brand-badge img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .brand-title{
+      font-size:1rem;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+
+    .brand-sub{
+      color:var(--muted);
+      font-size:.78rem;
+      margin-top:2px;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      gap:10px;
+    }
+
+    .nav a{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:.93rem;
+      transition:.2s ease;
+    }
+
+    .nav a:hover,
+    .nav a.active{
+      color:var(--text);
+      border-color:var(--line-strong);
+      background:rgba(67,245,155,.12);
+      box-shadow:0 0 20px rgba(67,245,155,.10);
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:18px;
+      margin-bottom:18px;
+    }
+
+    .hero-card,
+    .panel,
+    .side-card,
+    .upload-card,
+    .preview-card,
+    .tips-card,
+    .recent-card{
+      border:1px solid var(--line);
+      background:var(--panel);
+      backdrop-filter:blur(14px);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero-card{
+      min-height:340px;
+      overflow:hidden;
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.82)),
+        url('/images/brand/A4F9E199-6D52-4DD4-BFAB-3430A9C13074.png') center/cover no-repeat,
+        var(--panel);
+    }
+
+    .hero-glow{
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(67,245,155,.16), transparent 28%),
+        radial-gradient(circle at 82% 26%, rgba(255,216,107,.12), transparent 24%);
+      pointer-events:none;
+    }
+
+    .hero-content{
+      position:relative;
+      z-index:2;
+      padding:28px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.28);
+      color:var(--green);
+      font-weight:800;
+      font-size:.84rem;
+      margin-bottom:14px;
+    }
+
+    .hero h1{
+      font-size:clamp(2rem,4vw,3.3rem);
+      line-height:1.03;
+      margin-bottom:12px;
+      max-width:720px;
+    }
+
+    .hero p{
+      color:#d7f6e7;
+      max-width:720px;
+      line-height:1.55;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:22px;
+    }
+
+    .btn{
+      border:none;
+      cursor:pointer;
+      font-weight:900;
+      border-radius:14px;
+      padding:13px 16px;
+      transition:.2s ease;
+      font-size:.95rem;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg,var(--green),var(--green-2));
+      color:#052012;
+      box-shadow:0 14px 28px rgba(20,212,111,.20);
+    }
+
+    .btn-secondary{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid var(--line-strong);
+    }
+
+    .btn-gold{
+      background:linear-gradient(135deg,#ffe187,#f2b84b);
+      color:#1c1200;
+      box-shadow:0 14px 28px rgba(242,184,75,.20);
+    }
+
+    .btn-danger{
+      background:linear-gradient(135deg,#ff938f,#ff6e7b);
+      color:#220406;
+      box-shadow:0 14px 28px rgba(255,110,123,.18);
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+      filter:brightness(1.04);
+    }
+
+    .side-stack{
+      display:grid;
+      gap:18px;
+    }
+
+    .side-card{
+      padding:18px;
+    }
+
+    .profile-head{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .avatar{
+      width:76px;
+      height:76px;
+      border-radius:20px;
+      overflow:hidden;
+      background:linear-gradient(135deg, rgba(67,245,155,.18), rgba(255,216,107,.10));
+      border:1px solid var(--line-strong);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      font-size:1.2rem;
+      flex-shrink:0;
+    }
+
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .profile-name{
+      font-size:1.18rem;
+      font-weight:900;
+    }
+
+    .profile-meta{
+      color:var(--muted);
+      font-size:.92rem;
+      margin-top:4px;
+      line-height:1.4;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+      margin-top:14px;
+    }
+
+    .status-box{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .status-label{
+      color:var(--muted);
+      font-size:.8rem;
+      margin-bottom:6px;
+    }
+
+    .status-value{
+      font-size:1.05rem;
+      font-weight:900;
+    }
+
+    .visual-card{
+      overflow:hidden;
+      border-radius:20px;
+      border:1px solid var(--line);
+      margin-top:14px;
+      min-height:220px;
+      background:#08120d;
+    }
+
+    .visual-card img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .main-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:18px;
+      margin-top:18px;
+    }
+
+    .panel{
+      padding:18px;
+    }
+
+    .panel-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+
+    .panel-title{
+      font-size:1.15rem;
+      font-weight:900;
+    }
+
+    .panel-sub{
+      color:var(--muted);
+      font-size:.9rem;
+      margin-top:4px;
+      line-height:1.45;
+    }
+
+    .upload-form{
+      display:grid;
+      gap:14px;
+    }
+
+    .field-row{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+
+    .field{
+      display:grid;
+      gap:8px;
+    }
+
+    .field label{
+      font-size:.9rem;
+      font-weight:800;
+      color:#dffbea;
+    }
+
+    .field input,
+    .field textarea,
+    .field select{
+      width:100%;
+      border:none;
+      outline:none;
+      border-radius:16px;
+      background:rgba(255,255,255,.04);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:14px 14px;
+      font-size:.96rem;
+    }
+
+    .field textarea{
+      min-height:120px;
+      resize:vertical;
+    }
+
+    .field input::placeholder,
+    .field textarea::placeholder{
+      color:#90bba5;
+    }
+
+    .field input[type="file"]{
+      padding:12px;
+      background:rgba(255,255,255,.03);
+      cursor:pointer;
+    }
+
+    .helper{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.45;
+    }
+
+    .toggle-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:12px;
+    }
+
+    .toggle-card{
+      padding:14px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+
+    .toggle-card input{
+      margin-right:8px;
+      transform:translateY(1px);
+    }
+
+    .upload-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      margin-top:6px;
+    }
+
+    .progress-wrap{
+      display:none;
+      gap:10px;
+      margin-top:8px;
+    }
+
+    .progress-wrap.active{
+      display:grid;
+    }
+
+    .progress-bar{
+      width:100%;
+      height:12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      overflow:hidden;
+      border:1px solid var(--line);
+    }
+
+    .progress-bar-fill{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg,var(--green),var(--gold));
+      transition:width .25s ease;
+    }
+
+    .status-message{
+      padding:14px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color:#dffbea;
+      line-height:1.5;
+      display:none;
+    }
+
+    .status-message.show{
+      display:block;
+    }
+
+    .status-message.error{
+      border-color:rgba(255,110,123,.42);
+      color:#ffd7db;
+      background:rgba(255,110,123,.08);
+    }
+
+    .status-message.success{
+      border-color:rgba(67,245,155,.38);
+      color:#dffbea;
+      background:rgba(67,245,155,.08);
+    }
+
+    .preview-stack,
+    .tips-stack,
+    .recent-stack{
+      display:grid;
+      gap:12px;
+    }
+
+    .preview-card,
+    .tips-card,
+    .recent-card{
+      padding:16px;
+      background:var(--panel-2);
+    }
+
+    .preview-cover{
+      width:100%;
+      min-height:210px;
+      border-radius:18px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      font-size:.95rem;
+      text-align:center;
+    }
+
+    .preview-cover img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .preview-title{
+      font-size:1rem;
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .preview-meta{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.45;
+    }
+
+    .tip-title{
+      font-weight:900;
+      margin-bottom:6px;
+    }
+
+    .tip-text{
+      color:var(--muted);
+      font-size:.9rem;
+      line-height:1.45;
+    }
+
+    .recent-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .recent-item{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+
+    .recent-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:6px;
+    }
+
+    .recent-title{
+      font-weight:900;
+    }
+
+    .recent-tag{
+      padding:6px 9px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      color:var(--gold);
+      font-size:.75rem;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .recent-meta{
+      color:var(--muted);
+      font-size:.86rem;
+      line-height:1.45;
+    }
+
+    .footer-space{ height:20px; }
+
+    @media (max-width: 1180px){
+      .hero,
+      .main-grid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width: 820px){
+      .topbar{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .nav{
+        justify-content:flex-start;
+      }
+
+      .field-row,
+      .toggle-row,
+      .status-grid{
+        grid-template-columns:1fr;
+      }
+
+      .panel-head,
+      .recent-top{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .hero-card{
+        min-height:320px;
+      }
+
+      .hero-content{
+        padding:22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">
+          <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Rich Bizness brand" />
+        </div>
+        <div>
+          <div class="brand-title">Rich Bizness Artist Upload</div>
+          <div class="brand-sub">Drop music, artwork, and creator assets like a real platform.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/music.html">Music</a>
+        <a href="/playlist.html">Playlist</a>
+        <a href="/live.html">Live</a>
+        <a href="/gallery.html">Gallery</a>
+        <a href="/artist/index.html">Artist</a>
+        <a href="/artist/upload.html" class="active">Upload</a>
+        <a href="/profile.html">Profile</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-glow"></div>
+        <div class="hero-content">
+          <div class="eyebrow">⬆️ Rich Bizness Upload Studio</div>
+          <h1>Upload Music. Set the Cover. Push the Brand.</h1>
+          <p>
+            This page is your elite artist upload lane. Add tracks, attach cover art,
+            set descriptions, organize genres, and push your music into the Rich Bizness
+            artist page and playlist flow.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="scrollToForm()">Start Upload</button>
+            <button class="btn btn-secondary" onclick="goTo('/artist/index.html')">Artist Hub</button>
+            <button class="btn btn-gold" onclick="goTo('/playlist.html')">Playlist</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-stack">
+        <aside class="side-card">
+          <div class="profile-head">
+            <div class="avatar" id="artistAvatar">🎤</div>
+            <div>
+              <div class="profile-name" id="artistName">Artist Loading...</div>
+              <div class="profile-meta" id="artistMeta">Checking login and creator profile...</div>
+            </div>
+          </div>
+
+          <div class="status-grid">
+            <div class="status-box">
+              <div class="status-label">Upload Mode</div>
+              <div class="status-value">Elite</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Storage Sync</div>
+              <div class="status-value" id="storageSync">Ready</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Track Flow</div>
+              <div class="status-value">Armed</div>
+            </div>
+            <div class="status-box">
+              <div class="status-label">Artist State</div>
+              <div class="status-value" id="artistState">Active</div>
+            </div>
+          </div>
+
+          <div class="visual-card">
+            <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" alt="Artist visual" />
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="main-grid">
+      <section class="panel" id="uploadFormSection">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Track Upload Form</div>
+            <div class="panel-sub">
+              Upload your music file and cover art to Supabase Storage, then insert the track
+              into your database so it appears across your artist flow.
+            </div>
+          </div>
+        </div>
+
+        <form class="upload-form" id="trackUploadForm">
+          <div class="field-row">
+            <div class="field">
+              <label for="trackTitle">Track Title</label>
+              <input id="trackTitle" type="text" placeholder="Ex: Money Road Anthem" required />
+            </div>
+
+            <div class="field">
+              <label for="artistDisplay">Artist Name</label>
+              <input id="artistDisplay" type="text" placeholder="Ex: ThatboyTayThou" required />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="genre">Genre</label>
+              <select id="genre">
+                <option value="Hip-Hop">Hip-Hop</option>
+                <option value="Rap">Rap</option>
+                <option value="R&B">R&B</option>
+                <option value="Trap">Trap</option>
+                <option value="Alternative">Alternative</option>
+                <option value="Podcast">Podcast</option>
+                <option value="Live Performance">Live Performance</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="releaseType">Release Type</label>
+              <select id="releaseType">
+                <option value="Single">Single</option>
+                <option value="EP">EP</option>
+                <option value="Album Track">Album Track</option>
+                <option value="Promo">Promo</option>
+                <option value="Exclusive">Exclusive</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" placeholder="Talk about the track, rollout, vibe, or release story."></textarea>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="musicFile">Music File</label>
+              <input id="musicFile" type="file" accept="audio/*" required />
+              <div class="helper">Accepted: MP3, WAV, M4A, and other browser-supported audio types.</div>
+            </div>
+
+            <div class="field">
+              <label for="coverFile">Cover Art</label>
+              <input id="coverFile" type="file" accept="image/*" />
+              <div class="helper">Optional but recommended for the artist page and playlist visuals.</div>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="price">Price / Unlock Amount</label>
+              <input id="price" type="number" min="0" step="0.01" placeholder="0.00" />
+            </div>
+
+            <div class="field">
+              <label for="customTags">Tags</label>
+              <input id="customTags" type="text" placeholder="rich bizness, live, exclusive, smoke city" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle-card">
+              <input id="isPublic" type="checkbox" checked />
+              Public track
+            </label>
+
+            <label class="toggle-card">
+              <input id="isPremium" type="checkbox" />
+              Premium unlock
+            </label>
+
+            <label class="toggle-card">
+              <input id="featureOnArtistPage" type="checkbox" checked />
+              Feature on artist page
+            </label>
+          </div>
+
+          <div class="upload-actions">
+            <button class="btn btn-primary" type="submit" id="submitBtn">Upload Track</button>
+            <button class="btn btn-secondary" type="button" onclick="fillDemoData()">Demo Fill</button>
+            <button class="btn btn-danger" type="button" onclick="resetForm()">Reset</button>
+          </div>
+
+          <div class="progress-wrap" id="progressWrap">
+            <div class="helper" id="progressLabel">Preparing upload...</div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill" id="progressFill"></div>
+            </div>
+          </div>
+
+          <div class="status-message" id="statusMessage"></div>
+        </form>
+      </section>
+
+      <aside class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="panel-title">Live Preview</div>
+            <div class="panel-sub">As you build the upload, preview how the record will feel.</div>
+          </div>
+        </div>
+
+        <div class="preview-stack">
+          <div class="preview-card">
+            <div class="preview-cover" id="coverPreview">
+              Cover art preview will show here.
+            </div>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-title" id="previewTitle">Untitled Track</div>
+            <div class="preview-meta" id="previewMeta">Artist · Genre · Release Type</div>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-title">Music Preview</div>
+            <audio id="audioPreview" controls style="width:100%;margin-top:10px;display:none;"></audio>
+            <div class="preview-meta" id="audioPreviewText">Your selected audio preview will appear here.</div>
+          </div>
+
+          <div class="tips-stack">
+            <div class="tips-card">
+              <div class="tip-title">Upload Tip</div>
+              <div class="tip-text">
+                Cover art makes the playlist and artist hub hit harder. Even if you drop a quick single,
+                upload a visual so it looks like a real release.
+              </div>
+            </div>
+
+            <div class="tips-card">
+              <div class="tip-title">Brand Tip</div>
+              <div class="tip-text">
+                Keep titles, tags, and descriptions clean. That helps when you wire this into search,
+                profile activity, and monetization later.
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="panel" style="margin-top:18px;">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Recent Artist Uploads</div>
+          <div class="panel-sub">Latest tracks already in the system.</div>
+        </div>
+      </div>
+
+      <div class="recent-stack">
+        <div class="recent-list" id="recentUploads">
+          <div class="recent-card">
+            <div class="recent-meta">Loading recent uploads...</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer-space"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+    const TRACKS_BUCKET = "tracks";
+    const COVER_BUCKET = "cover-art";
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let currentUser = null;
+    let currentProfile = null;
+
+    function goTo(path) {
+      window.location.href = path;
+    }
+
+    function scrollToForm() {
+      document.getElementById("uploadFormSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function (m) {
+        return ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#039;"
+        })[m];
+      });
+    }
+
+    function safeText(value, fallback = "") {
+      if (value === null || value === undefined || value === "") return fallback;
+      return String(value);
+    }
+
+    function initialsFromName(name) {
+      if (!name) return "🎤";
+      const parts = name.trim().split(/\s+/).slice(0, 2);
+      return parts.map(p => p[0]?.toUpperCase() || "").join("") || "🎤";
+    }
+
+    function showStatus(message, type = "") {
+      const box = document.getElementById("statusMessage");
+      box.className = "status-message show";
+      if (type) box.classList.add(type);
+      box.innerHTML = message;
+    }
+
+    function hideStatus() {
+      const box = document.getElementById("statusMessage");
+      box.className = "status-message";
+      box.innerHTML = "";
+    }
+
+    function setProgress(percent, label) {
+      const wrap = document.getElementById("progressWrap");
+      const fill = document.getElementById("progressFill");
+      const text = document.getElementById("progressLabel");
+      wrap.classList.add("active");
+      fill.style.width = Math.max(0, Math.min(100, percent)) + "%";
+      text.textContent = label || "Uploading...";
+    }
+
+    function resetProgress() {
+      const wrap = document.getElementById("progressWrap");
+      const fill = document.getElementById("progressFill");
+      const text = document.getElementById("progressLabel");
+      wrap.classList.remove("active");
+      fill.style.width = "0%";
+      text.textContent = "Preparing upload...";
+    }
+
+    function setAvatar(profile) {
+      const avatar = document.getElementById("artistAvatar");
+      const avatarUrl =
+        profile?.avatar_url ||
+        profile?.profile_image_url ||
+        profile?.image_url ||
+        "";
+
+      if (avatarUrl) {
+        avatar.innerHTML = '<img src="' + avatarUrl + '" alt="Artist avatar" />';
+      } else {
+        avatar.textContent = initialsFromName(
+          profile?.display_name ||
+          profile?.username ||
+          currentUser?.user_metadata?.display_name ||
+          currentUser?.email?.split("@")[0] ||
+          "Artist"
+        );
+      }
+    }
+
+    function updatePreview() {
+      const title = document.getElementById("trackTitle").value.trim() || "Untitled Track";
+      const artist = document.getElementById("artistDisplay").value.trim() || "Artist";
+      const genre = document.getElementById("genre").value || "Genre";
+      const releaseType = document.getElementById("releaseType").value || "Release Type";
+
+      document.getElementById("previewTitle").textContent = title;
+      document.getElementById("previewMeta").textContent = artist + " · " + genre + " · " + releaseType;
+    }
+
+    function handleCoverPreview(file) {
+      const preview = document.getElementById("coverPreview");
+
+      if (!file) {
+        preview.innerHTML = "Cover art preview will show here.";
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        preview.innerHTML = '<img src="' + e.target.result + '" alt="Cover preview" />';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleAudioPreview(file) {
+      const audio = document.getElementById("audioPreview");
+      const text = document.getElementById("audioPreviewText");
+
+      if (!file) {
+        audio.style.display = "none";
+        audio.removeAttribute("src");
+        audio.load();
+        text.textContent = "Your selected audio preview will appear here.";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+      audio.src = url;
+      audio.style.display = "block";
+      text.textContent = file.name;
+    }
+
+    function fillDemoData() {
+      document.getElementById("trackTitle").value = "Smoke City Anthem";
+      document.getElementById("artistDisplay").value =
+        currentProfile?.display_name ||
+        currentProfile?.username ||
+        "ThatboyTayThou";
+      document.getElementById("genre").value = "Hip-Hop";
+      document.getElementById("releaseType").value = "Single";
+      document.getElementById("description").value =
+        "Rich Bizness official drop with elite branding, live-ready rollout, and artist page sync.";
+      document.getElementById("price").value = "0.00";
+      document.getElementById("customTags").value = "rich bizness, anthem, smoke city, elite";
+      document.getElementById("isPublic").checked = true;
+      document.getElementById("isPremium").checked = false;
+      document.getElementById("featureOnArtistPage").checked = true;
+      updatePreview();
+    }
+
+    function resetForm() {
+      document.getElementById("trackUploadForm").reset();
+      document.getElementById("artistDisplay").value =
+        currentProfile?.display_name ||
+        currentProfile?.username ||
+        currentUser?.user_metadata?.display_name ||
+        "";
+      updatePreview();
+      handleCoverPreview(null);
+      handleAudioPreview(null);
+      hideStatus();
+      resetProgress();
+    }
+
+    async function loadProfile() {
+      const { data } = await supabase.auth.getUser();
+      currentUser = data?.user || null;
+
+      const nameEl = document.getElementById("artistName");
+      const metaEl = document.getElementById("artistMeta");
+
+      if (!currentUser) {
+        nameEl.textContent = "Guest Artist";
+        metaEl.textContent = "Sign in to upload tracks into your real artist profile.";
+        setAvatar(null);
+        document.getElementById("artistDisplay").value = "";
+        document.getElementById("artistState").textContent = "Guest";
+        return;
+      }
+
+      try {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .maybeSingle();
+
+        currentProfile = profile || null;
+
+        const displayName =
+          profile?.display_name ||
+          profile?.username ||
+          currentUser.user_metadata?.display_name ||
+          currentUser.user_metadata?.full_name ||
+          currentUser.email?.split("@")[0] ||
+          "Rich Bizness Artist";
+
+        nameEl.textContent = displayName;
+        metaEl.textContent =
+          safeText(profile?.bio, "Artist profile loaded and ready for upload flow.");
+
+        document.getElementById("artistDisplay").value = displayName;
+        document.getElementById("artistState").textContent = "Signed In";
+
+        setAvatar(profile);
+      } catch (error) {
+        nameEl.textContent = "Artist Ready";
+        metaEl.textContent = "Profile lookup had an issue, but the upload page is still loaded.";
+        document.getElementById("artistDisplay").value =
+          currentUser.user_metadata?.display_name ||
+          currentUser.email?.split("@")[0] ||
+          "";
+      }
+
+      updatePreview();
+    }
+
+    async function loadRecentUploads() {
+      const box = document.getElementById("recentUploads");
+
+      try {
+        const { data, error } = await supabase
+          .from("tracks")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(6);
+
+        if (error) throw error;
+
+        if (!Array.isArray(data) || !data.length) {
+          box.innerHTML = `
+            <div class="recent-card">
+              <div class="recent-meta">No uploads found yet. Your first track will show here.</div>
+            </div>
+          `;
+          return;
+        }
+
+        box.innerHTML = data.map(track => {
+          const title = escapeHtml(safeText(track.title, "Untitled Track"));
+          const artist = escapeHtml(safeText(track.artist, "Artist"));
+          const genre = escapeHtml(safeText(track.genre, "Music"));
+          const releaseType = escapeHtml(safeText(track.release_type, "Track"));
+
+          return `
+            <div class="recent-item">
+              <div class="recent-top">
+                <div class="recent-title">${title}</div>
+                <div class="recent-tag">${releaseType}</div>
+              </div>
+              <div class="recent-meta">${artist} · ${genre}</div>
+            </div>
+          `;
+        }).join("");
+      } catch (error) {
+        box.innerHTML = `
+          <div class="recent-card">
+            <div class="recent-meta">
+              Couldn’t load recent uploads yet. The page UI is ready, but your track table or URL still needs final sync.
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    async function uploadToBucket(bucket, file, folder) {
+      const cleanName = file.name.replace(/\s+/g, "-").toLowerCase();
+      const filePath = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}-${cleanName}`;
+
+      const { error } = await supabase.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: publicData } = supabase.storage.from(bucket).getPublicUrl(filePath);
+
+      return {
+        path: filePath,
+        publicUrl: publicData?.publicUrl || ""
+      };
+    }
+
+    async function handleSubmit(event) {
+      event.preventDefault();
+      hideStatus();
+
+      const submitBtn = document.getElementById("submitBtn");
+      const title = document.getElementById("trackTitle").value.trim();
+      const artist = document.getElementById("artistDisplay").value.trim();
+      const genre = document.getElementById("genre").value;
+      const releaseType = document.getElementById("releaseType").value;
+      const description = document.getElementById("description").value.trim();
+      const musicFile = document.getElementById("musicFile").files[0];
+      const coverFile = document.getElementById("coverFile").files[0];
+      const price = parseFloat(document.getElementById("price").value || "0");
+      const customTags = document.getElementById("customTags").value.trim();
+      const isPublic = document.getElementById("isPublic").checked;
+      const isPremium = document.getElementById("isPremium").checked;
+      const featureOnArtistPage = document.getElementById("featureOnArtistPage").checked;
+
+      if (!currentUser) {
+        showStatus("You need to sign in before uploading tracks into your artist system.", "error");
+        return;
+      }
+
+      if (!title || !artist || !musicFile) {
+        showStatus("Track title, artist name, and a music file are required.", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading...";
+
+      try {
+        setProgress(12, "Uploading music file...");
+        const musicUpload = await uploadToBucket(
+          TRACKS_BUCKET,
+          musicFile,
+          `${currentUser.id}/music`
+        );
+
+        let coverUpload = { publicUrl: "", path: "" };
+
+        if (coverFile) {
+          setProgress(42, "Uploading cover art...");
+          coverUpload = await uploadToBucket(
+            COVER_BUCKET,
+            coverFile,
+            `${currentUser.id}/covers`
+          );
+        }
+
+        setProgress(68, "Saving database record...");
+
+        const insertPayload = {
+          title,
+          artist,
+          genre,
+          release_type: releaseType,
+          description,
+          audio_url: musicUpload.publicUrl,
+          audio_path: musicUpload.path,
+          cover_url: coverUpload.publicUrl || null,
+          cover_path: coverUpload.path || null,
+          price: isNaN(price) ? 0 : price,
+          tags: customTags || null,
+          is_public: isPublic,
+          is_premium: isPremium,
+          featured_artist_page: featureOnArtistPage,
+          user_id: currentUser.id,
+          artist_id: currentUser.id
+        };
+
+        let insertError = null;
+
+        try {
+          const { error } = await supabase.from("tracks").insert([insertPayload]);
+          insertError = error;
+        } catch (err) {
+          insertError = err;
+        }
+
+        if (insertError) {
+          const fallbackPayload = {
+            title,
+            artist,
+            genre,
+            description,
+            audio_url: musicUpload.publicUrl,
+            cover_url: coverUpload.publicUrl || null,
+            user_id: currentUser.id
+          };
+
+          const { error: fallbackError } = await supabase.from("tracks").insert([fallbackPayload]);
+          if (fallbackError) throw fallbackError;
+        }
+
+        setProgress(100, "Upload complete.");
+        showStatus(
+          "Track uploaded successfully. Your music is now in storage and the record has been added to your track flow.",
+          "success"
+        );
+
+        await loadRecentUploads();
+
+        setTimeout(() => {
+          resetForm();
+        }, 1200);
+      } catch (error) {
+        console.error("Upload error:", error);
+        showStatus(
+          "Upload failed. Check your Supabase URL, make sure the storage buckets exist, and confirm your `tracks` table has the columns this page is using.",
+          "error"
+        );
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Upload Track";
+        setTimeout(() => resetProgress(), 1200);
+      }
+    }
+
+    function bindPreviewEvents() {
+      const ids = ["trackTitle", "artistDisplay", "genre", "releaseType"];
+      ids.forEach(id => {
+        document.getElementById(id).addEventListener("input", updatePreview);
+        document.getElementById(id).addEventListener("change", updatePreview);
+      });
+
+      document.getElementById("coverFile").addEventListener("change", function(e) {
+        handleCoverPreview(e.target.files[0] || null);
+      });
+
+      document.getElementById("musicFile").addEventListener("change", function(e) {
+        handleAudioPreview(e.target.files[0] || null);
+      });
+
+      document.getElementById("trackUploadForm").addEventListener("submit", handleSubmit);
+    }
+
+    async function initPage() {
+      bindPreviewEvents();
+      updatePreview();
+      await loadProfile();
+      await loadRecentUploads();
+    }
+
+    initPage();
+  </script>
+</body>
+</html>
