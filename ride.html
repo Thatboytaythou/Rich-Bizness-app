@@ -92,7 +92,9 @@
     }
 
     .action-btn:hover,
-    .ghost-btn:hover { transform: translateY(-1px); }
+    .ghost-btn:hover {
+      transform: translateY(-1px);
+    }
 
     .action-btn {
       background: linear-gradient(180deg, var(--gold-2), var(--gold));
@@ -352,12 +354,32 @@
     }
 
     @media (max-width: 720px) {
-      .page-shell { width: min(100% - 14px, 1440px); }
-      .stats-grid { grid-template-columns: 1fr; }
-      .topbar { align-items: flex-start; flex-direction: column; }
-      .top-actions { width: 100%; }
-      .action-btn, .ghost-btn { width: 100%; justify-content: center; }
-      #ride-game-mount { min-height: 62vh; }
+      .page-shell {
+        width: min(100% - 14px, 1440px);
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .top-actions {
+        width: 100%;
+      }
+
+      .action-btn,
+      .ghost-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      #ride-game-mount {
+        min-height: 62vh;
+      }
     }
   </style>
 </head>
@@ -380,7 +402,27 @@
       <div id="ride-success" class="msg success"></div>
     </section>
 
-    <section id="ride-hero-shell"></section>
+    <section id="ride-hero-shell">
+      <div class="featured-game">
+        <div class="featured-media">
+          <img
+            src="/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png"
+            alt="Rich Bizness Ride"
+          />
+        </div>
+        <div class="featured-copy">
+          <div class="featured-badge">Rich Bizness Ride</div>
+          <h2 class="featured-title">Elite 3D city ride lane with cash pickups, boost rings, and treehouse skyline energy.</h2>
+          <div class="featured-meta">
+            Racing • Arcade • Rich Bizness Universe • Launch the run below
+          </div>
+          <div class="featured-actions">
+            <button class="action-btn" id="ride-start-btn">Start Ride</button>
+            <a class="ghost-btn" href="/gaming.html">Arcade Hub</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <section class="dashboard-grid">
       <section class="panel">
@@ -411,26 +453,32 @@
             <div class="stat-label">Player</div>
             <div class="stat-value" id="ride-player-name">Guest Rider</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Score</div>
             <div class="stat-value" id="ride-stat-score">0</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Cash</div>
             <div class="stat-value" id="ride-stat-cash">$0</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Distance</div>
             <div class="stat-value" id="ride-stat-distance">0m</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Health</div>
             <div class="stat-value" id="ride-stat-health">100%</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Boost</div>
             <div class="stat-value" id="ride-stat-boost">100%</div>
           </div>
+
           <div class="stat-card">
             <div class="stat-label">Lives</div>
             <div class="stat-value" id="ride-stat-lives">3</div>
@@ -466,34 +514,62 @@
           <div class="panel-sub">Ride page integration status with your gaming ecosystem.</div>
         </div>
       </div>
-      <div id="ride-admin-shell" class="admin-list"></div>
+      <div id="ride-admin-shell" class="admin-list">
+        <article class="admin-item">
+          <h4 class="item-title">Ride Game Slug</h4>
+          <p class="item-sub">rich-bizness-ride</p>
+        </article>
+
+        <article class="admin-item">
+          <h4 class="item-title">Status</h4>
+          <p class="item-sub">Page shell ready. Game engine mounts from /games/rich-bizness-ride/ride-game.js</p>
+        </article>
+      </div>
     </section>
   </main>
 
   <script>
-    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_URL || "";
-    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_ANON_KEY || window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+    window.NEXT_PUBLIC_SUPABASE_URL =
+      window.NEXT_PUBLIC_SUPABASE_URL ||
+      window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_URL ||
+      "";
+
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY =
+      window.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+      "";
   </script>
 
   <script type="module" src="/src/gaming/ride-client.js"></script>
+
   <script type="module">
     import { mountRideGame } from "/games/rich-bizness-ride/ride-game.js";
 
     const mountNode = document.getElementById("ride-game-mount");
     const launchBtn = document.getElementById("top-launch-btn");
+    const startBtn = document.getElementById("ride-start-btn");
 
-    let mounted = false;
+    let gameInstance = null;
 
     function startRide() {
-      if (mounted || !mountNode) return;
-      mounted = true;
+      if (!mountNode) return;
+
+      if (gameInstance && typeof gameInstance.destroy === "function") {
+        gameInstance.destroy();
+      }
+
       mountNode.innerHTML = "";
-      mountRideGame(mountNode);
+      gameInstance = mountRideGame(mountNode);
       mountNode.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     launchBtn?.addEventListener("click", startRide);
+    startBtn?.addEventListener("click", startRide);
     window.addEventListener("rb:ride:start", startRide);
+
+    window.addEventListener("load", () => {
+      setTimeout(startRide, 250);
+    });
   </script>
 </body>
 </html>
