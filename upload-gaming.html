@@ -4,267 +4,386 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upload Gaming | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.55);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
+    :root{
+      --bg:#07110c;
+      --panel:rgba(8,16,12,.88);
+      --panel-2:rgba(13,23,17,.94);
+      --line:rgba(90,255,170,.16);
+      --line-strong:rgba(90,255,170,.34);
+      --text:#f3fff8;
+      --muted:#9bc5ae;
+      --green:#43f59b;
+      --green-2:#18c972;
+      --gold:#f3d25f;
+      --danger:#ff6f7f;
+      --shadow:0 24px 60px rgba(0,0,0,.4);
+      --radius-xl:28px;
+      --radius-lg:18px;
+      --radius-md:14px;
     }
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
       background:
-        linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.90)),
-        url("images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png") center center / cover no-repeat fixed;
+        radial-gradient(circle at top, rgba(67,245,155,.12), transparent 25%),
+        linear-gradient(180deg, #08160f, #04100b 60%, #030b08);
+      overflow-x:hidden;
     }
 
-    .page {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 40px;
+    a{color:inherit;text-decoration:none}
+
+    .page{
+      width:min(1320px,calc(100% - 20px));
+      margin:0 auto;
+      padding:14px 0 30px;
+      display:grid;
+      gap:14px;
     }
 
-    .topbar,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
+    .topbar,.panel{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
     }
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      padding:12px 14px;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.8rem;
-      font-weight: 900;
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
     }
 
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
+    .brand img{
+      width:52px;
+      height:52px;
+      object-fit:cover;
+      border-radius:16px;
+      border:1px solid var(--line-strong);
+      background:#0d1612;
     }
 
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
+    .brand-copy h1{
+      margin:0;
+      font-size:1.15rem;
+      line-height:1;
     }
 
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
+    .brand-copy p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.86rem;
     }
 
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
+    .nav{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
     }
 
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
+    .user-chip{
+      min-height:42px;
+      display:inline-flex;
+      align-items:center;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-weight:700;
+      font-size:.92rem;
     }
 
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
+    .nav a,.nav button{
+      min-height:42px;
+      border-radius:14px;
+      padding:10px 14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font:inherit;
+      font-weight:800;
+      cursor:pointer;
     }
 
-    h1 {
-      margin: 0 0 12px;
-      font-size: 2.7rem;
-      line-height: 1;
-      color: var(--green);
+    .nav .btn-green{
+      background:linear-gradient(135deg,var(--green),var(--green-2));
+      color:#052113;
+      border-color:transparent;
     }
 
-    .subtle {
-      color: var(--text);
-      line-height: 1.75;
-      margin-bottom: 20px;
+    .hero{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:14px;
     }
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
+    .panel-head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
     }
 
-    .control {
-      margin-bottom: 6px;
+    .panel-head h2{
+      margin:0;
+      font-size:1.65rem;
     }
 
-    .control.full {
-      grid-column: 1 / -1;
+    .panel-head p{
+      margin:8px 0 0;
+      color:var(--muted);
+      line-height:1.65;
+      font-size:.94rem;
     }
 
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--green);
-      font-weight: 800;
+    .panel-body{
+      padding:18px 20px;
     }
 
-    .control input,
-    .control select,
-    .control textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
+    .section{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      overflow:hidden;
     }
 
-    .control textarea {
-      min-height: 120px;
-      resize: vertical;
+    .form-grid{
+      display:grid;
+      gap:14px;
     }
 
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
+    .grid-2{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
     }
 
-    .checkbox-row input {
-      width: auto;
-      transform: scale(1.2);
+    .grid-3{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
     }
 
-    .actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 18px;
+    .control{
+      display:grid;
+      gap:8px;
     }
 
-    .btn-green,
-    .btn-dark,
-    .btn-gold {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
+    label{
+      font-size:.92rem;
+      font-weight:900;
+      color:#98ffbe;
     }
 
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
+    input[type="text"],
+    textarea,
+    select,
+    input[type="file"]{
+      width:100%;
+      min-height:46px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:12px 14px;
+      font:inherit;
+      outline:none;
     }
 
-    .preview-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-top: 20px;
+    textarea{
+      min-height:120px;
+      resize:vertical;
     }
 
-    .preview-card {
-      padding: 16px;
-      border-radius: 18px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
+    .check{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:700;
+      color:var(--text);
+      min-height:46px;
     }
 
-    .preview-card h3 {
-      margin-top: 0;
-      color: var(--gold);
+    .check input{
+      width:18px;
+      height:18px;
+      accent-color:var(--green);
     }
 
-    .preview-box {
-      min-height: 180px;
-      border-radius: 16px;
-      background: rgba(0,0,0,0.45);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      color: rgba(255,255,255,0.7);
-      text-align: center;
-      padding: 12px;
+    .action-row{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+
+    .btn{
+      min-height:48px;
+      border:none;
+      border-radius:16px;
+      padding:12px 18px;
+      font:inherit;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .btn.green{
+      background:linear-gradient(135deg,var(--green),var(--green-2));
+      color:#052113;
+    }
+
+    .btn.gold{
+      background:linear-gradient(135deg,#ffe58c,var(--gold));
+      color:#261a00;
+    }
+
+    .btn.dark{
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      border:1px solid var(--line);
+    }
+
+    .status-box{
+      margin-top:12px;
+      padding:14px 16px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      font-weight:800;
+      line-height:1.6;
+      min-height:54px;
+      white-space:pre-wrap;
+    }
+
+    .status-box.error{
+      color:#ffd7dc;
+      border-color:rgba(255,111,127,.25);
+      background:rgba(255,111,127,.10);
+    }
+
+    .status-box.success{
+      color:#dbffe8;
+      border-color:rgba(67,245,155,.28);
+      background:rgba(67,245,155,.10);
+    }
+
+    .preview-shell{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:14px;
+    }
+
+    .preview-card{
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:var(--panel-2);
+      padding:14px;
+      min-height:280px;
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+
+    .preview-card h3{
+      margin:0;
+      color:var(--gold);
+      font-size:1.08rem;
+    }
+
+    .preview-box{
+      width:100%;
+      aspect-ratio:16/9;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:#0b1310;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      font-weight:700;
+      text-align:center;
+      padding:10px;
     }
 
     .preview-box img,
-    .preview-box video {
-      max-width: 100%;
-      max-height: 320px;
-      display: block;
-      border-radius: 12px;
+    .preview-box video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
     }
 
-    @media (max-width: 860px) {
-      .form-grid,
-      .preview-grid {
-        grid-template-columns: 1fr;
-      }
+    .meta-list{
+      display:grid;
+      gap:10px;
+    }
 
-      h1 {
-        font-size: 2.2rem;
-      }
+    .meta-item{
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+    }
+
+    .meta-item span{
+      display:block;
+      color:var(--muted);
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:5px;
+      font-weight:900;
+    }
+
+    .meta-item strong{
+      display:block;
+      font-size:1rem;
+      line-height:1.45;
+      word-break:break-word;
+    }
+
+    .tips{
+      display:grid;
+      gap:10px;
+    }
+
+    .tip{
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      color:var(--muted);
+      line-height:1.65;
+      font-size:.92rem;
+    }
+
+    .tiny{
+      color:var(--muted);
+      font-size:.84rem;
+      line-height:1.6;
+    }
+
+    @media (max-width: 1080px){
+      .hero{grid-template-columns:1fr}
+    }
+
+    @media (max-width: 780px){
+      .grid-2,.grid-3,.preview-shell{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -272,323 +391,445 @@
   <div class="page">
     <div class="topbar">
       <div class="brand">
-        <img src="images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png" alt="Rich Bizness" />
-        <span>Upload Gaming</span>
+        <img src="images/brand/7E5D6348-B3DF-4584-A266-7F98B8BB0D53.png" alt="Rich Bizness Gaming" />
+        <div class="brand-copy">
+          <h1>Upload Gaming</h1>
+          <p>Elite clip upload lane for Rich Bizness Gaming</p>
+        </div>
       </div>
 
       <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
+        <span id="userChip" class="user-chip">Checking session…</span>
         <a href="index.html">Home</a>
         <a href="gaming.html">Gaming</a>
         <a href="live.html">Live</a>
         <a href="watch.html">Watch</a>
         <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+        <button id="logoutBtn" class="btn-green" type="button">Log Out</button>
       </div>
     </div>
 
-    <div class="section">
-      <h1>Upload Gaming Content</h1>
-      <div class="subtle">
-        Drop clips, highlights, wins, rage moments, tutorials, or montages and push them straight into your gaming lane.
-      </div>
-
-      <div class="form-grid">
-        <div class="control">
-          <label for="titleInput">Title</label>
-          <input id="titleInput" type="text" placeholder="Crazy comeback in ranked match" />
+    <div class="hero">
+      <section class="section">
+        <div class="panel-head">
+          <h2>Upload Gaming Content</h2>
+          <p>Drop clips, highlights, wins, rage moments, tutorials, montages, and elite gaming moments directly into the Rich Bizness gaming lane.</p>
         </div>
 
-        <div class="control">
-          <label for="gameInput">Game Name</label>
-          <input id="gameInput" type="text" placeholder="Call of Duty, 2K, GTA, Fortnite..." />
-        </div>
+        <div class="panel-body">
+          <div class="form-grid">
+            <div class="grid-2">
+              <div class="control">
+                <label for="titleInput">Title</label>
+                <input id="titleInput" type="text" placeholder="Crazy comeback in ranked match" />
+              </div>
 
-        <div class="control">
-          <label for="platformInput">Platform</label>
-          <input id="platformInput" type="text" placeholder="PS5, Xbox, PC, Switch" />
-        </div>
+              <div class="control">
+                <label for="gameInput">Game Title</label>
+                <input id="gameInput" type="text" placeholder="Chess / Studio Mode / Smoke City Hustle" />
+              </div>
+            </div>
 
-        <div class="control">
-          <label for="gamerTagInput">Gamer Tag</label>
-          <input id="gamerTagInput" type="text" placeholder="Your gamer tag" />
-        </div>
+            <div class="grid-3">
+              <div class="control">
+                <label for="platformInput">Platform</label>
+                <select id="platformInput">
+                  <option value="web">web</option>
+                  <option value="pc">pc</option>
+                  <option value="playstation">playstation</option>
+                  <option value="xbox">xbox</option>
+                  <option value="switch">switch</option>
+                  <option value="mobile">mobile</option>
+                  <option value="mixed">mixed</option>
+                </select>
+              </div>
 
-        <div class="control">
-          <label for="contentTypeInput">Content Type</label>
-          <select id="contentTypeInput">
-            <option value="clip">Clip</option>
-            <option value="stream">Stream</option>
-            <option value="highlight">Highlight</option>
-            <option value="short">Short</option>
-            <option value="video">Video</option>
-          </select>
-        </div>
+              <div class="control">
+                <label for="contentTypeInput">Content Type</label>
+                <select id="contentTypeInput">
+                  <option value="clip">clip</option>
+                  <option value="highlight">highlight</option>
+                  <option value="montage">montage</option>
+                  <option value="tutorial">tutorial</option>
+                  <option value="stream-moment">stream-moment</option>
+                  <option value="match-win">match-win</option>
+                  <option value="challenge">challenge</option>
+                </select>
+              </div>
 
-        <div class="control">
-          <label for="clipTypeInput">Clip Type</label>
-          <select id="clipTypeInput">
-            <option value="funny">Funny</option>
-            <option value="win">Win</option>
-            <option value="rage">Rage</option>
-            <option value="highlight">Highlight</option>
-            <option value="tutorial">Tutorial</option>
-            <option value="montage">Montage</option>
-          </select>
-        </div>
+              <div class="control">
+                <label for="clipTypeInput">Clip Type</label>
+                <select id="clipTypeInput">
+                  <option value="win">win</option>
+                  <option value="clutch">clutch</option>
+                  <option value="highlight">highlight</option>
+                  <option value="funny">funny</option>
+                  <option value="rage">rage</option>
+                  <option value="tutorial">tutorial</option>
+                  <option value="speedrun">speedrun</option>
+                  <option value="other">other</option>
+                </select>
+              </div>
+            </div>
 
-        <div class="control full">
-          <label for="captionInput">Caption</label>
-          <textarea id="captionInput" placeholder="Tell people what happened in this clip..."></textarea>
-        </div>
+            <div class="grid-2">
+              <div class="control">
+                <label for="gamerTagInput">Gamer Tag</label>
+                <input id="gamerTagInput" type="text" placeholder="Thatboytaythou" />
+              </div>
 
-        <div class="control full">
-          <label for="mainFileInput">Main File</label>
-          <input id="mainFileInput" type="file" accept="video/*,image/*" />
-        </div>
+              <div class="control">
+                <label for="featuredToggle">Featured Clip</label>
+                <label class="check">
+                  <input id="featuredToggle" type="checkbox" />
+                  <span>Mark this upload as featured</span>
+                </label>
+              </div>
+            </div>
 
-        <div class="control full">
-          <label for="thumbFileInput">Thumbnail File (optional)</label>
-          <input id="thumbFileInput" type="file" accept="image/*" />
-        </div>
+            <div class="control">
+              <label for="captionInput">Caption</label>
+              <textarea id="captionInput" placeholder="Tell people what happened in this clip..."></textarea>
+            </div>
 
-        <div class="control full">
-          <label>Featured Clip</label>
-          <div class="checkbox-row">
-            <input id="featuredToggle" type="checkbox" />
-            <span>Mark this upload as featured</span>
+            <div class="grid-2">
+              <div class="control">
+                <label for="mainFileInput">Main File</label>
+                <input id="mainFileInput" type="file" accept="video/*,image/*" />
+              </div>
+
+              <div class="control">
+                <label for="thumbFileInput">Thumbnail File (optional)</label>
+                <input id="thumbFileInput" type="file" accept="image/*" />
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button id="uploadBtn" class="btn green" type="button">Upload Gaming Content</button>
+              <a class="btn dark" href="gaming.html">Back To Gaming</a>
+              <a class="btn gold" href="live.html">Go Live</a>
+            </div>
+
+            <div id="statusBox" class="status-box">Ready to upload.</div>
+          </div>
+
+          <div class="preview-shell">
+            <div class="preview-card">
+              <h3>Main File Preview</h3>
+              <div id="mainPreview" class="preview-box">Choose a main file to preview it here.</div>
+            </div>
+
+            <div class="preview-card">
+              <h3>Thumbnail Preview</h3>
+              <div id="thumbPreview" class="preview-box">Choose a thumbnail or let the main image work as cover.</div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <div class="actions">
-        <button id="uploadBtn" class="btn-green" type="button">Upload Gaming Content</button>
-        <a class="btn-dark" href="gaming.html">Back To Gaming</a>
-        <a class="btn-gold" href="live.html">Go Live</a>
-      </div>
+      <aside style="display:grid;gap:14px;">
+        <section class="section">
+          <div class="panel-head">
+            <h2>Upload Rules</h2>
+            <p>Everything here is locked to your Rich Bizness gaming ecosystem.</p>
+          </div>
+          <div class="panel-body">
+            <div class="tips">
+              <div class="tip">Bucket name must be exactly <strong>gaming-uploads</strong>.</div>
+              <div class="tip">This uploader writes the database row into <strong>gaming_uploads</strong>.</div>
+              <div class="tip">Main file goes into <strong>clips/</strong>. Thumbnail goes into <strong>thumbnails/</strong>.</div>
+              <div class="tip">If storage works but database insert fails, your <strong>RLS policy</strong> on <strong>gaming_uploads</strong> still needs to allow authenticated inserts.</div>
+            </div>
+          </div>
+        </section>
 
-      <div id="statusBox" class="status-box">Ready to upload.</div>
-
-      <div class="preview-grid">
-        <div class="preview-card">
-          <h3>Main File Preview</h3>
-          <div id="mainPreview" class="preview-box">Your main file preview will show here.</div>
-        </div>
-
-        <div class="preview-card">
-          <h3>Thumbnail Preview</h3>
-          <div id="thumbPreview" class="preview-box">Your thumbnail preview will show here.</div>
-        </div>
-      </div>
+        <section class="section">
+          <div class="panel-head">
+            <h2>Live Payload Preview</h2>
+            <p>What this page is about to send.</p>
+          </div>
+          <div class="panel-body">
+            <div class="meta-list">
+              <div class="meta-item">
+                <span>Bucket</span>
+                <strong>gaming-uploads</strong>
+              </div>
+              <div class="meta-item">
+                <span>Table</span>
+                <strong>gaming_uploads</strong>
+              </div>
+              <div class="meta-item">
+                <span>Main Path</span>
+                <strong id="mainPathPreview">clips/...</strong>
+              </div>
+              <div class="meta-item">
+                <span>Thumbnail Path</span>
+                <strong id="thumbPathPreview">thumbnails/...</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+      </aside>
     </div>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
 
-      const MAIN_BUCKET = "gaming-uploads";
-      const THUMB_BUCKET = "gaming-thumbnails";
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+    const SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    const SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const BUCKET = "gaming-uploads";
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const titleInput = document.getElementById("titleInput");
-      const gameInput = document.getElementById("gameInput");
-      const platformInput = document.getElementById("platformInput");
-      const gamerTagInput = document.getElementById("gamerTagInput");
-      const contentTypeInput = document.getElementById("contentTypeInput");
-      const clipTypeInput = document.getElementById("clipTypeInput");
-      const captionInput = document.getElementById("captionInput");
-      const mainFileInput = document.getElementById("mainFileInput");
-      const thumbFileInput = document.getElementById("thumbFileInput");
-      const featuredToggle = document.getElementById("featuredToggle");
-      const uploadBtn = document.getElementById("uploadBtn");
-
-      const mainPreview = document.getElementById("mainPreview");
-      const thumbPreview = document.getElementById("thumbPreview");
-
-      function setStatus(message) {
-        statusBox.textContent = message;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
       }
+    });
 
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
+    const userChip = document.getElementById("userChip");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const statusBox = document.getElementById("statusBox");
 
-        const user = data?.session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
+    const titleInput = document.getElementById("titleInput");
+    const gameInput = document.getElementById("gameInput");
+    const platformInput = document.getElementById("platformInput");
+    const gamerTagInput = document.getElementById("gamerTagInput");
+    const contentTypeInput = document.getElementById("contentTypeInput");
+    const clipTypeInput = document.getElementById("clipTypeInput");
+    const captionInput = document.getElementById("captionInput");
+    const mainFileInput = document.getElementById("mainFileInput");
+    const thumbFileInput = document.getElementById("thumbFileInput");
+    const featuredToggle = document.getElementById("featuredToggle");
+    const uploadBtn = document.getElementById("uploadBtn");
 
-        if (!user) {
-          window.location.href = "auth.html";
-          return null;
-        }
+    const mainPreview = document.getElementById("mainPreview");
+    const thumbPreview = document.getElementById("thumbPreview");
+    const mainPathPreview = document.getElementById("mainPathPreview");
+    const thumbPathPreview = document.getElementById("thumbPathPreview");
 
-        return user;
-      }
+    let activeUser = null;
 
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      function renderFilePreview(file, targetEl) {
-        if (!file) {
-          targetEl.innerHTML = "No file selected.";
-          return;
-        }
-
-        const url = URL.createObjectURL(file);
-
-        if (file.type.startsWith("image/")) {
-          targetEl.innerHTML = `<img src="${url}" alt="Preview" />`;
-          return;
-        }
-
-        if (file.type.startsWith("video/")) {
-          targetEl.innerHTML = `<video src="${url}" controls></video>`;
-          return;
-        }
-
-        targetEl.textContent = file.name;
-      }
-
-      function makeFilePath(prefix, file) {
-        const safeName = String(file.name || "file").replace(/\s+/g, "-");
-        return `${prefix}/${Date.now()}-${safeName}`;
-      }
-
-      async function uploadFile(bucket, path, file) {
-        const { error } = await supabase.storage
-          .from(bucket)
-          .upload(path, file, {
-            upsert: false
-          });
-
-        if (error) throw error;
-
-        const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-        return data.publicUrl;
-      }
-
-      async function uploadGaming() {
-        try {
-          setStatus("Checking session...");
-          uploadBtn.disabled = true;
-
-          const user = await loadSession();
-          if (!user) return;
-
-          const title = titleInput.value.trim();
-          const gameTitle = gameInput.value.trim();
-          const platform = platformInput.value.trim();
-          const gamerTag = gamerTagInput.value.trim();
-          const contentType = contentTypeInput.value;
-          const clipType = clipTypeInput.value;
-          const caption = captionInput.value.trim();
-
-          const mainFile = mainFileInput.files[0];
-          const thumbFile = thumbFileInput.files[0];
-
-          if (!title) throw new Error("Title is required.");
-          if (!gameTitle) throw new Error("Game name is required.");
-          if (!mainFile) throw new Error("Main file is required.");
-
-          setStatus("Uploading main file...");
-          const mainPath = makeFilePath(user.id, mainFile);
-          const fileUrl = await uploadFile(MAIN_BUCKET, mainPath, mainFile);
-
-          let thumbnailUrl = fileUrl;
-
-          if (thumbFile) {
-            setStatus("Uploading thumbnail...");
-            const thumbPath = makeFilePath(user.id, thumbFile);
-            thumbnailUrl = await uploadFile(THUMB_BUCKET, thumbPath, thumbFile);
-          }
-
-          setStatus("Saving gaming upload...");
-          const { error } = await supabase
-            .from("gaming_uploads")
-            .insert([{
-              user_id: user.id,
-              title,
-              caption,
-              game_title: gameTitle,
-              content_type: contentType,
-              platform,
-              gamer_tag: gamerTag,
-              clip_type: clipType,
-              file_url: fileUrl,
-              thumbnail_url: thumbnailUrl,
-              is_featured: featuredToggle.checked
-            }]);
-
-          if (error) throw error;
-
-          setStatus("✅ Gaming upload successful.");
-
-          titleInput.value = "";
-          gameInput.value = "";
-          platformInput.value = "";
-          gamerTagInput.value = "";
-          captionInput.value = "";
-          contentTypeInput.value = "clip";
-          clipTypeInput.value = "funny";
-          featuredToggle.checked = false;
-          mainFileInput.value = "";
-          thumbFileInput.value = "";
-          mainPreview.innerHTML = "Your main file preview will show here.";
-          thumbPreview.innerHTML = "Your thumbnail preview will show here.";
-        } catch (error) {
-          console.error(error);
-          setStatus("❌ Upload error: " + error.message);
-        } finally {
-          uploadBtn.disabled = false;
-        }
-      }
-
-      mainFileInput.addEventListener("change", () => {
-        renderFilePreview(mainFileInput.files[0], mainPreview);
-      });
-
-      thumbFileInput.addEventListener("change", () => {
-        renderFilePreview(thumbFileInput.files[0], thumbPreview);
-      });
-
-      uploadBtn.addEventListener("click", uploadGaming);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        const user = session?.user || null;
-        userChip.textContent = user?.email || "Guest mode";
-      });
-
-      loadSession().then(() => {
-        setStatus("Ready to upload gaming content.");
-      });
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Upload Gaming Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
+    function setStatus(message, type = "") {
+      statusBox.className = "status-box";
+      if (type) statusBox.classList.add(type);
+      statusBox.textContent = message;
     }
+
+    function slugify(value = "") {
+      return String(value)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 80);
+    }
+
+    function buildFileName(file) {
+      const original = file?.name || "file";
+      const dot = original.lastIndexOf(".");
+      const ext = dot >= 0 ? original.slice(dot).toLowerCase() : "";
+      const base = dot >= 0 ? original.slice(0, dot) : original;
+      const safe = slugify(base) || "upload";
+      return `${safe}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
+    }
+
+    function renderPreview(file, target) {
+      target.innerHTML = "";
+
+      if (!file) {
+        target.textContent = "No file selected.";
+        return;
+      }
+
+      const url = URL.createObjectURL(file);
+
+      if (file.type.startsWith("video/")) {
+        const video = document.createElement("video");
+        video.src = url;
+        video.controls = true;
+        video.muted = true;
+        video.playsInline = true;
+        target.appendChild(video);
+        return;
+      }
+
+      if (file.type.startsWith("image/")) {
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "Preview";
+        target.appendChild(img);
+        return;
+      }
+
+      const wrap = document.createElement("div");
+      wrap.textContent = file.name;
+      target.appendChild(wrap);
+    }
+
+    function updatePathPreview() {
+      const mainFile = mainFileInput.files?.[0] || null;
+      const thumbFile = thumbFileInput.files?.[0] || null;
+
+      mainPathPreview.textContent = mainFile
+        ? `clips/${buildFileName(mainFile)}`
+        : "clips/...";
+
+      thumbPathPreview.textContent = thumbFile
+        ? `thumbnails/${buildFileName(thumbFile)}`
+        : "thumbnails/...";
+    }
+
+    async function loadSession() {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        setStatus(`Session error: ${error.message}`, "error");
+        return;
+      }
+
+      activeUser = data?.session?.user || null;
+
+      if (!activeUser) {
+        userChip.textContent = "Not signed in";
+        setStatus("You need to sign in before uploading gaming content.", "error");
+        return;
+      }
+
+      userChip.textContent = activeUser.email || activeUser.id;
+      setStatus("Signed in. Ready to upload.", "success");
+    }
+
+    async function signOut() {
+      await supabase.auth.signOut();
+      window.location.href = "index.html";
+    }
+
+    async function uploadToStorage(folder, file) {
+      const fileName = buildFileName(file);
+      const path = `${folder}/${fileName}`;
+
+      const { error } = await supabase.storage
+        .from(BUCKET)
+        .upload(path, file, {
+          cacheControl: "3600",
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: publicData } = supabase.storage
+        .from(BUCKET)
+        .getPublicUrl(path);
+
+      return {
+        path,
+        publicUrl: publicData?.publicUrl || ""
+      };
+    }
+
+    function validateForm() {
+      if (!activeUser) throw new Error("You must be signed in.");
+      if (!titleInput.value.trim()) throw new Error("Title is required.");
+      if (!gameInput.value.trim()) throw new Error("Game title is required.");
+      if (!mainFileInput.files?.[0]) throw new Error("Main file is required.");
+    }
+
+    async function insertGamingRow(mainUrl, thumbUrl) {
+      const payload = {
+        user_id: activeUser.id,
+        title: titleInput.value.trim(),
+        caption: captionInput.value.trim() || null,
+        game_title: gameInput.value.trim(),
+        content_type: contentTypeInput.value,
+        file_url: mainUrl,
+        thumbnail_url: thumbUrl || null,
+        platform: platformInput.value || null,
+        gamer_tag: gamerTagInput.value.trim() || null,
+        clip_type: clipTypeInput.value || null,
+        views: 0,
+        likes: 0,
+        is_featured: !!featuredToggle.checked
+      };
+
+      const { data, error } = await supabase
+        .from("gaming_uploads")
+        .insert(payload)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+
+    async function handleUpload() {
+      uploadBtn.disabled = true;
+      setStatus("Uploading gaming content...", "");
+
+      try {
+        validateForm();
+
+        const mainFile = mainFileInput.files[0];
+        const thumbFile = thumbFileInput.files?.[0] || null;
+
+        const mainUpload = await uploadToStorage("clips", mainFile);
+        let thumbUpload = null;
+
+        if (thumbFile) {
+          thumbUpload = await uploadToStorage("thumbnails", thumbFile);
+        } else if (mainFile.type.startsWith("image/")) {
+          thumbUpload = { publicUrl: mainUpload.publicUrl };
+        }
+
+        await insertGamingRow(
+          mainUpload.publicUrl,
+          thumbUpload?.publicUrl || null
+        );
+
+        setStatus("Gaming upload complete. Storage + database row saved.", "success");
+
+        titleInput.value = "";
+        gameInput.value = "";
+        gamerTagInput.value = "";
+        captionInput.value = "";
+        mainFileInput.value = "";
+        thumbFileInput.value = "";
+        featuredToggle.checked = false;
+
+        mainPreview.textContent = "Choose a main file to preview it here.";
+        thumbPreview.textContent = "Choose a thumbnail or let the main image work as cover.";
+        updatePathPreview();
+      } catch (error) {
+        console.error("[upload-gaming] error:", error);
+        setStatus(`Upload error: ${error.message}`, "error");
+      } finally {
+        uploadBtn.disabled = false;
+      }
+    }
+
+    logoutBtn.addEventListener("click", signOut);
+
+    mainFileInput.addEventListener("change", () => {
+      const file = mainFileInput.files?.[0] || null;
+      renderPreview(file, mainPreview);
+      updatePathPreview();
+    });
+
+    thumbFileInput.addEventListener("change", () => {
+      const file = thumbFileInput.files?.[0] || null;
+      renderPreview(file, thumbPreview);
+      updatePathPreview();
+    });
+
+    uploadBtn.addEventListener("click", handleUpload);
+
+    await loadSession();
+    updatePathPreview();
   </script>
 </body>
 </html>
