@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness — Sports Schedule</title>
+  <style>
+    :root{
+      --bg:#04080a;
+      --bg2:#091217;
+      --panel:rgba(9,15,19,.9);
+      --panel2:rgba(12,20,24,.96);
+      --line:rgba(103,243,158,.12);
+      --line-strong:rgba(103,243,158,.25);
+      --text:#effff7;
+      --muted:#98b7ab;
+      --green:#67f39e;
+      --green2:#26c96f;
+      --gold:#f0d06d;
+      --gold2:#ffe89a;
+      --blue:#79c5ff;
+      --danger:#ff7f7f;
+      --shadow:0 28px 80px rgba(0,0,0,.44);
+      --radius-xl:30px;
+      --radius-lg:22px;
+      --radius-md:16px;
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;padding:0;min-height:100%}
+    body{
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top, rgba(103,243,158,.08), transparent 22%),
+        linear-gradient(180deg,var(--bg2),var(--bg));
+      overflow-x:hidden;
+    }
+
+    a{text-decoration:none;color:inherit}
+    button,input,select{font:inherit}
+    img{display:block;max-width:100%}
+
+    .page{
+      width:min(1560px, calc(100% - 20px));
+      margin:0 auto;
+      padding:14px 0 34px;
+      display:grid;
+      gap:14px;
+    }
+
+    .topbar,.panel,.hero,.section{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:14px 16px;
+      flex-wrap:wrap;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .brand-mark{
+      width:52px;
+      height:52px;
+      border-radius:17px;
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      color:#062114;
+      background:linear-gradient(135deg,var(--green),#dcffe9);
+    }
+
+    .brand-copy h1{
+      margin:0;
+      font-size:20px;
+      line-height:1;
+    }
+
+    .brand-copy p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .nav a,.btn,input,select{
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+    }
+
+    .nav a{font-weight:800}
+    input,select{outline:none;width:100%}
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      font-weight:900;
+      transition:.18s ease;
+      min-height:46px;
+    }
+
+    .btn:hover{transform:translateY(-1px)}
+    .btn.primary{
+      background:linear-gradient(135deg,var(--green),var(--green2));
+      color:#051b10;
+      border-color:transparent;
+    }
+    .btn.gold{
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:#2b1d03;
+      border-color:transparent;
+    }
+
+    .hero{
+      min-height:320px;
+      position:relative;
+      overflow:hidden;
+      border-radius:var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.84)),
+        url('/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png') center/cover no-repeat;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 80% 20%, rgba(255,232,154,.16), transparent 24%),
+        linear-gradient(180deg, transparent, rgba(0,0,0,.84));
+    }
+
+    .hero-copy{
+      position:absolute;
+      left:24px;
+      right:24px;
+      bottom:24px;
+      z-index:2;
+      display:grid;
+      gap:12px;
+      max-width:940px;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      width:max-content;
+      align-items:center;
+      gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid var(--line-strong);
+      background:rgba(0,0,0,.34);
+      color:var(--green);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .hero-copy h2{
+      margin:0;
+      font-size:clamp(34px, 6vw, 70px);
+      line-height:.92;
+      letter-spacing:-.05em;
+    }
+
+    .hero-copy p{
+      margin:0;
+      color:#d8f4e2;
+      font-size:15px;
+      line-height:1.65;
+      max-width:820px;
+    }
+
+    .hero-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .section{
+      padding:18px;
+    }
+
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:end;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .section-title h3{
+      margin:0;
+      font-size:28px;
+    }
+
+    .section-title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .stat-card{
+      padding:16px;
+      border-radius:18px;
+      background:var(--panel2);
+      border:1px solid var(--line);
+    }
+
+    .stat-card span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:8px;
+      font-weight:900;
+    }
+
+    .stat-card strong{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      letter-spacing:-.04em;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns:1.08fr .92fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .panel-head{
+      padding:18px 20px 0;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .panel-head h3{
+      margin:0;
+      font-size:24px;
+    }
+
+    .panel-head p{
+      margin:7px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      max-width:760px;
+    }
+
+    .panel-body{
+      padding:18px 20px 20px;
+    }
+
+    .toolbar{
+      display:grid;
+      grid-template-columns:1.2fr .8fr .8fr .8fr;
+      gap:10px;
+      margin-bottom:14px;
+    }
+
+    .status-box{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+      margin-bottom:14px;
+    }
+
+    .schedule-list{
+      display:grid;
+      gap:12px;
+    }
+
+    .day-group{
+      display:grid;
+      gap:10px;
+    }
+
+    .day-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 2px 2px;
+      flex-wrap:wrap;
+    }
+
+    .day-header h4{
+      margin:0;
+      font-size:24px;
+      line-height:1;
+    }
+
+    .day-header span{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .game-card{
+      border-radius:22px;
+      overflow:hidden;
+      background:var(--panel2);
+      border:1px solid var(--line);
+      display:grid;
+      grid-template-columns:220px 1fr;
+      min-height:180px;
+      box-shadow:var(--shadow);
+    }
+
+    .game-visual{
+      position:relative;
+      min-height:180px;
+      background:#091111;
+      overflow:hidden;
+    }
+
+    .game-bg{
+      position:absolute;
+      inset:0;
+      background-size:cover;
+      background-position:center;
+      transform:scale(1.04);
+    }
+
+    .game-shade{
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.1), rgba(0,0,0,.7));
+    }
+
+    .game-badge-row{
+      position:absolute;
+      top:14px;
+      left:14px;
+      right:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      flex-wrap:wrap;
+      z-index:2;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 10px;
+      border-radius:999px;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(0,0,0,.35);
+      color:#fff;
+    }
+
+    .badge.live{
+      color:#03180e;
+      background:linear-gradient(135deg,var(--green),#dcffe9);
+      border-color:transparent;
+    }
+
+    .badge.gold{
+      color:#2b1d03;
+      background:linear-gradient(135deg,var(--gold2),var(--gold));
+      border-color:transparent;
+    }
+
+    .badge.blue{
+      color:#071925;
+      background:linear-gradient(135deg,#d8f2ff,var(--blue));
+      border-color:transparent;
+    }
+
+    .game-content{
+      padding:16px;
+      display:grid;
+      gap:12px;
+      align-content:start;
+    }
+
+    .game-top{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .game-top h4{
+      margin:0;
+      font-size:26px;
+      line-height:.96;
+      letter-spacing:-.04em;
+    }
+
+    .game-top p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.65;
+      max-width:820px;
+    }
+
+    .time-box{
+      text-align:right;
+      min-width:120px;
+    }
+
+    .time-box strong{
+      display:block;
+      font-size:28px;
+      line-height:1;
+      color:var(--gold2);
+      letter-spacing:-.04em;
+    }
+
+    .time-box span{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .meta-box{
+      padding:12px;
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--line);
+    }
+
+    .meta-box span{
+      display:block;
+      color:var(--muted);
+      font-size:10px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+      margin-bottom:6px;
+      font-weight:900;
+    }
+
+    .meta-box strong{
+      display:block;
+      font-size:18px;
+      line-height:1.1;
+      word-break:break-word;
+    }
+
+    .action-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .action-row .btn{
+      min-width:140px;
+    }
+
+    .side-stack{
+      display:grid;
+      gap:14px;
+      align-content:start;
+    }
+
+    .feed-list{
+      display:grid;
+      gap:10px;
+      max-height:720px;
+      overflow:auto;
+      padding-right:4px;
+    }
+
+    .feed-item{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+    }
+
+    .feed-item strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:6px;
+    }
+
+    .feed-item span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .mini-list{
+      display:grid;
+      gap:10px;
+    }
+
+    .mini-card{
+      padding:14px;
+      border-radius:16px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+    }
+
+    .mini-card strong{
+      display:block;
+      font-size:16px;
+      margin-bottom:6px;
+    }
+
+    .mini-card span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.6;
+    }
+
+    .empty{
+      padding:24px;
+      border-radius:18px;
+      border:1px dashed var(--line-strong);
+      color:var(--muted);
+      text-align:center;
+      background:rgba(255,255,255,.03);
+    }
+
+    @media (max-width:1280px){
+      .layout{
+        grid-template-columns:1fr;
+      }
+    }
+
+    @media (max-width:980px){
+      .stats-grid,
+      .meta-grid,
+      .toolbar{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+      .game-card{
+        grid-template-columns:1fr;
+      }
+      .game-visual{
+        min-height:220px;
+      }
+    }
+
+    @media (max-width:640px){
+      .stats-grid,
+      .meta-grid,
+      .toolbar{
+        grid-template-columns:1fr;
+      }
+      .game-top{
+        grid-template-columns:1fr;
+      }
+      .time-box{
+        text-align:left;
+      }
+      .hero-copy h2{
+        font-size:42px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">RB</div>
+        <div class="brand-copy">
+          <h1>Rich Bizness — Sports Schedule</h1>
+          <p>Game-day desk • sports calendar • matchup rail • watch and picks routing</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="/index.html">Home</a>
+        <a href="/sports.html">Sports</a>
+        <a href="/watch-sports.html">Watch Sports</a>
+        <a href="/sports-picks.html">Sports Picks</a>
+        <a href="/sports-leaderboard.html">Leaderboard</a>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Game-day schedule lane</div>
+        <h2>Keep the sports section feeling live every day.</h2>
+        <p>
+          This page gives your sports ecosystem a real schedule desk feel with matchups,
+          start times, sport filters, game-day routing, and quick paths into watch, picks,
+          and highlights.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#scheduleSection">Open Schedule</a>
+          <a class="btn gold" href="/sports-picks.html">Open Picks</a>
+          <a class="btn" href="/watch-sports.html">Watch Sports</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-title">
+        <div>
+          <h3>Schedule Stats</h3>
+          <p>Fast overview for the current schedule desk.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <span>Total Games</span>
+          <strong id="statGames">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Today</span>
+          <strong id="statToday">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Live Now</span>
+          <strong id="statLive">0</strong>
+        </article>
+        <article class="stat-card">
+          <span>Sports Loaded</span>
+          <strong id="statSports">0</strong>
+        </article>
+      </div>
+    </section>
+
+    <div class="layout">
+      <section class="panel" id="scheduleSection">
+        <div class="panel-head">
+          <div>
+            <h3>Sports Schedule</h3>
+            <p>
+              Real-ready schedule cards with routing into watch pages, picks, and sports conversation.
+              This can run now on local schedule data and later be replaced with your live sports source.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div class="toolbar">
+            <input id="searchInput" type="text" placeholder="Search team, matchup, or league..." />
+            <select id="sportFilter">
+              <option value="all">All Sports</option>
+              <option value="basketball">Basketball</option>
+              <option value="football">Football</option>
+              <option value="baseball">Baseball</option>
+              <option value="golf">Golf</option>
+              <option value="gym">Gym</option>
+            </select>
+            <select id="statusFilter">
+              <option value="all">All Status</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="live">Live</option>
+              <option value="final">Final</option>
+            </select>
+            <select id="dayFilter">
+              <option value="all">All Days</option>
+            </select>
+          </div>
+
+          <div id="statusBox" class="status-box">
+            Sports schedule ready. You can later replace the sample schedule array with live sports data or your own sports table.
+          </div>
+
+          <div id="scheduleList" class="schedule-list"></div>
+        </div>
+      </section>
+
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Quick Sports Feed</h3>
+              <p>Game-day desk notes and sports activity lane.</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="feedList" class="feed-list"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <h3>Schedule Tools</h3>
+              <p>Fast routes across the sports section.</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="mini-list">
+              <article class="mini-card">
+                <strong>Watch Sports</strong>
+                <span>Route fans into highlight clips and full sports watch pages.</span>
+                <div style="margin-top:10px;">
+                  <a class="btn primary" href="/watch-sports.html">Open Watch</a>
+                </div>
+              </article>
+
+              <article class="mini-card">
+                <strong>Sports Picks</strong>
+                <span>Turn matchups into community picks and game-day talk.</span>
+                <div style="margin-top:10px;">
+                  <a class="btn gold" href="/sports-picks.html">Open Picks</a>
+                </div>
+              </article>
+
+              <article class="mini-card">
+                <strong>Sports Home</strong>
+                <span>Push people back into your main elite sports ecosystem.</span>
+                <div style="margin-top:10px;">
+                  <a class="btn" href="/sports.html">Back To Sports</a>
+                </div>
+              </article>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
+
+  <script type="module">
+    const BRAND_IMAGES = {
+      football: "/images/brand/639C7F96-E386-46D4-8929-34AFE3C6EDD3.png",
+      basketball: "/images/brand/8FE83A11-A7F6-45D7-9840-D8A066A88684.png",
+      baseball: "/images/brand/6F26FF98-8FFE-4A1C-B9FB-C4233274CF8A.png",
+      golf: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png",
+      gym: "/images/brand/6F26FF98-8FFE-4A1C-B9FB-C4233274CF8A.png",
+      ecosystem: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
+    };
+
+    const SCHEDULE = [
+      {
+        id: "g1",
+        day: "Today",
+        date: "2026-04-21",
+        time: "7:30 PM",
+        status: "live",
+        sport: "basketball",
+        league: "RB Hoops Night",
+        homeTeam: "Rich Bizness Blue",
+        awayTeam: "Street Kings",
+        venue: "Money Court Arena",
+        headline: "Prime-time hoops battle with creator energy",
+        notes: "Game-night lane with real talk, highlights, and picks push.",
+        image: BRAND_IMAGES.basketball
+      },
+      {
+        id: "g2",
+        day: "Today",
+        date: "2026-04-21",
+        time: "8:00 PM",
+        status: "scheduled",
+        sport: "football",
+        league: "Friday Lights Preview",
+        homeTeam: "Smoke City Bulls",
+        awayTeam: "Money Road Riders",
+        venue: "Rich Field",
+        headline: "Stadium football lane with high-energy sports talk",
+        notes: "Perfect for watch page routing and picks engagement.",
+        image: BRAND_IMAGES.football
+      },
+      {
+        id: "g3",
+        day: "Tomorrow",
+        date: "2026-04-22",
+        time: "6:15 PM",
+        status: "scheduled",
+        sport: "baseball",
+        league: "Diamond Night",
+        homeTeam: "Bizness Bats",
+        awayTeam: "Downtown Heat",
+        venue: "Grand Slam Park",
+        headline: "Baseball rail built for clips, reactions, and scoreboard energy",
+        notes: "Use this game to drive sports-post and sports-watch traffic.",
+        image: BRAND_IMAGES.baseball
+      },
+      {
+        id: "g4",
+        day: "Tomorrow",
+        date: "2026-04-22",
+        time: "2:00 PM",
+        status: "scheduled",
+        sport: "golf",
+        league: "Green Lane Open",
+        homeTeam: "Tee Masters",
+        awayTeam: "Course Kings",
+        venue: "Rich Links Club",
+        headline: "Golf matchday inside the sports ecosystem",
+        notes: "Good for polished highlights and profile-based sports content.",
+        image: BRAND_IMAGES.golf
+      },
+      {
+        id: "g5",
+        day: "Friday",
+        date: "2026-04-24",
+        time: "5:00 PM",
+        status: "scheduled",
+        sport: "gym",
+        league: "Strength Showcase",
+        homeTeam: "Elite Lifters",
+        awayTeam: "Power House",
+        venue: "RB Performance Center",
+        headline: "Training, performance, and competition lane",
+        notes: "Connect this one to athlete profiles and motivation clips.",
+        image: BRAND_IMAGES.gym
+      },
+      {
+        id: "g6",
+        day: "Friday",
+        date: "2026-04-24",
+        time: "9:15 PM",
+        status: "final",
+        sport: "basketball",
+        league: "Night Recap",
+        homeTeam: "Studio Ballers",
+        awayTeam: "Fast Break Mob",
+        venue: "RB Court",
+        headline: "Final score recap and clip rotation lane",
+        notes: "Use finals to feed sports-post comments and recap rails.",
+        image: BRAND_IMAGES.basketball
+      }
+    ];
+
+    const el = {
+      statGames: document.getElementById("statGames"),
+      statToday: document.getElementById("statToday"),
+      statLive: document.getElementById("statLive"),
+      statSports: document.getElementById("statSports"),
+      searchInput: document.getElementById("searchInput"),
+      sportFilter: document.getElementById("sportFilter"),
+      statusFilter: document.getElementById("statusFilter"),
+      dayFilter: document.getElementById("dayFilter"),
+      statusBox: document.getElementById("statusBox"),
+      scheduleList: document.getElementById("scheduleList"),
+      feedList: document.getElementById("feedList")
+    };
+
+    function setStatus(message) {
+      el.statusBox.textContent = message;
+    }
+
+    function titleCase(value) {
+      return String(value || "")
+        .split(" ")
+        .map(part => part ? part[0].toUpperCase() + part.slice(1) : "")
+        .join(" ");
+    }
+
+    function fillDayFilter() {
+      const days = [...new Set(SCHEDULE.map(item => item.day))];
+      el.dayFilter.innerHTML = `
+        <option value="all">All Days</option>
+        ${days.map(day => `<option value="${day}">${day}</option>`).join("")}
+      `;
+    }
+
+    function renderStats(rows) {
+      const sportsCount = [...new Set(rows.map(item => item.sport))].length;
+      const todayCount = rows.filter(item => item.day === "Today").length;
+      const liveCount = rows.filter(item => item.status === "live").length;
+
+      el.statGames.textContent = String(rows.length);
+      el.statToday.textContent = String(todayCount);
+      el.statLive.textContent = String(liveCount);
+      el.statSports.textContent = String(sportsCount);
+    }
+
+    function filteredRows() {
+      const query = el.searchInput.value.trim().toLowerCase();
+      const sport = el.sportFilter.value;
+      const status = el.statusFilter.value;
+      const day = el.dayFilter.value;
+
+      return SCHEDULE.filter(item => {
+        const haystack = [
+          item.league,
+          item.homeTeam,
+          item.awayTeam,
+          item.venue,
+          item.headline,
+          item.notes,
+          item.sport
+        ].join(" ").toLowerCase();
+
+        const matchesQuery = !query || haystack.includes(query);
+        const matchesSport = sport === "all" || item.sport === sport;
+        const matchesStatus = status === "all" || item.status === status;
+        const matchesDay = day === "all" || item.day === day;
+
+        return matchesQuery && matchesSport && matchesStatus && matchesDay;
+      });
+    }
+
+    function groupByDay(rows) {
+      const groups = new Map();
+      rows.forEach(item => {
+        if (!groups.has(item.day)) groups.set(item.day, []);
+        groups.get(item.day).push(item);
+      });
+      return [...groups.entries()];
+    }
+
+    function badgeForStatus(status) {
+      if (status === "live") return `<span class="badge live">Live</span>`;
+      if (status === "final") return `<span class="badge gold">Final</span>`;
+      return `<span class="badge blue">Scheduled</span>`;
+    }
+
+    function renderSchedule() {
+      const rows = filteredRows();
+      renderStats(rows);
+
+      if (!rows.length) {
+        el.scheduleList.innerHTML = `<div class="empty">No games match this schedule filter right now.</div>`;
+        renderFeed([]);
+        return;
+      }
+
+      const groups = groupByDay(rows);
+
+      el.scheduleList.innerHTML = groups.map(([day, games]) => `
+        <section class="day-group">
+          <div class="day-header">
+            <h4>${day}</h4>
+            <span>${games.length} game${games.length === 1 ? "" : "s"}</span>
+          </div>
+
+          ${games.map(game => `
+            <article class="game-card">
+              <div class="game-visual">
+                <div class="game-bg" style="background-image:url('${game.image}')"></div>
+                <div class="game-shade"></div>
+                <div class="game-badge-row">
+                  ${badgeForStatus(game.status)}
+                  <span class="badge blue">${titleCase(game.sport)}</span>
+                </div>
+              </div>
+
+              <div class="game-content">
+                <div class="game-top">
+                  <div>
+                    <h4>${game.homeTeam} vs ${game.awayTeam}</h4>
+                    <p>${game.headline}</p>
+                  </div>
+
+                  <div class="time-box">
+                    <strong>${game.time}</strong>
+                    <span>${game.date}</span>
+                  </div>
+                </div>
+
+                <div class="meta-grid">
+                  <div class="meta-box">
+                    <span>League</span>
+                    <strong>${game.league}</strong>
+                  </div>
+                  <div class="meta-box">
+                    <span>Venue</span>
+                    <strong>${game.venue}</strong>
+                  </div>
+                  <div class="meta-box">
+                    <span>Status</span>
+                    <strong>${titleCase(game.status)}</strong>
+                  </div>
+                  <div class="meta-box">
+                    <span>Game ID</span>
+                    <strong>${game.id}</strong>
+                  </div>
+                </div>
+
+                <div class="action-row">
+                  <a class="btn primary" href="/watch-sports.html?id=${game.id}">Watch Route</a>
+                  <a class="btn gold" href="/sports-picks.html?game=${encodeURIComponent(game.homeTeam + ' vs ' + game.awayTeam)}">Make Pick</a>
+                  <a class="btn" href="/sports-post.html?id=${game.id}">Game Post</a>
+                </div>
+              </div>
+            </article>
+          `).join("")}
+        </section>
+      `).join("");
+
+      renderFeed(rows);
+    }
+
+    function renderFeed(rows) {
+      const feedItems = rows.slice(0, 10).map(game => ({
+        title: `${game.homeTeam} vs ${game.awayTeam}`,
+        body: `${titleCase(game.sport)} • ${game.status} • ${game.time} • ${game.venue}`
+      }));
+
+      if (!feedItems.length) {
+        el.feedList.innerHTML = `<div class="empty">No schedule feed items available.</div>`;
+        return;
+      }
+
+      el.feedList.innerHTML = feedItems.map(item => `
+        <article class="feed-item">
+          <strong>${item.title}</strong>
+          <span>${item.body}</span>
+        </article>
+      `).join("");
+    }
+
+    function bindEvents() {
+      el.searchInput.addEventListener("input", renderSchedule);
+      el.sportFilter.addEventListener("change", renderSchedule);
+      el.statusFilter.addEventListener("change", renderSchedule);
+      el.dayFilter.addEventListener("change", renderSchedule);
+    }
+
+    function boot() {
+      fillDayFilter();
+      bindEvents();
+      renderSchedule();
+      setStatus("Sports schedule loaded. Later, swap the local SCHEDULE array with your live source or sports schedule table.");
+    }
+
+    boot();
+  </script>
+</body>
+</html>
