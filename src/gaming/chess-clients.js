@@ -37,11 +37,14 @@ const START_BOARD = [
   ["wr", "wn", "wb", "wq", "wk", "wb", "wn", "wr"],
 ];
 
+const CHESS_GAME_SLUG = "rich-chess";
+
 const state = {
   mode: "cpu", // cpu | local | room | view
   cpuDifficulty: "easy",
   playerColor: "white",
   orientation: "white",
+
   board: cloneBoard(START_BOARD),
   turn: "white",
   selected: null,
@@ -49,13 +52,18 @@ const state = {
   moveHistory: [],
   capturedByWhite: [],
   capturedByBlack: [],
+  lastMove: null,
+  currentMoveNumber: 1,
+
   whiteTime: 300,
   blackTime: 300,
   timerBase: 300,
   timerInterval: null,
+  gameStarted: false,
   gameOver: false,
   winner: null,
   resultReason: "",
+
   activeRoomId: null,
   activeRoomSlug: null,
   activeRoomTitle: "",
@@ -63,15 +71,11 @@ const state = {
   activeRoomType: "casual",
   liveRooms: [],
   liveRoomChannel: null,
+
   user: null,
   gamerProfile: null,
   gameRecord: null,
   sessionId: null,
-  currentMoveNumber: 1,
-  roomLoadedFromRealtime: false,
-  whiteJoinId: null,
-  blackJoinId: null,
-  lastMove: null,
 };
 
 const el = {
@@ -141,6 +145,8 @@ function deepClone(value) {
 function showNotice(type, message) {
   const target = type === "error" ? el.error : el.success;
   const other = type === "error" ? el.success : el.error;
+
+  if (!target || !other) return;
 
   other.style.display = "none";
   other.textContent = "";
@@ -301,6 +307,7 @@ function rawMovesForPiece(board, row, col, attackOnly = false) {
       const c = col + dc;
       if (!inside(r, c)) continue;
       const target = board[r][c];
+
       if (attackOnly) {
         push(r, c, { attack: true });
       } else if (target && colorOf(target) !== color) {
@@ -316,6 +323,7 @@ function rawMovesForPiece(board, row, col, attackOnly = false) {
       [1, -2], [1, 2],
       [2, -1], [2, 1],
     ];
+
     for (const [dr, dc] of jumps) {
       const r = row + dr;
       const c = col + dc;
@@ -329,9 +337,11 @@ function rawMovesForPiece(board, row, col, attackOnly = false) {
 
   if (type === "b" || type === "r" || type === "q") {
     const dirs = [];
+
     if (type === "b" || type === "q") {
       dirs.push([-1, -1], [-1, 1], [1, -1], [1, 1]);
     }
+
     if (type === "r" || type === "q") {
       dirs.push([-1, 0], [1, 0], [0, -1], [0, 1]);
     }
@@ -339,8 +349,10 @@ function rawMovesForPiece(board, row, col, attackOnly = false) {
     for (const [dr, dc] of dirs) {
       let r = row + dr;
       let c = col + dc;
+
       while (inside(r, c)) {
         const target = board[r][c];
+
         if (!target) {
           push(r, c);
         } else {
@@ -349,6 +361,7 @@ function rawMovesForPiece(board, row, col, attackOnly = false) {
           }
           break;
         }
+
         r += dr;
         c += dc;
       }
@@ -390,12 +403,14 @@ function isSquareAttacked(board, targetRow, targetCol, byColor) {
     for (let c = 0; c < 8; c += 1) {
       const piece = board[r][c];
       if (!piece || colorOf(piece) !== byColor) continue;
+
       const moves = rawMovesForPiece(board, r, c, true);
       if (moves.some((move) => move.row === targetRow && move.col === targetCol)) {
         return true;
       }
     }
   }
+
   return false;
 }
 
@@ -418,6 +433,7 @@ function legalMovesForPiece(board, row, col) {
 
 function allLegalMoves(board, color) {
   const moves = [];
+
   for (let r = 0; r < 8; r += 1) {
     for (let c = 0; c < 8; c += 1) {
       const piece = board[r][c];
@@ -435,11 +451,51 @@ function allLegalMoves(board, color) {
       }
     }
   }
+
   return moves;
+}
+
+function clearRoomBinding() {
+  state.activeRoomId = null;
+  state.activeRoomSlug = null;
+  state.activeRoomTitle = "";
+  state.activeRoomVisibility = "public";
+  state.activeRoomType = "casual";
+  el.inviteLink.textContent = "Open a live room to generate an invite link.";
+}
+
+function resetSelection() {
+  state.selected = null;
+  state.validMoves = [];
+}
+
+function resetBoardState() {
+  stopTimerLoop();
+
+  state.board = cloneBoard(START_BOARD);
+  state.turn = "white";
+  state.selected = null;
+  state.validMoves = [];
+  state.moveHistory = [];
+  state.capturedByWhite = [];
+  state.capturedByBlack = [];
+  state.lastMove = null;
+  state.currentMoveNumber = 1;
+
+  state.whiteTime = state.timerBase;
+  state.blackTime = state.timerBase;
+
+  state.gameStarted = false;
+  state.gameOver = false;
+  state.winner = null;
+  state.resultReason = "";
+
+  updateStatusBanner("Match ready", "Start a game and lock in your first move.");
 }
 
 function setMode(mode) {
   state.mode = mode;
+  resetSelection();
 
   el.modeCpu.classList.toggle("active", mode === "cpu");
   el.modeLocal.classList.toggle("active", mode === "local");
@@ -447,22 +503,20 @@ function setMode(mode) {
   el.modeView.classList.toggle("active", mode === "view");
 
   if (mode === "cpu") {
+    clearRoomBinding();
     updateStatusBanner("CPU mode", "Start a CPU match.");
   } else if (mode === "local") {
+    clearRoomBinding();
     updateStatusBanner("Local mode", "Pass and play on one board.");
   } else if (mode === "room") {
     updateStatusBanner("Live room mode", "Create or open a room.");
   } else {
+    clearRoomBinding();
     updateStatusBanner("Viewer mode", "Board is watch-only.");
   }
 
   renderMeta();
   renderBoard();
-}
-
-function resetSelection() {
-  state.selected = null;
-  state.validMoves = [];
 }
 
 function updateStatusBanner(title, text) {
@@ -486,20 +540,26 @@ function renderMeta() {
   el.whiteClock.textContent = formatClock(state.whiteTime);
   el.blackClock.textContent = formatClock(state.blackTime);
 
-  el.whiteClockCard.classList.toggle("active", state.turn === "white" && !state.gameOver);
-  el.blackClockCard.classList.toggle("active", state.turn === "black" && !state.gameOver);
+  el.whiteClockCard.classList.toggle(
+    "active",
+    state.gameStarted && !state.gameOver && state.turn === "white"
+  );
+  el.blackClockCard.classList.toggle(
+    "active",
+    state.gameStarted && !state.gameOver && state.turn === "black"
+  );
 
   if (state.mode === "cpu") {
     el.roomTitle.textContent = "CPU Arena";
-    el.roomStatus.textContent = state.gameOver ? "Finished" : "Active";
+    el.roomStatus.textContent = state.gameOver ? "Finished" : state.gameStarted ? "Active" : "Ready";
     el.roomType.textContent = `CPU ${capitalize(state.cpuDifficulty)}`;
   } else if (state.mode === "local") {
     el.roomTitle.textContent = "Local Match";
-    el.roomStatus.textContent = state.gameOver ? "Finished" : "Active";
+    el.roomStatus.textContent = state.gameOver ? "Finished" : state.gameStarted ? "Active" : "Ready";
     el.roomType.textContent = "Local";
   } else if (state.mode === "room") {
     el.roomTitle.textContent = state.activeRoomTitle || state.activeRoomSlug || "Live Room";
-    el.roomStatus.textContent = state.gameOver ? "Finished" : "Live";
+    el.roomStatus.textContent = state.gameOver ? "Finished" : state.gameStarted ? "Live" : "Ready";
     el.roomType.textContent = capitalize(state.activeRoomType || "casual");
   } else {
     el.roomTitle.textContent = state.activeRoomTitle || "Viewer Board";
@@ -511,8 +571,13 @@ function renderMeta() {
 }
 
 function renderCaptured() {
-  el.whiteCaptured.innerHTML = state.capturedByWhite.map((piece) => `<span>${PIECES[piece]}</span>`).join("");
-  el.blackCaptured.innerHTML = state.capturedByBlack.map((piece) => `<span>${PIECES[piece]}</span>`).join("");
+  el.whiteCaptured.innerHTML = state.capturedByWhite
+    .map((piece) => `<span>${PIECES[piece]}</span>`)
+    .join("");
+
+  el.blackCaptured.innerHTML = state.capturedByBlack
+    .map((piece) => `<span>${PIECES[piece]}</span>`)
+    .join("");
 }
 
 function renderMoveList() {
@@ -526,12 +591,16 @@ function renderMoveList() {
     return;
   }
 
-  el.moveList.innerHTML = state.moveHistory.map((move, index) => `
-    <div class="move-item">
-      <strong>#${index + 1} • ${move.color}</strong>
-      <span>${escapeHtml(move.notation)}</span>
-    </div>
-  `).join("");
+  el.moveList.innerHTML = state.moveHistory
+    .map((move, index) => {
+      return `
+        <div class="move-item">
+          <strong>#${index + 1} • ${move.color}</strong>
+          <span>${escapeHtml(move.notation)}</span>
+        </div>
+      `;
+    })
+    .join("");
 }
 
 function squareClass(row, col, legalMoves, kingInCheckPosition) {
@@ -593,7 +662,7 @@ function renderBoard() {
 }
 
 function isPlayerTurn() {
-  if (state.gameOver) return false;
+  if (state.gameOver || !state.gameStarted) return false;
   if (state.mode === "local") return true;
   if (state.mode === "view") return false;
   if (state.mode === "room") return state.playerColor === state.turn;
@@ -642,8 +711,14 @@ function onSquareClick(row, col) {
 
 function startTimerLoop() {
   stopTimerLoop();
+
+  if (!state.gameStarted || state.gameOver || state.mode === "view") {
+    renderMeta();
+    return;
+  }
+
   state.timerInterval = setInterval(() => {
-    if (state.gameOver) return;
+    if (!state.gameStarted || state.gameOver) return;
 
     if (state.turn === "white") {
       state.whiteTime = Math.max(0, state.whiteTime - 1);
@@ -702,7 +777,7 @@ async function loadGameRecord() {
     const { data } = await supabase
       .from("games")
       .select("*")
-      .eq("slug", "chess")
+      .eq("slug", CHESS_GAME_SLUG)
       .maybeSingle();
 
     state.gameRecord = data || null;
@@ -762,6 +837,8 @@ async function closeSessionRecord(result) {
       .eq("id", state.sessionId);
   } catch {
     // non-blocking
+  } finally {
+    state.sessionId = null;
   }
 }
 
@@ -769,12 +846,16 @@ async function saveScoreRecord() {
   if (!state.user || !state.gameRecord) return;
 
   try {
-    const baseScore = state.winner === state.playerColor ? 100 : state.winner === "draw" ? 40 : 10;
+    const baseScore =
+      state.winner === state.playerColor ? 100 :
+      state.winner === "draw" ? 40 : 10;
 
     await supabase.from("game_scores").insert({
       user_id: state.user.id,
       game_id: state.gameRecord.id,
+      game_title: state.gameRecord.title || "Rich Chess Elite",
       score: baseScore,
+      mode: capitalize(state.mode),
       metadata: {
         mode: state.mode,
         winner: state.winner,
@@ -798,7 +879,7 @@ async function updateGamerProfileResult() {
   let losses = currentLosses;
   let draws = currentDraws;
 
-  if (state.mode === "cpu" || state.mode === "local") {
+  if (state.mode === "cpu" || state.mode === "local" || state.mode === "room") {
     if (state.winner === state.playerColor) wins += 1;
     else if (state.winner === "draw") draws += 1;
     else losses += 1;
@@ -829,6 +910,8 @@ async function updateGamerProfileResult() {
 }
 
 async function finishGame(winner, reason) {
+  if (state.gameOver) return;
+
   state.gameOver = true;
   state.winner = winner;
   state.resultReason = reason;
@@ -884,7 +967,7 @@ async function pushRoomStateToRealtime() {
       black_time: state.blackTime,
       white_captured: deepClone(state.capturedByWhite),
       black_captured: deepClone(state.capturedByBlack),
-      status: state.gameOver ? "finished" : "active",
+      status: state.gameOver ? "finished" : state.gameStarted ? "active" : "ready",
       winner: state.winner,
       result_reason: state.resultReason,
       last_move: state.lastMove,
@@ -896,12 +979,12 @@ async function pushRoomStateToRealtime() {
       .update(payload)
       .eq("id", state.activeRoomId);
   } catch {
-    // keep local mode working even if room sync fails
+    // non-blocking
   }
 }
 
 async function makeMove(fromRow, fromCol, toRow, toCol) {
-  if (state.gameOver) return;
+  if (state.gameOver || !state.gameStarted) return;
 
   const piece = state.board[fromRow][fromCol];
   if (!piece) return;
@@ -948,10 +1031,11 @@ function randomItem(items) {
 }
 
 async function cpuMove() {
-  if (state.mode !== "cpu" || state.gameOver) return;
+  if (state.mode !== "cpu" || state.gameOver || !state.gameStarted) return;
 
   const color = state.turn;
   const moves = allLegalMoves(state.board, color);
+
   if (!moves.length) {
     checkForEndgame();
     return;
@@ -979,6 +1063,7 @@ async function cpuMove() {
         move.toRow,
         move.toCol
       );
+
       const score = evaluateBoard(nextBoard);
 
       if (color === "white" && score > bestScore) {
@@ -998,23 +1083,9 @@ async function cpuMove() {
 
 async function newGame() {
   stopTimerLoop();
-  state.board = cloneBoard(START_BOARD);
-  state.turn = "white";
-  state.selected = null;
-  state.validMoves = [];
-  state.moveHistory = [];
-  state.capturedByWhite = [];
-  state.capturedByBlack = [];
-  state.gameOver = false;
-  state.winner = null;
-  state.resultReason = "";
-  state.lastMove = null;
-  state.currentMoveNumber = 1;
+  resetBoardState();
 
-  state.whiteTime = state.timerBase;
-  state.blackTime = state.timerBase;
-
-  updateStatusBanner("Match ready", "Start a game and lock in your first move.");
+  state.gameStarted = true;
   renderBoard();
   startTimerLoop();
 
@@ -1066,7 +1137,7 @@ async function createLiveRoom() {
         type,
         board_state: boardToSimpleString(START_BOARD),
         turn: "white",
-        status: "active",
+        status: "ready",
         white_time: seconds,
         black_time: seconds,
         move_history: [],
@@ -1083,6 +1154,7 @@ async function createLiveRoom() {
     state.activeRoomTitle = data.title;
     state.activeRoomVisibility = data.visibility;
     state.activeRoomType = data.type;
+
     state.liveRooms.unshift({
       id: data.id,
       title: data.title,
@@ -1095,7 +1167,9 @@ async function createLiveRoom() {
     state.timerBase = seconds;
     state.playerColor = "white";
     state.orientation = "white";
+
     setMode("room");
+    await subscribeToRoom(data.id);
     await newGame();
     renderRooms();
 
@@ -1115,6 +1189,7 @@ async function createLiveRoom() {
     state.timerBase = seconds;
     state.playerColor = "white";
     state.orientation = "white";
+
     setMode("room");
     await newGame();
     renderRooms();
@@ -1152,25 +1227,39 @@ async function fetchRooms() {
 }
 
 async function openLiveRoom(roomIdOrSlug) {
+  let room = null;
+  const rawValue = String(roomIdOrSlug || "").trim();
+  if (!rawValue) return;
+
   try {
-    let room = null;
-
-    if (String(roomIdOrSlug).includes("-") || String(roomIdOrSlug).length > 12) {
+    if (rawValue.length > 30) {
       const { data } = await supabase
         .from("chess_rooms")
         .select("*")
-        .or(`id.eq.${roomIdOrSlug},slug.eq.${roomIdOrSlug}`)
+        .eq("id", rawValue)
         .maybeSingle();
 
       room = data || null;
-    } else {
+    }
+
+    if (!room) {
       const { data } = await supabase
         .from("chess_rooms")
         .select("*")
-        .eq("id", roomIdOrSlug)
+        .eq("slug", rawValue)
         .maybeSingle();
 
-      room = data || null;
+      room = data || room;
+    }
+
+    if (!room) {
+      const { data } = await supabase
+        .from("chess_rooms")
+        .select("*")
+        .eq("id", rawValue)
+        .maybeSingle();
+
+      room = data || room;
     }
 
     if (room) {
@@ -1180,6 +1269,7 @@ async function openLiveRoom(roomIdOrSlug) {
       state.activeRoomVisibility = room.visibility;
       state.activeRoomType = room.type;
       state.mode = "room";
+
       state.board = simpleStringToBoard(room.board_state);
       state.turn = room.turn || "white";
       state.moveHistory = Array.isArray(room.move_history) ? room.move_history : [];
@@ -1188,19 +1278,24 @@ async function openLiveRoom(roomIdOrSlug) {
       state.whiteTime = Number(room.white_time || state.timerBase);
       state.blackTime = Number(room.black_time || state.timerBase);
       state.gameOver = room.status === "finished";
+      state.gameStarted = room.status === "active" || room.status === "finished";
       state.winner = room.winner || null;
       state.resultReason = room.result_reason || "";
       state.lastMove = room.last_move || null;
-      resetSelection();
 
-      setMode("room");
+      resetSelection();
       renderRooms();
       renderBoard();
 
       const inviteUrl = `${window.location.origin}${window.location.pathname}?room=${encodeURIComponent(room.slug)}`;
       el.inviteLink.textContent = inviteUrl;
-      showNotice("success", `Opened room ${room.title}.`);
+
       await subscribeToRoom(room.id);
+
+      if (state.gameStarted && !state.gameOver) startTimerLoop();
+      else stopTimerLoop();
+
+      showNotice("success", `Opened room ${room.title}.`);
       return;
     }
   } catch {
@@ -1208,7 +1303,7 @@ async function openLiveRoom(roomIdOrSlug) {
   }
 
   const localRoom = state.liveRooms.find(
-    (item) => item.id === roomIdOrSlug || item.slug === roomIdOrSlug
+    (item) => item.id === rawValue || item.slug === rawValue
   );
 
   if (localRoom) {
@@ -1217,6 +1312,7 @@ async function openLiveRoom(roomIdOrSlug) {
     state.activeRoomTitle = localRoom.title;
     state.activeRoomVisibility = localRoom.visibility;
     state.activeRoomType = localRoom.type;
+
     setMode("room");
     renderRooms();
 
@@ -1247,6 +1343,7 @@ async function subscribeToRoom(roomId) {
         },
         (payload) => {
           const room = payload.new;
+
           state.board = simpleStringToBoard(room.board_state);
           state.turn = room.turn || "white";
           state.moveHistory = Array.isArray(room.move_history) ? room.move_history : [];
@@ -1255,11 +1352,16 @@ async function subscribeToRoom(roomId) {
           state.whiteTime = Number(room.white_time || state.timerBase);
           state.blackTime = Number(room.black_time || state.timerBase);
           state.gameOver = room.status === "finished";
+          state.gameStarted = room.status === "active" || room.status === "finished";
           state.winner = room.winner || null;
           state.resultReason = room.result_reason || "";
           state.lastMove = room.last_move || null;
+
           resetSelection();
           renderBoard();
+
+          if (state.gameStarted && !state.gameOver) startTimerLoop();
+          else stopTimerLoop();
         }
       )
       .subscribe();
@@ -1288,11 +1390,6 @@ async function joinSeat(color) {
   showNotice("success", `Joined ${color} side.`);
 }
 
-function playCurrent() {
-  const current = state.selectedEpisodes?.[state.currentEpisodeIndex];
-  if (!current || !current.audio_url) return;
-}
-
 function bindEvents() {
   el.modeCpu.addEventListener("click", () => setMode("cpu"));
   el.modeLocal.addEventListener("click", () => setMode("local"));
@@ -1312,8 +1409,10 @@ function bindEvents() {
 
   el.gameTime.addEventListener("change", () => {
     state.timerBase = Number(el.gameTime.value || 300);
-    state.whiteTime = state.timerBase;
-    state.blackTime = state.timerBase;
+    if (!state.gameStarted) {
+      state.whiteTime = state.timerBase;
+      state.blackTime = state.timerBase;
+    }
     renderMeta();
   });
 
@@ -1322,6 +1421,7 @@ function bindEvents() {
     state.playerColor = el.playerColor.value;
     state.orientation = state.playerColor;
     state.timerBase = Number(el.gameTime.value || 300);
+
     setMode("cpu");
     await newGame();
     showNotice("success", `CPU ${capitalize(state.cpuDifficulty)} match started.`);
@@ -1329,7 +1429,9 @@ function bindEvents() {
 
   el.newLocalBtn.addEventListener("click", async () => {
     state.orientation = "white";
+    state.playerColor = "white";
     state.timerBase = Number(el.gameTime.value || 300);
+
     setMode("local");
     await newGame();
     showNotice("success", "Local match started.");
@@ -1356,7 +1458,7 @@ function bindEvents() {
   });
 
   el.resignBtn.addEventListener("click", async () => {
-    if (state.gameOver) return;
+    if (state.gameOver || !state.gameStarted) return;
     await finishGame(enemyColor(state.turn), `${capitalize(state.turn)} resigned.`);
     showNotice("success", "Match ended by resignation.");
   });
@@ -1402,15 +1504,17 @@ function renderRooms() {
     return;
   }
 
-  el.roomList.innerHTML = state.liveRooms.map((room) => {
-    const active = String(room.id) === String(state.activeRoomId) ? "active" : "";
-    return `
-      <button class="room-item ${active}" data-room-id="${escapeHtml(room.id)}" type="button">
-        <strong>${escapeHtml(room.title || room.slug || "Untitled Room")}</strong>
-        <span>${escapeHtml(room.visibility || "public")} • ${escapeHtml(room.type || "casual")}</span>
-      </button>
-    `;
-  }).join("");
+  el.roomList.innerHTML = state.liveRooms
+    .map((room) => {
+      const active = String(room.id) === String(state.activeRoomId) ? "active" : "";
+      return `
+        <button class="room-item ${active}" data-room-id="${escapeHtml(room.id)}" type="button">
+          <strong>${escapeHtml(room.title || room.slug || "Untitled Room")}</strong>
+          <span>${escapeHtml(room.visibility || "public")} • ${escapeHtml(room.type || "casual")}</span>
+        </button>
+      `;
+    })
+    .join("");
 
   Array.from(el.roomList.querySelectorAll("[data-room-id]")).forEach((button) => {
     button.addEventListener("click", async () => {
@@ -1445,8 +1549,8 @@ async function boot() {
     state.orientation = state.playerColor;
 
     renderRooms();
+    resetBoardState();
     renderBoard();
-    startTimerLoop();
     await loadRoomFromQuery();
 
     showNotice("success", "Rich Chess Elite loaded.");
