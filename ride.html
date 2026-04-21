@@ -1,1 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rich Bizness Ride</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #070909;
+      --panel: rgba(12, 14, 14, 0.78);
+      --line: rgba(255,255,255,0.08);
+      --gold: #f3b33e;
+      --gold-2: #ffd57d;
+      --text: #f7f0e5;
+      --muted: #c8bca2;
+      --green: #63d889;
+      --cyan: #7bc5ff;
+      --danger: #ff7357;
+      --shadow: 0 20px 50px rgba(0,0,0,0.35);
+    }
 
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top, rgba(243,179,62,0.12), transparent 30%),
+        linear-gradient(180deg, #0c1111 0%, #070909 100%);
+      color: var(--text);
+      font-family: Inter, system-ui, sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    .page-shell {
+      width: min(1440px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .brand-lockup {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .brand-title {
+      font-size: clamp(24px, 4vw, 40px);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      color: var(--gold-2);
+      line-height: 1;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn,
+    .ghost-btn {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-weight: 800;
+      font-size: 14px;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    .action-btn:hover,
+    .ghost-btn:hover { transform: translateY(-1px); }
+
+    .action-btn {
+      background: linear-gradient(180deg, var(--gold-2), var(--gold));
+      color: #1d1307;
+      box-shadow: 0 12px 24px rgba(243,179,62,0.22);
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+    }
+
+    .messages {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .msg {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .msg.error {
+      background: rgba(255, 115, 87, 0.12);
+      color: #ffd0c5;
+      border-color: rgba(255, 115, 87, 0.28);
+    }
+
+    .msg.success {
+      background: rgba(99, 216, 137, 0.12);
+      color: #d9ffe6;
+      border-color: rgba(99, 216, 137, 0.28);
+    }
+
+    .featured-game {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 20px;
+      padding: 20px;
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(15,17,17,0.82), rgba(9,11,11,0.86));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+
+    .featured-media {
+      border-radius: 22px;
+      overflow: hidden;
+      min-height: 320px;
+      background: #111;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .featured-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .featured-copy {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 14px;
+    }
+
+    .featured-badge {
+      width: fit-content;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--gold-2);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .featured-title {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 52px);
+      line-height: 1.02;
+      font-weight: 900;
+    }
+
+    .featured-meta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .featured-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 18px 18px 0;
+    }
+
+    .panel-title {
+      font-size: 20px;
+      font-weight: 900;
+      margin: 0;
+    }
+
+    .panel-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+
+    .game-shell {
+      padding: 18px;
+    }
+
+    #ride-game-mount {
+      width: 100%;
+      min-height: 78vh;
+      border-radius: 24px;
+      overflow: hidden;
+      background: linear-gradient(180deg, #091111 0%, #050707 100%);
+      border: 1px solid rgba(255,255,255,0.06);
+      position: relative;
+    }
+
+    .stats-grid {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--gold-2);
+      line-height: 1;
+    }
+
+    .mini-grid {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .mini-card {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .mini-card h4 {
+      margin: 0 0 8px;
+      font-size: 15px;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .admin-list {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .admin-item {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .item-title {
+      margin: 0 0 8px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .item-sub {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .empty-mount {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 15px;
+      background: radial-gradient(circle at center, rgba(243,179,62,0.08), transparent 50%);
+    }
+
+    @media (max-width: 1120px) {
+      .featured-game,
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page-shell { width: min(100% - 14px, 1440px); }
+      .stats-grid { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; }
+      .action-btn, .ghost-btn { width: 100%; justify-content: center; }
+      #ride-game-mount { min-height: 62vh; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <section class="topbar">
+      <div class="brand-lockup">
+        <div class="brand-title">RICH BIZNESS RIDE</div>
+        <div class="brand-sub">Elite 3D ride mode • treehouse city run • arcade universe</div>
+      </div>
+
+      <div class="top-actions">
+        <a class="ghost-btn" href="/gaming.html">Back To Arcade</a>
+        <button class="action-btn" id="top-launch-btn">Launch Ride</button>
+      </div>
+    </section>
+
+    <section class="messages">
+      <div id="ride-error" class="msg error"></div>
+      <div id="ride-success" class="msg success"></div>
+    </section>
+
+    <section id="ride-hero-shell"></section>
+
+    <section class="dashboard-grid">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">3D Ride Game</h3>
+            <div class="panel-sub">Dodge, collect, boost, and ride toward the RB treehouse skyline.</div>
+          </div>
+        </div>
+
+        <div class="game-shell">
+          <div id="ride-game-mount">
+            <div class="empty-mount">Game client loading...</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h3 class="panel-title">Run Stats</h3>
+            <div class="panel-sub">Live sync from the ride engine.</div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Player</div>
+            <div class="stat-value" id="ride-player-name">Guest Rider</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Score</div>
+            <div class="stat-value" id="ride-stat-score">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Cash</div>
+            <div class="stat-value" id="ride-stat-cash">$0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Distance</div>
+            <div class="stat-value" id="ride-stat-distance">0m</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Health</div>
+            <div class="stat-value" id="ride-stat-health">100%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Boost</div>
+            <div class="stat-value" id="ride-stat-boost">100%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Lives</div>
+            <div class="stat-value" id="ride-stat-lives">3</div>
+          </div>
+        </div>
+
+        <div class="mini-grid">
+          <article class="mini-card">
+            <h4>Controls</h4>
+            <p>
+              A / Left = move left<br />
+              D / Right = move right<br />
+              Shift / W = boost<br />
+              Space = jump<br />
+              P / Escape = pause
+            </p>
+          </article>
+
+          <article class="mini-card">
+            <h4>Mission Loop</h4>
+            <p>
+              Pick up money stacks, hit boost rings, avoid barriers and crates, and survive long enough to stack elite score runs.
+            </p>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <section class="panel" style="margin-top:18px;">
+      <div class="panel-head">
+        <div>
+          <h3 class="panel-title">Admin / Sync</h3>
+          <div class="panel-sub">Ride page integration status with your gaming ecosystem.</div>
+        </div>
+      </div>
+      <div id="ride-admin-shell" class="admin-list"></div>
+    </section>
+  </main>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL || window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_URL || "";
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_ANON_KEY || window.APP_CONFIG?.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  </script>
+
+  <script type="module" src="/src/gaming/ride-client.js"></script>
+  <script type="module">
+    import { mountRideGame } from "/games/rich-bizness-ride/ride-game.js";
+
+    const mountNode = document.getElementById("ride-game-mount");
+    const launchBtn = document.getElementById("top-launch-btn");
+
+    let mounted = false;
+
+    function startRide() {
+      if (mounted || !mountNode) return;
+      mounted = true;
+      mountNode.innerHTML = "";
+      mountRideGame(mountNode);
+      mountNode.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    launchBtn?.addEventListener("click", startRide);
+    window.addEventListener("rb:ride:start", startRide);
+  </script>
+</body>
+</html>
