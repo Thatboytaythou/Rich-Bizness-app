@@ -179,7 +179,8 @@ export const BRAND_IMAGES = {
   gallery: '/images/brand/F1AE13D6-DE21-4024-8E8B-9096BF73DFB7.png',
   artist: '/images/brand/B3C4FDF0-8485-4426-B1B4-A86491EB168B.png',
   baseball: '/images/brand/6F26FF98-8FFE-4A1C-B9FB-C4233274CF8A.png',
-  logo: '/images/rich-bizness-profile.jpg'
+  logo: '/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png',
+  avatar: '/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png'
 };
 
 export function getRoute(name) {
