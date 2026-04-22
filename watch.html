@@ -3,684 +3,690 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness — Watch Live</title>
+  <title>Rich Bizness — Watch</title>
   <meta
     name="description"
-    content="Rich Bizness watch page for live streams, creator rooms, viewer chat, and premium watch experiences."
+    content="Watch live streams on Rich Bizness with real stream data, live chat, creator info, access control, and a synced watch experience."
   />
 
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+
   <style>
-    :root {
-      --bg: #06100b;
-      --panel: rgba(8, 18, 13, 0.9);
-      --panel-2: rgba(12, 28, 20, 0.84);
-      --line: rgba(110, 255, 176, 0.16);
-      --line-strong: rgba(110, 255, 176, 0.34);
-      --text: #ecfff4;
-      --muted: #97b8a6;
-      --green: #43f59b;
-      --green-2: #18c972;
-      --red: #ff6f82;
-      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --max: 1380px;
+    .watch-page .watch-shell {
+      display: grid;
+      gap: 20px;
     }
 
-    * {
-      box-sizing: border-box;
+    .watch-page .watch-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 18px;
+      align-items: start;
     }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        linear-gradient(180deg, rgba(4,9,5,0.54), rgba(6,16,11,0.92)),
-        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
-        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
-      background-color: #06100b;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    .page-shell {
-      width: min(var(--max), calc(100% - 24px));
-      margin: 0 auto;
-      padding: 18px 0 42px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 12px;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      border: 1px solid var(--line);
-      background: rgba(7, 16, 12, 0.78);
-      backdrop-filter: blur(14px);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    .watch-page .watch-main,
+    .watch-page .watch-side,
+    .watch-page .watch-panel,
+    .watch-page .chat-panel,
+    .watch-page .side-panel {
       min-width: 0;
     }
 
-    .brand-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
-      border: 1px solid var(--line-strong);
-      color: var(--green);
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(67,245,155,0.22);
-      flex-shrink: 0;
-    }
-
-    .brand-copy h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-copy p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav-link,
-    .btn,
-    .btn-ghost {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 11px 15px;
-      border-radius: 14px;
-      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-      font-weight: 800;
-      cursor: pointer;
-      border: 1px solid transparent;
-    }
-
-    .nav-link:hover,
-    .btn:hover,
-    .btn-ghost:hover {
-      transform: translateY(-1px);
-    }
-
-    .nav-link,
-    .btn-ghost {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.07);
-      color: var(--text);
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--green), var(--green-2));
-      color: #062312;
-      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .panel {
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .watch-page .watch-hero {
+      position: relative;
       overflow: hidden;
-    }
-
-    .watch-hero {
-      padding: 34px;
-      min-height: 300px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      padding: 22px;
+      border-radius: 24px;
+      border: 1px solid var(--rb-border);
       background:
-        radial-gradient(circle at top left, rgba(67,245,155,0.16), transparent 28%),
-        linear-gradient(180deg, rgba(8,19,14,0.72), rgba(7,15,12,0.84));
+        linear-gradient(180deg, rgba(9, 17, 13, 0.68), rgba(6, 11, 8, 0.92)),
+        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
+      box-shadow: var(--rb-shadow);
     }
 
-    .eyebrow {
+    .watch-page .watch-kicker {
       display: inline-flex;
       align-items: center;
-      width: fit-content;
+      gap: 8px;
       min-height: 34px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      color: #d6ffe8;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d7f7e5;
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    .watch-hero h2 {
-      margin: 20px 0 0;
-      font-size: clamp(38px, 5vw, 74px);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      max-width: 800px;
-      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    .watch-page .watch-hero h2 {
+      margin: 16px 0 10px;
+      font-size: clamp(32px, 4.8vw, 58px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
     }
 
-    .watch-hero p {
-      margin: 18px 0 0;
-      color: #d8f5e5;
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 760px;
+    .watch-page .watch-hero p {
+      margin: 0;
+      color: var(--rb-text-soft);
+      font-size: 15px;
+      line-height: 1.7;
+      max-width: 820px;
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .stream-meta-card {
-      padding: 22px;
+    .watch-page .watch-layout {
       display: grid;
-      gap: 14px;
-      align-content: start;
+      gap: 18px;
     }
 
-    .meta-row {
+    .watch-page .player-panel {
+      overflow: hidden;
+      border-radius: 24px;
+      border: 1px solid var(--rb-border);
+      background: linear-gradient(180deg, rgba(9,16,12,0.90), rgba(6,10,8,0.96));
+      box-shadow: var(--rb-shadow);
+    }
+
+    .watch-page .player-stage {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background:
+        linear-gradient(180deg, rgba(5,8,6,0.74), rgba(3,5,4,0.96)),
+        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .watch-page .player-stage img,
+    .watch-page .player-stage video,
+    .watch-page .player-stage iframe {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border: 0;
+      display: block;
+    }
+
+    .watch-page .player-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.72));
+      pointer-events: none;
+    }
+
+    .watch-page .player-status {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      z-index: 2;
+    }
+
+    .watch-page .player-status span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(7, 16, 12, 0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ecfff4;
+      font-size: 12px;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .watch-page .player-status .is-live {
+      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
+      border-color: transparent;
+      color: white;
+    }
+
+    .watch-page .player-center {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .watch-page .player-center h3 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .watch-page .player-center p {
+      margin: 0;
+      color: #d7f7e5;
+      font-size: 14px;
+      line-height: 1.7;
+      max-width: 620px;
+    }
+
+    .watch-page .player-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .watch-page .player-meta {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .watch-page .stream-title {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .watch-page .stream-submeta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--rb-text-soft);
+      font-size: 13px;
+    }
+
+    .watch-page .stream-submeta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--rb-border);
+    }
+
+    .watch-page .creator-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
       padding: 16px;
       border-radius: 18px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--rb-border);
       background: rgba(255,255,255,0.04);
     }
 
-    .meta-row strong {
+    .watch-page .creator-lockup {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .watch-page .creator-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.10);
+      box-shadow: 0 0 18px rgba(50,224,141,0.14);
+    }
+
+    .watch-page .creator-copy {
+      min-width: 0;
+    }
+
+    .watch-page .creator-copy strong {
       display: block;
-      font-size: 15px;
+      font-size: 16px;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .watch-page .creator-copy span {
+      display: block;
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .watch-page .creator-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .watch-page .stream-description {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .watch-page .stream-description h4,
+    .watch-page .side-panel h4,
+    .watch-page .chat-panel h4 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .watch-page .stream-description p {
+      margin: 0;
+      color: var(--rb-text-soft);
+      font-size: 14px;
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .watch-page .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .watch-page .stat-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .watch-page .stat-card span {
+      display: block;
+      color: var(--rb-text-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
       margin-bottom: 6px;
     }
 
-    .meta-row span {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
-      word-break: break-word;
+    .watch-page .stat-card strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
     }
 
-    .notice {
-      display: none;
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      border: 1px solid transparent;
-    }
-
-    .notice.error {
-      background: rgba(255, 90, 115, 0.1);
-      border-color: rgba(255, 90, 115, 0.24);
-      color: #ffd0d8;
-    }
-
-    .notice.success {
-      background: rgba(67, 245, 155, 0.1);
-      border-color: rgba(67, 245, 155, 0.24);
-      color: #d8ffea;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1.06fr 0.94fr;
-      gap: 18px;
-    }
-
-    .panel-head {
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .panel-head h3 {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-    }
-
-    .panel-head p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .panel-body {
-      padding: 22px;
-    }
-
-    .video-stage {
-      min-height: 520px;
+    .watch-page .chat-panel,
+    .watch-page .side-panel {
+      padding: 18px;
       border-radius: 24px;
-      border: 1px solid var(--line);
-      background:
-        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 30%),
-        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
+      border: 1px solid var(--rb-border);
+      background: linear-gradient(180deg, rgba(10,22,16,0.86), rgba(7,15,12,0.94));
+      box-shadow: var(--rb-shadow);
+    }
+
+    .watch-page .chat-shell {
       display: grid;
-      place-items: center;
-      padding: 0;
-      overflow: hidden;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      gap: 12px;
     }
 
-    .stage-empty {
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    .stage-empty strong {
-      display: block;
-      font-size: 28px;
-      margin-bottom: 10px;
-      color: var(--text);
-    }
-
-    .stage-empty span {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.75;
-      max-width: 620px;
-      display: inline-block;
-    }
-
-    .stage-video {
-      width: 100%;
-      height: 100%;
-      min-height: 520px;
-      object-fit: cover;
-      display: block;
-      background: #000;
-    }
-
-    .stream-detail-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .detail-card {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .detail-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 7px;
-    }
-
-    .detail-card strong {
-      font-size: 20px;
-      line-height: 1.15;
-      word-break: break-word;
-    }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .side-stack {
-      display: grid;
-      gap: 18px;
-    }
-
-    .chat-feed {
+    .watch-page .chat-list {
+      min-height: 360px;
+      max-height: 560px;
+      overflow-y: auto;
       display: grid;
       gap: 10px;
-      max-height: 400px;
-      overflow: auto;
       padding-right: 4px;
     }
 
-    .chat-message {
-      padding: 13px 14px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
+    .watch-page .chat-empty {
+      min-height: 180px;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.10);
       display: grid;
-      gap: 6px;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      color: var(--rb-text-soft);
+      background: rgba(255,255,255,0.03);
     }
 
-    .chat-message strong {
+    .watch-page .chat-item {
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .watch-page .chat-item strong {
+      display: block;
       font-size: 13px;
-      color: var(--green);
+      margin-bottom: 6px;
     }
 
-    .chat-message span {
+    .watch-page .chat-item p {
+      margin: 0;
+      color: #ecfff4;
       font-size: 14px;
-      color: var(--text);
-      line-height: 1.65;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .chat-input-wrap {
+    .watch-page .chat-item span {
+      display: block;
+      margin-top: 6px;
+      color: var(--rb-text-soft);
+      font-size: 11px;
+    }
+
+    .watch-page .chat-form {
       display: grid;
       gap: 10px;
-      margin-top: 14px;
     }
 
-    .chat-input-wrap input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      outline: none;
+    .watch-page .chat-form textarea {
+      min-height: 96px;
     }
 
-    .chat-input-wrap input:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
+    .watch-page .watch-side-stack {
+      display: grid;
+      gap: 18px;
     }
 
-    .creator-spotlight {
-      padding: 18px;
-      border-radius: 20px;
-      border: 1px solid var(--line);
+    .watch-page .side-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .watch-page .side-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
       background: rgba(255,255,255,0.04);
     }
 
-    .creator-spotlight h4 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .creator-spotlight p {
-      margin: 0;
-      color: var(--muted);
+    .watch-page .side-card strong {
+      display: block;
       font-size: 14px;
-      line-height: 1.75;
+      margin-bottom: 6px;
     }
 
-    .footer {
-      margin-top: 24px;
+    .watch-page .side-card span {
+      display: block;
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .watch-page .locked-state {
       padding: 18px;
-      border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      border-radius: 18px;
+      border: 1px solid rgba(255, 200, 87, 0.22);
+      background: rgba(255, 200, 87, 0.08);
+      color: #ffe8b2;
+      display: grid;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .footer p {
+    .watch-page .locked-state strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.1;
+    }
+
+    .watch-page .locked-state p {
       margin: 0;
-      color: var(--muted);
-      font-size: 13px;
+      color: #ffe8b2;
+      font-size: 14px;
+      line-height: 1.7;
     }
 
-    .footer-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+    .watch-page .status-message {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.6;
     }
 
-    .footer-links a {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
+    .watch-page .status-message.is-error {
+      border-color: rgba(255, 109, 122, 0.24);
+      background: rgba(255, 109, 122, 0.08);
+      color: #ffd7dc;
+    }
+
+    .watch-page .status-message.is-success {
+      border-color: rgba(67,245,155,0.22);
+      background: rgba(67,245,155,0.08);
+      color: #d8ffea;
     }
 
     @media (max-width: 1180px) {
-      .hero-grid,
-      .main-grid {
+      .watch-page .watch-grid {
         grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 900px) {
-      .topbar {
-        position: static;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        justify-content: flex-start;
-        width: 100%;
-      }
-
-      .stream-detail-grid {
-        grid-template-columns: 1fr;
+    @media (max-width: 860px) {
+      .watch-page .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
     @media (max-width: 640px) {
-      .page-shell {
-        width: min(100% - 16px, 100%);
+      .watch-page .watch-hero,
+      .watch-page .player-meta,
+      .watch-page .chat-panel,
+      .watch-page .side-panel {
+        padding: 16px;
       }
 
-      .nav-link,
-      .btn,
-      .btn-ghost {
+      .watch-page .creator-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .watch-page .creator-actions {
         width: 100%;
       }
 
-      #global-session-nav {
+      .watch-page .creator-actions .btn,
+      .watch-page .creator-actions .btn-ghost,
+      .watch-page .creator-actions .btn-gold {
         width: 100%;
       }
 
-      #global-session-nav .nav-link,
-      #global-session-nav .btn,
-      #global-session-nav .btn-ghost {
-        width: 100%;
+      .watch-page .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .watch-page .player-center h3 {
+        font-size: 22px;
       }
     }
   </style>
 </head>
-<body>
+<body class="watch-page">
   <div class="page-shell">
+    <div id="elite-platform-nav" style="margin-bottom:18px;"></div>
+
     <header class="topbar">
       <div class="brand">
-        <div class="brand-mark">RB</div>
+        <div class="brand-mark">
+          <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness logo" />
+        </div>
         <div class="brand-copy">
           <h1>Rich Bizness</h1>
-          <p>Watch Live • Creator Rooms • Viewer Chat</p>
+          <p>Watch live creator streams, chat with viewers, and stay locked into the movement.</p>
         </div>
       </div>
 
       <nav class="nav">
         <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link" href="/profile.html">Profile</a>
-        <a class="nav-link" href="/live.html">Live Studio</a>
         <a class="nav-link" href="/feed.html">Feed</a>
+        <a class="nav-link" href="/profile.html">Profile</a>
+        <a class="nav-link" href="/messages.html">Messages</a>
+        <a class="btn-gold" href="/upload.html">Upload Center</a>
+        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
         <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
       </nav>
     </header>
 
-    <div id="watch-error" class="notice error"></div>
-    <div id="watch-success" class="notice success"></div>
-
-    <section class="hero-grid">
-      <section class="panel watch-hero">
-        <div>
-          <div class="eyebrow">Watch live</div>
-          <h2 id="watch-stream-title">Loading stream...</h2>
-          <p id="watch-stream-description">
-            Open a valid watch link and join the room to load the live creator session.
-          </p>
-        </div>
-
-        <div class="hero-actions">
-          <button id="watch-join-btn" class="btn" type="button">Join Live</button>
-          <button id="watch-purchase-btn" class="btn-ghost" type="button">Unlock Paid Access</button>
-          <a class="btn-ghost" href="/live.html">Open Live Studio</a>
-        </div>
+    <div class="watch-shell">
+      <section class="watch-hero panel">
+        <div class="watch-kicker">Live watch</div>
+        <h2 id="watch-hero-title">Watch the stream and stay inside the creator world.</h2>
+        <p id="watch-hero-copy">
+          Rich Bizness watch mode keeps the stream, creator info, access state, and live chat connected in one place.
+        </p>
       </section>
 
-      <aside class="panel stream-meta-card">
-        <div class="meta-row">
-          <strong>Status</strong>
-          <span id="watch-stream-status">OFFLINE</span>
-        </div>
+      <section class="watch-grid">
+        <main class="watch-main watch-layout">
+          <section class="player-panel">
+            <div class="player-stage" id="player-stage">
+              <div class="player-overlay"></div>
 
-        <div class="meta-row">
-          <strong>Creator</strong>
-          <span id="watch-stream-creator">--</span>
-        </div>
+              <div class="player-status" id="player-status">
+                <span class="is-live">LIVE</span>
+                <span id="stream-category-badge">Live</span>
+                <span id="stream-access-badge">Free</span>
+              </div>
 
-        <div class="meta-row">
-          <strong>Access</strong>
-          <span id="watch-stream-access">--</span>
-        </div>
-      </aside>
-    </section>
-
-    <section class="main-grid">
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Live stage</h3>
-            <p>Join the room to load the live creator feed.</p>
-          </div>
-        </div>
-
-        <div class="panel-body">
-          <div id="watch-live-stage" class="video-stage">
-            <div class="stage-empty">
-              <strong>Live room viewer stage</strong>
-              <span>
-                Join the stream to load the creator video, room audio, and live session feed.
-              </span>
-            </div>
-          </div>
-
-          <div class="stream-detail-grid">
-            <div class="detail-card">
-              <span>Viewers</span>
-              <strong id="watch-stream-viewers">0</strong>
-            </div>
-
-            <div class="detail-card">
-              <span>Room mode</span>
-              <strong>Creator Live Room</strong>
-            </div>
-
-            <div class="detail-card">
-              <span>Watch state</span>
-              <strong id="watch-room-mode-label">Live Playback</strong>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <aside class="side-stack">
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h3>Live chat</h3>
-              <p>Real-time viewer chat synced to the stream.</p>
-            </div>
-          </div>
-
-          <div class="panel-body">
-            <div id="live-chat-feed" class="chat-feed">
-              <div class="chat-message">
-                <strong>System</strong>
-                <span>Chat will appear here once messages start coming in.</span>
+              <div class="player-center" id="player-center">
+                <h3 id="player-title">Loading stream...</h3>
+                <p id="player-copy">Pulling stream data from Rich Bizness.</p>
+                <div class="player-actions" id="player-actions">
+                  <a class="btn" href="/live.html">Go Live</a>
+                  <a class="btn-ghost" href="/index.html">Back Home</a>
+                </div>
               </div>
             </div>
 
-            <div class="chat-input-wrap">
-              <input id="chat-message-input" type="text" placeholder="Type a message..." />
-              <button id="chat-send-btn" class="btn" type="button">Send</button>
-            </div>
-          </div>
-        </section>
+            <div class="player-meta">
+              <div>
+                <h1 class="stream-title" id="stream-title">Loading watch experience...</h1>
+                <div class="stream-submeta" id="stream-submeta">
+                  <span id="meta-status">Status: --</span>
+                  <span id="meta-viewers">Viewers: --</span>
+                  <span id="meta-access">Access: --</span>
+                  <span id="meta-price">Price: --</span>
+                </div>
+              </div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h3>Creator spotlight</h3>
-              <p>Identity and stream presence.</p>
-            </div>
-          </div>
+              <div class="creator-row">
+                <div class="creator-lockup">
+                  <img
+                    id="creator-avatar"
+                    class="creator-avatar"
+                    src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
+                    alt="Creator avatar"
+                  />
+                  <div class="creator-copy">
+                    <strong id="creator-name">Rich Bizness Creator</strong>
+                    <span id="creator-handle">@richbizness</span>
+                  </div>
+                </div>
 
-          <div class="panel-body">
-            <div class="creator-spotlight">
-              <h4>Live creator session</h4>
-              <p>
-                This watch room is tuned for creator presence, clean access flow, and stronger audience connection across the platform.
-              </p>
-            </div>
-          </div>
-        </section>
-      </aside>
-    </section>
+                <div class="creator-actions">
+                  <a id="creator-profile-link" class="btn-ghost" href="/profile.html">Open Profile</a>
+                  <a id="creator-message-link" class="btn-ghost" href="/messages.html">Message</a>
+                  <button id="follow-creator-btn" class="btn" type="button">Follow</button>
+                </div>
+              </div>
 
-    <footer class="footer">
-      <p>Rich Bizness • watch room locked</p>
-      <div class="footer-links">
-        <a href="/index.html">Home</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/live.html">Live Studio</a>
-        <a href="/music.html">Music</a>
-        <a href="/gallery.html">Gallery</a>
-      </div>
-    </footer>
+              <div id="stream-locked-state" class="locked-state" style="display:none;">
+                <strong>This stream is locked.</strong>
+                <p id="locked-copy">You need the right access before joining this stream.</p>
+                <div class="player-actions">
+                  <a id="locked-action-link" class="btn-gold" href="/monetization.html">Unlock stream</a>
+                </div>
+              </div>
+
+              <div class="stream-description">
+                <h4>About this stream</h4>
+                <p id="stream-description">
+                  Stream details will appear here once the watch page loads the live stream record.
+                </p>
+              </div>
+
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <span>Live viewers</span>
+                  <strong id="stat-viewers">0</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Peak viewers</span>
+                  <strong id="stat-peak-viewers">0</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Chat messages</span>
+                  <strong id="stat-chat-count">0</strong>
+                </div>
+                <div class="stat-card">
+                  <span>Revenue</span>
+                  <strong id="stat-revenue">$0.00</strong>
+                </div>
+              </div>
+
+              <div id="watch-status" class="status-message">Ready.</div>
+            </div>
+          </section>
+        </main>
+
+        <aside class="watch-side watch-side-stack">
+          <section class="chat-panel">
+            <h4>Live chat</h4>
+
+            <div class="chat-shell">
+              <div id="chat-list" class="chat-list">
+                <div class="chat-empty">
+                  <div>
+                    <strong style="display:block;margin-bottom:8px;color:#ecfff4;">No chat yet.</strong>
+                    <span>The live conversation will appear here as viewers join and chat.</span>
+                  </div>
+                </div>
+              </div>
+
+              <form id="chat-form" class="chat-form">
+                <textarea
+                  id="chat-input"
+                  placeholder="Drop a message into the stream chat..."
+                ></textarea>
+                <button id="chat-submit" class="btn" type="submit">Send message</button>
+              </form>
+            </div>
+          </section>
+
+          <section class="side-panel">
+            <h4>Watch details</h4>
+            <div class="side-list">
+              <article class="side-card">
+                <strong>Live routing</strong>
+                <span>This page reads the active stream by slug or id from the URL and keeps the watch experience synced to the live stream record.</span>
+              </article>
+
+              <article class="side-card">
+                <strong>Creator connection</strong>
+                <span>Profile, messages, follows, and live stream identity should all point back to the same creator account.</span>
+              </article>
+
+              <article class="side-card">
+                <strong>Access control</strong>
+                <span>Free, paid, and VIP streams should all show the right watch state without breaking the player flow.</span>
+              </article>
+
+              <article class="side-card">
+                <strong>Real chat layer</strong>
+                <span>Chat messages should update from the live chat table and move with the stream while viewers stay on the page.</span>
+              </article>
+            </div>
+          </section>
+        </aside>
+      </section>
+    </div>
   </div>
 
   <script>
@@ -690,8 +696,518 @@
     window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-  <script type="module" src="/src/live/watch-client.js"></script>
-  <script type="module" src="/src/shared/navbar-session.js"></script>
+  <script type="module">
+    import { initApp, getCurrentUserState } from "/core/app.js";
+    import { mountEliteNav } from "/core/nav.js";
+    import {
+      supabase,
+      isFollowing,
+      followUser,
+      unfollowUser
+    } from "/core/supabase.js";
+    import {
+      getQueryParam,
+      safeDate,
+      formatMoney,
+      formatNumber
+    } from "/core/utils.js";
+    import { BRAND_IMAGES, ROUTES } from "/core/config.js";
+
+    await initApp();
+
+    mountEliteNav({
+      target: "#elite-platform-nav",
+      collapsed: false
+    });
+
+    const slug = getQueryParam("slug", "");
+    const streamId = getQueryParam("id", "") || getQueryParam("stream", "");
+
+    const els = {
+      heroTitle: document.getElementById("watch-hero-title"),
+      heroCopy: document.getElementById("watch-hero-copy"),
+      playerStage: document.getElementById("player-stage"),
+      playerTitle: document.getElementById("player-title"),
+      playerCopy: document.getElementById("player-copy"),
+      playerActions: document.getElementById("player-actions"),
+      statusBox: document.getElementById("watch-status"),
+      categoryBadge: document.getElementById("stream-category-badge"),
+      accessBadge: document.getElementById("stream-access-badge"),
+      streamTitle: document.getElementById("stream-title"),
+      streamDescription: document.getElementById("stream-description"),
+      metaStatus: document.getElementById("meta-status"),
+      metaViewers: document.getElementById("meta-viewers"),
+      metaAccess: document.getElementById("meta-access"),
+      metaPrice: document.getElementById("meta-price"),
+      statViewers: document.getElementById("stat-viewers"),
+      statPeakViewers: document.getElementById("stat-peak-viewers"),
+      statChatCount: document.getElementById("stat-chat-count"),
+      statRevenue: document.getElementById("stat-revenue"),
+      creatorAvatar: document.getElementById("creator-avatar"),
+      creatorName: document.getElementById("creator-name"),
+      creatorHandle: document.getElementById("creator-handle"),
+      creatorProfileLink: document.getElementById("creator-profile-link"),
+      creatorMessageLink: document.getElementById("creator-message-link"),
+      followBtn: document.getElementById("follow-creator-btn"),
+      lockedState: document.getElementById("stream-locked-state"),
+      lockedCopy: document.getElementById("locked-copy"),
+      lockedActionLink: document.getElementById("locked-action-link"),
+      chatList: document.getElementById("chat-list"),
+      chatForm: document.getElementById("chat-form"),
+      chatInput: document.getElementById("chat-input"),
+      chatSubmit: document.getElementById("chat-submit")
+    };
+
+    let currentStream = null;
+    let currentCreator = null;
+    let currentUser = getCurrentUserState();
+    let liveStreamChannel = null;
+    let liveChatChannel = null;
+    let followBusy = false;
+
+    function setStatus(message, type = "normal") {
+      els.statusBox.textContent = message;
+      els.statusBox.classList.remove("is-error", "is-success");
+
+      if (type === "error") els.statusBox.classList.add("is-error");
+      if (type === "success") els.statusBox.classList.add("is-success");
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function fallbackImage() {
+      return BRAND_IMAGES.live || BRAND_IMAGES.homeHero || "/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png";
+    }
+
+    function getCreatorName(profile = null) {
+      return (
+        profile?.display_name ||
+        profile?.username ||
+        "Rich Bizness Creator"
+      );
+    }
+
+    function getCreatorHandle(profile = null) {
+      return (
+        profile?.handle ||
+        profile?.username ||
+        "richbizness"
+      );
+    }
+
+    function getCreatorAvatar(profile = null) {
+      return (
+        profile?.avatar_url ||
+        profile?.profile_image_url ||
+        BRAND_IMAGES.logo
+      );
+    }
+
+    function getStreamPriceLabel(stream = null) {
+      if (!stream) return "Free";
+
+      const accessType = String(stream.access_type || "free").toLowerCase();
+      if (accessType === "paid" && Number(stream.price_cents || 0) > 0) {
+        return formatMoney(stream.price_cents || 0, stream.currency || "USD");
+      }
+
+      if (accessType === "vip") return "VIP";
+      return "Free";
+    }
+
+    function getWatchState(stream = null) {
+      if (!stream) {
+        return {
+          locked: false,
+          copy: ""
+        };
+      }
+
+      const accessType = String(stream.access_type || "free").toLowerCase();
+
+      if (accessType === "free") {
+        return {
+          locked: false,
+          copy: ""
+        };
+      }
+
+      if (!currentUser) {
+        return {
+          locked: true,
+          copy: accessType === "vip"
+            ? "This VIP stream requires an account and access."
+            : "This paid stream requires an account and access."
+        };
+      }
+
+      return {
+        locked: false,
+        copy: ""
+      };
+    }
+
+    function renderPlayer(stream, creator) {
+      const image = stream.thumbnail_url || stream.cover_url || fallbackImage();
+      const title = stream.title || "Untitled Stream";
+      const category = stream.category || "live";
+      const price = getStreamPriceLabel(stream);
+      const watchState = getWatchState(stream);
+
+      els.heroTitle.textContent = title;
+      els.heroCopy.textContent = stream.description || "Creator live stream watch experience locked into the Rich Bizness ecosystem.";
+
+      els.playerTitle.textContent = title;
+      els.playerCopy.textContent = creator
+        ? `Now watching ${getCreatorName(creator)} on Rich Bizness.`
+        : "Now watching a Rich Bizness creator stream.";
+
+      els.categoryBadge.textContent = String(category).toUpperCase();
+      els.accessBadge.textContent = String(stream.access_type || "free").toUpperCase();
+
+      els.streamTitle.textContent = title;
+      els.streamDescription.textContent = stream.description || "No stream description was added yet.";
+      els.metaStatus.textContent = `Status: ${String(stream.status || "live").toUpperCase()}`;
+      els.metaViewers.textContent = `Viewers: ${formatNumber(stream.viewer_count || 0)}`;
+      els.metaAccess.textContent = `Access: ${String(stream.access_type || "free").toUpperCase()}`;
+      els.metaPrice.textContent = `Price: ${price}`;
+
+      els.statViewers.textContent = formatNumber(stream.viewer_count || 0);
+      els.statPeakViewers.textContent = formatNumber(stream.peak_viewers || 0);
+      els.statChatCount.textContent = formatNumber(stream.total_chat_messages || 0);
+      els.statRevenue.textContent = formatMoney(stream.total_revenue_cents || 0, stream.currency || "USD");
+
+      els.creatorAvatar.src = getCreatorAvatar(creator);
+      els.creatorName.textContent = getCreatorName(creator);
+      els.creatorHandle.textContent = `@${getCreatorHandle(creator)}`;
+      els.creatorProfileLink.href = creator?.id
+        ? `/profile.html?id=${encodeURIComponent(creator.id)}`
+        : ROUTES.profile;
+      els.creatorMessageLink.href = creator?.id
+        ? `/messages.html?user=${encodeURIComponent(creator.id)}`
+        : ROUTES.messages;
+
+      els.playerStage.style.background = `
+        linear-gradient(180deg, rgba(5,8,6,0.74), rgba(3,5,4,0.96)),
+        url('${image}') center / cover no-repeat
+      `;
+
+      els.lockedState.style.display = watchState.locked ? "grid" : "none";
+      els.lockedCopy.textContent = watchState.copy || "You need the right access before joining this stream.";
+      els.lockedActionLink.href = ROUTES.monetization || "/monetization.html";
+
+      els.playerActions.innerHTML = watchState.locked
+        ? `
+          <a class="btn-gold" href="${ROUTES.auth}">Login to continue</a>
+          <a class="btn-ghost" href="${ROUTES.monetization || "/monetization.html"}">Unlock options</a>
+        `
+        : `
+          <a class="btn" href="${ROUTES.live}">Go Live</a>
+          <a class="btn-ghost" href="${ROUTES.home}">Back Home</a>
+        `;
+    }
+
+    function renderNoStream() {
+      els.heroTitle.textContent = "No stream found.";
+      els.heroCopy.textContent = "This watch page could not find an active Rich Bizness stream with that slug or id.";
+
+      els.playerTitle.textContent = "No stream found";
+      els.playerCopy.textContent = "Check the watch link or go back to the homepage live rail.";
+
+      els.streamTitle.textContent = "No stream found";
+      els.streamDescription.textContent = "No live stream record matched the current watch link.";
+
+      els.playerActions.innerHTML = `
+        <a class="btn" href="${ROUTES.home}">Back Home</a>
+        <a class="btn-ghost" href="${ROUTES.live}">Go Live</a>
+      `;
+
+      els.chatList.innerHTML = `
+        <div class="chat-empty">
+          <div>
+            <strong style="display:block;margin-bottom:8px;color:#ecfff4;">No stream chat.</strong>
+            <span>A valid stream is required before live chat can load.</span>
+          </div>
+        </div>
+      `;
+
+      setStatus("No live stream matched this watch link.", "error");
+    }
+
+    async function fetchStream() {
+      if (!slug && !streamId) {
+        currentStream = null;
+        currentCreator = null;
+        renderNoStream();
+        return;
+      }
+
+      let query = supabase
+        .from("live_streams")
+        .select(`
+          *,
+          profiles:creator_id (
+            id,
+            display_name,
+            username,
+            handle,
+            avatar_url,
+            profile_image_url,
+            bio
+          )
+        `);
+
+      if (slug) {
+        query = query.eq("slug", slug);
+      } else {
+        query = query.eq("id", streamId);
+      }
+
+      const { data, error } = await query.maybeSingle();
+
+      if (error) {
+        console.error("[watch] fetchStream error:", error);
+        setStatus("Could not load stream.", "error");
+        renderNoStream();
+        return;
+      }
+
+      if (!data) {
+        currentStream = null;
+        currentCreator = null;
+        renderNoStream();
+        return;
+      }
+
+      currentStream = data;
+      currentCreator = Array.isArray(data.profiles) ? data.profiles[0] : data.profiles;
+
+      renderPlayer(currentStream, currentCreator);
+      setStatus("Stream loaded.", "success");
+
+      await syncFollowButton();
+      await loadChatMessages();
+      bindStreamRealtime();
+      bindChatRealtime();
+    }
+
+    async function syncFollowButton() {
+      if (!els.followBtn) return;
+
+      if (!currentUser || !currentCreator?.id || currentUser.id === currentCreator.id) {
+        els.followBtn.textContent = currentUser?.id === currentCreator?.id ? "Your profile" : "Follow";
+        els.followBtn.disabled = !currentCreator?.id || currentUser?.id === currentCreator?.id;
+        return;
+      }
+
+      const following = await isFollowing(currentUser.id, currentCreator.id);
+      els.followBtn.textContent = following ? "Following" : "Follow";
+      els.followBtn.disabled = false;
+      els.followBtn.dataset.following = following ? "true" : "false";
+    }
+
+    async function handleFollowToggle() {
+      if (followBusy || !currentUser || !currentCreator?.id || currentUser.id === currentCreator.id) return;
+
+      followBusy = true;
+      els.followBtn.disabled = true;
+
+      try {
+        const following = els.followBtn.dataset.following === "true";
+
+        if (following) {
+          await unfollowUser(currentUser.id, currentCreator.id);
+          els.followBtn.textContent = "Follow";
+          els.followBtn.dataset.following = "false";
+          setStatus("Unfollowed creator.", "success");
+        } else {
+          await followUser(currentUser.id, currentCreator.id);
+          els.followBtn.textContent = "Following";
+          els.followBtn.dataset.following = "true";
+          setStatus("Creator followed.", "success");
+        }
+      } catch (error) {
+        console.error("[watch] follow toggle error:", error);
+        setStatus(error.message || "Could not update follow state.", "error");
+      } finally {
+        followBusy = false;
+        els.followBtn.disabled = false;
+      }
+    }
+
+    function formatChatTime(value) {
+      if (!value) return "";
+      return safeDate(value);
+    }
+
+    function renderChat(messages = []) {
+      if (!Array.isArray(messages) || !messages.length) {
+        els.chatList.innerHTML = `
+          <div class="chat-empty">
+            <div>
+              <strong style="display:block;margin-bottom:8px;color:#ecfff4;">No chat yet.</strong>
+              <span>The live conversation will appear here as viewers join and chat.</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      els.chatList.innerHTML = messages
+        .map((message) => {
+          const author = message.profiles?.display_name || message.profiles?.username || "Viewer";
+          const content = message.message || message.body || "";
+          const createdAt = formatChatTime(message.created_at);
+
+          return `
+            <article class="chat-item">
+              <strong>${escapeHtml(author)}</strong>
+              <p>${escapeHtml(content)}</p>
+              <span>${escapeHtml(createdAt)}</span>
+            </article>
+          `;
+        })
+        .join("");
+
+      els.chatList.scrollTop = els.chatList.scrollHeight;
+    }
+
+    async function loadChatMessages() {
+      if (!currentStream?.id) {
+        renderChat([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("live_chat_messages")
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            display_name,
+            username
+          )
+        `)
+        .eq("stream_id", currentStream.id)
+        .order("created_at", { ascending: true })
+        .limit(100);
+
+      if (error) {
+        console.error("[watch] loadChatMessages error:", error);
+        setStatus("Could not load chat messages.", "error");
+        renderChat([]);
+        return;
+      }
+
+      renderChat(data || []);
+    }
+
+    async function sendChatMessage(event) {
+      event.preventDefault();
+
+      if (!currentUser) {
+        setStatus("Login to join the live chat.", "error");
+        return;
+      }
+
+      if (!currentStream?.id) {
+        setStatus("No stream is loaded for chat.", "error");
+        return;
+      }
+
+      const message = els.chatInput.value.trim();
+      if (!message) {
+        setStatus("Type a chat message first.", "error");
+        return;
+      }
+
+      els.chatSubmit.disabled = true;
+
+      try {
+        const { error } = await supabase
+          .from("live_chat_messages")
+          .insert({
+            stream_id: currentStream.id,
+            user_id: currentUser.id,
+            message
+          });
+
+        if (error) {
+          throw error;
+        }
+
+        els.chatInput.value = "";
+        setStatus("Message sent.", "success");
+        await loadChatMessages();
+      } catch (error) {
+        console.error("[watch] sendChatMessage error:", error);
+        setStatus(error.message || "Could not send message.", "error");
+      } finally {
+        els.chatSubmit.disabled = false;
+      }
+    }
+
+    function bindStreamRealtime() {
+      if (!currentStream?.id) return;
+
+      if (liveStreamChannel) {
+        supabase.removeChannel(liveStreamChannel);
+        liveStreamChannel = null;
+      }
+
+      liveStreamChannel = supabase
+        .channel(`rb-watch-stream-${currentStream.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "live_streams",
+            filter: `id=eq.${currentStream.id}`
+          },
+          async () => {
+            await fetchStream();
+          }
+        )
+        .subscribe();
+    }
+
+    function bindChatRealtime() {
+      if (!currentStream?.id) return;
+
+      if (liveChatChannel) {
+        supabase.removeChannel(liveChatChannel);
+        liveChatChannel = null;
+      }
+
+      liveChatChannel = supabase
+        .channel(`rb-watch-chat-${currentStream.id}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "live_chat_messages",
+            filter: `stream_id=eq.${currentStream.id}`
+          },
+          async () => {
+            await loadChatMessages();
+          }
+        )
+        .subscribe();
+    }
+
+    els.followBtn?.addEventListener("click", handleFollowToggle);
+    els.chatForm?.addEventListener("submit", sendChatMessage);
+
+    await fetchStream();
+  </script>
 </body>
 </html>
