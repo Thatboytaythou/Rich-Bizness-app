@@ -17,25 +17,45 @@ function slugify(value = '') {
     .slice(0, 40);
 }
 
-export async function getSessionSafe() {
+async function refreshSessionCache() {
   const { data, error } = await supabase.auth.getSession();
-  if (error) return null;
+
+  if (error) {
+    console.error('[auth] refreshSessionCache error:', error);
+    cachedSession = null;
+    cachedUser = null;
+    return null;
+  }
+
   cachedSession = data?.session || null;
   cachedUser = data?.session?.user || null;
   return cachedSession;
 }
 
+export async function getSessionSafe() {
+  return await refreshSessionCache();
+}
+
 export async function getCurrentUserSafe() {
-  const session = await getSessionSafe();
+  const session = await refreshSessionCache();
   return session?.user || null;
 }
 
+export async function getCurrentUser() {
+  return await getCurrentUserSafe();
+}
+
+export async function getSession() {
+  return await getSessionSafe();
+}
+
 export async function getCurrentProfileSafe(force = false) {
-  if (!force && cachedProfile && cachedUser?.id === cachedProfile?.id) {
+  if (!force && cachedProfile && cachedUser?.id && cachedProfile?.id === cachedUser.id) {
     return cachedProfile;
   }
 
   const user = await getCurrentUserSafe();
+
   if (!user) {
     cachedProfile = null;
     return null;
@@ -57,21 +77,27 @@ export async function getCurrentProfileSafe(force = false) {
   return cachedProfile;
 }
 
+export async function getCurrentProfile(force = false) {
+  return await getCurrentProfileSafe(force);
+}
+
 export async function ensureProfileRecord(user, overrides = {}) {
   if (!user?.id) return null;
 
   const email = user.email || null;
+
   const displayName =
-    overrides.display_name?.trim() ||
+    String(overrides.display_name || '').trim() ||
+    String(overrides.displayName || '').trim() ||
     user.user_metadata?.display_name ||
     user.user_metadata?.full_name ||
     email?.split('@')[0] ||
     'Rich Bizness User';
 
   const username =
-    slugify(overrides.username) ||
-    slugify(user.user_metadata?.username) ||
-    slugify(email?.split('@')[0]) ||
+    slugify(overrides.username || '') ||
+    slugify(user.user_metadata?.username || '') ||
+    slugify(email?.split('@')[0] || '') ||
     `user-${user.id.slice(0, 8)}`;
 
   const payload = {
@@ -81,7 +107,6 @@ export async function ensureProfileRecord(user, overrides = {}) {
     display_name: displayName,
     username,
     handle: username,
-    onboarding_complete: false,
     updated_at: new Date().toISOString()
   };
 
@@ -94,7 +119,9 @@ export async function ensureProfileRecord(user, overrides = {}) {
     throw new Error(error.message || 'Could not create your profile record.');
   }
 
-  return await getCurrentProfileSafe(true);
+  const profile = await getCurrentProfileSafe(true);
+  cachedProfile = profile;
+  return profile;
 }
 
 export async function signUpWithEmail({
@@ -128,15 +155,15 @@ export async function signUpWithEmail({
     throw new Error(error.message || 'Could not create account.');
   }
 
+  cachedSession = data?.session || null;
+  cachedUser = data?.user || null;
+
   if (data?.user) {
     await ensureProfileRecord(data.user, {
       display_name: cleanDisplayName,
       username: cleanUsername
     });
   }
-
-  cachedSession = data?.session || null;
-  cachedUser = data?.user || null;
 
   return data;
 }
@@ -159,30 +186,14 @@ export async function signInWithEmail({ email, password }) {
     throw new Error(error.message || 'Could not sign in.');
   }
 
+  cachedSession = data?.session || null;
+  cachedUser = data?.user || null;
+
   if (data?.user) {
     await ensureProfileRecord(data.user);
   }
 
-  cachedSession = data?.session || null;
-  cachedUser = data?.user || null;
-
   return data;
-}
-
-export async function signOutUser(redirectTo = ROUTES.auth) {
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    console.error('[auth] signOutUser error:', error);
-    throw new Error(error.message || 'Could not sign out.');
-  }
-
-  cachedSession = null;
-  cachedUser = null;
-  cachedProfile = null;
-
-  if (redirectTo) {
-    window.location.href = redirectTo;
-  }
 }
 
 export async function sendPasswordReset(email) {
@@ -204,19 +215,38 @@ export async function sendPasswordReset(email) {
   return true;
 }
 
+export async function signOutUser(redirectTo = ROUTES.auth) {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('[auth] signOutUser error:', error);
+    throw new Error(error.message || 'Could not sign out.');
+  }
+
+  cachedSession = null;
+  cachedUser = null;
+  cachedProfile = null;
+  authBooted = false;
+
+  if (redirectTo) {
+    window.location.href = redirectTo;
+  }
+
+  return true;
+}
+
+export async function logoutUser(redirectTo = ROUTES.auth) {
+  return await signOutUser(redirectTo);
+}
+
 export async function requireAuth({
-  redirectTo = ROUTES.auth,
-  allowIfAuthenticated = true
+  redirectTo = ROUTES.auth
 } = {}) {
   const user = await getCurrentUserSafe();
 
-  if (!user && redirectTo) {
-    window.location.href = redirectTo;
+  if (!user) {
+    if (redirectTo) window.location.href = redirectTo;
     return null;
-  }
-
-  if (user && allowIfAuthenticated) {
-    return user;
   }
 
   return user;
@@ -224,24 +254,29 @@ export async function requireAuth({
 
 export async function redirectIfAuthenticated(target = ROUTES.profile) {
   const user = await getCurrentUserSafe();
+
   if (user) {
     window.location.href = target;
     return true;
   }
+
   return false;
 }
 
 export function watchAuthState({
   onSignedIn = null,
-  onSignedOut = null,
-  reloadOnChange = false
+  onSignedOut = null
 } = {}) {
   return supabase.auth.onAuthStateChange(async (event, session) => {
     cachedSession = session || null;
     cachedUser = session?.user || null;
     cachedProfile = null;
 
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+    if (
+      event === 'SIGNED_IN' ||
+      event === 'TOKEN_REFRESHED' ||
+      event === 'USER_UPDATED'
+    ) {
       if (session?.user) {
         try {
           await ensureProfileRecord(session.user);
@@ -253,20 +288,24 @@ export function watchAuthState({
       if (typeof onSignedIn === 'function') {
         onSignedIn(session?.user || null, session || null, event);
       }
-
-      if (reloadOnChange) {
-        window.location.reload();
-      }
     }
 
     if (event === 'SIGNED_OUT') {
       if (typeof onSignedOut === 'function') {
         onSignedOut(event);
       }
+    }
+  });
+}
 
-      if (reloadOnChange) {
-        window.location.reload();
-      }
+export function onAuthStateChange(callback) {
+  return supabase.auth.onAuthStateChange((event, session) => {
+    cachedSession = session || null;
+    cachedUser = session?.user || null;
+    cachedProfile = null;
+
+    if (typeof callback === 'function') {
+      callback(event, session);
     }
   });
 }
@@ -277,15 +316,7 @@ export async function bootAuth({
   authRedirect = ROUTES.auth,
   appRedirect = ROUTES.profile
 } = {}) {
-  if (authBooted) {
-    return {
-      session: cachedSession,
-      user: cachedUser,
-      profile: cachedProfile
-    };
-  }
-
-  const session = await getSessionSafe();
+  const session = await refreshSessionCache();
   const user = session?.user || null;
 
   if (guestOnly && user) {
@@ -304,6 +335,8 @@ export async function bootAuth({
     } catch (error) {
       console.error('[auth] bootAuth ensureProfileRecord error:', error);
     }
+  } else {
+    cachedProfile = null;
   }
 
   authBooted = true;
