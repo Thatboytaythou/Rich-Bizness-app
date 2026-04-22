@@ -8,6 +8,7 @@ let currentProfile = null;
 let appBooted = false;
 let authSubscription = null;
 let logoutBound = false;
+let navRenderedForUserId = null;
 
 export function getCurrentUserState() {
   return currentUser;
@@ -18,20 +19,13 @@ export function getCurrentProfileState() {
 }
 
 export async function initApp() {
-  if (appBooted) {
-    return {
-      user: currentUser,
-      profile: currentProfile
-    };
-  }
-
-  appBooted = true;
-
   await hydrateSessionState();
   setupGlobalNav();
   setupAuthUI();
   setupGlobalActions();
   bindAuthListener();
+
+  appBooted = true;
 
   return {
     user: currentUser,
@@ -52,6 +46,15 @@ async function hydrateSessionState() {
 function setupGlobalNav() {
   const navContainer = document.getElementById('global-session-nav');
   if (!navContainer) return;
+
+  const currentUserId = currentUser?.id || 'guest';
+
+  if (navRenderedForUserId === currentUserId && navContainer.dataset.rbReady === 'true') {
+    return;
+  }
+
+  navRenderedForUserId = currentUserId;
+  navContainer.dataset.rbReady = 'true';
 
   if (!currentUser) {
     navContainer.innerHTML = `
@@ -80,7 +83,7 @@ function setupGlobalNav() {
     <a class="nav-link" href="${ROUTES.messages}" aria-label="Messages">💬</a>
     <a class="nav-link" href="${ROUTES.profile}" aria-label="Profile">
       <img
-        src="${avatar}"
+        src="${escapeHtml(avatar)}"
         alt="${escapeHtml(displayName)}"
         style="width:28px;height:28px;border-radius:50%;object-fit:cover;display:block;"
       />
@@ -161,28 +164,37 @@ function bindAuthListener() {
     const nextUser = session?.user || null;
     const previousUserId = currentUser?.id || null;
     const nextUserId = nextUser?.id || null;
-
     const userChanged = previousUserId !== nextUserId;
 
     currentUser = nextUser;
     currentProfile = nextUserId ? await getProfile(nextUserId) : null;
 
+    navRenderedForUserId = null;
     setupGlobalNav();
     setupAuthUI();
 
-    if (userChanged) {
-      document.dispatchEvent(
-        new CustomEvent('rb:auth-changed', {
-          detail: {
-            user: currentUser,
-            profile: currentProfile
-          }
-        })
-      );
-    }
+    document.dispatchEvent(
+      new CustomEvent('rb:auth-changed', {
+        detail: {
+          user: currentUser,
+          profile: currentProfile,
+          changed: userChanged
+        }
+      })
+    );
   });
 
   authSubscription = data?.subscription || null;
+}
+
+export function destroyApp() {
+  if (authSubscription) {
+    authSubscription.unsubscribe();
+    authSubscription = null;
+  }
+
+  appBooted = false;
+  navRenderedForUserId = null;
 }
 
 function escapeHtml(value = '') {
