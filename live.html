@@ -6,790 +6,640 @@
   <title>Rich Bizness — Live Studio</title>
   <meta
     name="description"
-    content="Rich Bizness live studio for real camera streaming, creator control, watch links, and live room management."
+    content="Rich Bizness live studio for creating, updating, previewing, and ending live streams with real live_streams records."
   />
 
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+
   <style>
-    :root {
-      --bg: #06100b;
-      --panel: rgba(8, 18, 13, 0.9);
-      --panel-2: rgba(12, 28, 20, 0.84);
-      --line: rgba(110, 255, 176, 0.16);
-      --line-strong: rgba(110, 255, 176, 0.34);
-      --text: #ecfff4;
-      --muted: #97b8a6;
-      --green: #43f59b;
-      --green-2: #18c972;
-      --red: #ff6f82;
-      --shadow: 0 22px 60px rgba(0, 0, 0, 0.38);
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --max: 1380px;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
-      background:
-        linear-gradient(180deg, rgba(4,9,5,0.54), rgba(6,16,11,0.92)),
-        radial-gradient(circle at top, rgba(67,245,155,0.10), transparent 26%),
-        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
-      background-color: #06100b;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    button,
-    input,
-    select,
-    textarea {
-      font: inherit;
-    }
-
-    .page-shell {
-      width: min(var(--max), calc(100% - 24px));
-      margin: 0 auto;
-      padding: 18px 0 42px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 12px;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      border: 1px solid var(--line);
-      background: rgba(7, 16, 12, 0.78);
-      backdrop-filter: blur(14px);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
+    .live-page .live-shell {
       display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(67,245,155,0.26), rgba(24,201,114,0.12));
-      border: 1px solid var(--line-strong);
-      color: var(--green);
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(67,245,155,0.22);
-      flex-shrink: 0;
+      gap: 20px;
     }
 
-    .brand-copy h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-copy p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav-link,
-    .btn,
-    .btn-ghost,
-    .btn-danger {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 11px 15px;
-      border-radius: 14px;
-      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-      font-weight: 800;
-      cursor: pointer;
-      border: 1px solid transparent;
-    }
-
-    .nav-link:hover,
-    .btn:hover,
-    .btn-ghost:hover,
-    .btn-danger:hover {
-      transform: translateY(-1px);
-    }
-
-    .nav-link,
-    .btn-ghost {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.07);
-      color: var(--text);
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--green), var(--green-2));
-      color: #062312;
-      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
-    }
-
-    .btn-danger {
-      background: linear-gradient(135deg, #ff8998, var(--red));
-      color: #fff;
-      box-shadow: 0 10px 28px rgba(255, 111, 130, 0.26);
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .panel {
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .live-page .live-hero {
+      position: relative;
       overflow: hidden;
-    }
-
-    .studio-hero {
-      padding: 34px;
-      min-height: 320px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+      padding: 24px;
+      border-radius: 24px;
+      border: 1px solid var(--rb-border);
       background:
-        radial-gradient(circle at top left, rgba(67,245,155,0.16), transparent 28%),
-        linear-gradient(180deg, rgba(8,19,14,0.72), rgba(7,15,12,0.84));
+        linear-gradient(180deg, rgba(9, 17, 13, 0.68), rgba(5, 10, 8, 0.92)),
+        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
+      box-shadow: var(--rb-shadow);
     }
 
-    .eyebrow {
+    .live-page .live-kicker {
       display: inline-flex;
       align-items: center;
-      width: fit-content;
+      gap: 8px;
       min-height: 34px;
       padding: 7px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      color: #d6ffe8;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #d7f7e5;
       font-size: 12px;
       font-weight: 900;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
-    .studio-hero h2 {
-      margin: 20px 0 0;
-      font-size: clamp(38px, 5vw, 74px);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      max-width: 820px;
-      text-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    .live-page .live-hero h2 {
+      margin: 16px 0 10px;
+      font-size: clamp(34px, 5vw, 62px);
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      max-width: 860px;
     }
 
-    .studio-hero p {
-      margin: 18px 0 0;
-      color: #d8f5e5;
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 760px;
+    .live-page .live-hero p {
+      margin: 0;
+      color: var(--rb-text-soft);
+      max-width: 860px;
+      line-height: 1.75;
+      font-size: 15px;
     }
 
-    .hero-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .session-card {
-      padding: 22px;
+    .live-page .live-grid {
       display: grid;
-      gap: 14px;
-      align-content: start;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 18px;
+      align-items: start;
     }
 
-    .session-row {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
+    .live-page .studio-panel,
+    .live-page .controls-panel,
+    .live-page .status-panel,
+    .live-page .recent-panel {
+      border-radius: 24px;
+      border: 1px solid var(--rb-border);
+      background: linear-gradient(180deg, rgba(10,22,16,0.86), rgba(7,15,12,0.94));
+      box-shadow: var(--rb-shadow);
+      overflow: hidden;
+    }
+
+    .live-page .panel-head,
+    .live-page .panel-body {
+      padding: 18px;
+    }
+
+    .live-page .panel-head {
+      padding-bottom: 0;
+    }
+
+    .live-page .panel-head h3 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .live-page .panel-head p {
+      margin: 8px 0 0;
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .live-page .panel-body {
+      display: grid;
+      gap: 16px;
+    }
+
+    .live-page .studio-stage {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(5,8,6,0.74), rgba(3,5,4,0.96)),
+        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .live-page .studio-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #050705;
+    }
+
+    .live-page .studio-stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.54));
+      pointer-events: none;
+    }
+
+    .live-page .studio-badges {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 2;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .live-page .studio-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(7, 16, 12, 0.82);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #ecfff4;
+      font-size: 12px;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .live-page .studio-badge.is-live {
+      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
+      border-color: transparent;
+      color: white;
+    }
+
+    .live-page .studio-center {
+      position: absolute;
+      inset: auto 18px 18px 18px;
+      z-index: 2;
+      display: grid;
+      gap: 10px;
+      text-align: left;
+    }
+
+    .live-page .studio-center h4 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .live-page .studio-center p {
+      margin: 0;
+      color: #d7f7e5;
+      font-size: 13px;
+      line-height: 1.65;
+      max-width: 620px;
+    }
+
+    .live-page .studio-action-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .live-page .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .live-page .meta-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
       background: rgba(255,255,255,0.04);
     }
 
-    .session-row strong {
+    .live-page .meta-card span {
       display: block;
-      font-size: 15px;
+      color: var(--rb-text-soft);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
       margin-bottom: 6px;
     }
 
-    .session-row span {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
-      word-break: break-word;
+    .live-page .meta-card strong {
+      display: block;
+      font-size: 18px;
+      line-height: 1.2;
     }
 
-    .notice {
-      display: none;
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      border: 1px solid transparent;
-    }
-
-    .notice.error {
-      background: rgba(255, 90, 115, 0.1);
-      border-color: rgba(255, 90, 115, 0.24);
-      color: #ffd0d8;
-    }
-
-    .notice.success {
-      background: rgba(67, 245, 155, 0.1);
-      border-color: rgba(67, 245, 155, 0.24);
-      color: #d8ffea;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1.06fr 0.94fr;
-      gap: 18px;
-    }
-
-    .panel-head {
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .panel-head h3 {
-      margin: 0;
-      font-size: 24px;
-      letter-spacing: -0.02em;
-    }
-
-    .panel-head p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .panel-body {
-      padding: 22px;
-    }
-
-    .form-grid {
-      display: grid;
-      gap: 14px;
-    }
-
-    .field-grid {
+    .live-page .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
     }
 
-    .field {
+    .live-page .form-stack {
+      display: grid;
+      gap: 14px;
+    }
+
+    .live-page .toggle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .live-page .toggle-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
       display: grid;
       gap: 8px;
     }
 
-    .field label {
-      font-size: 13px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .field input,
-    .field textarea,
-    .field select {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      outline: none;
-      resize: vertical;
-    }
-
-    .field input:focus,
-    .field textarea:focus,
-    .field select:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(67,245,155,0.1);
-    }
-
-    .field textarea {
-      min-height: 120px;
-    }
-
-    .action-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .status-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
-      margin-top: 16px;
-    }
-
-    .status-card {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .status-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 7px;
-    }
-
-    .status-card strong {
-      font-size: 20px;
-      line-height: 1.15;
-      word-break: break-word;
-    }
-
-    .share-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      margin-top: 16px;
-    }
-
-    .share-row input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.03);
-      color: var(--text);
-      border-radius: 14px;
-      padding: 13px 14px;
-      outline: none;
-    }
-
-    .stage-wrap {
-      margin-top: 18px;
-      border-radius: 24px;
-      border: 1px solid var(--line);
-      background:
-        radial-gradient(circle at top, rgba(67,245,155,0.08), transparent 30%),
-        linear-gradient(180deg, rgba(11,21,16,0.95), rgba(8,16,12,0.98));
-      overflow: hidden;
-      min-height: 460px;
-      display: grid;
-      place-items: center;
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
-    }
-
-    .stage-empty {
-      padding: 24px;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    .stage-empty strong {
-      display: block;
-      color: var(--text);
-      font-size: 28px;
-      margin-bottom: 10px;
-    }
-
-    .stage-empty span {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.75;
-      max-width: 620px;
-      display: inline-block;
-    }
-
-    .stage-video {
-      width: 100%;
-      height: 100%;
-      min-height: 460px;
-      object-fit: cover;
-      display: block;
-      background: #000;
-    }
-
-    .side-stack {
-      display: grid;
-      gap: 18px;
-    }
-
-    .chat-feed {
-      display: grid;
-      gap: 10px;
-      max-height: 360px;
-      overflow: auto;
-      padding-right: 4px;
-    }
-
-    .chat-message {
-      padding: 13px 14px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      display: grid;
-      gap: 6px;
-    }
-
-    .chat-message strong {
-      font-size: 13px;
-      color: var(--green);
-    }
-
-    .chat-message span {
-      font-size: 14px;
-      color: var(--text);
-      line-height: 1.65;
-    }
-
-    .info-card {
-      padding: 18px;
-      border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .info-card h4 {
-      margin: 0 0 8px;
-      font-size: 18px;
-    }
-
-    .info-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.75;
-    }
-
-    .footer {
-      margin-top: 24px;
-      padding: 18px;
-      border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
+    .live-page .toggle-line {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 10px;
     }
 
-    .footer p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
+    .live-page .toggle-card strong {
+      font-size: 14px;
+      line-height: 1.1;
     }
 
-    .footer-links {
+    .live-page .toggle-card span {
+      color: var(--rb-text-soft);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .live-page input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #43f59b;
+    }
+
+    .live-page .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .live-page .wide-actions {
       display: flex;
+      gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .live-page .status-box {
+      min-height: 58px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .live-page .status-box.is-error {
+      border-color: rgba(255, 109, 122, 0.28);
+      background: rgba(255, 109, 122, 0.08);
+      color: #ffd7dc;
+    }
+
+    .live-page .status-box.is-success {
+      border-color: rgba(67,245,155,0.22);
+      background: rgba(67,245,155,0.08);
+      color: #d8ffea;
+    }
+
+    .live-page .status-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .live-page .status-item {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .live-page .status-item strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+    }
+
+    .live-page .status-item span {
+      display: block;
+      color: var(--rb-text-soft);
+      font-size: 13px;
+      line-height: 1.6;
+      word-break: break-word;
+    }
+
+    .live-page .recent-list {
+      display: grid;
       gap: 12px;
     }
 
-    .footer-links a {
+    .live-page .recent-card {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--rb-border);
+      background: rgba(255,255,255,0.04);
+      display: grid;
+      gap: 8px;
+    }
+
+    .live-page .recent-card h4 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+    }
+
+    .live-page .recent-card p {
+      margin: 0;
+      color: var(--rb-text-soft);
       font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .live-page .recent-meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      color: var(--rb-text-soft);
+      font-size: 12px;
+    }
+
+    .live-page .recent-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
     }
 
     @media (max-width: 1180px) {
-      .hero-grid,
-      .main-grid {
+      .live-page .live-grid {
         grid-template-columns: 1fr;
+      }
+
+      .live-page .meta-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
     }
 
-    @media (max-width: 900px) {
-      .topbar {
-        position: static;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        justify-content: flex-start;
-        width: 100%;
-      }
-
-      .field-grid,
-      .status-grid {
+    @media (max-width: 760px) {
+      .live-page .form-grid,
+      .live-page .toggle-grid,
+      .live-page .button-grid,
+      .live-page .meta-grid {
         grid-template-columns: 1fr;
       }
 
-      .share-row {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .page-shell {
-        width: min(100% - 16px, 100%);
-      }
-
-      .nav-link,
-      .btn,
-      .btn-ghost,
-      .btn-danger {
-        width: 100%;
-      }
-
-      #global-session-nav {
-        width: 100%;
-      }
-
-      #global-session-nav .nav-link,
-      #global-session-nav .btn,
-      #global-session-nav .btn-ghost {
-        width: 100%;
+      .live-page .panel-head,
+      .live-page .panel-body,
+      .live-page .live-hero {
+        padding-left: 16px;
+        padding-right: 16px;
       }
     }
   </style>
 </head>
-<body>
-  <div class="page-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">RB</div>
-        <div class="brand-copy">
-          <h1>Rich Bizness</h1>
-          <p>Live Studio • Creator Control • Real Camera Streaming</p>
-        </div>
-      </div>
+<body class="live-page">
+  <div class="page-shell live-shell">
+    <div id="elite-platform-nav"></div>
 
-      <nav class="nav">
-        <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link" href="/profile.html">Profile</a>
-        <a class="nav-link" href="/watch.html">Watch</a>
-        <a class="nav-link" href="/feed.html">Feed</a>
-        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
-      </nav>
-    </header>
-
-    <div id="live-error" class="notice error"></div>
-    <div id="live-success" class="notice success"></div>
-
-    <section class="hero-grid">
-      <section class="panel studio-hero">
-        <div>
-          <div class="eyebrow">Live studio</div>
-          <h2>Go live with your real camera, room link, and creator flow fully connected.</h2>
-          <p>
-            Start the room, connect your camera and mic, generate your watch link,
-            and run the creator side of the stream from one polished studio page.
-          </p>
-        </div>
-
-        <div class="hero-actions">
-          <button id="start-stream-btn" class="btn" type="button">Start Stream</button>
-          <button id="end-stream-btn" class="btn-danger" type="button">End Stream</button>
-          <a class="btn-ghost" href="/watch.html">Open Watch</a>
-        </div>
-      </section>
-
-      <aside class="panel session-card">
-        <div class="session-row">
-          <strong>Studio session</strong>
-          <span id="studio-session-status">Checking session...</span>
-        </div>
-
-        <div class="session-row">
-          <strong>Current stream state</strong>
-          <span id="studio-stream-status">OFFLINE</span>
-        </div>
-
-        <div class="session-row">
-          <strong>Studio readiness</strong>
-          <span>Allow camera and mic permissions when your browser asks so the room can publish correctly.</span>
-        </div>
-      </aside>
+    <section class="live-hero">
+      <div class="live-kicker">Rich Bizness Live Studio</div>
+      <h2>Go live, lock the stream record, and route the whole room into watch.</h2>
+      <p>
+        This live studio is wired to your real <strong>live_streams</strong> table flow. Create the stream,
+        update the room, push the slug into watch, and end the stream clean without jumping backward.
+      </p>
     </section>
 
-    <section class="main-grid">
-      <section class="panel">
+    <section class="live-grid">
+      <section class="studio-panel">
         <div class="panel-head">
-          <div>
-            <h3>Stream setup</h3>
-            <p>Configure title, category, access, and share flow before pushing live.</p>
-          </div>
+          <h3>Studio preview</h3>
+          <p>Camera preview, stream state, watch routing, and live record status all stay here.</p>
         </div>
 
         <div class="panel-body">
-          <div class="form-grid">
-            <div class="field">
-              <label for="stream-title">Stream title</label>
-              <input id="stream-title" type="text" placeholder="WE LIT 🔥 Late Night Live" />
+          <div class="studio-stage">
+            <video id="studio-preview" autoplay playsinline muted></video>
+
+            <div class="studio-badges">
+              <span id="badge-status" class="studio-badge">OFFLINE</span>
+              <span id="badge-access" class="studio-badge">FREE</span>
+              <span id="badge-category" class="studio-badge">LIVE</span>
             </div>
 
-            <div class="field">
-              <label for="stream-description">Description</label>
-              <textarea id="stream-description" placeholder="Tell viewers what this stream is about..."></textarea>
+            <div class="studio-center">
+              <h4 id="preview-title">Rich Bizness Live Studio</h4>
+              <p id="preview-copy">
+                Start camera preview, build your stream, save the stream record, then open the watch page.
+              </p>
+              <div class="studio-action-row">
+                <button class="btn btn-primary" id="start-camera-btn" type="button">Start Camera</button>
+                <button class="btn btn-dark" id="stop-camera-btn" type="button">Stop Camera</button>
+                <button class="btn btn-gold" id="open-watch-btn" type="button">Open Watch</button>
+                <button class="btn btn-dark" id="copy-watch-link-btn" type="button">Copy Watch Link</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <article class="meta-card">
+              <span>Status</span>
+              <strong id="meta-status">Draft</strong>
+            </article>
+            <article class="meta-card">
+              <span>Slug</span>
+              <strong id="meta-slug">—</strong>
+            </article>
+            <article class="meta-card">
+              <span>Viewers</span>
+              <strong id="meta-viewers">0</strong>
+            </article>
+            <article class="meta-card">
+              <span>Revenue</span>
+              <strong id="meta-revenue">$0.00</strong>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <aside class="controls-panel">
+        <div class="panel-head">
+          <h3>Live controls</h3>
+          <p>Create, update, and end live streams without leaving the production core path.</p>
+        </div>
+
+        <div class="panel-body">
+          <div id="live-status-box" class="status-box">Ready.</div>
+
+          <form id="live-form" class="form-stack">
+            <div class="form-stack">
+              <div>
+                <label for="live-title">Stream title</label>
+                <input id="live-title" type="text" placeholder="WE LIT live session" />
+              </div>
+
+              <div>
+                <label for="live-description">Description</label>
+                <textarea id="live-description" placeholder="Tell the viewers what this live is about."></textarea>
+              </div>
             </div>
 
-            <div class="field-grid">
-              <div class="field">
-                <label for="stream-category">Category</label>
-                <select id="stream-category">
-                  <option value="general">General</option>
+            <div class="form-grid">
+              <div>
+                <label for="live-category">Category</label>
+                <select id="live-category">
                   <option value="music">Music</option>
                   <option value="gaming">Gaming</option>
                   <option value="sports">Sports</option>
                   <option value="gallery">Gallery</option>
+                  <option value="podcast">Podcast</option>
+                  <option value="general">General</option>
                 </select>
               </div>
 
-              <div class="field">
-                <label for="stream-access-type">Access type</label>
-                <select id="stream-access-type">
+              <div>
+                <label for="live-access">Access type</label>
+                <select id="live-access">
                   <option value="free">Free</option>
-                  <option value="followers">Followers</option>
-                  <option value="vip">VIP</option>
                   <option value="paid">Paid</option>
+                  <option value="vip">VIP</option>
                 </select>
               </div>
             </div>
 
-            <div class="field-grid">
-              <div class="field">
-                <label for="stream-price-cents">Price (cents)</label>
-                <input id="stream-price-cents" type="number" min="0" step="1" placeholder="500" />
+            <div class="form-grid">
+              <div>
+                <label for="live-price">Price (USD)</label>
+                <input id="live-price" type="number" min="0" step="0.01" placeholder="0.00" />
               </div>
 
-              <div class="field">
-                <label for="stream-thumbnail-url">Thumbnail URL</label>
-                <input id="stream-thumbnail-url" type="text" placeholder="https://..." />
+              <div>
+                <label for="live-thumbnail">Thumbnail URL</label>
+                <input id="live-thumbnail" type="url" placeholder="https://..." />
               </div>
             </div>
+
+            <div class="form-grid">
+              <div>
+                <label for="live-cover">Cover URL</label>
+                <input id="live-cover" type="url" placeholder="https://..." />
+              </div>
+
+              <div>
+                <label for="live-room-name">LiveKit room name</label>
+                <input id="live-room-name" type="text" placeholder="rb-room-..." />
+              </div>
+            </div>
+
+            <div class="toggle-grid">
+              <article class="toggle-card">
+                <div class="toggle-line">
+                  <strong>Chat enabled</strong>
+                  <input id="live-chat-enabled" type="checkbox" checked />
+                </div>
+                <span>Allow live chat on the watch page.</span>
+              </article>
+
+              <article class="toggle-card">
+                <div class="toggle-line">
+                  <strong>Replay enabled</strong>
+                  <input id="live-replay-enabled" type="checkbox" checked />
+                </div>
+                <span>Keep replay ready after stream ends.</span>
+              </article>
+
+              <article class="toggle-card">
+                <div class="toggle-line">
+                  <strong>Featured</strong>
+                  <input id="live-featured" type="checkbox" />
+                </div>
+                <span>Push stream harder into rails and featured sections.</span>
+              </article>
+
+              <article class="toggle-card">
+                <div class="toggle-line">
+                  <strong>Schedule mode</strong>
+                  <input id="live-scheduled-mode" type="checkbox" />
+                </div>
+                <span>Use scheduled time instead of going live immediately.</span>
+              </article>
+            </div>
+
+            <div id="schedule-wrap" class="form-grid" style="display:none;">
+              <div>
+                <label for="live-scheduled-for">Scheduled for</label>
+                <input id="live-scheduled-for" type="datetime-local" />
+              </div>
+              <div>
+                <label for="live-currency">Currency</label>
+                <input id="live-currency" type="text" value="USD" maxlength="8" />
+              </div>
+            </div>
+
+            <div class="button-grid">
+              <button class="btn btn-primary" id="create-live-btn" type="submit">Create Live</button>
+              <button class="btn btn-gold" id="update-live-btn" type="button">Update Live</button>
+              <button class="btn btn-dark" id="go-live-btn" type="button">Go Live Now</button>
+              <button class="btn btn-dark" id="end-live-btn" type="button">End Live</button>
+            </div>
+          </form>
+
+          <div class="wide-actions">
+            <button class="btn btn-dark" id="refresh-stream-btn" type="button">Refresh Current Stream</button>
+            <button class="btn btn-dark" id="clear-live-form-btn" type="button">Clear Form</button>
           </div>
+        </div>
+      </aside>
+    </section>
 
-          <div class="status-grid">
-            <div class="status-card">
-              <span>Current title</span>
-              <strong id="studio-current-title">No active stream</strong>
-            </div>
+    <section class="live-grid">
+      <section class="status-panel">
+        <div class="panel-head">
+          <h3>Current stream details</h3>
+          <p>This stays locked to the current live_streams row you are working on.</p>
+        </div>
 
-            <div class="status-card">
-              <span>Slug</span>
-              <strong id="studio-current-slug">--</strong>
-            </div>
-
-            <div class="status-card">
-              <span>Access</span>
-              <strong id="studio-current-access">--</strong>
-            </div>
-
-            <div class="status-card">
-              <span>Viewers</span>
-              <strong id="studio-current-viewers">0</strong>
-            </div>
-          </div>
-
-          <div class="share-row">
-            <input id="studio-share-link" type="text" readonly placeholder="Start the stream first, then copy the watch link." />
-            <button id="copy-share-link-btn" class="btn-ghost" type="button">Copy Link</button>
-          </div>
-
-          <div id="live-local-stage" class="stage-wrap">
-            <div class="stage-empty">
-              <strong>Camera preview</strong>
-              <span>Your camera preview will appear here when you go live.</span>
-            </div>
+        <div class="panel-body">
+          <div class="status-list">
+            <article class="status-item">
+              <strong>Current stream id</strong>
+              <span id="detail-stream-id">—</span>
+            </article>
+            <article class="status-item">
+              <strong>Current watch URL</strong>
+              <span id="detail-watch-url">—</span>
+            </article>
+            <article class="status-item">
+              <strong>Current room name</strong>
+              <span id="detail-room-name">—</span>
+            </article>
+            <article class="status-item">
+              <strong>Current timestamps</strong>
+              <span id="detail-times">No live record yet.</span>
+            </article>
           </div>
         </div>
       </section>
 
-      <aside class="side-stack">
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h3>Studio rail</h3>
-              <p>Active streams update here while you run the room.</p>
-            </div>
-          </div>
+      <aside class="recent-panel">
+        <div class="panel-head">
+          <h3>Your recent live streams</h3>
+          <p>Quick grab list for the last streams attached to your account.</p>
+        </div>
 
-          <div class="panel-body">
-            <div id="homepage-live-rail" class="chat-feed">
-              <div class="chat-message">
-                <strong>System</strong>
-                <span>Live rail cards will appear here when streams are active.</span>
-              </div>
-            </div>
+        <div class="panel-body">
+          <div id="recent-live-list" class="recent-list">
+            <div class="status-box">No recent streams loaded yet.</div>
           </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h3>Creator control</h3>
-              <p>Host-side direction for room flow and launch state.</p>
-            </div>
-          </div>
-
-          <div class="panel-body">
-            <div class="info-card">
-              <h4>Launch clean</h4>
-              <p>
-                Set your title, lock your access type, start your stream, copy the watch link,
-                and pull viewers straight into the room.
-              </p>
-            </div>
-          </div>
-        </section>
+        </div>
       </aside>
     </section>
-
-    <footer class="footer">
-      <p>Rich Bizness • live studio locked</p>
-      <div class="footer-links">
-        <a href="/index.html">Home</a>
-        <a href="/profile.html">Profile</a>
-        <a href="/watch.html">Watch</a>
-        <a href="/music.html">Music</a>
-        <a href="/gallery.html">Gallery</a>
-      </div>
-    </footer>
   </div>
 
   <script>
@@ -799,8 +649,583 @@
     window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-  <script type="module" src="/src/live/live-client.js"></script>
-  <script type="module" src="/src/shared/navbar-session.js"></script>
+  <script type="module">
+    import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
+    import { mountEliteNav } from "/core/nav.js";
+    import { supabase } from "/core/supabase.js";
+    import { BRAND_IMAGES } from "/core/config.js";
+
+    await initApp();
+
+    mountEliteNav({
+      target: "#elite-platform-nav",
+      collapsed: false
+    });
+
+    const previewVideo = document.getElementById("studio-preview");
+    const liveForm = document.getElementById("live-form");
+    const statusBox = document.getElementById("live-status-box");
+    const recentLiveList = document.getElementById("recent-live-list");
+
+    const startCameraBtn = document.getElementById("start-camera-btn");
+    const stopCameraBtn = document.getElementById("stop-camera-btn");
+    const createLiveBtn = document.getElementById("create-live-btn");
+    const updateLiveBtn = document.getElementById("update-live-btn");
+    const goLiveBtn = document.getElementById("go-live-btn");
+    const endLiveBtn = document.getElementById("end-live-btn");
+    const refreshStreamBtn = document.getElementById("refresh-stream-btn");
+    const clearLiveFormBtn = document.getElementById("clear-live-form-btn");
+    const openWatchBtn = document.getElementById("open-watch-btn");
+    const copyWatchLinkBtn = document.getElementById("copy-watch-link-btn");
+
+    const liveTitle = document.getElementById("live-title");
+    const liveDescription = document.getElementById("live-description");
+    const liveCategory = document.getElementById("live-category");
+    const liveAccess = document.getElementById("live-access");
+    const livePrice = document.getElementById("live-price");
+    const liveThumbnail = document.getElementById("live-thumbnail");
+    const liveCover = document.getElementById("live-cover");
+    const liveRoomName = document.getElementById("live-room-name");
+    const liveChatEnabled = document.getElementById("live-chat-enabled");
+    const liveReplayEnabled = document.getElementById("live-replay-enabled");
+    const liveFeatured = document.getElementById("live-featured");
+    const liveScheduledMode = document.getElementById("live-scheduled-mode");
+    const liveScheduledFor = document.getElementById("live-scheduled-for");
+    const liveCurrency = document.getElementById("live-currency");
+    const scheduleWrap = document.getElementById("schedule-wrap");
+
+    const badgeStatus = document.getElementById("badge-status");
+    const badgeAccess = document.getElementById("badge-access");
+    const badgeCategory = document.getElementById("badge-category");
+    const previewTitle = document.getElementById("preview-title");
+    const previewCopy = document.getElementById("preview-copy");
+
+    const metaStatus = document.getElementById("meta-status");
+    const metaSlug = document.getElementById("meta-slug");
+    const metaViewers = document.getElementById("meta-viewers");
+    const metaRevenue = document.getElementById("meta-revenue");
+
+    const detailStreamId = document.getElementById("detail-stream-id");
+    const detailWatchUrl = document.getElementById("detail-watch-url");
+    const detailRoomName = document.getElementById("detail-room-name");
+    const detailTimes = document.getElementById("detail-times");
+
+    let currentStream = null;
+    let previewStream = null;
+
+    function setStatus(message, type = "normal") {
+      statusBox.textContent = message;
+      statusBox.classList.remove("is-error", "is-success");
+      if (type === "error") statusBox.classList.add("is-error");
+      if (type === "success") statusBox.classList.add("is-success");
+    }
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function slugify(value = "") {
+      return String(value)
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 70);
+    }
+
+    function toMoney(cents = 0, currency = "USD") {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: currency || "USD"
+      }).format((Number(cents || 0)) / 100);
+    }
+
+    function toCents(amount = 0) {
+      return Math.round(Number(amount || 0) * 100);
+    }
+
+    function safeDateTime(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleString();
+    }
+
+    function watchHrefFromStream(stream) {
+      if (!stream) return "/watch.html";
+      if (stream.slug) return `/watch.html?slug=${encodeURIComponent(stream.slug)}`;
+      if (stream.id) return `/watch.html?id=${encodeURIComponent(stream.id)}`;
+      return "/watch.html";
+    }
+
+    function currentCreatorName() {
+      const user = getCurrentUserState();
+      const profile = getCurrentProfileState();
+
+      return (
+        profile?.display_name ||
+        profile?.username ||
+        user?.user_metadata?.display_name ||
+        user?.user_metadata?.username ||
+        user?.email ||
+        "Rich Bizness Creator"
+      );
+    }
+
+    function syncPreviewFromForm() {
+      previewTitle.textContent = liveTitle.value.trim() || "Rich Bizness Live Studio";
+
+      const access = String(liveAccess.value || "free").toUpperCase();
+      const category = String(liveCategory.value || "live").toUpperCase();
+
+      badgeAccess.textContent = access;
+      badgeCategory.textContent = category;
+      previewCopy.textContent =
+        liveDescription.value.trim() ||
+        "Start camera preview, build your stream, save the stream record, then open the watch page.";
+    }
+
+    function syncScheduleVisibility() {
+      scheduleWrap.style.display = liveScheduledMode.checked ? "grid" : "none";
+    }
+
+    function fillFormFromStream(stream) {
+      if (!stream) return;
+
+      liveTitle.value = stream.title || "";
+      liveDescription.value = stream.description || "";
+      liveCategory.value = stream.category || "general";
+      liveAccess.value = stream.access_type || "free";
+      livePrice.value = Number(stream.price_cents || 0) > 0 ? (Number(stream.price_cents || 0) / 100).toFixed(2) : "";
+      liveThumbnail.value = stream.thumbnail_url || "";
+      liveCover.value = stream.cover_url || "";
+      liveRoomName.value = stream.livekit_room_name || "";
+      liveChatEnabled.checked = !!stream.is_chat_enabled;
+      liveReplayEnabled.checked = !!stream.is_replay_enabled;
+      liveFeatured.checked = !!stream.is_featured;
+
+      if (stream.scheduled_for) {
+        liveScheduledMode.checked = true;
+        const local = new Date(stream.scheduled_for);
+        if (!Number.isNaN(local.getTime())) {
+          const iso = new Date(local.getTime() - (local.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+          liveScheduledFor.value = iso;
+        }
+      } else {
+        liveScheduledMode.checked = false;
+        liveScheduledFor.value = "";
+      }
+
+      liveCurrency.value = stream.currency || "USD";
+
+      syncScheduleVisibility();
+      syncPreviewFromForm();
+      renderCurrentStream(stream);
+    }
+
+    function renderCurrentStream(stream) {
+      currentStream = stream || null;
+
+      const isLive = String(stream?.status || "draft").toLowerCase() === "live";
+
+      badgeStatus.textContent = isLive ? "LIVE" : String(stream?.status || "draft").toUpperCase();
+      badgeStatus.classList.toggle("is-live", isLive);
+
+      metaStatus.textContent = stream?.status || "draft";
+      metaSlug.textContent = stream?.slug || "—";
+      metaViewers.textContent = Number(stream?.viewer_count || 0).toLocaleString();
+      metaRevenue.textContent = toMoney(stream?.total_revenue_cents || 0, stream?.currency || "USD");
+
+      detailStreamId.textContent = stream?.id || "—";
+      detailWatchUrl.textContent = stream ? `${window.location.origin}${watchHrefFromStream(stream)}` : "—";
+      detailRoomName.textContent = stream?.livekit_room_name || "—";
+      detailTimes.textContent = stream
+        ? `Created: ${safeDateTime(stream.created_at)} | Started: ${safeDateTime(stream.started_at)} | Ended: ${safeDateTime(stream.ended_at)}`
+        : "No live record yet.";
+    }
+
+    function clearForm() {
+      currentStream = null;
+      liveForm.reset();
+      liveAccess.value = "free";
+      liveCategory.value = "music";
+      liveCurrency.value = "USD";
+      liveChatEnabled.checked = true;
+      liveReplayEnabled.checked = true;
+      liveFeatured.checked = false;
+      liveScheduledMode.checked = false;
+      syncScheduleVisibility();
+      syncPreviewFromForm();
+      renderCurrentStream(null);
+      badgeStatus.textContent = "OFFLINE";
+      badgeStatus.classList.remove("is-live");
+      metaStatus.textContent = "Draft";
+      setStatus("Form cleared.");
+    }
+
+    async function startCameraPreview() {
+      try {
+        if (previewStream) {
+          stopCameraPreview();
+        }
+
+        previewStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: true
+        });
+
+        previewVideo.srcObject = previewStream;
+        setStatus("Camera preview started.", "success");
+      } catch (error) {
+        console.error("[live] startCameraPreview error:", error);
+        setStatus("Could not start camera preview. Check browser permissions.", "error");
+      }
+    }
+
+    function stopCameraPreview() {
+      if (!previewStream) return;
+
+      previewStream.getTracks().forEach(track => track.stop());
+      previewVideo.srcObject = null;
+      previewStream = null;
+      setStatus("Camera preview stopped.");
+    }
+
+    function buildPayload({ statusOverride = null } = {}) {
+      const user = getCurrentUserState();
+
+      if (!user?.id) {
+        throw new Error("You must be logged in.");
+      }
+
+      const title = liveTitle.value.trim();
+      const category = liveCategory.value;
+      const accessType = liveAccess.value;
+      const currency = (liveCurrency.value || "USD").trim().toUpperCase();
+      const roomNameRaw = liveRoomName.value.trim();
+      const scheduledEnabled = liveScheduledMode.checked;
+      const scheduledFor = scheduledEnabled && liveScheduledFor.value
+        ? new Date(liveScheduledFor.value).toISOString()
+        : null;
+
+      if (!title) {
+        throw new Error("Stream title is required.");
+      }
+
+      const slugBase = slugify(title);
+      const slug = currentStream?.slug || `${slugBase}-${Date.now()}`;
+
+      return {
+        creator_id: user.id,
+        slug,
+        title,
+        description: liveDescription.value.trim() || null,
+        category: category || "general",
+        status: statusOverride || (scheduledFor ? "scheduled" : (currentStream?.status || "draft")),
+        access_type: accessType || "free",
+        price_cents: accessType === "paid" ? toCents(livePrice.value) : 0,
+        currency: currency || "USD",
+        thumbnail_url: liveThumbnail.value.trim() || null,
+        cover_url: liveCover.value.trim() || null,
+        livekit_room_name: roomNameRaw || `rb-live-${slug}`,
+        scheduled_for: scheduledFor,
+        started_at: statusOverride === "live"
+          ? new Date().toISOString()
+          : (currentStream?.started_at || null),
+        ended_at: statusOverride === "ended" ? new Date().toISOString() : null,
+        is_chat_enabled: !!liveChatEnabled.checked,
+        is_replay_enabled: !!liveReplayEnabled.checked,
+        is_featured: !!liveFeatured.checked,
+        last_activity_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+    }
+
+    async function createLiveStream() {
+      const payload = buildPayload();
+
+      const insertPayload = {
+        ...payload,
+        viewer_count: 0,
+        peak_viewers: 0,
+        total_chat_messages: 0,
+        total_revenue_cents: 0,
+        metadata: {},
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from("live_streams")
+        .insert(insertPayload)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("[live] createLiveStream error:", error);
+        throw new Error(error.message || "Could not create live stream.");
+      }
+
+      renderCurrentStream(data);
+      fillFormFromStream(data);
+      setStatus("Live stream record created.", "success");
+      await loadRecentStreams();
+      return data;
+    }
+
+    async function updateLiveStream() {
+      if (!currentStream?.id) {
+        throw new Error("Create a stream first before updating it.");
+      }
+
+      const payload = buildPayload();
+
+      const { data, error } = await supabase
+        .from("live_streams")
+        .update(payload)
+        .eq("id", currentStream.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("[live] updateLiveStream error:", error);
+        throw new Error(error.message || "Could not update live stream.");
+      }
+
+      renderCurrentStream(data);
+      fillFormFromStream(data);
+      setStatus("Live stream updated.", "success");
+      await loadRecentStreams();
+      return data;
+    }
+
+    async function goLiveNow() {
+      if (!currentStream?.id) {
+        const created = await createLiveStream();
+        currentStream = created;
+      }
+
+      const payload = buildPayload({ statusOverride: "live" });
+
+      const { data, error } = await supabase
+        .from("live_streams")
+        .update({
+          ...payload,
+          scheduled_for: null,
+          started_at: new Date().toISOString(),
+          ended_at: null
+        })
+        .eq("id", currentStream.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("[live] goLiveNow error:", error);
+        throw new Error(error.message || "Could not start live stream.");
+      }
+
+      renderCurrentStream(data);
+      fillFormFromStream(data);
+      setStatus("Stream is live now.", "success");
+      await loadRecentStreams();
+      return data;
+    }
+
+    async function endLiveStream() {
+      if (!currentStream?.id) {
+        throw new Error("No current live stream to end.");
+      }
+
+      const { data, error } = await supabase
+        .from("live_streams")
+        .update({
+          status: "ended",
+          ended_at: new Date().toISOString(),
+          last_activity_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", currentStream.id)
+        .select("*")
+        .single();
+
+      if (error) {
+        console.error("[live] endLiveStream error:", error);
+        throw new Error(error.message || "Could not end live stream.");
+      }
+
+      renderCurrentStream(data);
+      fillFormFromStream(data);
+      setStatus("Live stream ended clean.", "success");
+      await loadRecentStreams();
+      return data;
+    }
+
+    async function loadRecentStreams() {
+      const user = getCurrentUserState();
+      if (!user?.id) {
+        recentLiveList.innerHTML = `<div class="status-box">Login first to load your live history.</div>`;
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("live_streams")
+        .select("*")
+        .eq("creator_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(6);
+
+      if (error) {
+        console.error("[live] loadRecentStreams error:", error);
+        recentLiveList.innerHTML = `<div class="status-box is-error">Could not load recent live streams.</div>`;
+        return;
+      }
+
+      if (!data?.length) {
+        recentLiveList.innerHTML = `<div class="status-box">No streams yet.</div>`;
+        return;
+      }
+
+      recentLiveList.innerHTML = data.map((stream) => {
+        const watchHref = watchHrefFromStream(stream);
+        return `
+          <article class="recent-card">
+            <h4>${escapeHtml(stream.title || "Untitled Live")}</h4>
+            <div class="recent-meta">
+              <span>${escapeHtml(stream.status || "draft")}</span>
+              <span>${escapeHtml(stream.category || "general")}</span>
+              <span>${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
+            </div>
+            <p>${escapeHtml(stream.description || "No description.")}</p>
+            <div class="recent-actions">
+              <button class="btn btn-dark" type="button" data-load-stream="${stream.id}">Load</button>
+              <a class="btn btn-dark" href="${watchHref}">Watch</a>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    async function loadStreamById(streamId) {
+      const { data, error } = await supabase
+        .from("live_streams")
+        .select("*")
+        .eq("id", streamId)
+        .single();
+
+      if (error) {
+        console.error("[live] loadStreamById error:", error);
+        setStatus("Could not load that stream.", "error");
+        return;
+      }
+
+      renderCurrentStream(data);
+      fillFormFromStream(data);
+      setStatus("Stream loaded into studio.", "success");
+    }
+
+    function openWatchPage() {
+      const href = watchHrefFromStream(currentStream);
+      window.location.href = href;
+    }
+
+    async function copyWatchLink() {
+      const href = `${window.location.origin}${watchHrefFromStream(currentStream)}`;
+      try {
+        await navigator.clipboard.writeText(href);
+        setStatus("Watch link copied.", "success");
+      } catch (error) {
+        console.error("[live] copyWatchLink error:", error);
+        setStatus("Could not copy watch link.", "error");
+      }
+    }
+
+    liveAccess.addEventListener("change", syncPreviewFromForm);
+    liveCategory.addEventListener("change", syncPreviewFromForm);
+    liveTitle.addEventListener("input", syncPreviewFromForm);
+    liveDescription.addEventListener("input", syncPreviewFromForm);
+    liveScheduledMode.addEventListener("change", syncScheduleVisibility);
+
+    startCameraBtn.addEventListener("click", startCameraPreview);
+    stopCameraBtn.addEventListener("click", stopCameraPreview);
+    openWatchBtn.addEventListener("click", openWatchPage);
+    copyWatchLinkBtn.addEventListener("click", copyWatchLink);
+    clearLiveFormBtn.addEventListener("click", clearForm);
+
+    liveForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      createLiveBtn.disabled = true;
+      try {
+        await createLiveStream();
+      } catch (error) {
+        setStatus(error.message || "Could not create stream.", "error");
+      } finally {
+        createLiveBtn.disabled = false;
+      }
+    });
+
+    updateLiveBtn.addEventListener("click", async () => {
+      updateLiveBtn.disabled = true;
+      try {
+        await updateLiveStream();
+      } catch (error) {
+        setStatus(error.message || "Could not update stream.", "error");
+      } finally {
+        updateLiveBtn.disabled = false;
+      }
+    });
+
+    goLiveBtn.addEventListener("click", async () => {
+      goLiveBtn.disabled = true;
+      try {
+        await goLiveNow();
+      } catch (error) {
+        setStatus(error.message || "Could not go live.", "error");
+      } finally {
+        goLiveBtn.disabled = false;
+      }
+    });
+
+    endLiveBtn.addEventListener("click", async () => {
+      endLiveBtn.disabled = true;
+      try {
+        await endLiveStream();
+      } catch (error) {
+        setStatus(error.message || "Could not end stream.", "error");
+      } finally {
+        endLiveBtn.disabled = false;
+      }
+    });
+
+    refreshStreamBtn.addEventListener("click", async () => {
+      if (!currentStream?.id) {
+        setStatus("No current stream selected.", "error");
+        return;
+      }
+      await loadStreamById(currentStream.id);
+    });
+
+    recentLiveList.addEventListener("click", async (event) => {
+      const button = event.target.closest("[data-load-stream]");
+      if (!button) return;
+      const streamId = button.getAttribute("data-load-stream");
+      if (!streamId) return;
+      await loadStreamById(streamId);
+    });
+
+    syncScheduleVisibility();
+    syncPreviewFromForm();
+    renderCurrentStream(null);
+    await loadRecentStreams();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const streamIdFromUrl = urlParams.get("id");
+    if (streamIdFromUrl) {
+      await loadStreamById(streamIdFromUrl);
+    }
+  </script>
 </body>
 </html>
