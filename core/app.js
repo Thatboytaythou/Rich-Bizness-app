@@ -1,56 +1,93 @@
-// GLOBAL APP CORE (USED EVERYWHERE)
+// core/app.js
 
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+import { supabase, getUser, getProfile } from '/core/supabase.js';
+import { ROUTES, BRAND_IMAGES } from '/core/config.js';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// 🌍 GLOBAL STATE
+let currentUser = null;
+let currentProfile = null;
 
-// 🔐 Get current user everywhere
-export async function getUser() {
-  const { data } = await supabase.auth.getUser();
-  return data.user;
+// 🚀 INIT APP
+export async function initApp() {
+  currentUser = await getUser();
+
+  if (currentUser) {
+    currentProfile = await getProfile(currentUser.id);
+  }
+
+  setupGlobalNav();
+  setupAuthUI();
+  setupGlobalActions();
 }
 
-// 🔥 Create notification (USED BY ALL FEATURES)
-export async function createNotification(user_id, type, message) {
-  await supabase.from("notifications").insert({
-    user_id,
-    type,
-    message
+// 🧭 NAV SYSTEM
+function setupGlobalNav() {
+  const navContainer = document.getElementById('global-session-nav');
+  if (!navContainer) return;
+
+  navContainer.innerHTML = '';
+
+  if (!currentUser) {
+    navContainer.innerHTML = `
+      <a class="nav-link" href="${ROUTES.auth}">Login</a>
+      <a class="btn" href="${ROUTES.auth}">Join</a>
+    `;
+    return;
+  }
+
+  const avatar =
+    currentProfile?.avatar_url ||
+    currentProfile?.profile_image_url ||
+    BRAND_IMAGES.logo;
+
+  navContainer.innerHTML = `
+    <a class="nav-link" href="${ROUTES.notifications}">🔔</a>
+    <a class="nav-link" href="${ROUTES.messages}">💬</a>
+    <a class="nav-link" href="${ROUTES.profile}">
+      <img src="${avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;" />
+    </a>
+    <button class="btn-ghost" id="logoutBtn">Logout</button>
+  `;
+}
+
+// 🔐 AUTH UI
+function setupAuthUI() {
+  if (!currentUser) return;
+
+  const nameTargets = document.querySelectorAll('[data-user-name]');
+  const avatarTargets = document.querySelectorAll('[data-user-avatar]');
+
+  nameTargets.forEach(el => {
+    el.textContent =
+      currentProfile?.display_name ||
+      currentProfile?.username ||
+      currentUser.email;
+  });
+
+  avatarTargets.forEach(el => {
+    el.src =
+      currentProfile?.avatar_url ||
+      currentProfile?.profile_image_url ||
+      BRAND_IMAGES.logo;
   });
 }
 
-// 💰 Track earnings globally
-export async function addEarning(user_id, amount, source, ref_id=null) {
-  await supabase.from("earnings").insert({
-    user_id,
-    amount,
-    source,
-    ref_id
+// ⚡ GLOBAL ACTIONS
+function setupGlobalActions() {
+  document.addEventListener('click', async (e) => {
+    // LOGOUT
+    if (e.target.id === 'logoutBtn') {
+      await supabase.auth.signOut();
+      window.location.href = ROUTES.auth;
+    }
   });
 }
 
-// 👥 Follow system trigger
-export async function followUser(follower, following) {
-  await supabase.from("followers").insert({
-    follower_id: follower,
-    following_id: following
-  });
-
-  await createNotification(
-    following,
-    "follow",
-    "You got a new follower 🔥"
-  );
-}
-
-// 🔁 Global event system (important)
-export function emitEvent(name, data){
-  window.dispatchEvent(new CustomEvent(name, { detail: data }));
-}
-
-export function onEvent(name, callback){
-  window.addEventListener(name, e => callback(e.detail));
-}
-
-export { supabase };
+// 📡 SESSION LISTENER
+supabase.auth.onAuthStateChange((_event, session) => {
+  if (session?.user) {
+    window.location.reload();
+  } else {
+    window.location.reload();
+  }
+});
