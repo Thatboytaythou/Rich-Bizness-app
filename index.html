@@ -1076,105 +1076,20 @@
   <script type="module">
     import { initApp } from "/core/app.js";
     import { mountEliteNav } from "/core/nav.js";
-    import { supabase } from "/core/supabase.js";
-    import { BRAND_IMAGES } from "/core/config.js";
+    import { bootLiveRail } from "/core/features/live/home-live-rail.js";
 
-    initApp();
+    await initApp();
 
     mountEliteNav({
       target: "#elite-platform-nav",
       collapsed: false
     });
 
-    const railEl = document.getElementById("homepage-live-rail");
-
-    function money(cents = 0, currency = "USD") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency
-      }).format((Number(cents || 0)) / 100);
-    }
-
-    function escapeHtml(value = "") {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function fallbackRail() {
-      railEl.innerHTML = `
-        <div class="rb-live-empty">
-          <div>
-            <strong>No one is live right now.</strong>
-            <span>When a creator starts streaming, the rail will fill automatically.</span>
-          </div>
-        </div>
-      `;
-    }
-
-    function createCard(stream) {
-      const media = stream.thumbnail_url || stream.cover_url || BRAND_IMAGES.live;
-      const title = stream.title || "Live Stream";
-      const creator = stream.creator_name || stream.host_name || "Rich Bizness Creator";
-      const viewers = Number(stream.viewer_count || 0).toLocaleString();
-      const access = stream.access_type || "free";
-      const price = access === "paid" ? money(stream.price_cents || 0, stream.currency || "USD") : "Free";
-      const href = `/watch.html?slug=${encodeURIComponent(stream.slug || stream.id)}`;
-
-      return `
-        <article class="rb-live-card">
-          <a class="rb-live-card__media" href="${href}">
-            <img src="${media}" alt="${escapeHtml(title)}" />
-            <div class="rb-live-card__overlay">
-              <span class="rb-live-badge rb-live-badge--live">LIVE</span>
-              <span class="rb-live-badge">${escapeHtml(access)}</span>
-              <span class="rb-live-badge">${escapeHtml(price)}</span>
-            </div>
-          </a>
-          <div class="rb-live-card__body">
-            <div class="rb-live-card__meta">
-              <span>${escapeHtml(creator)}</span>
-              <span>${viewers} watching</span>
-            </div>
-            <h4 class="rb-live-card__title">${escapeHtml(title)}</h4>
-            <a class="rb-live-watch-btn" href="${href}">Watch Stream</a>
-          </div>
-        </article>
-      `;
-    }
-
-    async function loadLiveRail() {
-      try {
-        const { data, error } = await supabase
-          .from("live_streams")
-          .select("id, slug, title, thumbnail_url, cover_url, access_type, price_cents, currency, viewer_count")
-          .eq("status", "live")
-          .order("viewer_count", { ascending: false })
-          .limit(6);
-
-        if (error) {
-          console.error("[index] live rail error:", error);
-          fallbackRail();
-          return;
-        }
-
-        if (!data || !data.length) {
-          fallbackRail();
-          return;
-        }
-
-        railEl.innerHTML = data.map(createCard).join("");
-      } catch (error) {
-        console.error("[index] live rail catch:", error);
-        fallbackRail();
-      }
-    }
-
-    await loadLiveRail();
-    setInterval(loadLiveRail, 15000);
+    await bootLiveRail({
+      railElementId: "homepage-live-rail",
+      autoRefresh: true,
+      intervalMs: 15000
+    });
   </script>
 </body>
 </html>
