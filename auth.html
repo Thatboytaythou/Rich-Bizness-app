@@ -684,7 +684,12 @@
   <script type="module">
     import { initApp } from "/core/app.js";
     import { mountEliteNav } from "/core/nav.js";
-    import { supabase } from "/core/supabase.js";
+    import {
+      bootAuth,
+      signInWithEmail,
+      signUpWithEmail,
+      sendPasswordReset
+    } from "/core/auth.js";
     import { ROUTES } from "/core/config.js";
 
     initApp();
@@ -720,15 +725,6 @@
       if (type === "success") authStatus.classList.add("is-success");
     }
 
-    function slugify(value = "") {
-      return String(value)
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 40);
-    }
-
     function setMode(nextMode) {
       mode = nextMode;
 
@@ -750,43 +746,7 @@
       setStatus(isSignup ? "Ready to create your account." : "Ready.");
     }
 
-    async function ensureProfile(user, fallbackDisplayName = "", fallbackUsername = "") {
-      if (!user?.id) return;
-
-      const cleanDisplayName =
-        fallbackDisplayName?.trim() ||
-        user.user_metadata?.display_name ||
-        user.user_metadata?.full_name ||
-        user.email?.split("@")[0] ||
-        "Rich Bizness User";
-
-      const cleanUsername =
-        slugify(fallbackUsername) ||
-        slugify(user.user_metadata?.username) ||
-        slugify(user.email?.split("@")[0]) ||
-        `user-${user.id.slice(0, 8)}`;
-
-      const payload = {
-        id: user.id,
-        user_id: user.id,
-        email: user.email || null,
-        display_name: cleanDisplayName,
-        username: cleanUsername,
-        handle: cleanUsername,
-        onboarding_complete: false,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from("profiles")
-        .upsert(payload, { onConflict: "id" });
-
-      if (error) {
-        throw new Error(error.message || "Could not create your profile.");
-      }
-    }
-
-    async function signIn() {
+    async function handleLogin() {
       const email = emailInput.value.trim();
       const password = passwordInput.value;
 
@@ -797,25 +757,16 @@
 
       setStatus("Signing you in...");
 
-      const { data, error } = await supabase.auth.signInWithPassword({
+      await signInWithEmail({
         email,
         password
       });
-
-      if (error) {
-        setStatus(error.message || "Could not sign in.", "error");
-        return;
-      }
-
-      if (data?.user) {
-        await ensureProfile(data.user);
-      }
 
       setStatus("Login successful. Redirecting...", "success");
       window.location.href = ROUTES.profile;
     }
 
-    async function signUp() {
+    async function handleSignup() {
       const displayName = displayNameInput.value.trim();
       const username = usernameInput.value.trim();
       const email = emailInput.value.trim();
@@ -839,25 +790,12 @@
 
       setStatus("Creating your account...");
 
-      const { data, error } = await supabase.auth.signUp({
+      const data = await signUpWithEmail({
         email,
         password,
-        options: {
-          data: {
-            display_name: displayName,
-            username: slugify(username)
-          }
-        }
+        displayName,
+        username
       });
-
-      if (error) {
-        setStatus(error.message || "Could not create account.", "error");
-        return;
-      }
-
-      if (data?.user) {
-        await ensureProfile(data.user, displayName, username);
-      }
 
       if (data?.session) {
         setStatus("Account created. Redirecting to your profile...", "success");
@@ -869,7 +807,7 @@
       setMode("login");
     }
 
-    async function resetPassword() {
+    async function handleResetPassword() {
       const email = emailInput.value.trim();
 
       if (!email) {
@@ -879,32 +817,30 @@
 
       setStatus("Sending reset email...");
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth.html`
-      });
-
-      if (error) {
-        setStatus(error.message || "Could not send reset email.", "error");
-        return;
-      }
+      await sendPasswordReset(email);
 
       setStatus("Password reset email sent. Check your inbox.", "success");
     }
 
     loginTab.addEventListener("click", () => setMode("login"));
     signupTab.addEventListener("click", () => setMode("signup"));
-    forgotPasswordBtn.addEventListener("click", resetPassword);
+    forgotPasswordBtn.addEventListener("click", async () => {
+      try {
+        await handleResetPassword();
+      } catch (error) {
+        setStatus(error.message || "Could not send reset email.", "error");
+      }
+    });
 
     authForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-
       authSubmit.disabled = true;
 
       try {
         if (mode === "signup") {
-          await signUp();
+          await handleSignup();
         } else {
-          await signIn();
+          await handleLogin();
         }
       } catch (error) {
         setStatus(error.message || "Something went wrong.", "error");
@@ -913,10 +849,10 @@
       }
     });
 
-    const { data: sessionData } = await supabase.auth.getSession();
-    if (sessionData?.session?.user) {
-      window.location.href = ROUTES.profile;
-    }
+    await bootAuth({
+      guestOnly: true,
+      appRedirect: ROUTES.profile
+    });
   </script>
 </body>
 </html>
