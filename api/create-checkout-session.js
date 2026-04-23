@@ -441,7 +441,7 @@ async function createVipMembershipSession({
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
     metadata: cleanMetadata({
-      kind: "vip",
+      kind: "live",
       type: "vip_membership",
       user_id: user.id,
       creator_id: creatorId,
