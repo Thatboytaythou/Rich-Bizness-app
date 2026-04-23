@@ -53,43 +53,123 @@ function getCheckoutPaymentIntentId(checkoutSession) {
     : checkoutSession?.payment_intent?.id || null;
 }
 
-function amountCentsToNumber(amount) {
-  return Number(((Number(amount || 0) / 100) || 0).toFixed(2));
+function getChargePaymentIntentId(charge) {
+  return typeof charge?.payment_intent === "string"
+    ? charge.payment_intent
+    : charge?.payment_intent?.id || null;
+}
+
+function getCustomerId(checkoutSession) {
+  return typeof checkoutSession?.customer === "string"
+    ? checkoutSession.customer
+    : checkoutSession?.customer?.id || null;
+}
+
+function normalizeCurrency(value) {
+  return String(value || "usd").toLowerCase();
+}
+
+function normalizeStatus(value, fallback = "paid") {
+  return String(value || fallback).toLowerCase();
+}
+
+function amountCents(value) {
+  return Number(value || 0) || 0;
+}
+
+function amountDecimalFromCents(value) {
+  return Number(((Number(value || 0) / 100) || 0).toFixed(2));
+}
+
+function safeJsonParse(value, fallback = null) {
+  if (!value || typeof value !== "string") return fallback;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return fallback;
+  }
+}
+
+function numOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isoNow() {
+  return new Date().toISOString();
+}
+
+async function upsertPaymentRecord({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const paymentType =
+    metadata.type ||
+    metadata.kind ||
+    metadata.purchase_type ||
+    "checkout";
+
+  const payload = {
+    user_id: metadata.user_id || null,
+    amount: amountCents(checkoutSession.amount_total),
+    type: paymentType,
+    status: normalizeStatus(checkoutSession.payment_status, "paid"),
+    stripe_session_id: checkoutSession.id,
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("payments")
+    .upsert(payload, { onConflict: "stripe_session_id" });
+
+  if (error) {
+    throw new Error(`Payment save failed: ${error.message}`);
+  }
+
+  console.log("✅ Payment saved:", checkoutSession.id);
 }
 
 async function saveStoreOrder({ supabase, checkoutSession }) {
-  const productId = checkoutSession?.metadata?.product_id || null;
+  const metadata = checkoutSession?.metadata || {};
+
+  const productId =
+    numOrNull(metadata.product_id) ??
+    numOrNull(metadata.linked_record_id);
+
   const productTitle =
-    checkoutSession?.metadata?.product_title ||
-    checkoutSession?.metadata?.product_name ||
+    metadata.product_title ||
+    metadata.product_name ||
+    metadata.title ||
     "Store Product";
-  const sellerUserId = checkoutSession?.metadata?.seller_user_id || null;
-  const quantity = Number(checkoutSession?.metadata?.quantity || 1) || 1;
+
+  const sellerUserId =
+    metadata.seller_user_id ||
+    metadata.creator_id ||
+    null;
+
+  const quantity = Number(metadata.quantity || 1) || 1;
 
   const payload = {
     stripe_session_id: checkoutSession.id,
     stripe_payment_intent_id: getCheckoutPaymentIntentId(checkoutSession),
-    stripe_customer_id:
-      typeof checkoutSession.customer === "string"
-        ? checkoutSession.customer
-        : checkoutSession?.customer?.id || null,
-    product_id: productId ? Number(productId) : null,
+    stripe_customer_id: getCustomerId(checkoutSession),
+    product_id: productId,
     product_name: productTitle,
-    amount_total: amountCentsToNumber(checkoutSession.amount_total),
-    currency: checkoutSession.currency || "usd",
+    amount_total: amountDecimalFromCents(checkoutSession.amount_total),
+    currency: normalizeCurrency(checkoutSession.currency),
     quantity,
-    payment_status: checkoutSession.payment_status || "paid",
+    payment_status: normalizeStatus(checkoutSession.payment_status, "paid"),
     order_status: "paid",
     customer_email: checkoutSession.customer_details?.email || null,
-    creator_id: sellerUserId || null,
+    creator_id: sellerUserId,
     metadata: {
       source: "store",
       product_id: productId,
       seller_user_id: sellerUserId,
-      purchaser_user_id: checkoutSession?.metadata?.user_id || null,
-      kind: checkoutSession?.metadata?.kind || "store",
-      raw_metadata: checkoutSession?.metadata || {}
-    }
+      purchaser_user_id: metadata.user_id || null,
+      kind: metadata.kind || "store",
+      raw_metadata: metadata
+    },
+    created_at: isoNow()
   };
 
   const { error } = await supabase
@@ -103,11 +183,42 @@ async function saveStoreOrder({ supabase, checkoutSession }) {
   console.log("✅ Store order saved:", payload.product_id);
 }
 
+async function createLegacyOrderRecord({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+
+  const payload = {
+    buyer_user_id: metadata.user_id || null,
+    seller_user_id: metadata.creator_id || metadata.seller_user_id || null,
+    product_id:
+      numOrNull(metadata.product_id) ??
+      numOrNull(metadata.linked_record_id),
+    stripe_checkout_session_id: checkoutSession.id,
+    stripe_payment_intent_id: getCheckoutPaymentIntentId(checkoutSession),
+    amount_total_cents: amountCents(checkoutSession.amount_total),
+    currency: normalizeCurrency(checkoutSession.currency),
+    status: "paid",
+    created_at: isoNow(),
+    paid_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("orders")
+    .upsert(payload, { onConflict: "stripe_checkout_session_id" });
+
+  if (error) {
+    console.error("❌ Legacy orders save failed:", error.message);
+  } else {
+    console.log("✅ Legacy order saved");
+  }
+}
+
 async function grantUniversalUnlock({ supabase, checkoutSession }) {
-  const userId = checkoutSession?.metadata?.user_id || null;
-  const productId = checkoutSession?.metadata?.product_id || null;
-  const kind = checkoutSession?.metadata?.kind || null;
-  const linkedRecordId = checkoutSession?.metadata?.linked_record_id || null;
+  const metadata = checkoutSession?.metadata || {};
+
+  const userId = metadata.user_id || null;
+  const productId = numOrNull(metadata.product_id);
+  const kind = metadata.kind || null;
+  const linkedRecordId = numOrNull(metadata.linked_record_id);
 
   if (!userId || !productId || !kind) {
     console.log("ℹ️ Unlock skipped: missing user_id, product_id, or kind");
@@ -116,11 +227,12 @@ async function grantUniversalUnlock({ supabase, checkoutSession }) {
 
   const unlockPayload = {
     user_id: userId,
-    product_id: Number(productId),
+    product_id: productId,
     kind,
-    access_scope: "standard",
-    linked_record_id: linkedRecordId ? Number(linkedRecordId) : null,
-    source: "stripe"
+    access_scope: metadata.access_scope || "standard",
+    linked_record_id: linkedRecordId,
+    source: "stripe",
+    granted_at: isoNow()
   };
 
   const { error } = await supabase
@@ -134,81 +246,123 @@ async function grantUniversalUnlock({ supabase, checkoutSession }) {
   console.log("✅ Universal unlock granted:", kind, productId, userId);
 }
 
-async function grantKindSpecificUnlock({ supabase, checkoutSession }) {
-  const userId = checkoutSession?.metadata?.user_id || null;
-  const productId = checkoutSession?.metadata?.product_id || null;
-  const kind = checkoutSession?.metadata?.kind || null;
-  const linkedRecordId = checkoutSession?.metadata?.linked_record_id || null;
+async function grantVipLiveAccess({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
 
-  if (!userId || !productId || !kind) return;
+  const userId = metadata.user_id || null;
+  if (!userId) return;
+
+  const roomName =
+    metadata.room_name ||
+    metadata.livekit_room_name ||
+    metadata.live_room_name ||
+    null;
+
+  const sourcePaymentId =
+    numOrNull(metadata.live_purchase_id) ??
+    numOrNull(metadata.source_payment_id) ??
+    null;
+
+  const payload = {
+    user_id: userId,
+    room_name: roomName,
+    status: "active",
+    source_payment_id: sourcePaymentId,
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("vip_live_access")
+    .insert(payload);
+
+  if (error) {
+    console.error("❌ VIP live access grant failed:", error.message);
+  } else {
+    console.log("✅ VIP live access granted");
+  }
+}
+
+async function createMusicUnlock({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const userId = metadata.user_id || null;
+
+  if (!userId) return;
+
+  const payload = {
+    user_id: userId,
+    track_slug: metadata.track_slug || null,
+    album_slug: metadata.album_slug || null,
+    status: "paid",
+    source_payment_id:
+      numOrNull(metadata.source_payment_id) ??
+      numOrNull(metadata.linked_record_id) ??
+      null,
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("music_unlocks")
+    .insert(payload);
+
+  if (error) {
+    console.error("❌ Music unlock failed:", error.message);
+  } else {
+    console.log("✅ Music unlocked");
+  }
+}
+
+async function createArtworkPurchase({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const userId = metadata.user_id || null;
+
+  if (!userId) return;
+
+  const payload = {
+    user_id: userId,
+    artwork_id:
+      numOrNull(metadata.artwork_id) ??
+      numOrNull(metadata.linked_record_id),
+    title: metadata.title || metadata.product_title || "Artwork",
+    price: amountDecimalFromCents(checkoutSession.amount_total),
+    status: "paid",
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("artwork_purchases")
+    .insert(payload);
+
+  if (error) {
+    console.error("❌ Artwork purchase save failed:", error.message);
+  } else {
+    console.log("✅ Artwork purchase saved");
+  }
+}
+
+async function grantKindSpecificUnlock({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const kind = metadata.kind || null;
+
+  if (!kind) return;
 
   if (kind === "live") {
-    const { error } = await supabase
-      .from("vip_live_access")
-      .upsert(
-        {
-          user_id: userId,
-          product_id: Number(productId),
-          live_stream_id: linkedRecordId ? Number(linkedRecordId) : null,
-          status: "active",
-          source: "stripe",
-          granted_at: new Date().toISOString()
-        },
-        { onConflict: "user_id,product_id" }
-      );
-
-    if (error) {
-      console.error("❌ VIP live unlock failed:", error);
-    } else {
-      console.log("✅ VIP live access granted");
-    }
+    await grantVipLiveAccess({ supabase, checkoutSession });
+    return;
   }
 
   if (kind === "music") {
-    const { error } = await supabase
-      .from("music_unlocks")
-      .upsert(
-        {
-          user_id: userId,
-          product_id: Number(productId),
-          track_id: linkedRecordId ? Number(linkedRecordId) : null,
-          unlocked_at: new Date().toISOString(),
-          source: "stripe"
-        },
-        { onConflict: "user_id,product_id" }
-      );
-
-    if (error) {
-      console.error("❌ Music unlock failed:", error);
-    } else {
-      console.log("✅ Music unlocked");
-    }
+    await createMusicUnlock({ supabase, checkoutSession });
+    return;
   }
 
   if (kind === "artwork") {
-    const { error } = await supabase
-      .from("artwork_purchases")
-      .upsert(
-        {
-          buyer_id: userId,
-          product_id: Number(productId),
-          artwork_id: linkedRecordId ? Number(linkedRecordId) : null,
-          status: "paid",
-          source: "stripe",
-          purchased_at: new Date().toISOString()
-        },
-        { onConflict: "buyer_id,product_id" }
-      );
-
-    if (error) {
-      console.error("❌ Artwork unlock failed:", error);
-    } else {
-      console.log("✅ Artwork unlocked");
-    }
+    await createArtworkPurchase({ supabase, checkoutSession });
+    return;
   }
 
   if (kind === "gaming") {
     console.log("✅ Gaming unlock granted through universal table");
+    return;
   }
 
   if (kind === "store") {
@@ -244,7 +398,7 @@ async function revokeUniversalUnlockByPaymentIntent({ supabase, paymentIntentId 
     .limit(1);
 
   if (orderError) {
-    console.error("❌ Failed reading store order for revoke:", orderError);
+    console.error("❌ Failed reading store order for revoke:", orderError.message);
     return;
   }
 
@@ -261,27 +415,31 @@ async function revokeUniversalUnlockByPaymentIntent({ supabase, paymentIntentId 
     .eq("product_id", productId);
 
   if (error) {
-    console.error("❌ Universal unlock revoke failed:", error);
+    console.error("❌ Universal unlock revoke failed:", error.message);
   } else {
     console.log("↩️ Universal unlock revoked");
   }
 }
 
 async function markLivePurchasePaid({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+
   const livePurchaseId =
-    checkoutSession?.metadata?.live_purchase_id ||
+    metadata.live_purchase_id ||
     checkoutSession?.client_reference_id ||
     null;
 
   if (!livePurchaseId) return;
 
   const payload = {
-    payment_status: "paid",
     status: "paid",
     stripe_checkout_session_id: checkoutSession.id,
     stripe_payment_intent_id: getCheckoutPaymentIntentId(checkoutSession),
-    amount_total: amountCentsToNumber(checkoutSession.amount_total),
-    currency: checkoutSession.currency || "usd"
+    stripe_customer_id: getCustomerId(checkoutSession),
+    amount_cents: amountCents(checkoutSession.amount_total),
+    currency: normalizeCurrency(checkoutSession.currency),
+    purchased_at: isoNow(),
+    updated_at: isoNow()
   };
 
   const { error } = await supabase
@@ -297,8 +455,10 @@ async function markLivePurchasePaid({ supabase, checkoutSession }) {
 }
 
 async function markLivePurchaseFailed({ supabase, checkoutSession, status = "canceled" }) {
+  const metadata = checkoutSession?.metadata || {};
+
   const livePurchaseId =
-    checkoutSession?.metadata?.live_purchase_id ||
+    metadata.live_purchase_id ||
     checkoutSession?.client_reference_id ||
     null;
 
@@ -307,8 +467,8 @@ async function markLivePurchaseFailed({ supabase, checkoutSession, status = "can
   const { error } = await supabase
     .from("live_stream_purchases")
     .update({
-      payment_status: status,
-      status
+      status,
+      updated_at: isoNow()
     })
     .eq("id", livePurchaseId);
 
@@ -325,8 +485,9 @@ async function markLivePurchaseRefunded({ supabase, paymentIntentId }) {
   const { error } = await supabase
     .from("live_stream_purchases")
     .update({
-      payment_status: "refunded",
-      status: "refunded"
+      status: "refunded",
+      refunded_at: isoNow(),
+      updated_at: isoNow()
     })
     .eq("stripe_payment_intent_id", paymentIntentId);
 
@@ -335,6 +496,166 @@ async function markLivePurchaseRefunded({ supabase, paymentIntentId }) {
   }
 
   console.log("↩️ Live purchase refunded:", paymentIntentId);
+}
+
+async function createTipRecord({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const fromUserId = metadata.user_id || metadata.from_user_id || null;
+  const toUserId = metadata.creator_id || metadata.to_user_id || null;
+
+  if (!fromUserId || !toUserId) {
+    console.log("ℹ️ Tip insert skipped: missing from/to user");
+    return;
+  }
+
+  const payload = {
+    from_user_id: fromUserId,
+    to_user_id: toUserId,
+    stripe_checkout_session_id: checkoutSession.id,
+    stripe_payment_intent_id: getCheckoutPaymentIntentId(checkoutSession),
+    amount_cents: amountCents(checkoutSession.amount_total),
+    currency: normalizeCurrency(checkoutSession.currency),
+    status: "paid",
+    created_at: isoNow(),
+    paid_at: isoNow()
+  };
+
+  const { error } = await supabase
+    .from("tips")
+    .upsert(payload, { onConflict: "stripe_checkout_session_id" });
+
+  if (error) {
+    throw new Error(`Tip save failed: ${error.message}`);
+  }
+
+  console.log("✅ Tip saved");
+}
+
+async function createPayoutRequestRecord({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const artistUserId = metadata.creator_id || metadata.user_id || null;
+
+  if (!artistUserId) return;
+
+  const kind = metadata.kind || metadata.type || null;
+  if (kind !== "payout_request") return;
+
+  const payload = {
+    artist_user_id: artistUserId,
+    amount_cents: amountCents(checkoutSession.amount_total),
+    currency: normalizeCurrency(checkoutSession.currency),
+    status: "paid",
+    note: metadata.note || "Stripe payout-related payment",
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase.from("payout_requests").insert(payload);
+
+  if (error) {
+    console.error("❌ Payout request save failed:", error.message);
+  } else {
+    console.log("✅ Payout request saved");
+  }
+}
+
+async function syncCreatorMonetizationRecords({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const kind = metadata.kind || metadata.type || null;
+  const creatorId = metadata.creator_id || metadata.seller_user_id || null;
+  const userId = metadata.user_id || null;
+  const amount = amountCents(checkoutSession.amount_total);
+
+  if (!kind) return;
+
+  if (kind === "tip") {
+    await createTipRecord({ supabase, checkoutSession });
+    return;
+  }
+
+  if (kind === "music_earning" || kind === "music") {
+    if (!creatorId && !userId) return;
+
+    const payload = {
+      artist_user_id: creatorId || userId,
+      track_id:
+        numOrNull(metadata.track_id) ??
+        numOrNull(metadata.linked_record_id),
+      source_type: metadata.source_type || "purchase",
+      source_id:
+        numOrNull(metadata.source_id) ??
+        numOrNull(metadata.linked_record_id),
+      gross_cents: amount,
+      note: metadata.note || "Stripe music payment",
+      created_at: isoNow()
+    };
+
+    const { error } = await supabase.from("music_earnings").insert(payload);
+
+    if (error) {
+      console.error("❌ Music earnings save failed:", error.message);
+    } else {
+      console.log("✅ Music earnings saved");
+    }
+
+    return;
+  }
+
+  if (kind === "creator_earning") {
+    if (!creatorId) return;
+
+    const payload = {
+      creator_id: creatorId,
+      source_type: metadata.source_type || "purchase",
+      source_id:
+        numOrNull(metadata.source_id) ??
+        numOrNull(metadata.linked_record_id),
+      gross_cents: amount,
+      status: "paid",
+      created_at: isoNow()
+    };
+
+    const { error } = await supabase.from("creator_earnings").insert(payload);
+
+    if (error) {
+      console.error("❌ Creator earnings save failed:", error.message);
+    } else {
+      console.log("✅ Creator earnings saved");
+    }
+
+    return;
+  }
+
+  await createPayoutRequestRecord({ supabase, checkoutSession });
+}
+
+async function handleCompletedCheckout({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const kind = metadata.kind || metadata.type || null;
+
+  await upsertPaymentRecord({ supabase, checkoutSession });
+
+  if (checkoutSession.mode === "payment" && metadata.product_id) {
+    await saveStoreOrder({ supabase, checkoutSession });
+    await createLegacyOrderRecord({ supabase, checkoutSession });
+  }
+
+  if (checkoutSession.mode === "payment" && metadata.live_purchase_id) {
+    await markLivePurchasePaid({ supabase, checkoutSession });
+  }
+
+  if (
+    checkoutSession.mode === "payment" &&
+    metadata.user_id &&
+    metadata.product_id &&
+    metadata.kind
+  ) {
+    await grantUniversalUnlock({ supabase, checkoutSession });
+  }
+
+  if (checkoutSession.mode === "payment" && kind) {
+    await grantKindSpecificUnlock({ supabase, checkoutSession });
+    await syncCreatorMonetizationRecords({ supabase, checkoutSession });
+  }
 }
 
 export default async function handler(req, res) {
@@ -369,20 +690,7 @@ export default async function handler(req, res) {
     switch (event.type) {
       case "checkout.session.completed": {
         const checkoutSession = event.data.object;
-
-        if (checkoutSession.mode === "payment" && checkoutSession.metadata?.product_id) {
-          await saveStoreOrder({ supabase, checkoutSession });
-          await grantUniversalUnlock({ supabase, checkoutSession });
-          await grantKindSpecificUnlock({ supabase, checkoutSession });
-        }
-
-        if (
-          checkoutSession.mode === "payment" &&
-          checkoutSession.metadata?.live_purchase_id
-        ) {
-          await markLivePurchasePaid({ supabase, checkoutSession });
-        }
-
+        await handleCompletedCheckout({ supabase, checkoutSession });
         break;
       }
 
@@ -405,10 +713,7 @@ export default async function handler(req, res) {
 
       case "charge.refunded": {
         const charge = event.data.object;
-        const paymentIntentId =
-          typeof charge.payment_intent === "string"
-            ? charge.payment_intent
-            : charge.payment_intent?.id || null;
+        const paymentIntentId = getChargePaymentIntentId(charge);
 
         await markStoreOrderRefunded({
           supabase,
@@ -429,6 +734,7 @@ export default async function handler(req, res) {
       }
 
       default:
+        console.log(`ℹ️ Unhandled Stripe event: ${event.type}`);
         break;
     }
 
