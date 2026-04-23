@@ -8,10 +8,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 const SUPABASE_URL =
   process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const APP_URL = process.env.APP_URL || process.env.PUBLIC_SITE_URL || "http://localhost:3000";
+const APP_URL =
+  process.env.APP_URL ||
+  process.env.PUBLIC_SITE_URL ||
+  "http://localhost:3000";
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-  throw new Error("Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
+  throw new Error(
+    "Missing SUPABASE_URL/NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+  );
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -48,6 +53,16 @@ function dollarsToCents(amount) {
   return Math.round(n * 100);
 }
 
+function normalizeCurrency(value) {
+  return String(value || "usd").toLowerCase();
+}
+
+function numOrNull(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function normalizeMode(mode) {
   const value = String(mode || "").toLowerCase();
 
@@ -68,14 +83,12 @@ function normalizeMode(mode) {
   return null;
 }
 
-function normalizeCurrency(value) {
-  return String(value || "usd").toLowerCase();
-}
-
-function numOrNull(value) {
-  if (value === null || value === undefined || value === "") return null;
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
+function cleanMetadata(obj) {
+  const out = {};
+  for (const [key, value] of Object.entries(obj)) {
+    out[key] = value === null || value === undefined ? "" : String(value);
+  }
+  return out;
 }
 
 async function getProfile(userId) {
@@ -168,6 +181,8 @@ async function hasExistingVipAccess(roomName, userId) {
 }
 
 async function hasExistingUniversalUnlock(userId, productId) {
+  if (!userId || !productId) return false;
+
   const { data, error } = await supabase
     .from("user_product_unlocks")
     .select("id")
@@ -226,11 +241,7 @@ function makeCancelUrl(type, params = {}) {
   return url.toString();
 }
 
-async function createPendingLivePurchase({
-  stream,
-  userId,
-  amountCents
-}) {
+async function createPendingLivePurchase({ stream, userId, amountCents }) {
   const payload = {
     stream_id: stream.id,
     user_id: userId,
@@ -250,7 +261,7 @@ async function createPendingLivePurchase({
     updated_at: new Date().toISOString()
   };
 
-  const { data: inserted, error } = await supabase
+  const { data, error } = await supabase
     .from("live_stream_purchases")
     .insert(payload)
     .select("id")
@@ -260,13 +271,10 @@ async function createPendingLivePurchase({
     throw new Error(`Failed to create pending live purchase: ${error.message}`);
   }
 
-  return inserted;
+  return data;
 }
 
-async function attachCheckoutSessionToPendingLivePurchase({
-  purchaseId,
-  sessionId
-}) {
+async function attachCheckoutSessionToPendingLivePurchase({ purchaseId, sessionId }) {
   const { error } = await supabase
     .from("live_stream_purchases")
     .update({
@@ -280,21 +288,11 @@ async function attachCheckoutSessionToPendingLivePurchase({
   }
 }
 
-async function createStreamTicketSession({
-  user,
-  profile,
-  streamId,
-  successPath,
-  cancelPath
-}) {
-  if (!streamId) {
-    throw new Error("streamId is required for stream_ticket");
-  }
+async function createStreamTicketSession({ user, profile, streamId, successPath, cancelPath }) {
+  if (!streamId) throw new Error("streamId is required for stream_ticket");
 
   const { stream, error } = await getLiveStream(streamId);
-  if (error || !stream) {
-    throw new Error(error || "Stream not found");
-  }
+  if (error || !stream) throw new Error(error || "Stream not found");
 
   if (stream.creator_id === user.id) {
     throw new Error("Creator does not need to buy access to own stream");
@@ -309,9 +307,7 @@ async function createStreamTicketSession({
   }
 
   const alreadyPaid = await hasExistingLiveAccess(stream.id, user.id);
-  if (alreadyPaid) {
-    throw new Error("You already have access to this stream");
-  }
+  if (alreadyPaid) throw new Error("You already have access to this stream");
 
   const customer = await ensureStripeCustomer({ user, profile });
 
@@ -357,18 +353,17 @@ async function createStreamTicketSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
+    metadata: cleanMetadata({
       kind: "live",
       type: "stream_ticket",
       user_id: user.id,
       creator_id: stream.creator_id,
-      product_id: "",
-      linked_record_id: String(stream.id),
-      live_purchase_id: String(pendingPurchase.id),
-      room_name: stream.livekit_room_name || "",
-      stream_id: String(stream.id),
-      stream_slug: stream.slug || ""
-    }
+      linked_record_id: stream.id,
+      live_purchase_id: pendingPurchase.id,
+      room_name: stream.livekit_room_name,
+      stream_id: stream.id,
+      stream_slug: stream.slug
+    })
   });
 
   await attachCheckoutSessionToPendingLivePurchase({
@@ -393,32 +388,21 @@ async function createVipMembershipSession({
   successPath,
   cancelPath
 }) {
-  if (!creatorId) {
-    throw new Error("creatorId is required for vip_membership");
-  }
-
-  if (creatorId === user.id) {
-    throw new Error("You do not need to buy your own VIP");
-  }
+  if (!creatorId) throw new Error("creatorId is required for vip_membership");
+  if (creatorId === user.id) throw new Error("You do not need to buy your own VIP");
 
   const creatorProfile = await getCreatorProfile(creatorId);
-  if (!creatorProfile) {
-    throw new Error("Creator not found");
-  }
+  if (!creatorProfile) throw new Error("Creator not found");
 
-  const resolvedRoomName = roomName || null;
+  const resolvedRoomName = roomName || "";
 
   if (resolvedRoomName) {
     const alreadyVip = await hasExistingVipAccess(resolvedRoomName, user.id);
-    if (alreadyVip) {
-      throw new Error("You already have active VIP access");
-    }
+    if (alreadyVip) throw new Error("You already have active VIP access");
   }
 
   const amountCents = dollarsToCents(vipPriceDollars || 9.99);
-  if (amountCents <= 0) {
-    throw new Error("Invalid VIP price");
-  }
+  if (amountCents <= 0) throw new Error("Invalid VIP price");
 
   const customer = await ensureStripeCustomer({ user, profile });
 
@@ -456,15 +440,13 @@ async function createVipMembershipSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
-      kind: "live",
+    metadata: cleanMetadata({
+      kind: "vip",
       type: "vip_membership",
       user_id: user.id,
       creator_id: creatorId,
-      product_id: "",
-      linked_record_id: "",
-      room_name: resolvedRoomName || ""
-    }
+      room_name: resolvedRoomName
+    })
   });
 
   return {
@@ -483,23 +465,14 @@ async function createTipSession({
   successPath,
   cancelPath
 }) {
-  if (!creatorId) {
-    throw new Error("creatorId is required for tip");
-  }
-
-  if (creatorId === user.id) {
-    throw new Error("You cannot tip yourself");
-  }
+  if (!creatorId) throw new Error("creatorId is required for tip");
+  if (creatorId === user.id) throw new Error("You cannot tip yourself");
 
   const creatorProfile = await getCreatorProfile(creatorId);
-  if (!creatorProfile) {
-    throw new Error("Creator not found");
-  }
+  if (!creatorProfile) throw new Error("Creator not found");
 
   const amountCents = dollarsToCents(amountDollars || 5);
-  if (amountCents < 100) {
-    throw new Error("Tip must be at least $1");
-  }
+  if (amountCents < 100) throw new Error("Tip must be at least $1");
 
   const customer = await ensureStripeCustomer({ user, profile });
 
@@ -539,14 +512,14 @@ async function createTipSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: false,
-    metadata: {
+    metadata: cleanMetadata({
       kind: "tip",
       type: "tip",
       user_id: user.id,
       creator_id: creatorId,
-      stream_id: streamId ? String(streamId) : "",
-      amount_cents: String(amountCents)
-    }
+      stream_id: streamId || "",
+      amount_cents: amountCents
+    })
   });
 
   return {
@@ -564,14 +537,10 @@ async function createStoreSession({
   successPath,
   cancelPath
 }) {
-  if (!productId) {
-    throw new Error("productId is required for store");
-  }
+  if (!productId) throw new Error("productId is required for store");
 
   const { product, error } = await getProduct(productId);
-  if (error || !product) {
-    throw new Error(error || "Product not found");
-  }
+  if (error || !product) throw new Error(error || "Product not found");
 
   const unitAmount =
     numOrNull(product.price_cents) ??
@@ -582,21 +551,16 @@ async function createStoreSession({
   }
 
   const qty = Math.max(1, Number(quantity || 1) || 1);
-
   const creatorId = product.creator_id || null;
   const customer = await ensureStripeCustomer({ user, profile });
 
   const successUrl =
     successPath ||
-    makeSuccessUrl("store", {
-      productId: product.id
-    });
+    makeSuccessUrl("store", { productId: product.id });
 
   const cancelUrl =
     cancelPath ||
-    makeCancelUrl("store", {
-      productId: product.id
-    });
+    makeCancelUrl("store", { productId: product.id });
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -618,17 +582,17 @@ async function createStoreSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
+    metadata: cleanMetadata({
       kind: "store",
       type: "store",
       user_id: user.id,
       creator_id: creatorId || "",
       seller_user_id: creatorId || "",
-      product_id: String(product.id),
-      linked_record_id: String(product.id),
-      quantity: String(qty),
+      product_id: product.id,
+      linked_record_id: product.id,
+      quantity: qty,
       product_title: product.name || product.title || "Store Product"
-    }
+    })
   });
 
   return {
@@ -649,19 +613,13 @@ async function createMusicUnlockSession({
   successPath,
   cancelPath
 }) {
-  if (!productId) {
-    throw new Error("productId is required for music_unlock");
-  }
+  if (!productId) throw new Error("productId is required for music_unlock");
 
   const alreadyUnlocked = await hasExistingUniversalUnlock(user.id, Number(productId));
-  if (alreadyUnlocked) {
-    throw new Error("You already unlocked this product");
-  }
+  if (alreadyUnlocked) throw new Error("You already unlocked this product");
 
   const { product, error } = await getProduct(productId);
-  if (error || !product) {
-    throw new Error(error || "Product not found");
-  }
+  if (error || !product) throw new Error(error || "Product not found");
 
   const amountCents =
     numOrNull(product.price_cents) ??
@@ -709,19 +667,19 @@ async function createMusicUnlockSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
+    metadata: cleanMetadata({
       kind: "music",
       type: "music_unlock",
       user_id: user.id,
       creator_id: product.creator_id || "",
-      product_id: String(product.id),
-      linked_record_id: linkedRecordId ? String(linkedRecordId) : "",
+      product_id: product.id,
+      linked_record_id: linkedRecordId || "",
       track_slug: trackSlug || "",
       album_slug: albumSlug || "",
-      track_id: linkedRecordId ? String(linkedRecordId) : "",
+      track_id: linkedRecordId || "",
       source_type: "purchase",
-      source_id: linkedRecordId ? String(linkedRecordId) : ""
-    }
+      source_id: linkedRecordId || ""
+    })
   });
 
   return {
@@ -740,19 +698,13 @@ async function createArtworkSession({
   successPath,
   cancelPath
 }) {
-  if (!productId) {
-    throw new Error("productId is required for artwork");
-  }
+  if (!productId) throw new Error("productId is required for artwork");
 
   const alreadyUnlocked = await hasExistingUniversalUnlock(user.id, Number(productId));
-  if (alreadyUnlocked) {
-    throw new Error("You already unlocked this artwork product");
-  }
+  if (alreadyUnlocked) throw new Error("You already unlocked this artwork product");
 
   const { product, error } = await getProduct(productId);
-  if (error || !product) {
-    throw new Error(error || "Product not found");
-  }
+  if (error || !product) throw new Error(error || "Product not found");
 
   const amountCents =
     numOrNull(product.price_cents) ??
@@ -798,15 +750,16 @@ async function createArtworkSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
+    metadata: cleanMetadata({
       kind: "artwork",
       type: "artwork",
       user_id: user.id,
       creator_id: product.creator_id || "",
-      product_id: String(product.id),
-      linked_record_id: artworkId ? String(artworkId) : "",
+      product_id: product.id,
+      linked_record_id: artworkId || "",
+      artwork_id: artworkId || "",
       title: product.name || product.title || "Artwork"
-    }
+    })
   });
 
   return {
@@ -823,14 +776,10 @@ async function createPremiumContentSession({
   successPath,
   cancelPath
 }) {
-  if (!contentId) {
-    throw new Error("contentId is required for premium_content");
-  }
+  if (!contentId) throw new Error("contentId is required for premium_content");
 
   const { content, error } = await getPremiumContent(contentId);
-  if (error || !content) {
-    throw new Error(error || "Premium content not found");
-  }
+  if (error || !content) throw new Error(error || "Premium content not found");
 
   const amountCents = numOrNull(content.price_cents);
   if (!amountCents || amountCents <= 0) {
@@ -871,16 +820,15 @@ async function createPremiumContentSession({
     success_url: successUrl,
     cancel_url: cancelUrl,
     allow_promotion_codes: true,
-    metadata: {
-      kind: "store",
+    metadata: cleanMetadata({
+      kind: "premium_content",
       type: "premium_content",
       user_id: user.id,
       creator_id: content.creator_id || "",
-      seller_user_id: content.creator_id || "",
-      product_id: "",
-      linked_record_id: String(content.id),
+      linked_record_id: content.id,
+      content_id: content.id,
       product_title: content.title || "Premium Content"
-    }
+    })
   });
 
   return {
@@ -1085,3 +1033,4 @@ export default async function handler(req, res) {
     });
   }
 }
+Check this against your current final direction?
