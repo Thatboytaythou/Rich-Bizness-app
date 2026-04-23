@@ -1,215 +1,254 @@
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: "2024-06-20"
+});
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const SUPABASE_URL =
+  process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-function json(res, status, payload) {
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const AUTO_APPROVE_PAYOUTS =
+  String(process.env.AUTO_APPROVE_PAYOUTS || "false").toLowerCase() === "true";
+
+const MIN_PAYOUT_CENTS = 1000;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});
+
+function send(res, status, payload) {
   return res.status(status).json(payload);
 }
 
-function toCents(amount) {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return Math.round(n * 100);
+function getBearerToken(req) {
+  const header = req.headers.authorization || req.headers.Authorization || "";
+  if (header.startsWith("Bearer ")) return header.slice(7).trim();
+  if (req.body?.accessToken) return req.body.accessToken;
+  if (req.body?.token) return req.body.token;
+  return null;
+}
+
+async function getUser(req) {
+  const token = getBearerToken(req);
+
+  if (!token) {
+    return { user: null, error: "Missing auth token" };
+  }
+
+  const { data, error } = await supabase.auth.getUser(token);
+
+  if (error || !data?.user) {
+    return { user: null, error: "Invalid auth token" };
+  }
+
+  return { user: data.user, error: null };
+}
+
+async function getBalance(userId) {
+  const { data, error } = await supabase
+    .from("creator_available_balances")
+    .select("artist_user_id, earned_cents, paid_out_cents, available_cents")
+    .eq("artist_user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Balance lookup failed: ${error.message}`);
+  }
+
+  return (
+    data || {
+      artist_user_id: userId,
+      earned_cents: 0,
+      paid_out_cents: 0,
+      available_cents: 0
+    }
+  );
+}
+
+async function getStripeAccount(userId) {
+  const { data, error } = await supabase
+    .from("artist_payout_accounts")
+    .select(
+      "id, user_id, stripe_account_id, onboarding_complete, details_submitted, charges_enabled, payouts_enabled"
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Stripe account lookup failed: ${error.message}`);
+  }
+
+  return data || null;
+}
+
+async function createPayoutRequest({
+  userId,
+  amountCents,
+  currency,
+  status,
+  stripeDestinationAccountId,
+  note
+}) {
+  const payload = {
+    artist_user_id: userId,
+    amount_cents: amountCents,
+    currency,
+    status,
+    stripe_destination_account_id: stripeDestinationAccountId || null,
+    note: note || null,
+    created_at: new Date().toISOString(),
+    processed_at: status === "paid" ? new Date().toISOString() : null
+  };
+
+  const { data, error } = await supabase
+    .from("payout_requests")
+    .insert(payload)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Payout request save failed: ${error.message}`);
+  }
+
+  return data;
+}
+
+async function markPayoutPaid(payoutId, stripeTransferId) {
+  const { data, error } = await supabase
+    .from("payout_requests")
+    .update({
+      status: "paid",
+      stripe_transfer_id: stripeTransferId,
+      processed_at: new Date().toISOString()
+    })
+    .eq("id", payoutId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Payout update failed: ${error.message}`);
+  }
+
+  return data;
 }
 
 export default async function handler(req, res) {
+  if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return res.status(200).end();
+  }
+
+  res.setHeader("Access-Control-Allow-Origin", "*");
+
   if (req.method !== "POST") {
-    return json(res, 405, {
-      ok: false,
-      error: "Method not allowed. Use POST."
-    });
+    return send(res, 405, { error: "Method not allowed" });
   }
 
   try {
     if (!process.env.STRIPE_SECRET_KEY) {
-      return json(res, 500, {
-        ok: false,
-        error: "Missing STRIPE_SECRET_KEY."
+      return send(res, 500, { error: "Missing STRIPE_SECRET_KEY" });
+    }
+
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      return send(res, 500, {
+        error: "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
       });
     }
 
-    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-      return json(res, 500, {
-        ok: false,
-        error: "Missing Supabase server environment variables."
+    const { user, error: authError } = await getUser(req);
+
+    if (authError || !user) {
+      return send(res, 401, { error: authError || "Unauthorized" });
+    }
+
+    const requestedAmountCents = Number(req.body?.amount_cents || 0);
+    const currency = String(req.body?.currency || "usd").toLowerCase();
+
+    const balance = await getBalance(user.id);
+    const availableCents = Number(balance.available_cents || 0);
+
+    const amountCents =
+      requestedAmountCents > 0 ? requestedAmountCents : availableCents;
+
+    if (amountCents < MIN_PAYOUT_CENTS) {
+      return send(res, 400, {
+        error: "Minimum payout is $10.00",
+        available_cents: availableCents
       });
     }
 
-    const {
-      userId,
-      amount,
-      currency = "usd",
-      note = "",
-      destinationAccountId = "",
-      autoApprove
-    } = req.body || {};
-
-    if (!userId) {
-      return json(res, 400, {
-        ok: false,
-        error: "Missing userId."
+    if (amountCents > availableCents) {
+      return send(res, 400, {
+        error: "Requested payout is higher than available balance",
+        available_cents: availableCents
       });
     }
 
-    const amountCents = toCents(amount);
-    if (!amountCents) {
-      return json(res, 400, {
-        ok: false,
-        error: "Amount must be greater than 0."
+    const payoutAccount = await getStripeAccount(user.id);
+
+    if (!payoutAccount?.stripe_account_id) {
+      return send(res, 400, {
+        error: "No Stripe payout account connected"
       });
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .or(`id.eq.${userId},user_id.eq.${userId}`)
-      .limit(1)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error("request-payout profile lookup error:", profileError);
-      return json(res, 500, {
-        ok: false,
-        error: "Failed to load profile."
+    if (!payoutAccount.payouts_enabled && AUTO_APPROVE_PAYOUTS) {
+      return send(res, 400, {
+        error: "Stripe payouts are not enabled for this creator yet"
       });
     }
 
-    if (!profile) {
-      return json(res, 404, {
-        ok: false,
-        error: "Profile not found."
-      });
-    }
+    const payoutRequest = await createPayoutRequest({
+      userId: user.id,
+      amountCents,
+      currency,
+      status: AUTO_APPROVE_PAYOUTS ? "processing" : "pending",
+      stripeDestinationAccountId: payoutAccount.stripe_account_id,
+      note: req.body?.note || "Creator payout request"
+    });
 
-    const stripeAccountId =
-      destinationAccountId ||
-      profile.stripe_account_id ||
-      "";
-
-    if (!stripeAccountId) {
-      return json(res, 400, {
-        ok: false,
-        error: "This user does not have a connected Stripe account yet."
-      });
-    }
-
-    const normalizedCurrency = String(currency || "usd").toLowerCase();
-    const shouldAutoApprove =
-      autoApprove === true ||
-      String(process.env.AUTO_APPROVE_PAYOUTS || "").toLowerCase() === "true";
-
-    const payoutRequestPayload = {
-      user_id: profile.user_id || profile.id,
-      profile_id: profile.id,
-      stripe_account_id: stripeAccountId,
-      amount_cents: amountCents,
-      currency: normalizedCurrency,
-      status: shouldAutoApprove ? "processing" : "pending",
-      note: note || "",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-
-    const { data: payoutRequest, error: payoutInsertError } = await supabase
-      .from("payout_requests")
-      .insert(payoutRequestPayload)
-      .select()
-      .single();
-
-    if (payoutInsertError) {
-      console.error("request-payout insert error:", payoutInsertError);
-      return json(res, 500, {
-        ok: false,
-        error: "Failed to create payout request record."
-      });
-    }
-
-    if (!shouldAutoApprove) {
-      return json(res, 200, {
+    if (!AUTO_APPROVE_PAYOUTS) {
+      return send(res, 200, {
         ok: true,
-        mode: "manual_review",
-        message: "Payout request created and waiting for approval.",
-        payoutRequestId: payoutRequest.id,
-        status: payoutRequest.status,
-        amount_cents: payoutRequest.amount_cents,
-        currency: payoutRequest.currency
+        status: "pending",
+        payout: payoutRequest,
+        available_cents: availableCents
       });
     }
 
-    let transfer;
-    try {
-      transfer = await stripe.transfers.create({
-        amount: amountCents,
-        currency: normalizedCurrency,
-        destination: stripeAccountId,
-        description: `Rich Bizness payout for ${profile.display_name || profile.username || profile.email || profile.id}`,
-        metadata: {
-          rich_bizness_user_id: String(profile.user_id || profile.id),
-          profile_id: String(profile.id || ""),
-          payout_request_id: String(payoutRequest.id || ""),
-          username: String(profile.username || "")
-        }
-      });
-    } catch (stripeError) {
-      console.error("request-payout stripe transfer error:", stripeError);
+    const transfer = await stripe.transfers.create({
+      amount: amountCents,
+      currency,
+      destination: payoutAccount.stripe_account_id,
+      metadata: {
+        payout_request_id: String(payoutRequest.id),
+        artist_user_id: user.id,
+        source: "rich_bizness_request_payout"
+      }
+    });
 
-      await supabase
-        .from("payout_requests")
-        .update({
-          status: "failed",
-          failure_reason: stripeError?.message || "Stripe transfer failed.",
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", payoutRequest.id);
+    const paidPayout = await markPayoutPaid(payoutRequest.id, transfer.id);
 
-      return json(res, 500, {
-        ok: false,
-        error: stripeError?.message || "Stripe transfer failed.",
-        payoutRequestId: payoutRequest.id
-      });
-    }
-
-    const { error: payoutUpdateError } = await supabase
-      .from("payout_requests")
-      .update({
-        status: "paid",
-        stripe_transfer_id: transfer.id,
-        paid_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq("id", payoutRequest.id);
-
-    if (payoutUpdateError) {
-      console.error("request-payout update after transfer error:", payoutUpdateError);
-      return json(res, 500, {
-        ok: false,
-        error: "Transfer succeeded but failed to update payout request record.",
-        payoutRequestId: payoutRequest.id,
-        transferId: transfer.id
-      });
-    }
-
-    return json(res, 200, {
+    return send(res, 200, {
       ok: true,
-      mode: "auto_approved",
-      message: "Payout sent to connected account.",
-      payoutRequestId: payoutRequest.id,
-      transferId: transfer.id,
-      amount_cents: amountCents,
-      currency: normalizedCurrency,
-      destination: stripeAccountId
+      status: "paid",
+      payout: paidPayout,
+      stripe_transfer_id: transfer.id,
+      available_cents: availableCents
     });
   } catch (error) {
-    console.error("request-payout fatal error:", error);
-    return json(res, 500, {
-      ok: false,
-      error: error?.message || "Failed to request payout."
+    console.error("request-payout error:", error);
+
+    return send(res, 500, {
+      error: error?.message || "Payout request failed"
     });
   }
 }
