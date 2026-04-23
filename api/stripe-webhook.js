@@ -81,15 +81,6 @@ function amountDecimalFromCents(value) {
   return Number(((Number(value || 0) / 100) || 0).toFixed(2));
 }
 
-function safeJsonParse(value, fallback = null) {
-  if (!value || typeof value !== "string") return fallback;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return fallback;
-  }
-}
-
 function numOrNull(value) {
   if (value === null || value === undefined || value === "") return null;
   const parsed = Number(value);
@@ -258,6 +249,11 @@ async function grantVipLiveAccess({ supabase, checkoutSession }) {
     metadata.live_room_name ||
     null;
 
+  if (!roomName) {
+    console.log("ℹ️ VIP live access skipped: missing room name");
+    return;
+  }
+
   const sourcePaymentId =
     numOrNull(metadata.live_purchase_id) ??
     numOrNull(metadata.source_payment_id) ??
@@ -339,6 +335,39 @@ async function createArtworkPurchase({ supabase, checkoutSession }) {
   }
 }
 
+async function createPremiumContentPurchase({ supabase, checkoutSession }) {
+  const metadata = checkoutSession?.metadata || {};
+  const userId = metadata.user_id || null;
+  const creatorId = metadata.creator_id || null;
+  const premiumContentId =
+    numOrNull(metadata.content_id) ??
+    numOrNull(metadata.linked_record_id);
+
+  if (!userId || !premiumContentId) {
+    console.log("ℹ️ Premium content purchase skipped: missing user/content id");
+    return;
+  }
+
+  const payload = {
+    buyer_id: userId,
+    buyer_email: checkoutSession.customer_details?.email || null,
+    creator_id: creatorId || null,
+    premium_content_id: premiumContentId,
+    stripe_session_id: checkoutSession.id,
+    amount_cents: amountCents(checkoutSession.amount_total),
+    status: "paid",
+    created_at: isoNow()
+  };
+
+  const { error } = await supabase.from("purchases").insert(payload);
+
+  if (error) {
+    console.error("❌ Premium content purchase save failed:", error.message);
+  } else {
+    console.log("✅ Premium content purchase saved");
+  }
+}
+
 async function grantKindSpecificUnlock({ supabase, checkoutSession }) {
   const metadata = checkoutSession?.metadata || {};
   const kind = metadata.kind || null;
@@ -357,6 +386,11 @@ async function grantKindSpecificUnlock({ supabase, checkoutSession }) {
 
   if (kind === "artwork") {
     await createArtworkPurchase({ supabase, checkoutSession });
+    return;
+  }
+
+  if (kind === "premium_content") {
+    console.log("✅ Premium content payment received");
     return;
   }
 
@@ -597,6 +631,11 @@ async function syncCreatorMonetizationRecords({ supabase, checkoutSession }) {
       console.log("✅ Music earnings saved");
     }
 
+    return;
+  }
+
+  if (kind === "premium_content") {
+    await createPremiumContentPurchase({ supabase, checkoutSession });
     return;
   }
 
