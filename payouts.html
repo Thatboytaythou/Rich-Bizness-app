@@ -3,753 +3,81 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Payouts</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <title>Payouts | Rich Bizness</title>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.52);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
-    }
-
-    .page {
-      max-width: 1500px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 40px;
-    }
-
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.85rem;
-      font-weight: 900;
-    }
-
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 2.8rem;
-      line-height: 1;
-      color: var(--green);
-    }
-
-    .subtle,
-    .meta-text {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green,
-    .pill-gold,
-    .pill-red {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green {
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.28);
-      color: var(--gold);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ff9f9b;
-    }
-
-    .hero-actions,
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-danger { background: var(--danger); color: white; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.44);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.8rem;
-      font-weight: 900;
-      color: var(--green);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: 380px 1fr;
-      gap: 18px;
-    }
-
-    .panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-      height: 100%;
-    }
-
-    .panel h2 {
-      margin: 0 0 12px;
-      color: var(--green);
-      font-size: 1.35rem;
-    }
-
-    .control {
-      margin-bottom: 12px;
-    }
-
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--green);
-      font-weight: 800;
-    }
-
-    .control input,
-    .control select,
-    .control textarea {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    .summary-box {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      line-height: 1.7;
-      color: var(--text);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .payout-list {
-      display: grid;
-      gap: 14px;
-    }
-
-    .payout-card {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: grid;
-      gap: 12px;
-    }
-
-    .payout-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: start;
-    }
-
-    .payout-title {
-      color: var(--gold);
-      font-size: 1.08rem;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .payout-note {
-      color: var(--text);
-      line-height: 1.7;
-      word-break: break-word;
-    }
-
-    .payout-meta {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .empty-box {
-      padding: 24px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.78);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    @media (max-width: 1150px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 760px) {
-      .stats-row {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/theme.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/layout.css" />
+  <link rel="stylesheet" href="/styles/components.css" />
+  <link rel="stylesheet" href="/styles/pages/payouts.css" />
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Payouts</span>
+
+<body class="payouts-page">
+  <div id="elite-platform-nav"></div>
+
+  <main class="payouts-shell">
+    <!-- HEADER -->
+    <section class="payouts-hero">
+      <div>
+        <p class="eyebrow">Rich Bizness Monetization</p>
+        <h1>Payout Center</h1>
+        <p>Withdraw your earnings, track payouts, and manage your money flow.</p>
       </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
-        <a href="artist.html">Artist</a>
-        <a href="monetization.html">Monetization</a>
-        <a href="music-revenue.html">Revenue</a>
-        <a href="payouts.html" class="active">Payouts</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      <div class="payouts-actions">
+        <button id="payout-request-btn" class="btn-primary">
+          Request Payout
+        </button>
       </div>
-    </div>
+    </section>
 
-    <div class="hero">
-      <div class="hero-kicker">CASH OUT LANE</div>
-      <h1>Request payouts from your creator revenue.</h1>
-      <div class="subtle">
-        This page tracks your available balance, payout requests, and payout history in one place.
-      </div>
+    <!-- STATUS -->
+    <p id="payout-status" class="dashboard-status">
+      Loading payout data...
+    </p>
 
-      <div class="hero-actions">
-        <a class="btn-green" href="music-revenue.html">Open Revenue</a>
-        <a class="btn-dark" href="monetization.html">Open Monetization</a>
-      </div>
+    <!-- BALANCE -->
+    <section class="payouts-balance-grid">
+      <article class="balance-card glow">
+        <span>Available</span>
+        <strong id="payout-balance-available">$0.00</strong>
+        <p>Ready to withdraw</p>
+      </article>
 
-      <div id="statusBox" class="status-box">Loading payouts...</div>
+      <article class="balance-card">
+        <span>Total Earned</span>
+        <strong id="payout-balance-earned">$0.00</strong>
+        <p>All-time earnings</p>
+      </article>
 
-      <div class="stats-row">
-        <div class="stat">
-          <div id="grossStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Total Gross</div>
-        </div>
-        <div class="stat">
-          <div id="requestedStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Requested</div>
-        </div>
-        <div class="stat">
-          <div id="paidStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Paid Out</div>
-        </div>
-        <div class="stat">
-          <div id="availableStat" class="stat-value">$0.00</div>
-          <div class="stat-label">Available</div>
-        </div>
-      </div>
-    </div>
+      <article class="balance-card">
+        <span>Paid Out</span>
+        <strong id="payout-balance-paid">$0.00</strong>
+        <p>Completed payouts</p>
+      </article>
+    </section>
 
-    <div class="layout">
-      <div class="section">
-        <div class="panel">
-          <h2>Request Payout</h2>
-
-          <div class="control">
-            <label for="amountInput">Amount (USD)</label>
-            <input id="amountInput" type="number" min="1" step="0.01" placeholder="50.00" />
-          </div>
-
-          <div class="control">
-            <label for="methodInput">Payout Method</label>
-            <select id="methodInput">
-              <option value="stripe_connect">Stripe Connect</option>
-              <option value="manual_review">Manual Review</option>
-            </select>
-          </div>
-
-          <div class="control">
-            <label for="noteInput">Note</label>
-            <textarea id="noteInput" placeholder="Optional note for this payout request..."></textarea>
-          </div>
-
-          <div class="actions">
-            <button id="requestBtn" class="btn-green" type="button">Request Payout</button>
-          </div>
-
-          <div id="summaryBox" class="summary-box" style="margin-top:14px;">
-Payout summary will show here.
-          </div>
-        </div>
+    <!-- STRIPE STATUS -->
+    <section class="payouts-card">
+      <div class="card-head">
+        <h2>Payout Account</h2>
       </div>
 
-      <div class="section">
-        <div class="panel">
-          <h2>Payout History</h2>
-
-          <div id="payoutList" class="payout-list">
-            <div class="empty-box">Loading payout history...</div>
-          </div>
-        </div>
+      <div id="payout-account-status" class="card-body">
+        Checking Stripe account...
       </div>
-    </div>
-  </div>
+    </section>
 
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-      const MIN_PAYOUT_CENTS = 1000; // $10.00
+    <!-- PAYOUT HISTORY -->
+    <section class="payouts-card">
+      <div class="card-head">
+        <h2>Payout History</h2>
+      </div>
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
+      <div id="payout-history-list" class="payout-list"></div>
+    </section>
+  </main>
 
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const grossStat = document.getElementById("grossStat");
-      const requestedStat = document.getElementById("requestedStat");
-      const paidStat = document.getElementById("paidStat");
-      const availableStat = document.getElementById("availableStat");
-
-      const amountInput = document.getElementById("amountInput");
-      const methodInput = document.getElementById("methodInput");
-      const noteInput = document.getElementById("noteInput");
-      const requestBtn = document.getElementById("requestBtn");
-
-      const summaryBox = document.getElementById("summaryBox");
-      const payoutList = document.getElementById("payoutList");
-
-      let currentUser = null;
-      let earningsCache = [];
-      let payoutsCache = [];
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      function formatMoney(cents) {
-        return `$${(Number(cents || 0) / 100).toFixed(2)}`;
-      }
-
-      function toCents(dollars) {
-        return Math.round(Number(dollars || 0) * 100);
-      }
-
-      function payoutLabel(status) {
-        const s = String(status || "").toLowerCase();
-        if (s === "pending") return "Pending";
-        if (s === "paid") return "Paid";
-        if (s === "rejected") return "Rejected";
-        if (s === "canceled") return "Canceled";
-        return s || "Unknown";
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-
-        if (!currentUser) {
-          window.location.href = "auth.html";
-          return null;
-        }
-
-        return currentUser;
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      function getTotals() {
-        const gross = earningsCache.reduce((sum, row) => sum + Number(row.gross_cents || 0), 0);
-
-        const requested = payoutsCache
-          .filter(row => ["pending", "paid"].includes(String(row.status || "").toLowerCase()))
-          .reduce((sum, row) => sum + Number(row.amount_cents || 0), 0);
-
-        const paid = payoutsCache
-          .filter(row => String(row.status || "").toLowerCase() === "paid")
-          .reduce((sum, row) => sum + Number(row.amount_cents || 0), 0);
-
-        const available = Math.max(gross - requested, 0);
-
-        return { gross, requested, paid, available };
-      }
-
-      function renderStats() {
-        const { gross, requested, paid, available } = getTotals();
-
-        grossStat.textContent = formatMoney(gross);
-        requestedStat.textContent = formatMoney(requested);
-        paidStat.textContent = formatMoney(paid);
-        availableStat.textContent = formatMoney(available);
-      }
-
-      function renderSummary() {
-        const { gross, requested, paid, available } = getTotals();
-
-        summaryBox.textContent =
-          `Total Gross: ${formatMoney(gross)}\n` +
-          `Requested: ${formatMoney(requested)}\n` +
-          `Paid Out: ${formatMoney(paid)}\n` +
-          `Available Right Now: ${formatMoney(available)}\n` +
-          `Minimum Payout: ${formatMoney(MIN_PAYOUT_CENTS)}`;
-      }
-
-      function renderPayouts() {
-        if (!payoutsCache.length) {
-          payoutList.innerHTML = `<div class="empty-box">No payout requests yet.</div>`;
-          return;
-        }
-
-        payoutList.innerHTML = payoutsCache.map(row => {
-          const status = String(row.status || "").toLowerCase();
-          const pillClass =
-            status === "paid" ? "pill-green" :
-            status === "pending" ? "pill-gold" :
-            "pill-red";
-
-          return `
-            <div class="payout-card">
-              <div class="payout-top">
-                <div>
-                  <div class="payout-title">${escapeHtml(formatMoney(row.amount_cents))}</div>
-                  <div class="payout-meta">
-                    <span class="${pillClass}">${escapeHtml(payoutLabel(row.status))}</span>
-                  </div>
-                </div>
-                <div class="payout-meta">${escapeHtml(formatDate(row.created_at))}</div>
-              </div>
-
-              <div class="payout-note">
-                Method: ${escapeHtml(row.payout_method || "--")}<br>
-                Note: ${escapeHtml(row.note || "No note.")}
-              </div>
-
-              <div class="payout-meta">
-                Paid At: ${escapeHtml(formatDate(row.paid_at))}
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      async function loadPayoutData() {
-        const [earningsRes, payoutsRes] = await Promise.all([
-          supabase
-            .from("music_earnings")
-            .select("*")
-            .eq("artist_user_id", currentUser.id)
-            .order("created_at", { ascending: false }),
-
-          supabase
-            .from("payout_requests")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .order("created_at", { ascending: false })
-        ]);
-
-        if (earningsRes.error) throw earningsRes.error;
-        if (payoutsRes.error) throw payoutsRes.error;
-
-        earningsCache = earningsRes.data || [];
-        payoutsCache = payoutsRes.data || [];
-
-        renderStats();
-        renderSummary();
-        renderPayouts();
-      }
-
-      async function requestPayout() {
-        try {
-          const amountCents = toCents(amountInput.value);
-          const method = methodInput.value;
-          const note = noteInput.value.trim();
-          const { available } = getTotals();
-
-          if (!amountCents || amountCents <= 0) {
-            throw new Error("Enter a valid payout amount.");
-          }
-
-          if (amountCents < MIN_PAYOUT_CENTS) {
-            throw new Error(`Minimum payout is ${formatMoney(MIN_PAYOUT_CENTS)}.`);
-          }
-
-          if (amountCents > available) {
-            throw new Error("Requested amount is higher than available balance.");
-          }
-
-          const { error } = await supabase
-            .from("payout_requests")
-            .insert([{
-              user_id: currentUser.id,
-              amount_cents: amountCents,
-              status: "pending",
-              payout_method: method,
-              note
-            }]);
-
-          if (error) throw error;
-
-          amountInput.value = "";
-          noteInput.value = "";
-
-          await loadPayoutData();
-          setStatus("✅ Payout request submitted.");
-        } catch (error) {
-          setStatus("❌ Payout request error: " + error.message);
-        }
-      }
-
-      requestBtn.addEventListener("click", requestPayout);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      async function init() {
-        await loadSession();
-        await loadPayoutData();
-
-        supabase
-          .channel("payouts-realtime")
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "payout_requests",
-              filter: `user_id=eq.${currentUser.id}`
-            },
-            async () => {
-              await loadPayoutData();
-            }
-          )
-          .on(
-            "postgres_changes",
-            {
-              event: "*",
-              schema: "public",
-              table: "music_earnings",
-              filter: `artist_user_id=eq.${currentUser.id}`
-            },
-            async () => {
-              await loadPayoutData();
-            }
-          )
-          .subscribe();
-
-        setStatus("✅ Payouts fully synced.");
-      }
-
-      init();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Payouts Page Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
-    }
-  </script>
+  <script type="module" src="/core/pages/payouts.js"></script>
 </body>
 </html>
