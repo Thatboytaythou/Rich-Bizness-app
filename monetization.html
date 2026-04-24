@@ -3,778 +3,148 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Monetization | Rich Bizness</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    * { box-sizing: border-box; }
-
-    :root {
-      --green: #7dff71;
-      --green-2: #a8ff8f;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.50);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.60), rgba(0,0,0,0.86)),
-        url("images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png") center center / cover no-repeat fixed;
-    }
-
-    .page {
-      max-width: 1550px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 40px;
-    }
-
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.8rem;
-      font-weight: 900;
-    }
-
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-    }
-
-    .nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.16);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 22px;
-      margin-bottom: 18px;
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 1.02;
-      color: var(--green);
-    }
-
-    .subtle,
-    .card-text {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-actions,
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .btn-danger {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green {
-      background: var(--green);
-      color: black;
-    }
-
-    .btn-dark {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .btn-gold {
-      background: var(--gold);
-      color: black;
-    }
-
-    .btn-danger {
-      background: var(--danger);
-      color: white;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.48);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 900;
-      color: var(--green);
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      font-weight: 700;
-      color: var(--muted);
-    }
-
-    .section h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: var(--green);
-      font-size: 2rem;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 14px;
-    }
-
-    .card {
-      padding: 18px;
-      border-radius: 20px;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .card-title {
-      font-size: 1.15rem;
-      font-weight: 900;
-      color: var(--gold);
-      margin-bottom: 8px;
-    }
-
-    .pill {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-      font-weight: 900;
-      font-size: 0.84rem;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-
-    .control label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--green);
-      font-weight: 800;
-    }
-
-    .control input,
-    .control textarea,
-    .control select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
-
-    .control textarea {
-      min-height: 110px;
-      resize: vertical;
-    }
-
-    .full {
-      grid-column: 1 / -1;
-    }
-
-    .small {
-      color: var(--muted);
-      font-size: 0.9rem;
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    .empty-box {
-      padding: 18px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.78);
-      font-weight: 700;
-      text-align: center;
-    }
-
-    @media (max-width: 1180px) {
-      .grid,
-      .stats-row {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 860px) {
-      .grid,
-      .stats-row,
-      .form-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.25rem;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/theme.css" />
+  <link rel="stylesheet" href="/styles/base.css" />
+  <link rel="stylesheet" href="/styles/layout.css" />
+  <link rel="stylesheet" href="/styles/components.css" />
+  <link rel="stylesheet" href="/styles/pages/monetization.css" />
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness">
-        <span>Monetization Hub</span>
+
+<body class="monetization-page">
+  <div id="elite-platform-nav"></div>
+
+  <main class="monetization-shell">
+    <section class="monetization-hero">
+      <div>
+        <p class="eyebrow">Rich Bizness Money Center</p>
+        <h1>Monetization</h1>
+        <p>
+          Connect Stripe, create premium offers, manage creator memberships,
+          track unlocks, and turn your platform into a real money engine.
+        </p>
       </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="music.html">Music</a>
-        <a href="albums.html">Albums</a>
-        <a href="playlist.html">Playlists</a>
-        <a href="artist.html">Artist</a>
-        <a href="artist-channel-manage.html">Manage Channel</a>
-        <a href="music-revenue.html">Revenue</a>
-        <a href="monetization.html" class="active">Monetize</a>
-        <a href="profile.html">Profile</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      <div class="monetization-actions">
+        <button id="connect-stripe-btn" class="btn-primary">
+          Connect Stripe
+        </button>
+        <a class="btn-ghost" href="/payouts.html">Payout Center</a>
       </div>
-    </div>
+    </section>
 
-    <div class="hero">
-      <h1>Full Synced Monetization</h1>
-      <div class="subtle">
-        Premium tracks, supporter subscriptions, direct unlocks, and Stripe creator onboarding — all connected to the files you already have.
+    <p id="monetization-status" class="dashboard-status">
+      Loading monetization center...
+    </p>
+
+    <section class="monetization-grid">
+      <article class="money-card glow">
+        <span>Available</span>
+        <strong id="monetization-balance-available">$0.00</strong>
+        <p>Ready for payout once your Stripe account is active.</p>
+      </article>
+
+      <article class="money-card">
+        <span>Total Earned</span>
+        <strong id="monetization-balance-earned">$0.00</strong>
+        <p>Creator revenue calculated from your money flow.</p>
+      </article>
+
+      <article class="money-card">
+        <span>Paid Out</span>
+        <strong id="monetization-balance-paid">$0.00</strong>
+        <p>Completed payout movement.</p>
+      </article>
+    </section>
+
+    <section class="monetization-card">
+      <div class="card-head">
+        <h2>Stripe Payout Account</h2>
       </div>
-
-      <div class="hero-actions">
-        <a class="btn-gold" href="music-revenue.html">Open Revenue Dashboard</a>
-        <a class="btn-dark" href="music.html">Back To Music</a>
-        <a class="btn-dark" href="artist-channel-manage.html">Manage Artist Channel</a>
+      <div id="stripe-account-panel" class="card-body">
+        Checking Stripe account...
       </div>
+    </section>
 
-      <div id="statusBox" class="status-box">Loading monetization hub...</div>
-
-      <div class="stats-row">
-        <div class="stat">
-          <div id="trackCountStat" class="stat-value">0</div>
-          <div class="stat-label">My Tracks</div>
-        </div>
-        <div class="stat">
-          <div id="premiumCountStat" class="stat-value">0</div>
-          <div class="stat-label">Premium Tracks</div>
-        </div>
-        <div class="stat">
-          <div id="subscriptionCountStat" class="stat-value">0</div>
-          <div class="stat-label">Subscribers</div>
-        </div>
-        <div class="stat">
-          <div id="purchaseCountStat" class="stat-value">0</div>
-          <div class="stat-label">Unlock Sales</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Stripe Creator Setup</h2>
-      <div class="grid">
-        <div class="card">
-          <div class="pill">CONNECT</div>
-          <div class="card-title">Create Creator Payout Account</div>
-          <div class="card-text">
-            Start your creator payout setup using your existing connect route.
-          </div>
-          <div class="card-actions">
-            <button id="createConnectBtn" class="btn-green" type="button">Create Connect Account</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="pill">ONBOARDING</div>
-          <div class="card-title">Open Stripe Account Link</div>
-          <div class="card-text">
-            Continue setup for payouts, verification, and creator account details.
-          </div>
-          <div class="card-actions">
-            <button id="accountLinkBtn" class="btn-dark" type="button">Open Account Link</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="pill">RESULTS</div>
-          <div class="card-title">Success + Cancel Routes</div>
-          <div class="card-text">
-            Your checkout flow already has success and cancel pages ready.
-          </div>
-          <div class="card-actions">
-            <a class="btn-green" href="monetization-success.html">Success Page</a>
-            <a class="btn-danger" href="monetization-cancel.html">Cancel Page</a>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Premium Track Unlock</h2>
-      <div class="form-grid">
-        <div class="control">
-          <label for="premiumTrackSelect">Choose Track</label>
-          <select id="premiumTrackSelect">
-            <option value="">Select a track</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label for="unlockPrice">Unlock Price (USD)</label>
-          <input id="unlockPrice" type="number" step="0.01" min="0.50" value="5.00" />
-        </div>
-
-        <div class="control">
-          <label for="subscriberOnly">Access Mode</label>
-          <select id="subscriberOnly">
-            <option value="false">Direct Unlock</option>
-            <option value="true">Subscriber Only</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label>&nbsp;</label>
-          <button id="savePremiumBtn" class="btn-green" type="button">Save Premium Setup</button>
-        </div>
-      </div>
-      <div class="small">
-        This writes to your `premium_tracks` table so `music.html` and `music-unlock.html` can use it.
-      </div>
-    </div>
-
-    <div class="section">
-      <h2>Fan Subscription Checkout</h2>
-      <div class="form-grid">
-        <div class="control">
-          <label for="subscriptionTitle">Supporter Plan Name</label>
-          <input id="subscriptionTitle" type="text" value="Artist Supporter Plan" />
-        </div>
-
-        <div class="control">
-          <label for="subscriptionAmount">Monthly Price (USD)</label>
-          <input id="subscriptionAmount" type="number" step="0.01" min="1.00" value="5.00" />
-        </div>
-
-        <div class="control full">
-          <label for="subscriptionNote">Supporter Message</label>
-          <textarea id="subscriptionNote" placeholder="Describe what fans get with this support tier...">Support the artist and unlock premium creator access.</textarea>
-        </div>
+    <section class="monetization-card">
+      <div class="card-head">
+        <h2>Create Premium Content</h2>
       </div>
 
-      <div class="card-actions">
-        <button id="createSubscriptionBtn" class="btn-gold" type="button">Create Fan Subscription Checkout</button>
-      </div>
-    </div>
+      <form id="premium-content-form" class="premium-form">
+        <label>
+          Title
+          <input id="premium-title" type="text" placeholder="VIP video, private track, training pack..." />
+        </label>
 
-    <div class="section">
-      <h2>Direct Support / Tip Checkout</h2>
-      <div class="form-grid">
-        <div class="control">
-          <label for="tipTitle">Checkout Title</label>
-          <input id="tipTitle" type="text" value="Support Rich Bizness Artist" />
+        <label>
+          Description
+          <textarea id="premium-description" rows="4" placeholder="Describe what fans unlock..."></textarea>
+        </label>
+
+        <div class="form-grid">
+          <label>
+            Content Type
+            <select id="premium-content-type">
+              <option value="post">Post</option>
+              <option value="track">Track</option>
+              <option value="video">Video</option>
+              <option value="live">Live Replay</option>
+              <option value="product">Product</option>
+              <option value="bundle">Bundle</option>
+            </select>
+          </label>
+
+          <label>
+            Content ID
+            <input id="premium-content-id" type="number" min="1" placeholder="Optional linked record ID" />
+          </label>
+
+          <label>
+            Price ($)
+            <input id="premium-price" type="number" min="1" step="0.01" placeholder="9.99" />
+          </label>
         </div>
 
-        <div class="control">
-          <label for="tipAmount">Amount (USD)</label>
-          <input id="tipAmount" type="number" step="0.01" min="1.00" value="10.00" />
+        <button class="btn-primary" type="submit">
+          Create Premium Offer
+        </button>
+      </form>
+    </section>
+
+    <section class="monetization-layout">
+      <section class="monetization-card">
+        <div class="card-head">
+          <h2>Premium Offers</h2>
         </div>
+        <div id="premium-content-list" class="money-list"></div>
+      </section>
 
-        <div class="control full">
-          <label for="tipDescription">Checkout Note</label>
-          <textarea id="tipDescription" placeholder="Optional note...">Direct artist support checkout.</textarea>
+      <section class="monetization-card">
+        <div class="card-head">
+          <h2>Recent Unlocks</h2>
         </div>
-      </div>
+        <div id="unlock-list" class="money-list"></div>
+      </section>
 
-      <div class="card-actions">
-        <button id="createTipBtn" class="btn-green" type="button">Create Support Checkout</button>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const statusBox = document.getElementById("statusBox");
-
-      const trackCountStat = document.getElementById("trackCountStat");
-      const premiumCountStat = document.getElementById("premiumCountStat");
-      const subscriptionCountStat = document.getElementById("subscriptionCountStat");
-      const purchaseCountStat = document.getElementById("purchaseCountStat");
-
-      const createConnectBtn = document.getElementById("createConnectBtn");
-      const accountLinkBtn = document.getElementById("accountLinkBtn");
-
-      const premiumTrackSelect = document.getElementById("premiumTrackSelect");
-      const unlockPrice = document.getElementById("unlockPrice");
-      const subscriberOnly = document.getElementById("subscriberOnly");
-      const savePremiumBtn = document.getElementById("savePremiumBtn");
-
-      const subscriptionTitle = document.getElementById("subscriptionTitle");
-      const subscriptionAmount = document.getElementById("subscriptionAmount");
-      const subscriptionNote = document.getElementById("subscriptionNote");
-      const createSubscriptionBtn = document.getElementById("createSubscriptionBtn");
-
-      const tipTitle = document.getElementById("tipTitle");
-      const tipAmount = document.getElementById("tipAmount");
-      const tipDescription = document.getElementById("tipDescription");
-      const createTipBtn = document.getElementById("createTipBtn");
-
-      let currentUser = null;
-      let myTracks = [];
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-
-        if (!currentUser) {
-          window.location.href = "auth.html";
-          return false;
-        }
-
-        return true;
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function loadStatsAndTracks() {
-        const ok = await loadSession();
-        if (!ok) return;
-
-        const [tracksRes, premiumRes, subRes, purchaseRes] = await Promise.all([
-          supabase.from("music_tracks").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false }),
-          supabase.from("premium_tracks").select("*").eq("artist_user_id", currentUser.id),
-          supabase.from("fan_subscriptions").select("*", { count: "exact", head: true }).eq("artist_user_id", currentUser.id).eq("status", "active"),
-          supabase.from("premium_track_purchases").select("*", { count: "exact", head: true }).eq("artist_user_id", currentUser.id).eq("status", "paid")
-        ]);
-
-        if (tracksRes.error) throw tracksRes.error;
-        if (premiumRes.error) throw premiumRes.error;
-        if (subRes.error) throw subRes.error;
-        if (purchaseRes.error) throw purchaseRes.error;
-
-        myTracks = tracksRes.data || [];
-
-        trackCountStat.textContent = myTracks.length;
-        premiumCountStat.textContent = (premiumRes.data || []).length;
-        subscriptionCountStat.textContent = subRes.count || 0;
-        purchaseCountStat.textContent = purchaseRes.count || 0;
-
-        premiumTrackSelect.innerHTML = `<option value="">Select a track</option>` + myTracks.map(track =>
-          `<option value="${track.id}">${String(track.title || "Untitled Track")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")}</option>`
-        ).join("");
-      }
-
-      async function createConnectAccount() {
-        try {
-          const ok = await loadSession();
-          if (!ok) return;
-
-          const response = await fetch("/api/create-connect-account", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: currentUser.id,
-              email: currentUser.email
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || "Could not create connect account.");
-
-          setStatus("Connect account created or found.");
-        } catch (error) {
-          setStatus("Connect account error: " + error.message);
-        }
-      }
-
-      async function openAccountLink() {
-        try {
-          const ok = await loadSession();
-          if (!ok) return;
-
-          const response = await fetch("/api/create-account-link", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: currentUser.id,
-              email: currentUser.email
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || "Could not create account link.");
-
-          if (!payload.url) throw new Error("No Stripe account link returned.");
-          window.location.href = payload.url;
-        } catch (error) {
-          setStatus("Account link error: " + error.message);
-        }
-      }
-
-      async function savePremiumSetup() {
-        try {
-          const ok = await loadSession();
-          if (!ok) return;
-
-          const trackId = Number(premiumTrackSelect.value);
-          if (!trackId) throw new Error("Choose a track first.");
-
-          const price = Number(unlockPrice.value);
-          if (!price || price <= 0) throw new Error("Enter a valid unlock price.");
-
-          const amountCents = Math.round(price * 100);
-          const isSubscriberOnly = subscriberOnly.value === "true";
-
-          const { error } = await supabase
-            .from("premium_tracks")
-            .upsert({
-              track_id: trackId,
-              artist_user_id: currentUser.id,
-              unlock_price_cents: amountCents,
-              is_subscriber_only: isSubscriberOnly
-            }, { onConflict: "track_id" });
-
-          if (error) throw error;
-
-          setStatus("Premium track setup saved.");
-          await loadStatsAndTracks();
-        } catch (error) {
-          setStatus("Premium setup error: " + error.message);
-        }
-      }
-
-      async function createSubscriptionCheckout() {
-        try {
-          const ok = await loadSession();
-          if (!ok) return;
-
-          const title = subscriptionTitle.value.trim() || "Artist Supporter Plan";
-          const price = Number(subscriptionAmount.value);
-          if (!price || price <= 0) throw new Error("Enter a valid subscription amount.");
-
-          const amountCents = Math.round(price * 100);
-
-          const response = await fetch("/api/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "fan_subscription",
-              title,
-              amountCents,
-              description: subscriptionNote.value.trim(),
-              artistUserId: currentUser.id,
-              successUrl: `${window.location.origin}/monetization-success.html`,
-              cancelUrl: `${window.location.origin}/monetization-cancel.html`
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || "Could not create subscription checkout.");
-
-          if (!payload.url) throw new Error("No checkout URL returned.");
-          window.location.href = payload.url;
-        } catch (error) {
-          setStatus("Subscription checkout error: " + error.message);
-        }
-      }
-
-      async function createTipCheckout() {
-        try {
-          const ok = await loadSession();
-          if (!ok) return;
-
-          const title = tipTitle.value.trim() || "Support Rich Bizness Artist";
-          const price = Number(tipAmount.value);
-          if (!price || price <= 0) throw new Error("Enter a valid support amount.");
-
-          const amountCents = Math.round(price * 100);
-
-          const response = await fetch("/api/create-checkout-session", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "direct_support",
-              title,
-              amountCents,
-              description: tipDescription.value.trim(),
-              artistUserId: currentUser.id,
-              successUrl: `${window.location.origin}/monetization-success.html`,
-              cancelUrl: `${window.location.origin}/monetization-cancel.html`
-            })
-          });
-
-          const payload = await response.json();
-          if (!response.ok) throw new Error(payload.error || "Could not create support checkout.");
-
-          if (!payload.url) throw new Error("No checkout URL returned.");
-          window.location.href = payload.url;
-        } catch (error) {
-          setStatus("Support checkout error: " + error.message);
-        }
-      }
-
-      createConnectBtn.addEventListener("click", createConnectAccount);
-      accountLinkBtn.addEventListener("click", openAccountLink);
-      savePremiumBtn.addEventListener("click", savePremiumSetup);
-      createSubscriptionBtn.addEventListener("click", createSubscriptionCheckout);
-      createTipBtn.addEventListener("click", createTipCheckout);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadStatsAndTracks()
-        .then(() => setStatus("Monetization hub loaded."))
-        .catch((error) => setStatus("Monetization load error: " + error.message));
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Monetization Startup Error</h1>
-          <p>${error.message}</p>
+      <section class="monetization-card">
+        <div class="card-head">
+          <h2>Creator Memberships</h2>
         </div>
-      `;
-    }
-  </script>
+        <div id="membership-list" class="money-list"></div>
+      </section>
+
+      <section class="monetization-card">
+        <div class="card-head">
+          <h2>Recent Tips</h2>
+        </div>
+        <div id="tips-list" class="money-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script type="module" src="/core/pages/monetization.js"></script>
 </body>
 </html>
