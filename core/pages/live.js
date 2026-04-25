@@ -1,10 +1,6 @@
-import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
+import { initApp, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 import { supabase } from "/core/supabase.js";
-import { BRAND_IMAGES } from "/core/config.js";
-
-let previewStream = null;
-let currentStream = null;
 
 function $(id) {
   return document.getElementById(id);
@@ -12,22 +8,27 @@ function $(id) {
 
 const els = {
   navMount: $("elite-platform-nav"),
-
+  previewVideo: $("studio-preview"),
   liveForm: $("live-form"),
   statusBox: $("live-status-box"),
   recentLiveList: $("recent-live-list"),
 
-  previewVideo: $("studio-preview"),
+  setupActions: $("studio-setup-actions"),
+  liveActions: $("studio-live-actions"),
+
   startCameraBtn: $("start-camera-btn"),
   stopCameraBtn: $("stop-camera-btn"),
   createLiveBtn: $("create-live-btn"),
   updateLiveBtn: $("update-live-btn"),
   goLiveBtn: $("go-live-btn"),
   endLiveBtn: $("end-live-btn"),
+  endLiveTopBtn: $("end-live-top-btn"),
   refreshStreamBtn: $("refresh-stream-btn"),
   clearLiveFormBtn: $("clear-live-form-btn"),
   openWatchBtn: $("open-watch-btn"),
   copyWatchLinkBtn: $("copy-watch-link-btn"),
+  openWatchLiveBtn: $("open-watch-live-btn"),
+  copyWatchLiveBtn: $("copy-watch-live-btn"),
 
   liveTitle: $("live-title"),
   liveDescription: $("live-description"),
@@ -62,14 +63,8 @@ const els = {
   detailTimes: $("detail-times")
 };
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+let currentStream = null;
+let previewStream = null;
 
 function setStatus(message, type = "normal") {
   if (!els.statusBox) return;
@@ -79,6 +74,15 @@ function setStatus(message, type = "normal") {
 
   if (type === "error") els.statusBox.classList.add("is-error");
   if (type === "success") els.statusBox.classList.add("is-success");
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function slugify(value = "") {
@@ -91,14 +95,10 @@ function slugify(value = "") {
 }
 
 function toMoney(cents = 0, currency = "USD") {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: currency || "USD"
-    }).format(Number(cents || 0) / 100);
-  } catch {
-    return `$${(Number(cents || 0) / 100).toFixed(2)}`;
-  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency || "USD"
+  }).format(Number(cents || 0) / 100);
 }
 
 function toCents(amount = 0) {
@@ -107,8 +107,10 @@ function toCents(amount = 0) {
 
 function safeDateTime(value) {
   if (!value) return "—";
+
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
+
   return date.toLocaleString();
 }
 
@@ -119,41 +121,21 @@ function watchHrefFromStream(stream) {
   return "/watch.html";
 }
 
-function currentCreatorName() {
-  const user = getCurrentUserState();
-  const profile = getCurrentProfileState();
-
-  return (
-    profile?.display_name ||
-    profile?.username ||
-    user?.user_metadata?.display_name ||
-    user?.user_metadata?.username ||
-    user?.email ||
-    "Rich Bizness Creator"
-  );
-}
-
 function syncPreviewFromForm() {
   if (els.previewTitle) {
     els.previewTitle.textContent =
-      els.liveTitle?.value.trim() || "Rich Bizness Live Studio";
+      els.liveTitle?.value?.trim() || "Rich Bizness Live Studio";
   }
 
-  if (els.badgeAccess) {
-    els.badgeAccess.textContent = String(
-      els.liveAccess?.value || "free"
-    ).toUpperCase();
-  }
+  const access = String(els.liveAccess?.value || "free").toUpperCase();
+  const category = String(els.liveCategory?.value || "live").toUpperCase();
 
-  if (els.badgeCategory) {
-    els.badgeCategory.textContent = String(
-      els.liveCategory?.value || "live"
-    ).toUpperCase();
-  }
+  if (els.badgeAccess) els.badgeAccess.textContent = access;
+  if (els.badgeCategory) els.badgeCategory.textContent = category;
 
   if (els.previewCopy) {
     els.previewCopy.textContent =
-      els.liveDescription?.value.trim() ||
+      els.liveDescription?.value?.trim() ||
       "Start camera preview, build your stream, save the stream record, then open the watch page.";
   }
 }
@@ -161,6 +143,63 @@ function syncPreviewFromForm() {
 function syncScheduleVisibility() {
   if (!els.scheduleWrap || !els.liveScheduledMode) return;
   els.scheduleWrap.style.display = els.liveScheduledMode.checked ? "grid" : "none";
+}
+
+function syncStudioActionState(stream) {
+  const isLive = String(stream?.status || "").toLowerCase() === "live";
+
+  els.setupActions?.classList.toggle("is-hidden", isLive);
+  els.liveActions?.classList.toggle("is-visible", isLive);
+
+  if (isLive && els.previewCopy) {
+    els.previewCopy.textContent =
+      "You are live now. Camera setup controls are hidden so viewers only see the live control state.";
+  } else {
+    syncPreviewFromForm();
+  }
+}
+
+function fillFormFromStream(stream) {
+  if (!stream) return;
+
+  if (els.liveTitle) els.liveTitle.value = stream.title || "";
+  if (els.liveDescription) els.liveDescription.value = stream.description || "";
+  if (els.liveCategory) els.liveCategory.value = stream.category || "general";
+  if (els.liveAccess) els.liveAccess.value = stream.access_type || "free";
+
+  if (els.livePrice) {
+    els.livePrice.value =
+      Number(stream.price_cents || 0) > 0
+        ? (Number(stream.price_cents || 0) / 100).toFixed(2)
+        : "";
+  }
+
+  if (els.liveThumbnail) els.liveThumbnail.value = stream.thumbnail_url || "";
+  if (els.liveCover) els.liveCover.value = stream.cover_url || "";
+  if (els.liveRoomName) els.liveRoomName.value = stream.livekit_room_name || "";
+  if (els.liveChatEnabled) els.liveChatEnabled.checked = !!stream.is_chat_enabled;
+  if (els.liveReplayEnabled) els.liveReplayEnabled.checked = !!stream.is_replay_enabled;
+  if (els.liveFeatured) els.liveFeatured.checked = !!stream.is_featured;
+  if (els.liveCurrency) els.liveCurrency.value = stream.currency || "USD";
+
+  if (stream.scheduled_for) {
+    if (els.liveScheduledMode) els.liveScheduledMode.checked = true;
+
+    const local = new Date(stream.scheduled_for);
+    if (!Number.isNaN(local.getTime()) && els.liveScheduledFor) {
+      const iso = new Date(local.getTime() - local.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16);
+      els.liveScheduledFor.value = iso;
+    }
+  } else {
+    if (els.liveScheduledMode) els.liveScheduledMode.checked = false;
+    if (els.liveScheduledFor) els.liveScheduledFor.value = "";
+  }
+
+  syncScheduleVisibility();
+  syncPreviewFromForm();
+  renderCurrentStream(stream);
 }
 
 function renderCurrentStream(stream) {
@@ -171,11 +210,12 @@ function renderCurrentStream(stream) {
   if (els.badgeStatus) {
     els.badgeStatus.textContent = isLive
       ? "LIVE"
-      : String(stream?.status || "offline").toUpperCase();
+      : String(stream?.status || "draft").toUpperCase();
+
     els.badgeStatus.classList.toggle("is-live", isLive);
   }
 
-  if (els.metaStatus) els.metaStatus.textContent = stream?.status || "Draft";
+  if (els.metaStatus) els.metaStatus.textContent = stream?.status || "draft";
   if (els.metaSlug) els.metaSlug.textContent = stream?.slug || "—";
   if (els.metaViewers) {
     els.metaViewers.textContent = Number(stream?.viewer_count || 0).toLocaleString();
@@ -193,64 +233,23 @@ function renderCurrentStream(stream) {
       ? `${window.location.origin}${watchHrefFromStream(stream)}`
       : "—";
   }
-  if (els.detailRoomName) {
-    els.detailRoomName.textContent = stream?.livekit_room_name || "—";
-  }
+  if (els.detailRoomName) els.detailRoomName.textContent = stream?.livekit_room_name || "—";
   if (els.detailTimes) {
     els.detailTimes.textContent = stream
       ? `Created: ${safeDateTime(stream.created_at)} | Started: ${safeDateTime(stream.started_at)} | Ended: ${safeDateTime(stream.ended_at)}`
       : "No live record yet.";
   }
-}
 
-function fillFormFromStream(stream) {
-  if (!stream) return;
-
-  if (els.liveTitle) els.liveTitle.value = stream.title || "";
-  if (els.liveDescription) els.liveDescription.value = stream.description || "";
-  if (els.liveCategory) els.liveCategory.value = stream.category || "music";
-  if (els.liveAccess) els.liveAccess.value = stream.access_type || "free";
-  if (els.livePrice) {
-    els.livePrice.value =
-      Number(stream.price_cents || 0) > 0
-        ? (Number(stream.price_cents || 0) / 100).toFixed(2)
-        : "";
-  }
-  if (els.liveThumbnail) els.liveThumbnail.value = stream.thumbnail_url || "";
-  if (els.liveCover) els.liveCover.value = stream.cover_url || "";
-  if (els.liveRoomName) els.liveRoomName.value = stream.livekit_room_name || "";
-  if (els.liveChatEnabled) els.liveChatEnabled.checked = !!stream.is_chat_enabled;
-  if (els.liveReplayEnabled) els.liveReplayEnabled.checked = !!stream.is_replay_enabled;
-  if (els.liveFeatured) els.liveFeatured.checked = !!stream.is_featured;
-  if (els.liveCurrency) els.liveCurrency.value = stream.currency || "USD";
-
-  if (els.liveScheduledMode && els.liveScheduledFor) {
-    if (stream.scheduled_for) {
-      els.liveScheduledMode.checked = true;
-      const local = new Date(stream.scheduled_for);
-      if (!Number.isNaN(local.getTime())) {
-        const iso = new Date(local.getTime() - local.getTimezoneOffset() * 60000)
-          .toISOString()
-          .slice(0, 16);
-        els.liveScheduledFor.value = iso;
-      }
-    } else {
-      els.liveScheduledMode.checked = false;
-      els.liveScheduledFor.value = "";
-    }
-  }
-
-  syncScheduleVisibility();
-  syncPreviewFromForm();
-  renderCurrentStream(stream);
+  syncStudioActionState(stream);
 }
 
 function clearForm() {
   currentStream = null;
+
   els.liveForm?.reset();
 
-  if (els.liveCategory) els.liveCategory.value = "music";
   if (els.liveAccess) els.liveAccess.value = "free";
+  if (els.liveCategory) els.liveCategory.value = "music";
   if (els.liveCurrency) els.liveCurrency.value = "USD";
   if (els.liveChatEnabled) els.liveChatEnabled.checked = true;
   if (els.liveReplayEnabled) els.liveReplayEnabled.checked = true;
@@ -265,6 +264,7 @@ function clearForm() {
     els.badgeStatus.textContent = "OFFLINE";
     els.badgeStatus.classList.remove("is-live");
   }
+
   if (els.metaStatus) els.metaStatus.textContent = "Draft";
 
   setStatus("Form cleared.");
@@ -272,20 +272,18 @@ function clearForm() {
 
 async function startCameraPreview() {
   try {
-    stopCameraPreview();
+    if (previewStream) stopCameraPreview();
 
     previewStream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true
     });
 
-    if (els.previewVideo) {
-      els.previewVideo.srcObject = previewStream;
-    }
+    if (els.previewVideo) els.previewVideo.srcObject = previewStream;
 
     setStatus("Camera preview started.", "success");
   } catch (error) {
-    console.error("[core/pages/live] startCameraPreview error:", error);
+    console.error("[live] startCameraPreview error:", error);
     setStatus("Could not start camera preview. Check browser permissions.", "error");
   }
 }
@@ -294,36 +292,31 @@ function stopCameraPreview() {
   if (!previewStream) return;
 
   previewStream.getTracks().forEach((track) => track.stop());
+
+  if (els.previewVideo) els.previewVideo.srcObject = null;
+
   previewStream = null;
-
-  if (els.previewVideo) {
-    els.previewVideo.srcObject = null;
-  }
-
   setStatus("Camera preview stopped.");
 }
 
 function buildPayload({ statusOverride = null } = {}) {
   const user = getCurrentUserState();
 
-  if (!user?.id) {
-    throw new Error("You must be logged in.");
-  }
+  if (!user?.id) throw new Error("You must be logged in.");
 
-  const title = els.liveTitle?.value.trim();
-  const category = els.liveCategory?.value;
-  const accessType = els.liveAccess?.value;
+  const title = els.liveTitle?.value?.trim() || "";
+  const category = els.liveCategory?.value || "general";
+  const accessType = els.liveAccess?.value || "free";
   const currency = (els.liveCurrency?.value || "USD").trim().toUpperCase();
-  const roomNameRaw = els.liveRoomName?.value.trim();
+  const roomNameRaw = els.liveRoomName?.value?.trim() || "";
+
   const scheduledEnabled = !!els.liveScheduledMode?.checked;
   const scheduledFor =
     scheduledEnabled && els.liveScheduledFor?.value
       ? new Date(els.liveScheduledFor.value).toISOString()
       : null;
 
-  if (!title) {
-    throw new Error("Stream title is required.");
-  }
+  if (!title) throw new Error("Stream title is required.");
 
   const slugBase = slugify(title);
   const slug = currentStream?.slug || `${slugBase}-${Date.now()}`;
@@ -332,16 +325,14 @@ function buildPayload({ statusOverride = null } = {}) {
     creator_id: user.id,
     slug,
     title,
-    description: els.liveDescription?.value.trim() || null,
-    category: category || "music",
-    status:
-      statusOverride ||
-      (scheduledFor ? "scheduled" : currentStream?.status || "draft"),
+    description: els.liveDescription?.value?.trim() || null,
+    category: category || "general",
+    status: statusOverride || (scheduledFor ? "scheduled" : currentStream?.status || "draft"),
     access_type: accessType || "free",
-    price_cents: accessType === "paid" ? toCents(els.livePrice?.value) : 0,
+    price_cents: accessType === "paid" ? toCents(els.livePrice?.value || 0) : 0,
     currency: currency || "USD",
-    thumbnail_url: els.liveThumbnail?.value.trim() || null,
-    cover_url: els.liveCover?.value.trim() || null,
+    thumbnail_url: els.liveThumbnail?.value?.trim() || null,
+    cover_url: els.liveCover?.value?.trim() || null,
     livekit_room_name: roomNameRaw || `rb-live-${slug}`,
     scheduled_for: scheduledFor,
     started_at:
@@ -376,14 +367,13 @@ async function createLiveStream() {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("[core/pages/live] createLiveStream error:", error);
-    throw new Error(error.message || "Could not create live stream.");
-  }
+  if (error) throw new Error(error.message || "Could not create live stream.");
 
+  renderCurrentStream(data);
   fillFormFromStream(data);
   setStatus("Live stream record created.", "success");
   await loadRecentStreams();
+
   return data;
 }
 
@@ -401,21 +391,19 @@ async function updateLiveStream() {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("[core/pages/live] updateLiveStream error:", error);
-    throw new Error(error.message || "Could not update live stream.");
-  }
+  if (error) throw new Error(error.message || "Could not update live stream.");
 
+  renderCurrentStream(data);
   fillFormFromStream(data);
   setStatus("Live stream updated.", "success");
   await loadRecentStreams();
+
   return data;
 }
 
 async function goLiveNow() {
   if (!currentStream?.id) {
-    const created = await createLiveStream();
-    currentStream = created;
+    currentStream = await createLiveStream();
   }
 
   const payload = buildPayload({ statusOverride: "live" });
@@ -432,21 +420,18 @@ async function goLiveNow() {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("[core/pages/live] goLiveNow error:", error);
-    throw new Error(error.message || "Could not start live stream.");
-  }
+  if (error) throw new Error(error.message || "Could not start live stream.");
 
+  renderCurrentStream(data);
   fillFormFromStream(data);
-  setStatus("Stream is live now.", "success");
+  setStatus("Stream is live now. Studio camera setup controls are hidden.", "success");
   await loadRecentStreams();
+
   return data;
 }
 
 async function endLiveStream() {
-  if (!currentStream?.id) {
-    throw new Error("No current live stream to end.");
-  }
+  if (!currentStream?.id) throw new Error("No current live stream to end.");
 
   const { data, error } = await supabase
     .from("live_streams")
@@ -460,25 +445,23 @@ async function endLiveStream() {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("[core/pages/live] endLiveStream error:", error);
-    throw new Error(error.message || "Could not end live stream.");
-  }
+  if (error) throw new Error(error.message || "Could not end live stream.");
 
+  renderCurrentStream(data);
   fillFormFromStream(data);
-  setStatus("Live stream ended clean.", "success");
+  setStatus("Live stream ended clean. Studio setup controls are back.", "success");
   await loadRecentStreams();
+
   return data;
 }
 
 async function loadRecentStreams() {
   const user = getCurrentUserState();
 
+  if (!els.recentLiveList) return;
+
   if (!user?.id) {
-    if (els.recentLiveList) {
-      els.recentLiveList.innerHTML =
-        `<div class="status-box">Login first to load your live history.</div>`;
-    }
+    els.recentLiveList.innerHTML = `<div class="status-box">Login first to load your live history.</div>`;
     return;
   }
 
@@ -490,44 +473,36 @@ async function loadRecentStreams() {
     .limit(6);
 
   if (error) {
-    console.error("[core/pages/live] loadRecentStreams error:", error);
-    if (els.recentLiveList) {
-      els.recentLiveList.innerHTML =
-        `<div class="status-box is-error">Could not load recent live streams.</div>`;
-    }
+    els.recentLiveList.innerHTML = `<div class="status-box is-error">Could not load recent live streams.</div>`;
     return;
   }
 
   if (!data?.length) {
-    if (els.recentLiveList) {
-      els.recentLiveList.innerHTML = `<div class="status-box">No streams yet.</div>`;
-    }
+    els.recentLiveList.innerHTML = `<div class="status-box">No streams yet.</div>`;
     return;
   }
 
-  if (els.recentLiveList) {
-    els.recentLiveList.innerHTML = data
-      .map((stream) => {
-        const watchHref = watchHrefFromStream(stream);
+  els.recentLiveList.innerHTML = data
+    .map((stream) => {
+      const watchHref = watchHrefFromStream(stream);
 
-        return `
-          <article class="recent-card">
-            <h4>${escapeHtml(stream.title || "Untitled Live")}</h4>
-            <div class="recent-meta">
-              <span>${escapeHtml(stream.status || "draft")}</span>
-              <span>${escapeHtml(stream.category || "general")}</span>
-              <span>${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
-            </div>
-            <p>${escapeHtml(stream.description || "No description.")}</p>
-            <div class="recent-actions">
-              <button class="btn btn-dark" type="button" data-load-stream="${stream.id}">Load</button>
-              <a class="btn btn-dark" href="${watchHref}">Watch</a>
-            </div>
-          </article>
-        `;
-      })
-      .join("");
-  }
+      return `
+        <article class="recent-card">
+          <h4>${escapeHtml(stream.title || "Untitled Live")}</h4>
+          <div class="recent-meta">
+            <span>${escapeHtml(stream.status || "draft")}</span>
+            <span>${escapeHtml(stream.category || "general")}</span>
+            <span>${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
+          </div>
+          <p>${escapeHtml(stream.description || "No description.")}</p>
+          <div class="recent-actions">
+            <button class="btn btn-dark" type="button" data-load-stream="${stream.id}">Load</button>
+            <a class="btn btn-dark" href="${watchHref}">Watch</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 async function loadStreamById(streamId) {
@@ -538,11 +513,11 @@ async function loadStreamById(streamId) {
     .single();
 
   if (error) {
-    console.error("[core/pages/live] loadStreamById error:", error);
     setStatus("Could not load that stream.", "error");
     return;
   }
 
+  renderCurrentStream(data);
   fillFormFromStream(data);
   setStatus("Stream loaded into studio.", "success");
 }
@@ -557,10 +532,80 @@ async function copyWatchLink() {
   try {
     await navigator.clipboard.writeText(href);
     setStatus("Watch link copied.", "success");
-  } catch (error) {
-    console.error("[core/pages/live] copyWatchLink error:", error);
+  } catch {
     setStatus("Could not copy watch link.", "error");
   }
+}
+
+async function handleCreateLive(event) {
+  event.preventDefault();
+
+  if (els.createLiveBtn) els.createLiveBtn.disabled = true;
+
+  try {
+    await createLiveStream();
+  } catch (error) {
+    setStatus(error.message || "Could not create stream.", "error");
+  } finally {
+    if (els.createLiveBtn) els.createLiveBtn.disabled = false;
+  }
+}
+
+async function handleUpdateLive() {
+  if (els.updateLiveBtn) els.updateLiveBtn.disabled = true;
+
+  try {
+    await updateLiveStream();
+  } catch (error) {
+    setStatus(error.message || "Could not update stream.", "error");
+  } finally {
+    if (els.updateLiveBtn) els.updateLiveBtn.disabled = false;
+  }
+}
+
+async function handleGoLive() {
+  if (els.goLiveBtn) els.goLiveBtn.disabled = true;
+
+  try {
+    await goLiveNow();
+  } catch (error) {
+    setStatus(error.message || "Could not go live.", "error");
+  } finally {
+    if (els.goLiveBtn) els.goLiveBtn.disabled = false;
+  }
+}
+
+async function handleEndLiveClick() {
+  if (els.endLiveBtn) els.endLiveBtn.disabled = true;
+  if (els.endLiveTopBtn) els.endLiveTopBtn.disabled = true;
+
+  try {
+    await endLiveStream();
+  } catch (error) {
+    setStatus(error.message || "Could not end stream.", "error");
+  } finally {
+    if (els.endLiveBtn) els.endLiveBtn.disabled = false;
+    if (els.endLiveTopBtn) els.endLiveTopBtn.disabled = false;
+  }
+}
+
+async function handleRefreshStream() {
+  if (!currentStream?.id) {
+    setStatus("No current stream selected.", "error");
+    return;
+  }
+
+  await loadStreamById(currentStream.id);
+}
+
+async function handleRecentClick(event) {
+  const button = event.target.closest("[data-load-stream]");
+  if (!button) return;
+
+  const streamId = button.getAttribute("data-load-stream");
+  if (!streamId) return;
+
+  await loadStreamById(streamId);
 }
 
 function bindEvents() {
@@ -574,74 +619,17 @@ function bindEvents() {
   els.stopCameraBtn?.addEventListener("click", stopCameraPreview);
   els.openWatchBtn?.addEventListener("click", openWatchPage);
   els.copyWatchLinkBtn?.addEventListener("click", copyWatchLink);
+  els.openWatchLiveBtn?.addEventListener("click", openWatchPage);
+  els.copyWatchLiveBtn?.addEventListener("click", copyWatchLink);
   els.clearLiveFormBtn?.addEventListener("click", clearForm);
 
-  els.liveForm?.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (els.createLiveBtn) els.createLiveBtn.disabled = true;
-
-    try {
-      await createLiveStream();
-    } catch (error) {
-      setStatus(error.message || "Could not create stream.", "error");
-    } finally {
-      if (els.createLiveBtn) els.createLiveBtn.disabled = false;
-    }
-  });
-
-  els.updateLiveBtn?.addEventListener("click", async () => {
-    els.updateLiveBtn.disabled = true;
-
-    try {
-      await updateLiveStream();
-    } catch (error) {
-      setStatus(error.message || "Could not update stream.", "error");
-    } finally {
-      els.updateLiveBtn.disabled = false;
-    }
-  });
-
-  els.goLiveBtn?.addEventListener("click", async () => {
-    els.goLiveBtn.disabled = true;
-
-    try {
-      await goLiveNow();
-    } catch (error) {
-      setStatus(error.message || "Could not go live.", "error");
-    } finally {
-      els.goLiveBtn.disabled = false;
-    }
-  });
-
-  els.endLiveBtn?.addEventListener("click", async () => {
-    els.endLiveBtn.disabled = true;
-
-    try {
-      await endLiveStream();
-    } catch (error) {
-      setStatus(error.message || "Could not end stream.", "error");
-    } finally {
-      els.endLiveBtn.disabled = false;
-    }
-  });
-
-  els.refreshStreamBtn?.addEventListener("click", async () => {
-    if (!currentStream?.id) {
-      setStatus("No current stream selected.", "error");
-      return;
-    }
-    await loadStreamById(currentStream.id);
-  });
-
-  els.recentLiveList?.addEventListener("click", async (event) => {
-    const button = event.target.closest("[data-load-stream]");
-    if (!button) return;
-
-    const streamId = button.getAttribute("data-load-stream");
-    if (!streamId) return;
-
-    await loadStreamById(streamId);
-  });
+  els.liveForm?.addEventListener("submit", handleCreateLive);
+  els.updateLiveBtn?.addEventListener("click", handleUpdateLive);
+  els.goLiveBtn?.addEventListener("click", handleGoLive);
+  els.endLiveBtn?.addEventListener("click", handleEndLiveClick);
+  els.endLiveTopBtn?.addEventListener("click", handleEndLiveClick);
+  els.refreshStreamBtn?.addEventListener("click", handleRefreshStream);
+  els.recentLiveList?.addEventListener("click", handleRecentClick);
 }
 
 export async function bootLivePage() {
@@ -654,24 +642,40 @@ export async function bootLivePage() {
     });
   }
 
+  bindEvents();
+
   syncScheduleVisibility();
   syncPreviewFromForm();
   renderCurrentStream(null);
-  bindEvents();
+
   await loadRecentStreams();
 
   const urlParams = new URLSearchParams(window.location.search);
   const streamIdFromUrl = urlParams.get("id");
+
   if (streamIdFromUrl) {
     await loadStreamById(streamIdFromUrl);
   }
-
-  setStatus(`Live studio ready for ${currentCreatorName()}.`, "success");
 }
+
+export function destroyLivePage() {
+  if (previewStream) {
+    previewStream.getTracks().forEach((track) => track.stop());
+    previewStream = null;
+  }
+
+  if (els.previewVideo) {
+    els.previewVideo.srcObject = null;
+  }
+
+  currentStream = null;
+}
+
+window.addEventListener("beforeunload", destroyLivePage);
 
 if (document.body?.classList.contains("live-page")) {
   bootLivePage().catch((error) => {
-    console.error("[core/pages/live] bootLivePage error:", error);
-    setStatus(error.message || "Could not boot live studio.", "error");
+    console.error("[live] boot error:", error);
+    setStatus(error.message || "Could not load live studio.", "error");
   });
 }
