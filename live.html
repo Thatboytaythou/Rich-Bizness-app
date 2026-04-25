@@ -3,457 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness — Live Studio</title>
 
+  <title>Rich Bizness — Live Studio</title>
   <meta
     name="description"
-    content="Rich Bizness live studio for creating, updating, previewing, and ending live streams with real live_streams records."
+    content="Rich Bizness Live Studio for WE LIT streams, Rich Playa co-hosts, Meta Vision, DMs, and watch-room routing."
   />
 
   <link rel="stylesheet" href="/styles/main.css" />
   <link rel="stylesheet" href="/styles/mobile.css" />
-
-  <style>
-    .live-page .live-shell {
-      display: grid;
-      gap: 20px;
-    }
-
-    .live-page .live-hero {
-      position: relative;
-      overflow: hidden;
-      padding: 24px;
-      border-radius: 24px;
-      border: 1px solid var(--rb-border);
-      background:
-        linear-gradient(180deg, rgba(9, 17, 13, 0.68), rgba(5, 10, 8, 0.92)),
-        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
-      box-shadow: var(--rb-shadow);
-    }
-
-    .live-page .live-kicker {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 34px;
-      padding: 7px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #d7f7e5;
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    .live-page .live-hero h2 {
-      margin: 16px 0 10px;
-      font-size: clamp(34px, 5vw, 62px);
-      line-height: 0.96;
-      letter-spacing: -0.04em;
-      max-width: 860px;
-    }
-
-    .live-page .live-hero p {
-      margin: 0;
-      color: var(--rb-text-soft);
-      max-width: 860px;
-      line-height: 1.75;
-      font-size: 15px;
-    }
-
-    .live-page .live-grid {
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
-      align-items: start;
-    }
-
-    .live-page .studio-panel,
-    .live-page .controls-panel,
-    .live-page .status-panel,
-    .live-page .recent-panel {
-      border-radius: 24px;
-      border: 1px solid var(--rb-border);
-      background: linear-gradient(180deg, rgba(10,22,16,0.86), rgba(7,15,12,0.94));
-      box-shadow: var(--rb-shadow);
-      overflow: hidden;
-    }
-
-    .live-page .panel-head,
-    .live-page .panel-body {
-      padding: 18px;
-    }
-
-    .live-page .panel-head {
-      padding-bottom: 0;
-    }
-
-    .live-page .panel-head h3 {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .live-page .panel-head p {
-      margin: 8px 0 0;
-      color: var(--rb-text-soft);
-      font-size: 13px;
-      line-height: 1.65;
-    }
-
-    .live-page .panel-body {
-      display: grid;
-      gap: 16px;
-    }
-
-    .live-page .studio-stage {
-      position: relative;
-      aspect-ratio: 16 / 9;
-      min-height: 360px;
-      border-radius: 22px;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(5,8,6,0.74), rgba(3,5,4,0.96)),
-        url('/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png') center / cover no-repeat;
-      display: grid;
-      place-items: center;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .live-page .studio-stage video {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      background: #050705;
-      z-index: 0;
-    }
-
-    .live-page .studio-stage::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.58));
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .live-page .studio-badges {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      z-index: 3;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .live-page .studio-badge {
-      display: inline-flex;
-      align-items: center;
-      min-height: 30px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: rgba(7, 16, 12, 0.82);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #ecfff4;
-      font-size: 12px;
-      font-weight: 800;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-    }
-
-    .live-page .studio-badge.is-live {
-      background: linear-gradient(135deg, #ff5e72, #ff7a4d);
-      border-color: transparent;
-      color: white;
-    }
-
-    .live-page .studio-center {
-      position: absolute;
-      inset: auto 18px 18px 18px;
-      z-index: 3;
-      display: grid;
-      gap: 10px;
-      text-align: left;
-    }
-
-    .live-page .studio-center h4 {
-      margin: 0;
-      font-size: 24px;
-      line-height: 1;
-    }
-
-    .live-page .studio-center p {
-      margin: 0;
-      color: #d7f7e5;
-      font-size: 13px;
-      line-height: 1.65;
-      max-width: 620px;
-    }
-
-    .live-page .studio-action-row {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .live-page .studio-action-row.is-hidden {
-      display: none;
-    }
-
-    .live-page .live-now-panel {
-      display: none;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .live-page .live-now-panel.is-visible {
-      display: flex;
-    }
-
-    .live-page .meta-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .live-page .meta-card {
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--rb-border);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .live-page .meta-card span {
-      display: block;
-      color: var(--rb-text-soft);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 6px;
-    }
-
-    .live-page .meta-card strong {
-      display: block;
-      font-size: 18px;
-      line-height: 1.2;
-    }
-
-    .live-page .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-
-    .live-page .form-stack {
-      display: grid;
-      gap: 14px;
-    }
-
-    .live-page .toggle-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .live-page .toggle-card {
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--rb-border);
-      background: rgba(255,255,255,0.04);
-      display: grid;
-      gap: 8px;
-    }
-
-    .live-page .toggle-line {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .live-page .toggle-card strong {
-      font-size: 14px;
-      line-height: 1.1;
-    }
-
-    .live-page .toggle-card span {
-      color: var(--rb-text-soft);
-      font-size: 12px;
-      line-height: 1.55;
-    }
-
-    .live-page input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      accent-color: #43f59b;
-    }
-
-    .live-page .button-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
-
-    .live-page .wide-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .live-page .status-box {
-      min-height: 58px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      border: 1px solid var(--rb-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--rb-text-soft);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .live-page .status-box.is-error {
-      border-color: rgba(255, 109, 122, 0.28);
-      background: rgba(255, 109, 122, 0.08);
-      color: #ffd7dc;
-    }
-
-    .live-page .status-box.is-success {
-      border-color: rgba(67,245,155,0.22);
-      background: rgba(67,245,155,0.08);
-      color: #d8ffea;
-    }
-
-    .live-page .status-list,
-    .live-page .recent-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .live-page .status-item,
-    .live-page .recent-card {
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--rb-border);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .live-page .status-item strong {
-      display: block;
-      font-size: 14px;
-      margin-bottom: 6px;
-    }
-
-    .live-page .status-item span {
-      display: block;
-      color: var(--rb-text-soft);
-      font-size: 13px;
-      line-height: 1.6;
-      word-break: break-word;
-    }
-
-    .live-page .recent-card {
-      display: grid;
-      gap: 8px;
-    }
-
-    .live-page .recent-card h4 {
-      margin: 0;
-      font-size: 17px;
-      line-height: 1.2;
-    }
-
-    .live-page .recent-card p {
-      margin: 0;
-      color: var(--rb-text-soft);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .live-page .recent-meta,
-    .live-page .recent-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .live-page .recent-meta {
-      color: var(--rb-text-soft);
-      font-size: 12px;
-    }
-
-    .live-page .btn-danger {
-      background: linear-gradient(135deg, #ff4d67, #ff8a3d);
-      color: white;
-      border: 0;
-    }
-
-    @media (max-width: 1180px) {
-      .live-page .live-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .live-page .meta-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 760px) {
-      .live-page .form-grid,
-      .live-page .toggle-grid,
-      .live-page .button-grid,
-      .live-page .meta-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .live-page .panel-head,
-      .live-page .panel-body,
-      .live-page .live-hero {
-        padding-left: 16px;
-        padding-right: 16px;
-      }
-
-      .live-page .studio-stage {
-        min-height: 400px;
-      }
-
-      .live-page .studio-action-row,
-      .live-page .live-now-panel {
-        display: grid;
-        grid-template-columns: 1fr;
-      }
-
-      .live-page .studio-action-row.is-hidden {
-        display: none;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/pages/live.css" />
 </head>
 
 <body class="live-page">
   <div class="page-shell live-shell">
     <div id="elite-platform-nav"></div>
 
+    <!-- HERO -->
     <section class="live-hero">
       <div class="live-kicker">Rich Bizness Live Studio</div>
-      <h2>Go live, lock the stream record, and route the whole room into watch.</h2>
+      <h2>Build the room, call the madness, and send the whole Bizness Party to watch.</h2>
       <p>
-        This live studio is wired to your real <strong>live_streams</strong> table flow.
-        Create the stream, update the room, push the slug into watch, and end the stream clean.
+        This studio is wired to your real <strong>live_streams</strong> system:
+        co-hosts, Meta Vision, live DMs, paid rooms, VIP access, and lane-based live drops.
       </p>
     </section>
 
+    <!-- MAIN LIVE GRID -->
     <section class="live-grid">
+      <!-- STUDIO PREVIEW -->
       <section class="studio-panel">
         <div class="panel-head">
           <h3>Studio preview</h3>
-          <p>Camera preview, stream state, watch routing, and live record status all stay here.</p>
+          <p>Test the camera, control the room, and keep the watch link ready.</p>
         </div>
 
         <div class="panel-body">
@@ -461,27 +43,29 @@
             <video id="studio-preview" autoplay playsinline muted></video>
 
             <div class="studio-badges">
-              <span id="badge-status" class="studio-badge">OFFLINE</span>
+              <span id="badge-status" class="studio-badge">IN THE LAB</span>
               <span id="badge-access" class="studio-badge">FREE</span>
-              <span id="badge-category" class="studio-badge">LIVE</span>
+              <span id="badge-category" class="studio-badge">MUSIC</span>
             </div>
 
             <div class="studio-center">
               <h4 id="preview-title">Rich Bizness Live Studio</h4>
               <p id="preview-copy">
-                Start camera preview, build your stream, save the stream record, then open the watch page.
+                Build the room, test the camera, then call the madness.
               </p>
 
+              <!-- BEFORE LIVE -->
               <div id="studio-setup-actions" class="studio-action-row">
-                <button class="btn btn-primary" id="start-camera-btn" type="button">Start Camera</button>
-                <button class="btn btn-dark" id="stop-camera-btn" type="button">Stop Camera</button>
-                <button class="btn btn-gold" id="open-watch-btn" type="button">Open Watch</button>
+                <button class="btn btn-primary" id="start-camera-btn" type="button">Get Active</button>
+                <button class="btn btn-dark" id="stop-camera-btn" type="button">Itz over ✌🏽</button>
+                <button class="btn btn-gold" id="open-watch-btn" type="button">Pop In</button>
                 <button class="btn btn-dark" id="copy-watch-link-btn" type="button">Copy Watch Link</button>
               </div>
 
+              <!-- WHEN LIVE -->
               <div id="studio-live-actions" class="live-now-panel">
-                <button class="btn btn-danger" id="end-live-top-btn" type="button">End Live</button>
-                <button class="btn btn-gold" id="open-watch-live-btn" type="button">Go To Watch</button>
+                <button class="btn btn-danger" id="end-live-top-btn" type="button">Party’s Over</button>
+                <button class="btn btn-gold" id="open-watch-live-btn" type="button">Pop In</button>
                 <button class="btn btn-dark" id="copy-watch-live-btn" type="button">Copy Watch Link</button>
               </div>
             </div>
@@ -490,7 +74,7 @@
           <div class="meta-grid">
             <article class="meta-card">
               <span>Status</span>
-              <strong id="meta-status">Draft</strong>
+              <strong id="meta-status">In The Lab</strong>
             </article>
             <article class="meta-card">
               <span>Slug</span>
@@ -508,10 +92,11 @@
         </div>
       </section>
 
+      <!-- LIVE CONTROLS -->
       <aside class="controls-panel">
         <div class="panel-head">
           <h3>Live controls</h3>
-          <p>Create, update, and end live streams without leaving the production core path.</p>
+          <p>Create, update, and end your Bizness Party without breaking the core flow.</p>
         </div>
 
         <div class="panel-body">
@@ -519,30 +104,32 @@
 
           <form id="live-form" class="form-stack">
             <div>
-              <label for="live-title">Stream title</label>
-              <input id="live-title" type="text" placeholder="WE LIT live session" />
+              <label for="live-title">Drop Name</label>
+              <input id="live-title" type="text" placeholder="WE LIT 🔥" />
             </div>
 
             <div>
-              <label for="live-description">Description</label>
-              <textarea id="live-description" placeholder="Tell the viewers what this live is about."></textarea>
+              <label for="live-description">What’s The Vibe?</label>
+              <textarea id="live-description" placeholder="Tell the room what’s happening."></textarea>
             </div>
 
             <div class="form-grid">
               <div>
-                <label for="live-category">Category</label>
+                <label for="live-category">Lane</label>
                 <select id="live-category">
                   <option value="music">Music</option>
                   <option value="gaming">Gaming</option>
                   <option value="sports">Sports</option>
                   <option value="gallery">Gallery</option>
+                  <option value="artist">Artist</option>
+                  <option value="metaverse">Metaverse</option>
                   <option value="podcast">Podcast</option>
                   <option value="general">General</option>
                 </select>
               </div>
 
               <div>
-                <label for="live-access">Access type</label>
+                <label for="live-access">Room Access</label>
                 <select id="live-access">
                   <option value="free">Free</option>
                   <option value="paid">Paid</option>
@@ -553,7 +140,7 @@
 
             <div class="form-grid">
               <div>
-                <label for="live-price">Price (USD)</label>
+                <label for="live-price">Door Price</label>
                 <input id="live-price" type="number" min="0" step="0.01" placeholder="0.00" />
               </div>
 
@@ -570,8 +157,8 @@
               </div>
 
               <div>
-                <label for="live-room-name">LiveKit room name</label>
-                <input id="live-room-name" type="text" placeholder="rb-room-..." />
+                <label for="live-room-name">Bizness Party</label>
+                <input id="live-room-name" type="text" placeholder="rb-party-room..." />
               </div>
             </div>
 
@@ -581,7 +168,7 @@
                   <strong>Chat enabled</strong>
                   <input id="live-chat-enabled" type="checkbox" checked />
                 </div>
-                <span>Allow live chat on the watch page.</span>
+                <span>Let the room talk while the drop is active.</span>
               </article>
 
               <article class="toggle-card">
@@ -589,7 +176,7 @@
                   <strong>Replay enabled</strong>
                   <input id="live-replay-enabled" type="checkbox" checked />
                 </div>
-                <span>Keep replay ready after stream ends.</span>
+                <span>Keep replay ready after the party ends.</span>
               </article>
 
               <article class="toggle-card">
@@ -597,7 +184,7 @@
                   <strong>Featured</strong>
                   <input id="live-featured" type="checkbox" />
                 </div>
-                <span>Push stream harder into rails and featured sections.</span>
+                <span>Push this live harder into the rails.</span>
               </article>
 
               <article class="toggle-card">
@@ -605,13 +192,13 @@
                   <strong>Schedule mode</strong>
                   <input id="live-scheduled-mode" type="checkbox" />
                 </div>
-                <span>Use scheduled time instead of going live immediately.</span>
+                <span>Put the live room on deck for later.</span>
               </article>
             </div>
 
             <div id="schedule-wrap" class="form-grid" style="display:none;">
               <div>
-                <label for="live-scheduled-for">Scheduled for</label>
+                <label for="live-scheduled-for">On Deck Time</label>
                 <input id="live-scheduled-for" type="datetime-local" />
               </div>
               <div>
@@ -621,10 +208,10 @@
             </div>
 
             <div class="button-grid">
-              <button class="btn btn-primary" id="create-live-btn" type="submit">Create Live</button>
-              <button class="btn btn-gold" id="update-live-btn" type="button">Update Live</button>
-              <button class="btn btn-dark" id="go-live-btn" type="button">Go Live Now</button>
-              <button class="btn btn-danger" id="end-live-btn" type="button">End Live</button>
+              <button class="btn btn-primary" id="create-live-btn" type="submit">Madness Call</button>
+              <button class="btn btn-gold" id="update-live-btn" type="button">Save Live Setup</button>
+              <button class="btn btn-dark" id="go-live-btn" type="button">We 🔥 📺</button>
+              <button class="btn btn-danger" id="end-live-btn" type="button">Party’s Over</button>
             </div>
           </form>
 
@@ -636,6 +223,97 @@
       </aside>
     </section>
 
+    <!-- COHOST + META -->
+    <section class="live-grid">
+      <!-- RICH PLAYA PANEL -->
+      <section class="cohost-panel">
+        <div class="panel-head">
+          <h3>Rich Playa Co-Host Room</h3>
+          <p>Bring up to 3 people into the same Bizness Party with you.</p>
+        </div>
+
+        <div class="panel-body">
+          <div id="cohost-status-box" class="status-box">
+            Rich Playa system ready. Create or load a live stream first.
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label for="cohost-user-id">Rich Playa User ID</label>
+              <input id="cohost-user-id" type="text" placeholder="Paste user UUID here" />
+            </div>
+
+            <div>
+              <label for="cohost-slot">Rich Playa Slot</label>
+              <select id="cohost-slot">
+                <option value="1">Rich Playa 1</option>
+                <option value="2">Rich Playa 2</option>
+                <option value="3">Rich Playa 3</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="wide-actions">
+            <button class="btn btn-gold" id="bring-em-in-btn" type="button">Bring Em In</button>
+            <button class="btn btn-dark" id="refresh-cohosts-btn" type="button">Refresh Rich Playas</button>
+          </div>
+
+          <div id="cohost-list" class="cohost-list">
+            <article class="cohost-card">
+              <strong>Rich Playa 1</strong>
+              <span>Empty slot</span>
+            </article>
+            <article class="cohost-card">
+              <strong>Rich Playa 2</strong>
+              <span>Empty slot</span>
+            </article>
+            <article class="cohost-card">
+              <strong>Rich Playa 3</strong>
+              <span>Empty slot</span>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- META VISION -->
+      <section class="meta-vision-panel">
+        <div class="panel-head">
+          <h3>Meta Vision</h3>
+          <p>Turn the Bizness Party into a metaverse-ready room without changing your live_streams setup.</p>
+        </div>
+
+        <div class="panel-body">
+          <div id="meta-vision-status" class="status-box">
+            Meta Vision ready. Create or load a stream first.
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label for="meta-vision-theme">Meta Room Theme</label>
+              <select id="meta-vision-theme">
+                <option value="money-road">Money Road</option>
+                <option value="smoke-city">Smoke City</option>
+                <option value="studio-galaxy">Studio Galaxy</option>
+                <option value="sports-arena">Sports Arena</option>
+                <option value="gallery-world">Gallery World</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="meta-vision-label">Meta Room Label</label>
+              <input id="meta-vision-label" type="text" value="Meta Room Ready" />
+            </div>
+          </div>
+
+          <div class="wide-actions">
+            <button class="btn btn-gold" id="enter-meta-vision-btn" type="button">Enter Meta Vision</button>
+            <button class="btn btn-dark" id="exit-meta-vision-btn" type="button">Exit Meta Vision</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- DETAILS + RECENT -->
     <section class="live-grid">
       <section class="status-panel">
         <div class="panel-head">
@@ -654,7 +332,7 @@
               <span id="detail-watch-url">—</span>
             </article>
             <article class="status-item">
-              <strong>Current room name</strong>
+              <strong>Current Bizness Party</strong>
               <span id="detail-room-name">—</span>
             </article>
             <article class="status-item">
@@ -680,6 +358,29 @@
     </section>
   </div>
 
+  <!-- LIVE DM POPUP -->
+  <div id="live-dm-popup" class="live-dm-popup" hidden>
+    <div class="live-dm-card">
+      <div class="live-dm-head">
+        <div>
+          <strong>Slide In 🔥</strong>
+          <span id="live-dm-target-label">Private message</span>
+        </div>
+        <button id="live-dm-close-btn" type="button" aria-label="Close DM">×</button>
+      </div>
+
+      <textarea id="live-dm-body" placeholder="Type your slide..." rows="4"></textarea>
+
+      <div class="live-dm-actions">
+        <button class="btn btn-gold" id="live-dm-send-btn" type="button">Send Slide</button>
+        <button class="btn btn-dark" id="live-dm-cancel-btn" type="button">Close</button>
+      </div>
+
+      <p id="live-dm-status" class="live-dm-status">Ready.</p>
+    </div>
+  </div>
+
+  <!-- FRONTEND SUPABASE CONFIG -->
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
@@ -687,592 +388,6 @@
     window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
-  <script type="module">
-    import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
-    import { mountEliteNav } from "/core/nav.js";
-    import { supabase } from "/core/supabase.js";
-
-    await initApp();
-
-    mountEliteNav({
-      target: "#elite-platform-nav",
-      collapsed: false
-    });
-
-    const previewVideo = document.getElementById("studio-preview");
-    const liveForm = document.getElementById("live-form");
-    const statusBox = document.getElementById("live-status-box");
-    const recentLiveList = document.getElementById("recent-live-list");
-
-    const setupActions = document.getElementById("studio-setup-actions");
-    const liveActions = document.getElementById("studio-live-actions");
-
-    const startCameraBtn = document.getElementById("start-camera-btn");
-    const stopCameraBtn = document.getElementById("stop-camera-btn");
-    const createLiveBtn = document.getElementById("create-live-btn");
-    const updateLiveBtn = document.getElementById("update-live-btn");
-    const goLiveBtn = document.getElementById("go-live-btn");
-    const endLiveBtn = document.getElementById("end-live-btn");
-    const endLiveTopBtn = document.getElementById("end-live-top-btn");
-    const refreshStreamBtn = document.getElementById("refresh-stream-btn");
-    const clearLiveFormBtn = document.getElementById("clear-live-form-btn");
-    const openWatchBtn = document.getElementById("open-watch-btn");
-    const copyWatchLinkBtn = document.getElementById("copy-watch-link-btn");
-    const openWatchLiveBtn = document.getElementById("open-watch-live-btn");
-    const copyWatchLiveBtn = document.getElementById("copy-watch-live-btn");
-
-    const liveTitle = document.getElementById("live-title");
-    const liveDescription = document.getElementById("live-description");
-    const liveCategory = document.getElementById("live-category");
-    const liveAccess = document.getElementById("live-access");
-    const livePrice = document.getElementById("live-price");
-    const liveThumbnail = document.getElementById("live-thumbnail");
-    const liveCover = document.getElementById("live-cover");
-    const liveRoomName = document.getElementById("live-room-name");
-    const liveChatEnabled = document.getElementById("live-chat-enabled");
-    const liveReplayEnabled = document.getElementById("live-replay-enabled");
-    const liveFeatured = document.getElementById("live-featured");
-    const liveScheduledMode = document.getElementById("live-scheduled-mode");
-    const liveScheduledFor = document.getElementById("live-scheduled-for");
-    const liveCurrency = document.getElementById("live-currency");
-    const scheduleWrap = document.getElementById("schedule-wrap");
-
-    const badgeStatus = document.getElementById("badge-status");
-    const badgeAccess = document.getElementById("badge-access");
-    const badgeCategory = document.getElementById("badge-category");
-    const previewTitle = document.getElementById("preview-title");
-    const previewCopy = document.getElementById("preview-copy");
-
-    const metaStatus = document.getElementById("meta-status");
-    const metaSlug = document.getElementById("meta-slug");
-    const metaViewers = document.getElementById("meta-viewers");
-    const metaRevenue = document.getElementById("meta-revenue");
-
-    const detailStreamId = document.getElementById("detail-stream-id");
-    const detailWatchUrl = document.getElementById("detail-watch-url");
-    const detailRoomName = document.getElementById("detail-room-name");
-    const detailTimes = document.getElementById("detail-times");
-
-    let currentStream = null;
-    let previewStream = null;
-
-    function setStatus(message, type = "normal") {
-      statusBox.textContent = message;
-      statusBox.classList.remove("is-error", "is-success");
-      if (type === "error") statusBox.classList.add("is-error");
-      if (type === "success") statusBox.classList.add("is-success");
-    }
-
-    function escapeHtml(value = "") {
-      return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function slugify(value = "") {
-      return String(value)
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "")
-        .slice(0, 70);
-    }
-
-    function toMoney(cents = 0, currency = "USD") {
-      return new Intl.NumberFormat("en-US", {
-        style: "currency",
-        currency: currency || "USD"
-      }).format(Number(cents || 0) / 100);
-    }
-
-    function toCents(amount = 0) {
-      return Math.round(Number(amount || 0) * 100);
-    }
-
-    function safeDateTime(value) {
-      if (!value) return "—";
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return "—";
-      return date.toLocaleString();
-    }
-
-    function watchHrefFromStream(stream) {
-      if (!stream) return "/watch.html";
-      if (stream.slug) return `/watch.html?slug=${encodeURIComponent(stream.slug)}`;
-      if (stream.id) return `/watch.html?id=${encodeURIComponent(stream.id)}`;
-      return "/watch.html";
-    }
-
-    function syncPreviewFromForm() {
-      previewTitle.textContent = liveTitle.value.trim() || "Rich Bizness Live Studio";
-
-      const access = String(liveAccess.value || "free").toUpperCase();
-      const category = String(liveCategory.value || "live").toUpperCase();
-
-      badgeAccess.textContent = access;
-      badgeCategory.textContent = category;
-      previewCopy.textContent =
-        liveDescription.value.trim() ||
-        "Start camera preview, build your stream, save the stream record, then open the watch page.";
-    }
-
-    function syncScheduleVisibility() {
-      scheduleWrap.style.display = liveScheduledMode.checked ? "grid" : "none";
-    }
-
-    function syncStudioActionState(stream) {
-      const isLive = String(stream?.status || "").toLowerCase() === "live";
-
-      setupActions.classList.toggle("is-hidden", isLive);
-      liveActions.classList.toggle("is-visible", isLive);
-
-      if (isLive) {
-        previewCopy.textContent = "You are live now. Camera setup controls are hidden so viewers only see the live control state.";
-      } else {
-        syncPreviewFromForm();
-      }
-    }
-
-    function fillFormFromStream(stream) {
-      if (!stream) return;
-
-      liveTitle.value = stream.title || "";
-      liveDescription.value = stream.description || "";
-      liveCategory.value = stream.category || "general";
-      liveAccess.value = stream.access_type || "free";
-      livePrice.value =
-        Number(stream.price_cents || 0) > 0
-          ? (Number(stream.price_cents || 0) / 100).toFixed(2)
-          : "";
-      liveThumbnail.value = stream.thumbnail_url || "";
-      liveCover.value = stream.cover_url || "";
-      liveRoomName.value = stream.livekit_room_name || "";
-      liveChatEnabled.checked = !!stream.is_chat_enabled;
-      liveReplayEnabled.checked = !!stream.is_replay_enabled;
-      liveFeatured.checked = !!stream.is_featured;
-      liveCurrency.value = stream.currency || "USD";
-
-      if (stream.scheduled_for) {
-        liveScheduledMode.checked = true;
-        const local = new Date(stream.scheduled_for);
-        if (!Number.isNaN(local.getTime())) {
-          const iso = new Date(local.getTime() - local.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-          liveScheduledFor.value = iso;
-        }
-      } else {
-        liveScheduledMode.checked = false;
-        liveScheduledFor.value = "";
-      }
-
-      syncScheduleVisibility();
-      syncPreviewFromForm();
-      renderCurrentStream(stream);
-    }
-
-    function renderCurrentStream(stream) {
-      currentStream = stream || null;
-
-      const isLive = String(stream?.status || "draft").toLowerCase() === "live";
-
-      badgeStatus.textContent = isLive ? "LIVE" : String(stream?.status || "draft").toUpperCase();
-      badgeStatus.classList.toggle("is-live", isLive);
-
-      metaStatus.textContent = stream?.status || "draft";
-      metaSlug.textContent = stream?.slug || "—";
-      metaViewers.textContent = Number(stream?.viewer_count || 0).toLocaleString();
-      metaRevenue.textContent = toMoney(stream?.total_revenue_cents || 0, stream?.currency || "USD");
-
-      detailStreamId.textContent = stream?.id || "—";
-      detailWatchUrl.textContent = stream ? `${window.location.origin}${watchHrefFromStream(stream)}` : "—";
-      detailRoomName.textContent = stream?.livekit_room_name || "—";
-      detailTimes.textContent = stream
-        ? `Created: ${safeDateTime(stream.created_at)} | Started: ${safeDateTime(stream.started_at)} | Ended: ${safeDateTime(stream.ended_at)}`
-        : "No live record yet.";
-
-      syncStudioActionState(stream);
-    }
-
-    function clearForm() {
-      currentStream = null;
-      liveForm.reset();
-      liveAccess.value = "free";
-      liveCategory.value = "music";
-      liveCurrency.value = "USD";
-      liveChatEnabled.checked = true;
-      liveReplayEnabled.checked = true;
-      liveFeatured.checked = false;
-      liveScheduledMode.checked = false;
-
-      syncScheduleVisibility();
-      syncPreviewFromForm();
-      renderCurrentStream(null);
-
-      badgeStatus.textContent = "OFFLINE";
-      badgeStatus.classList.remove("is-live");
-      metaStatus.textContent = "Draft";
-      setStatus("Form cleared.");
-    }
-
-    async function startCameraPreview() {
-      try {
-        if (previewStream) stopCameraPreview();
-
-        previewStream = await navigator.mediaDevices.getUserMedia({
-          video: true,
-          audio: true
-        });
-
-        previewVideo.srcObject = previewStream;
-        setStatus("Camera preview started.", "success");
-      } catch (error) {
-        console.error("[live] startCameraPreview error:", error);
-        setStatus("Could not start camera preview. Check browser permissions.", "error");
-      }
-    }
-
-    function stopCameraPreview() {
-      if (!previewStream) return;
-
-      previewStream.getTracks().forEach((track) => track.stop());
-      previewVideo.srcObject = null;
-      previewStream = null;
-      setStatus("Camera preview stopped.");
-    }
-
-    function buildPayload({ statusOverride = null } = {}) {
-      const user = getCurrentUserState();
-
-      if (!user?.id) throw new Error("You must be logged in.");
-
-      const title = liveTitle.value.trim();
-      const category = liveCategory.value;
-      const accessType = liveAccess.value;
-      const currency = (liveCurrency.value || "USD").trim().toUpperCase();
-      const roomNameRaw = liveRoomName.value.trim();
-
-      const scheduledEnabled = liveScheduledMode.checked;
-      const scheduledFor =
-        scheduledEnabled && liveScheduledFor.value
-          ? new Date(liveScheduledFor.value).toISOString()
-          : null;
-
-      if (!title) throw new Error("Stream title is required.");
-
-      const slugBase = slugify(title);
-      const slug = currentStream?.slug || `${slugBase}-${Date.now()}`;
-
-      return {
-        creator_id: user.id,
-        slug,
-        title,
-        description: liveDescription.value.trim() || null,
-        category: category || "general",
-        status: statusOverride || (scheduledFor ? "scheduled" : currentStream?.status || "draft"),
-        access_type: accessType || "free",
-        price_cents: accessType === "paid" ? toCents(livePrice.value) : 0,
-        currency: currency || "USD",
-        thumbnail_url: liveThumbnail.value.trim() || null,
-        cover_url: liveCover.value.trim() || null,
-        livekit_room_name: roomNameRaw || `rb-live-${slug}`,
-        scheduled_for: scheduledFor,
-        started_at:
-          statusOverride === "live"
-            ? new Date().toISOString()
-            : currentStream?.started_at || null,
-        ended_at: statusOverride === "ended" ? new Date().toISOString() : null,
-        is_chat_enabled: !!liveChatEnabled.checked,
-        is_replay_enabled: !!liveReplayEnabled.checked,
-        is_featured: !!liveFeatured.checked,
-        last_activity_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-    }
-
-    async function createLiveStream() {
-      const payload = buildPayload();
-
-      const insertPayload = {
-        ...payload,
-        viewer_count: 0,
-        peak_viewers: 0,
-        total_chat_messages: 0,
-        total_revenue_cents: 0,
-        metadata: {},
-        created_at: new Date().toISOString()
-      };
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .insert(insertPayload)
-        .select("*")
-        .single();
-
-      if (error) throw new Error(error.message || "Could not create live stream.");
-
-      renderCurrentStream(data);
-      fillFormFromStream(data);
-      setStatus("Live stream record created.", "success");
-      await loadRecentStreams();
-      return data;
-    }
-
-    async function updateLiveStream() {
-      if (!currentStream?.id) throw new Error("Create a stream first before updating it.");
-
-      const payload = buildPayload();
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .update(payload)
-        .eq("id", currentStream.id)
-        .select("*")
-        .single();
-
-      if (error) throw new Error(error.message || "Could not update live stream.");
-
-      renderCurrentStream(data);
-      fillFormFromStream(data);
-      setStatus("Live stream updated.", "success");
-      await loadRecentStreams();
-      return data;
-    }
-
-    async function goLiveNow() {
-      if (!currentStream?.id) {
-        currentStream = await createLiveStream();
-      }
-
-      const payload = buildPayload({ statusOverride: "live" });
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .update({
-          ...payload,
-          scheduled_for: null,
-          started_at: new Date().toISOString(),
-          ended_at: null
-        })
-        .eq("id", currentStream.id)
-        .select("*")
-        .single();
-
-      if (error) throw new Error(error.message || "Could not start live stream.");
-
-      renderCurrentStream(data);
-      fillFormFromStream(data);
-      setStatus("Stream is live now. Studio camera setup controls are hidden.", "success");
-      await loadRecentStreams();
-      return data;
-    }
-
-    async function endLiveStream() {
-      if (!currentStream?.id) throw new Error("No current live stream to end.");
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .update({
-          status: "ended",
-          ended_at: new Date().toISOString(),
-          last_activity_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", currentStream.id)
-        .select("*")
-        .single();
-
-      if (error) throw new Error(error.message || "Could not end live stream.");
-
-      renderCurrentStream(data);
-      fillFormFromStream(data);
-      setStatus("Live stream ended clean. Studio setup controls are back.", "success");
-      await loadRecentStreams();
-      return data;
-    }
-
-    async function loadRecentStreams() {
-      const user = getCurrentUserState();
-
-      if (!user?.id) {
-        recentLiveList.innerHTML = `<div class="status-box">Login first to load your live history.</div>`;
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("live_streams")
-        .select("*")
-        .eq("creator_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(6);
-
-      if (error) {
-        recentLiveList.innerHTML = `<div class="status-box is-error">Could not load recent live streams.</div>`;
-        return;
-      }
-
-      if (!data?.length) {
-        recentLiveList.innerHTML = `<div class="status-box">No streams yet.</div>`;
-        return;
-      }
-
-      recentLiveList.innerHTML = data.map((stream) => {
-        const watchHref = watchHrefFromStream(stream);
-        return `
-          <article class="recent-card">
-            <h4>${escapeHtml(stream.title || "Untitled Live")}</h4>
-            <div class="recent-meta">
-              <span>${escapeHtml(stream.status || "draft")}</span>
-              <span>${escapeHtml(stream.category || "general")}</span>
-              <span>${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
-            </div>
-            <p>${escapeHtml(stream.description || "No description.")}</p>
-            <div class="recent-actions">
-              <button class="btn btn-dark" type="button" data-load-stream="${stream.id}">Load</button>
-              <a class="btn btn-dark" href="${watchHref}">Watch</a>
-            </div>
-          </article>
-        `;
-      }).join("");
-    }
-
-    async function loadStreamById(streamId) {
-      const { data, error } = await supabase
-        .from("live_streams")
-        .select("*")
-        .eq("id", streamId)
-        .single();
-
-      if (error) {
-        setStatus("Could not load that stream.", "error");
-        return;
-      }
-
-      renderCurrentStream(data);
-      fillFormFromStream(data);
-      setStatus("Stream loaded into studio.", "success");
-    }
-
-    function openWatchPage() {
-      window.location.href = watchHrefFromStream(currentStream);
-    }
-
-    async function copyWatchLink() {
-      const href = `${window.location.origin}${watchHrefFromStream(currentStream)}`;
-
-      try {
-        await navigator.clipboard.writeText(href);
-        setStatus("Watch link copied.", "success");
-      } catch {
-        setStatus("Could not copy watch link.", "error");
-      }
-    }
-
-    liveAccess.addEventListener("change", syncPreviewFromForm);
-    liveCategory.addEventListener("change", syncPreviewFromForm);
-    liveTitle.addEventListener("input", syncPreviewFromForm);
-    liveDescription.addEventListener("input", syncPreviewFromForm);
-    liveScheduledMode.addEventListener("change", syncScheduleVisibility);
-
-    startCameraBtn.addEventListener("click", startCameraPreview);
-    stopCameraBtn.addEventListener("click", stopCameraPreview);
-    openWatchBtn.addEventListener("click", openWatchPage);
-    copyWatchLinkBtn.addEventListener("click", copyWatchLink);
-    openWatchLiveBtn.addEventListener("click", openWatchPage);
-    copyWatchLiveBtn.addEventListener("click", copyWatchLink);
-    clearLiveFormBtn.addEventListener("click", clearForm);
-
-    liveForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      createLiveBtn.disabled = true;
-
-      try {
-        await createLiveStream();
-      } catch (error) {
-        setStatus(error.message || "Could not create stream.", "error");
-      } finally {
-        createLiveBtn.disabled = false;
-      }
-    });
-
-    updateLiveBtn.addEventListener("click", async () => {
-      updateLiveBtn.disabled = true;
-
-      try {
-        await updateLiveStream();
-      } catch (error) {
-        setStatus(error.message || "Could not update stream.", "error");
-      } finally {
-        updateLiveBtn.disabled = false;
-      }
-    });
-
-    goLiveBtn.addEventListener("click", async () => {
-      goLiveBtn.disabled = true;
-
-      try {
-        await goLiveNow();
-      } catch (error) {
-        setStatus(error.message || "Could not go live.", "error");
-      } finally {
-        goLiveBtn.disabled = false;
-      }
-    });
-
-    async function handleEndLiveClick() {
-      endLiveBtn.disabled = true;
-      endLiveTopBtn.disabled = true;
-
-      try {
-        await endLiveStream();
-      } catch (error) {
-        setStatus(error.message || "Could not end stream.", "error");
-      } finally {
-        endLiveBtn.disabled = false;
-        endLiveTopBtn.disabled = false;
-      }
-    }
-
-    endLiveBtn.addEventListener("click", handleEndLiveClick);
-    endLiveTopBtn.addEventListener("click", handleEndLiveClick);
-
-    refreshStreamBtn.addEventListener("click", async () => {
-      if (!currentStream?.id) {
-        setStatus("No current stream selected.", "error");
-        return;
-      }
-
-      await loadStreamById(currentStream.id);
-    });
-
-    recentLiveList.addEventListener("click", async (event) => {
-      const button = event.target.closest("[data-load-stream]");
-      if (!button) return;
-
-      const streamId = button.getAttribute("data-load-stream");
-      if (!streamId) return;
-
-      await loadStreamById(streamId);
-    });
-
-    window.addEventListener("beforeunload", () => {
-      if (previewStream) {
-        previewStream.getTracks().forEach((track) => track.stop());
-      }
-    });
-
-    syncScheduleVisibility();
-    syncPreviewFromForm();
-    renderCurrentStream(null);
-    await loadRecentStreams();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const streamIdFromUrl = urlParams.get("id");
-
-    if (streamIdFromUrl) {
-      await loadStreamById(streamIdFromUrl);
-    }
-  </script>
+  <script type="module" src="/core/pages/live.js"></script>
 </body>
 </html>
