@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Rich Bizness — Live Studio</title>
+
   <meta
     name="description"
     content="Rich Bizness live studio for creating, updating, previewing, and ending live streams with real live_streams records."
@@ -110,6 +111,7 @@
     .live-page .studio-stage {
       position: relative;
       aspect-ratio: 16 / 9;
+      min-height: 360px;
       border-radius: 22px;
       overflow: hidden;
       background:
@@ -121,26 +123,30 @@
     }
 
     .live-page .studio-stage video {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
       background: #050705;
+      z-index: 0;
     }
 
     .live-page .studio-stage::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.54));
+      background: linear-gradient(180deg, rgba(0,0,0,0.10), rgba(0,0,0,0.58));
       pointer-events: none;
+      z-index: 1;
     }
 
     .live-page .studio-badges {
       position: absolute;
       top: 14px;
       left: 14px;
-      z-index: 2;
+      z-index: 3;
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
@@ -170,7 +176,7 @@
     .live-page .studio-center {
       position: absolute;
       inset: auto 18px 18px 18px;
-      z-index: 2;
+      z-index: 3;
       display: grid;
       gap: 10px;
       text-align: left;
@@ -194,6 +200,21 @@
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .live-page .studio-action-row.is-hidden {
+      display: none;
+    }
+
+    .live-page .live-now-panel {
+      display: none;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .live-page .live-now-panel.is-visible {
+      display: flex;
     }
 
     .live-page .meta-grid {
@@ -309,12 +330,14 @@
       color: #d8ffea;
     }
 
-    .live-page .status-list {
+    .live-page .status-list,
+    .live-page .recent-list {
       display: grid;
       gap: 10px;
     }
 
-    .live-page .status-item {
+    .live-page .status-item,
+    .live-page .recent-card {
       padding: 14px;
       border-radius: 16px;
       border: 1px solid var(--rb-border);
@@ -335,16 +358,7 @@
       word-break: break-word;
     }
 
-    .live-page .recent-list {
-      display: grid;
-      gap: 12px;
-    }
-
     .live-page .recent-card {
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--rb-border);
-      background: rgba(255,255,255,0.04);
       display: grid;
       gap: 8px;
     }
@@ -362,18 +376,22 @@
       line-height: 1.6;
     }
 
-    .live-page .recent-meta {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      color: var(--rb-text-soft);
-      font-size: 12px;
-    }
-
+    .live-page .recent-meta,
     .live-page .recent-actions {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
+    }
+
+    .live-page .recent-meta {
+      color: var(--rb-text-soft);
+      font-size: 12px;
+    }
+
+    .live-page .btn-danger {
+      background: linear-gradient(135deg, #ff4d67, #ff8a3d);
+      color: white;
+      border: 0;
     }
 
     @media (max-width: 1180px) {
@@ -400,9 +418,24 @@
         padding-left: 16px;
         padding-right: 16px;
       }
+
+      .live-page .studio-stage {
+        min-height: 400px;
+      }
+
+      .live-page .studio-action-row,
+      .live-page .live-now-panel {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .live-page .studio-action-row.is-hidden {
+        display: none;
+      }
     }
   </style>
 </head>
+
 <body class="live-page">
   <div class="page-shell live-shell">
     <div id="elite-platform-nav"></div>
@@ -411,8 +444,8 @@
       <div class="live-kicker">Rich Bizness Live Studio</div>
       <h2>Go live, lock the stream record, and route the whole room into watch.</h2>
       <p>
-        This live studio is wired to your real <strong>live_streams</strong> table flow. Create the stream,
-        update the room, push the slug into watch, and end the stream clean without jumping backward.
+        This live studio is wired to your real <strong>live_streams</strong> table flow.
+        Create the stream, update the room, push the slug into watch, and end the stream clean.
       </p>
     </section>
 
@@ -438,11 +471,18 @@
               <p id="preview-copy">
                 Start camera preview, build your stream, save the stream record, then open the watch page.
               </p>
-              <div class="studio-action-row">
+
+              <div id="studio-setup-actions" class="studio-action-row">
                 <button class="btn btn-primary" id="start-camera-btn" type="button">Start Camera</button>
                 <button class="btn btn-dark" id="stop-camera-btn" type="button">Stop Camera</button>
                 <button class="btn btn-gold" id="open-watch-btn" type="button">Open Watch</button>
                 <button class="btn btn-dark" id="copy-watch-link-btn" type="button">Copy Watch Link</button>
+              </div>
+
+              <div id="studio-live-actions" class="live-now-panel">
+                <button class="btn btn-danger" id="end-live-top-btn" type="button">End Live</button>
+                <button class="btn btn-gold" id="open-watch-live-btn" type="button">Go To Watch</button>
+                <button class="btn btn-dark" id="copy-watch-live-btn" type="button">Copy Watch Link</button>
               </div>
             </div>
           </div>
@@ -478,16 +518,14 @@
           <div id="live-status-box" class="status-box">Ready.</div>
 
           <form id="live-form" class="form-stack">
-            <div class="form-stack">
-              <div>
-                <label for="live-title">Stream title</label>
-                <input id="live-title" type="text" placeholder="WE LIT live session" />
-              </div>
+            <div>
+              <label for="live-title">Stream title</label>
+              <input id="live-title" type="text" placeholder="WE LIT live session" />
+            </div>
 
-              <div>
-                <label for="live-description">Description</label>
-                <textarea id="live-description" placeholder="Tell the viewers what this live is about."></textarea>
-              </div>
+            <div>
+              <label for="live-description">Description</label>
+              <textarea id="live-description" placeholder="Tell the viewers what this live is about."></textarea>
             </div>
 
             <div class="form-grid">
@@ -586,7 +624,7 @@
               <button class="btn btn-primary" id="create-live-btn" type="submit">Create Live</button>
               <button class="btn btn-gold" id="update-live-btn" type="button">Update Live</button>
               <button class="btn btn-dark" id="go-live-btn" type="button">Go Live Now</button>
-              <button class="btn btn-dark" id="end-live-btn" type="button">End Live</button>
+              <button class="btn btn-danger" id="end-live-btn" type="button">End Live</button>
             </div>
           </form>
 
@@ -653,7 +691,6 @@
     import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
     import { mountEliteNav } from "/core/nav.js";
     import { supabase } from "/core/supabase.js";
-    import { BRAND_IMAGES } from "/core/config.js";
 
     await initApp();
 
@@ -667,16 +704,22 @@
     const statusBox = document.getElementById("live-status-box");
     const recentLiveList = document.getElementById("recent-live-list");
 
+    const setupActions = document.getElementById("studio-setup-actions");
+    const liveActions = document.getElementById("studio-live-actions");
+
     const startCameraBtn = document.getElementById("start-camera-btn");
     const stopCameraBtn = document.getElementById("stop-camera-btn");
     const createLiveBtn = document.getElementById("create-live-btn");
     const updateLiveBtn = document.getElementById("update-live-btn");
     const goLiveBtn = document.getElementById("go-live-btn");
     const endLiveBtn = document.getElementById("end-live-btn");
+    const endLiveTopBtn = document.getElementById("end-live-top-btn");
     const refreshStreamBtn = document.getElementById("refresh-stream-btn");
     const clearLiveFormBtn = document.getElementById("clear-live-form-btn");
     const openWatchBtn = document.getElementById("open-watch-btn");
     const copyWatchLinkBtn = document.getElementById("copy-watch-link-btn");
+    const openWatchLiveBtn = document.getElementById("open-watch-live-btn");
+    const copyWatchLiveBtn = document.getElementById("copy-watch-live-btn");
 
     const liveTitle = document.getElementById("live-title");
     const liveDescription = document.getElementById("live-description");
@@ -742,7 +785,7 @@
       return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: currency || "USD"
-      }).format((Number(cents || 0)) / 100);
+      }).format(Number(cents || 0) / 100);
     }
 
     function toCents(amount = 0) {
@@ -763,20 +806,6 @@
       return "/watch.html";
     }
 
-    function currentCreatorName() {
-      const user = getCurrentUserState();
-      const profile = getCurrentProfileState();
-
-      return (
-        profile?.display_name ||
-        profile?.username ||
-        user?.user_metadata?.display_name ||
-        user?.user_metadata?.username ||
-        user?.email ||
-        "Rich Bizness Creator"
-      );
-    }
-
     function syncPreviewFromForm() {
       previewTitle.textContent = liveTitle.value.trim() || "Rich Bizness Live Studio";
 
@@ -794,6 +823,19 @@
       scheduleWrap.style.display = liveScheduledMode.checked ? "grid" : "none";
     }
 
+    function syncStudioActionState(stream) {
+      const isLive = String(stream?.status || "").toLowerCase() === "live";
+
+      setupActions.classList.toggle("is-hidden", isLive);
+      liveActions.classList.toggle("is-visible", isLive);
+
+      if (isLive) {
+        previewCopy.textContent = "You are live now. Camera setup controls are hidden so viewers only see the live control state.";
+      } else {
+        syncPreviewFromForm();
+      }
+    }
+
     function fillFormFromStream(stream) {
       if (!stream) return;
 
@@ -801,27 +843,29 @@
       liveDescription.value = stream.description || "";
       liveCategory.value = stream.category || "general";
       liveAccess.value = stream.access_type || "free";
-      livePrice.value = Number(stream.price_cents || 0) > 0 ? (Number(stream.price_cents || 0) / 100).toFixed(2) : "";
+      livePrice.value =
+        Number(stream.price_cents || 0) > 0
+          ? (Number(stream.price_cents || 0) / 100).toFixed(2)
+          : "";
       liveThumbnail.value = stream.thumbnail_url || "";
       liveCover.value = stream.cover_url || "";
       liveRoomName.value = stream.livekit_room_name || "";
       liveChatEnabled.checked = !!stream.is_chat_enabled;
       liveReplayEnabled.checked = !!stream.is_replay_enabled;
       liveFeatured.checked = !!stream.is_featured;
+      liveCurrency.value = stream.currency || "USD";
 
       if (stream.scheduled_for) {
         liveScheduledMode.checked = true;
         const local = new Date(stream.scheduled_for);
         if (!Number.isNaN(local.getTime())) {
-          const iso = new Date(local.getTime() - (local.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+          const iso = new Date(local.getTime() - local.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
           liveScheduledFor.value = iso;
         }
       } else {
         liveScheduledMode.checked = false;
         liveScheduledFor.value = "";
       }
-
-      liveCurrency.value = stream.currency || "USD";
 
       syncScheduleVisibility();
       syncPreviewFromForm();
@@ -847,6 +891,8 @@
       detailTimes.textContent = stream
         ? `Created: ${safeDateTime(stream.created_at)} | Started: ${safeDateTime(stream.started_at)} | Ended: ${safeDateTime(stream.ended_at)}`
         : "No live record yet.";
+
+      syncStudioActionState(stream);
     }
 
     function clearForm() {
@@ -859,9 +905,11 @@
       liveReplayEnabled.checked = true;
       liveFeatured.checked = false;
       liveScheduledMode.checked = false;
+
       syncScheduleVisibility();
       syncPreviewFromForm();
       renderCurrentStream(null);
+
       badgeStatus.textContent = "OFFLINE";
       badgeStatus.classList.remove("is-live");
       metaStatus.textContent = "Draft";
@@ -870,9 +918,7 @@
 
     async function startCameraPreview() {
       try {
-        if (previewStream) {
-          stopCameraPreview();
-        }
+        if (previewStream) stopCameraPreview();
 
         previewStream = await navigator.mediaDevices.getUserMedia({
           video: true,
@@ -890,7 +936,7 @@
     function stopCameraPreview() {
       if (!previewStream) return;
 
-      previewStream.getTracks().forEach(track => track.stop());
+      previewStream.getTracks().forEach((track) => track.stop());
       previewVideo.srcObject = null;
       previewStream = null;
       setStatus("Camera preview stopped.");
@@ -899,23 +945,21 @@
     function buildPayload({ statusOverride = null } = {}) {
       const user = getCurrentUserState();
 
-      if (!user?.id) {
-        throw new Error("You must be logged in.");
-      }
+      if (!user?.id) throw new Error("You must be logged in.");
 
       const title = liveTitle.value.trim();
       const category = liveCategory.value;
       const accessType = liveAccess.value;
       const currency = (liveCurrency.value || "USD").trim().toUpperCase();
       const roomNameRaw = liveRoomName.value.trim();
-      const scheduledEnabled = liveScheduledMode.checked;
-      const scheduledFor = scheduledEnabled && liveScheduledFor.value
-        ? new Date(liveScheduledFor.value).toISOString()
-        : null;
 
-      if (!title) {
-        throw new Error("Stream title is required.");
-      }
+      const scheduledEnabled = liveScheduledMode.checked;
+      const scheduledFor =
+        scheduledEnabled && liveScheduledFor.value
+          ? new Date(liveScheduledFor.value).toISOString()
+          : null;
+
+      if (!title) throw new Error("Stream title is required.");
 
       const slugBase = slugify(title);
       const slug = currentStream?.slug || `${slugBase}-${Date.now()}`;
@@ -926,7 +970,7 @@
         title,
         description: liveDescription.value.trim() || null,
         category: category || "general",
-        status: statusOverride || (scheduledFor ? "scheduled" : (currentStream?.status || "draft")),
+        status: statusOverride || (scheduledFor ? "scheduled" : currentStream?.status || "draft"),
         access_type: accessType || "free",
         price_cents: accessType === "paid" ? toCents(livePrice.value) : 0,
         currency: currency || "USD",
@@ -934,9 +978,10 @@
         cover_url: liveCover.value.trim() || null,
         livekit_room_name: roomNameRaw || `rb-live-${slug}`,
         scheduled_for: scheduledFor,
-        started_at: statusOverride === "live"
-          ? new Date().toISOString()
-          : (currentStream?.started_at || null),
+        started_at:
+          statusOverride === "live"
+            ? new Date().toISOString()
+            : currentStream?.started_at || null,
         ended_at: statusOverride === "ended" ? new Date().toISOString() : null,
         is_chat_enabled: !!liveChatEnabled.checked,
         is_replay_enabled: !!liveReplayEnabled.checked,
@@ -965,10 +1010,7 @@
         .select("*")
         .single();
 
-      if (error) {
-        console.error("[live] createLiveStream error:", error);
-        throw new Error(error.message || "Could not create live stream.");
-      }
+      if (error) throw new Error(error.message || "Could not create live stream.");
 
       renderCurrentStream(data);
       fillFormFromStream(data);
@@ -978,9 +1020,7 @@
     }
 
     async function updateLiveStream() {
-      if (!currentStream?.id) {
-        throw new Error("Create a stream first before updating it.");
-      }
+      if (!currentStream?.id) throw new Error("Create a stream first before updating it.");
 
       const payload = buildPayload();
 
@@ -991,10 +1031,7 @@
         .select("*")
         .single();
 
-      if (error) {
-        console.error("[live] updateLiveStream error:", error);
-        throw new Error(error.message || "Could not update live stream.");
-      }
+      if (error) throw new Error(error.message || "Could not update live stream.");
 
       renderCurrentStream(data);
       fillFormFromStream(data);
@@ -1005,8 +1042,7 @@
 
     async function goLiveNow() {
       if (!currentStream?.id) {
-        const created = await createLiveStream();
-        currentStream = created;
+        currentStream = await createLiveStream();
       }
 
       const payload = buildPayload({ statusOverride: "live" });
@@ -1023,22 +1059,17 @@
         .select("*")
         .single();
 
-      if (error) {
-        console.error("[live] goLiveNow error:", error);
-        throw new Error(error.message || "Could not start live stream.");
-      }
+      if (error) throw new Error(error.message || "Could not start live stream.");
 
       renderCurrentStream(data);
       fillFormFromStream(data);
-      setStatus("Stream is live now.", "success");
+      setStatus("Stream is live now. Studio camera setup controls are hidden.", "success");
       await loadRecentStreams();
       return data;
     }
 
     async function endLiveStream() {
-      if (!currentStream?.id) {
-        throw new Error("No current live stream to end.");
-      }
+      if (!currentStream?.id) throw new Error("No current live stream to end.");
 
       const { data, error } = await supabase
         .from("live_streams")
@@ -1052,20 +1083,18 @@
         .select("*")
         .single();
 
-      if (error) {
-        console.error("[live] endLiveStream error:", error);
-        throw new Error(error.message || "Could not end live stream.");
-      }
+      if (error) throw new Error(error.message || "Could not end live stream.");
 
       renderCurrentStream(data);
       fillFormFromStream(data);
-      setStatus("Live stream ended clean.", "success");
+      setStatus("Live stream ended clean. Studio setup controls are back.", "success");
       await loadRecentStreams();
       return data;
     }
 
     async function loadRecentStreams() {
       const user = getCurrentUserState();
+
       if (!user?.id) {
         recentLiveList.innerHTML = `<div class="status-box">Login first to load your live history.</div>`;
         return;
@@ -1079,7 +1108,6 @@
         .limit(6);
 
       if (error) {
-        console.error("[live] loadRecentStreams error:", error);
         recentLiveList.innerHTML = `<div class="status-box is-error">Could not load recent live streams.</div>`;
         return;
       }
@@ -1117,7 +1145,6 @@
         .single();
 
       if (error) {
-        console.error("[live] loadStreamById error:", error);
         setStatus("Could not load that stream.", "error");
         return;
       }
@@ -1128,17 +1155,16 @@
     }
 
     function openWatchPage() {
-      const href = watchHrefFromStream(currentStream);
-      window.location.href = href;
+      window.location.href = watchHrefFromStream(currentStream);
     }
 
     async function copyWatchLink() {
       const href = `${window.location.origin}${watchHrefFromStream(currentStream)}`;
+
       try {
         await navigator.clipboard.writeText(href);
         setStatus("Watch link copied.", "success");
-      } catch (error) {
-        console.error("[live] copyWatchLink error:", error);
+      } catch {
         setStatus("Could not copy watch link.", "error");
       }
     }
@@ -1153,11 +1179,14 @@
     stopCameraBtn.addEventListener("click", stopCameraPreview);
     openWatchBtn.addEventListener("click", openWatchPage);
     copyWatchLinkBtn.addEventListener("click", copyWatchLink);
+    openWatchLiveBtn.addEventListener("click", openWatchPage);
+    copyWatchLiveBtn.addEventListener("click", copyWatchLink);
     clearLiveFormBtn.addEventListener("click", clearForm);
 
     liveForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       createLiveBtn.disabled = true;
+
       try {
         await createLiveStream();
       } catch (error) {
@@ -1169,6 +1198,7 @@
 
     updateLiveBtn.addEventListener("click", async () => {
       updateLiveBtn.disabled = true;
+
       try {
         await updateLiveStream();
       } catch (error) {
@@ -1180,6 +1210,7 @@
 
     goLiveBtn.addEventListener("click", async () => {
       goLiveBtn.disabled = true;
+
       try {
         await goLiveNow();
       } catch (error) {
@@ -1189,31 +1220,46 @@
       }
     });
 
-    endLiveBtn.addEventListener("click", async () => {
+    async function handleEndLiveClick() {
       endLiveBtn.disabled = true;
+      endLiveTopBtn.disabled = true;
+
       try {
         await endLiveStream();
       } catch (error) {
         setStatus(error.message || "Could not end stream.", "error");
       } finally {
         endLiveBtn.disabled = false;
+        endLiveTopBtn.disabled = false;
       }
-    });
+    }
+
+    endLiveBtn.addEventListener("click", handleEndLiveClick);
+    endLiveTopBtn.addEventListener("click", handleEndLiveClick);
 
     refreshStreamBtn.addEventListener("click", async () => {
       if (!currentStream?.id) {
         setStatus("No current stream selected.", "error");
         return;
       }
+
       await loadStreamById(currentStream.id);
     });
 
     recentLiveList.addEventListener("click", async (event) => {
       const button = event.target.closest("[data-load-stream]");
       if (!button) return;
+
       const streamId = button.getAttribute("data-load-stream");
       if (!streamId) return;
+
       await loadStreamById(streamId);
+    });
+
+    window.addEventListener("beforeunload", () => {
+      if (previewStream) {
+        previewStream.getTracks().forEach((track) => track.stop());
+      }
     });
 
     syncScheduleVisibility();
@@ -1223,6 +1269,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const streamIdFromUrl = urlParams.get("id");
+
     if (streamIdFromUrl) {
       await loadStreamById(streamIdFromUrl);
     }
