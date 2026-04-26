@@ -1,349 +1,188 @@
-// core/auth.js
+// =========================
+// RICH BIZNESS AUTH CONTROLLER
+// /core/pages/auth.js
+// =========================
 
-import { supabase } from '/core/supabase.js';
-import { ROUTES } from '/core/config.js';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-let cachedSession = null;
-let cachedUser = null;
-let cachedProfile = null;
-let authBooted = false;
+// =========================
+// INIT SUPABASE
+// =========================
+const supabase = createClient(
+  window.NEXT_PUBLIC_SUPABASE_URL,
+  window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+);
 
-function slugify(value = '') {
-  return String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 40);
+// =========================
+// ELEMENTS
+// =========================
+const statusEl = document.getElementById("auth-status");
+
+const signinForm = document.getElementById("signin-form");
+const signupForm = document.getElementById("signup-form");
+
+const tabSignin = document.getElementById("auth-tab-signin");
+const tabSignup = document.getElementById("auth-tab-signup");
+
+const forgotBtn = document.getElementById("forgot-password-btn");
+
+// =========================
+// STATUS HELPER
+// =========================
+function setStatus(msg, type = "info") {
+  if (!statusEl) return;
+
+  statusEl.textContent = msg;
+
+  statusEl.style.color =
+    type === "error"
+      ? "#ff6b6b"
+      : type === "success"
+      ? "#69ffb4"
+      : "#f5fff8";
 }
 
-async function refreshSessionCache() {
-  const { data, error } = await supabase.auth.getSession();
+// =========================
+// TAB SWITCH
+// =========================
+function showTab(tab) {
+  if (tab === "signup") {
+    signupForm.classList.remove("is-hidden");
+    signinForm.classList.add("is-hidden");
 
-  if (error) {
-    console.error('[auth] refreshSessionCache error:', error);
-    cachedSession = null;
-    cachedUser = null;
-    return null;
+    tabSignup.classList.add("is-active");
+    tabSignin.classList.remove("is-active");
+  } else {
+    signinForm.classList.remove("is-hidden");
+    signupForm.classList.add("is-hidden");
+
+    tabSignin.classList.add("is-active");
+    tabSignup.classList.remove("is-active");
   }
-
-  cachedSession = data?.session || null;
-  cachedUser = data?.session?.user || null;
-  return cachedSession;
 }
 
-export async function getSessionSafe() {
-  return await refreshSessionCache();
-}
+tabSignin.onclick = () => showTab("signin");
+tabSignup.onclick = () => showTab("signup");
 
-export async function getCurrentUserSafe() {
-  const session = await refreshSessionCache();
-  return session?.user || null;
-}
+// =========================
+// SIGN IN
+// =========================
+signinForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-export async function getCurrentUser() {
-  return await getCurrentUserSafe();
-}
+  const email = document.getElementById("signin-email").value.trim();
+  const password = document.getElementById("signin-password").value;
 
-export async function getSession() {
-  return await getSessionSafe();
-}
+  setStatus("Tapping in...");
 
-export async function getCurrentProfileSafe(force = false) {
-  if (!force && cachedProfile && cachedUser?.id && cachedProfile?.id === cachedUser.id) {
-    return cachedProfile;
-  }
-
-  const user = await getCurrentUserSafe();
-
-  if (!user) {
-    cachedProfile = null;
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (error) {
-    console.error('[auth] getCurrentProfileSafe error:', error);
-    cachedProfile = null;
-    return null;
-  }
-
-  cachedProfile = data || null;
-  return cachedProfile;
-}
-
-export async function getCurrentProfile(force = false) {
-  return await getCurrentProfileSafe(force);
-}
-
-export async function ensureProfileRecord(user, overrides = {}) {
-  if (!user?.id) return null;
-
-  const email = user.email || null;
-
-  const displayName =
-    String(overrides.display_name || '').trim() ||
-    String(overrides.displayName || '').trim() ||
-    user.user_metadata?.display_name ||
-    user.user_metadata?.full_name ||
-    email?.split('@')[0] ||
-    'Rich Bizness User';
-
-  const username =
-    slugify(overrides.username || '') ||
-    slugify(user.user_metadata?.username || '') ||
-    slugify(email?.split('@')[0] || '') ||
-    `user-${user.id.slice(0, 8)}`;
-
-  const payload = {
-    id: user.id,
-    user_id: user.id,
+  const { error } = await supabase.auth.signInWithPassword({
     email,
-    display_name: displayName,
-    username,
-    handle: username,
-    updated_at: new Date().toISOString()
-  };
-
-  const { error } = await supabase
-    .from('profiles')
-    .upsert(payload, { onConflict: 'id' });
+    password
+  });
 
   if (error) {
-    console.error('[auth] ensureProfileRecord error:', error);
-    throw new Error(error.message || 'Could not create your profile record.');
+    setStatus(error.message, "error");
+    return;
   }
 
-  const profile = await getCurrentProfileSafe(true);
-  cachedProfile = profile;
-  return profile;
-}
+  setStatus("Welcome back. Redirecting...", "success");
 
-export async function signUpWithEmail({
-  email,
-  password,
-  displayName = '',
-  username = ''
-}) {
-  const cleanEmail = String(email || '').trim();
-  const cleanPassword = String(password || '');
-  const cleanDisplayName = String(displayName || '').trim();
-  const cleanUsername = slugify(username);
+  setTimeout(() => {
+    window.location.href = "/index.html";
+  }, 900);
+});
 
-  if (!cleanEmail || !cleanPassword) {
-    throw new Error('Email and password are required.');
-  }
+// =========================
+// SIGN UP
+// =========================
+signupForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("signup-email").value.trim();
+  const password = document.getElementById("signup-password").value;
+
+  const displayName = document.getElementById("signup-display-name").value.trim();
+  const username = document.getElementById("signup-username").value.trim();
+
+  setStatus("Creating your account...");
 
   const { data, error } = await supabase.auth.signUp({
-    email: cleanEmail,
-    password: cleanPassword,
-    options: {
-      data: {
-        display_name: cleanDisplayName,
-        username: cleanUsername
-      }
-    }
+    email,
+    password
   });
 
   if (error) {
-    console.error('[auth] signUpWithEmail error:', error);
-    throw new Error(error.message || 'Could not create account.');
+    setStatus(error.message, "error");
+    return;
   }
 
-  cachedSession = data?.session || null;
-  cachedUser = data?.user || null;
+  const user = data?.user;
 
-  if (data?.user) {
-    await ensureProfileRecord(data.user, {
-      display_name: cleanDisplayName,
-      username: cleanUsername
-    });
-  }
-
-  return data;
-}
-
-export async function signInWithEmail({ email, password }) {
-  const cleanEmail = String(email || '').trim();
-  const cleanPassword = String(password || '');
-
-  if (!cleanEmail || !cleanPassword) {
-    throw new Error('Email and password are required.');
-  }
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: cleanEmail,
-    password: cleanPassword
-  });
-
-  if (error) {
-    console.error('[auth] signInWithEmail error:', error);
-    throw new Error(error.message || 'Could not sign in.');
-  }
-
-  cachedSession = data?.session || null;
-  cachedUser = data?.user || null;
-
-  if (data?.user) {
-    await ensureProfileRecord(data.user);
-  }
-
-  return data;
-}
-
-export async function sendPasswordReset(email) {
-  const cleanEmail = String(email || '').trim();
-
-  if (!cleanEmail) {
-    throw new Error('Email is required.');
-  }
-
-  const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-    redirectTo: `${window.location.origin}${ROUTES.auth}`
-  });
-
-  if (error) {
-    console.error('[auth] sendPasswordReset error:', error);
-    throw new Error(error.message || 'Could not send password reset email.');
-  }
-
-  return true;
-}
-
-export async function signOutUser(redirectTo = ROUTES.auth) {
-  const { error } = await supabase.auth.signOut();
-
-  if (error) {
-    console.error('[auth] signOutUser error:', error);
-    throw new Error(error.message || 'Could not sign out.');
-  }
-
-  cachedSession = null;
-  cachedUser = null;
-  cachedProfile = null;
-  authBooted = false;
-
-  if (redirectTo) {
-    window.location.href = redirectTo;
-  }
-
-  return true;
-}
-
-export async function logoutUser(redirectTo = ROUTES.auth) {
-  return await signOutUser(redirectTo);
-}
-
-export async function requireAuth({
-  redirectTo = ROUTES.auth
-} = {}) {
-  const user = await getCurrentUserSafe();
-
-  if (!user) {
-    if (redirectTo) window.location.href = redirectTo;
-    return null;
-  }
-
-  return user;
-}
-
-export async function redirectIfAuthenticated(target = ROUTES.profile) {
-  const user = await getCurrentUserSafe();
-
-  if (user) {
-    window.location.href = target;
-    return true;
-  }
-
-  return false;
-}
-
-export function watchAuthState({
-  onSignedIn = null,
-  onSignedOut = null
-} = {}) {
-  return supabase.auth.onAuthStateChange(async (event, session) => {
-    cachedSession = session || null;
-    cachedUser = session?.user || null;
-    cachedProfile = null;
-
-    if (
-      event === 'SIGNED_IN' ||
-      event === 'TOKEN_REFRESHED' ||
-      event === 'USER_UPDATED'
-    ) {
-      if (session?.user) {
-        try {
-          await ensureProfileRecord(session.user);
-        } catch (error) {
-          console.error('[auth] watchAuthState ensureProfileRecord error:', error);
-        }
-      }
-
-      if (typeof onSignedIn === 'function') {
-        onSignedIn(session?.user || null, session || null, event);
-      }
-    }
-
-    if (event === 'SIGNED_OUT') {
-      if (typeof onSignedOut === 'function') {
-        onSignedOut(event);
-      }
-    }
-  });
-}
-
-export function onAuthStateChange(callback) {
-  return supabase.auth.onAuthStateChange((event, session) => {
-    cachedSession = session || null;
-    cachedUser = session?.user || null;
-    cachedProfile = null;
-
-    if (typeof callback === 'function') {
-      callback(event, session);
-    }
-  });
-}
-
-export async function bootAuth({
-  protect = false,
-  guestOnly = false,
-  authRedirect = ROUTES.auth,
-  appRedirect = ROUTES.profile
-} = {}) {
-  const session = await refreshSessionCache();
-  const user = session?.user || null;
-
-  if (guestOnly && user) {
-    window.location.href = appRedirect;
-    return null;
-  }
-
-  if (protect && !user) {
-    window.location.href = authRedirect;
-    return null;
-  }
-
+  // =========================
+  // OPTIONAL PROFILE INSERT
+  // =========================
   if (user) {
     try {
-      cachedProfile = await ensureProfileRecord(user);
-    } catch (error) {
-      console.error('[auth] bootAuth ensureProfileRecord error:', error);
+      await supabase.from("profiles").insert({
+        id: user.id,
+        email,
+        display_name: displayName || null,
+        username: username || null,
+        created_at: new Date().toISOString()
+      });
+    } catch (err) {
+      console.warn("Profile insert skipped:", err);
     }
-  } else {
-    cachedProfile = null;
   }
 
-  authBooted = true;
+  setStatus("Account created. Check your email to confirm.", "success");
 
-  return {
-    session: cachedSession,
-    user: cachedUser,
-    profile: cachedProfile
-  };
+  showTab("signin");
+});
+
+// =========================
+// FORGOT PASSWORD
+// =========================
+forgotBtn.onclick = async () => {
+  const email = document.getElementById("signin-email").value.trim();
+
+  if (!email) {
+    setStatus("Enter your email first.", "error");
+    return;
+  }
+
+  setStatus("Sending reset link...");
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + "/auth.html"
+  });
+
+  if (error) {
+    setStatus(error.message, "error");
+    return;
+  }
+
+  setStatus("Password reset email sent.", "success");
+};
+
+// =========================
+// AUTO SESSION CHECK
+// =========================
+async function checkSession() {
+  const { data } = await supabase.auth.getSession();
+
+  if (data?.session?.user) {
+    setStatus("You're already tapped in. Redirecting...", "success");
+
+    setTimeout(() => {
+      window.location.href = "/index.html";
+    }, 800);
+  }
 }
+
+checkSession();
+
+// =========================
+// DEBUG
+// =========================
+console.log("🔐 Auth system loaded — READY");
