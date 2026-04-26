@@ -1,646 +1,416 @@
-import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
-import { mountEliteNav } from "/core/nav.js";
-import {
-  supabase,
-  getProfile,
-  isFollowing,
-  followUser,
-  unfollowUser,
-  getCreatorBalance
-} from "/core/supabase.js";
-import { ROUTES, BRAND_IMAGES, formatMoney, formatNumber } from "/core/config.js";
-import { getQueryParam } from "/core/utils.js";
+// =========================
+// RICH BIZNESS PROFILE
+// /core/pages/profile.js
+// =========================
 
-function $(id) {
-  return document.getElementById(id);
-}
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
+import { mountEliteNav } from "/core/nav.js";
+
+await initApp();
+
+const supabase = getSupabase();
+let currentUser = getCurrentUserState();
+let currentProfile = null;
+
+const $ = (id) => document.getElementById(id);
 
 const els = {
-  navMount: $("elite-platform-nav"),
-  statusBox: $("profile-status"),
+  nav: $("elite-platform-nav"),
 
-  heroName: $("profile-display-name"),
-  heroHandle: $("profile-handle"),
-  heroBio: $("profile-bio"),
-  heroAvatar: $("profile-avatar"),
-  heroBanner: $("profile-banner"),
+  cover: $("profile-cover"),
+  avatar: $("profile-avatar"),
+  displayName: $("profile-display-name"),
+  handle: $("profile-handle"),
+  bio: $("profile-bio"),
 
-  followerCount: $("profile-follower-count"),
-  followingCount: $("profile-following-count"),
-  postCount: $("profile-post-count"),
-  trackCount: $("profile-track-count"),
-  productCount: $("profile-product-count"),
-  balanceValue: $("profile-balance"),
+  editBtn: $("edit-profile-btn"),
+  logoutBtn: $("logout-btn"),
+  messageLink: $("message-profile-link"),
 
-  followBtn: $("profile-follow-btn"),
-  messageBtn: $("profile-message-btn"),
-  editBtn: $("profile-edit-btn"),
-  shareBtn: $("profile-share-btn"),
+  followers: $("stat-followers"),
+  following: $("stat-following"),
+  uploads: $("stat-uploads"),
+  live: $("stat-live"),
+  revenue: $("stat-revenue"),
 
+  uploadList: $("profile-upload-list"),
+  liveList: $("profile-live-list"),
+
+  moneyAvailable: $("money-available"),
+  moneyEarned: $("money-earned"),
+  moneyPaidOut: $("money-paid-out"),
+
+  modal: $("profile-edit-modal"),
+  closeModal: $("close-profile-modal"),
   editForm: $("profile-edit-form"),
-  saveBtn: $("profile-save-btn"),
+  editStatus: $("profile-edit-status"),
 
-  inputDisplayName: $("profile-input-display-name"),
-  inputUsername: $("profile-input-username"),
-  inputHandle: $("profile-input-handle"),
-  inputBio: $("profile-input-bio"),
-  inputAvatar: $("profile-input-avatar"),
-  inputBanner: $("profile-input-banner"),
-
-  postsGrid: $("profile-posts-grid"),
-  musicGrid: $("profile-music-grid"),
-  productsGrid: $("profile-products-grid"),
-  premiumGrid: $("profile-premium-grid"),
-  liveGrid: $("profile-live-grid"),
-
-  tabButtons: Array.from(document.querySelectorAll("[data-profile-tab]")),
-  tabPanels: Array.from(document.querySelectorAll("[data-profile-panel]"))
+  editDisplayName: $("edit-display-name"),
+  editUsername: $("edit-username"),
+  editBio: $("edit-bio"),
+  editAvatarUrl: $("edit-avatar-url"),
+  editCoverUrl: $("edit-cover-url")
 };
 
-let currentUser = null;
-let currentOwnProfile = null;
-let viewedUserId = null;
-let viewedProfile = null;
-let followBusy = false;
+mountEliteNav({
+  target: "#elite-platform-nav",
+  collapsed: false
+});
 
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function money(cents = 0) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(Number(cents || 0) / 100);
 }
 
-function slugify(value = "") {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
+function safeText(value, fallback = "") {
+  return value || fallback;
 }
 
-function setStatus(message, type = "normal") {
-  if (!els.statusBox) return;
+function setEditStatus(message, type = "normal") {
+  if (!els.editStatus) return;
+  els.editStatus.textContent = message;
+  els.editStatus.classList.remove("is-success", "is-error");
 
-  els.statusBox.textContent = message;
-  els.statusBox.classList.remove("is-error", "is-success");
-
-  if (type === "error") els.statusBox.classList.add("is-error");
-  if (type === "success") els.statusBox.classList.add("is-success");
+  if (type === "success") els.editStatus.classList.add("is-success");
+  if (type === "error") els.editStatus.classList.add("is-error");
 }
 
-function normalizeProfile(profile) {
-  if (Array.isArray(profile)) return profile[0] || null;
-  return profile || null;
-}
+function renderProfile(profile = {}) {
+  const displayName =
+    profile.display_name ||
+    profile.full_name ||
+    profile.username ||
+    currentUser?.email ||
+    "Rich Bizness Creator";
 
-function getDisplayName(profile = null, fallbackUser = null) {
-  return (
-    profile?.display_name ||
-    profile?.username ||
-    profile?.handle ||
-    fallbackUser?.user_metadata?.display_name ||
-    fallbackUser?.user_metadata?.username ||
-    fallbackUser?.email?.split("@")[0] ||
-    "Rich Bizness User"
-  );
-}
+  const username =
+    profile.username ||
+    profile.handle ||
+    "richbizness";
 
-function getHandle(profile = null, fallbackUser = null) {
-  return (
-    profile?.handle ||
-    profile?.username ||
-    slugify(getDisplayName(profile, fallbackUser)) ||
-    "richbizness"
-  );
-}
+  const avatar =
+    profile.avatar_url ||
+    profile.profile_image_url ||
+    "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png";
 
-function getBio(profile = null) {
-  return profile?.bio || "Welcome to Rich Bizness.";
-}
+  const cover =
+    profile.cover_url ||
+    profile.banner_url ||
+    "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png";
 
-function getAvatar(profile = null) {
-  return (
-    profile?.avatar_url ||
-    profile?.profile_image_url ||
-    profile?.profile_image ||
-    BRAND_IMAGES.logo
-  );
-}
-
-function getBanner(profile = null) {
-  return (
-    profile?.banner_url ||
-    profile?.cover_url ||
-    BRAND_IMAGES.artist ||
-    BRAND_IMAGES.homeHero
-  );
-}
-
-function isOwner() {
-  return Boolean(currentUser?.id && viewedUserId && currentUser.id === viewedUserId);
-}
-
-function show(el, display = "") {
-  if (!el) return;
-  el.style.display = display;
-}
-
-function hide(el) {
-  if (!el) return;
-  el.style.display = "none";
-}
-
-function renderProfileHero() {
-  const profile = viewedProfile;
-
-  if (els.heroName) els.heroName.textContent = getDisplayName(profile, currentUser);
-  if (els.heroHandle) els.heroHandle.textContent = `@${getHandle(profile, currentUser)}`;
-  if (els.heroBio) els.heroBio.textContent = getBio(profile);
-
-  if (els.heroAvatar) {
-    els.heroAvatar.src = getAvatar(profile);
-    els.heroAvatar.alt = getDisplayName(profile, currentUser);
+  if (els.displayName) els.displayName.textContent = displayName;
+  if (els.handle) els.handle.textContent = `@${username}`;
+  if (els.bio) {
+    els.bio.textContent =
+      profile.bio ||
+      "Building my lane across Rich Bizness live, music, gaming, sports, gallery, and money moves.";
   }
 
-  if (els.heroBanner) {
-    els.heroBanner.src = getBanner(profile);
-    els.heroBanner.alt = `${getDisplayName(profile, currentUser)} banner`;
+  if (els.avatar) els.avatar.src = avatar;
+
+  if (els.cover) {
+    els.cover.style.backgroundImage = `
+      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.78)),
+      url("${cover}")
+    `;
   }
 
-  if (els.messageBtn) {
-    els.messageBtn.href = viewedUserId
-      ? `${ROUTES.messages}?user=${encodeURIComponent(viewedUserId)}`
-      : ROUTES.messages;
-  }
-
-  if (els.editBtn) {
-    els.editBtn.style.display = isOwner() ? "" : "none";
+  if (els.messageLink) {
+    els.messageLink.href = currentUser?.id
+      ? `/messages.html?user=${encodeURIComponent(currentUser.id)}`
+      : "/messages.html";
   }
 }
 
-async function fetchCounts(userId) {
-  const [
-    followersRes,
-    followingRes,
-    postsRes,
-    tracksRes,
-    productsRes
-  ] = await Promise.all([
-    supabase.from("followers").select("id", { count: "exact", head: true }).eq("following_id", userId),
-    supabase.from("followers").select("id", { count: "exact", head: true }).eq("follower_id", userId),
-    supabase.from("posts").select("id", { count: "exact", head: true }).eq("user_id", userId),
-    supabase.from("tracks").select("id", { count: "exact", head: true }).eq("creator_id", userId),
-    supabase.from("products").select("id", { count: "exact", head: true }).eq("creator_id", userId)
+async function ensureProfile() {
+  if (!currentUser?.id) {
+    window.location.href = "/auth.html";
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    console.warn("[profile] load profile error:", error);
+  }
+
+  if (data) return data;
+
+  const fallbackProfile = {
+    id: currentUser.id,
+    email: currentUser.email,
+    display_name:
+      currentUser.user_metadata?.display_name ||
+      currentUser.user_metadata?.name ||
+      "Rich Bizness Creator",
+    username:
+      currentUser.user_metadata?.username ||
+      currentUser.email?.split("@")[0] ||
+      `creator_${Date.now()}`,
+    avatar_url: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png",
+    cover_url: "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png",
+    bio: "Building my Rich Bizness lane.",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("profiles")
+    .insert(fallbackProfile)
+    .select("*")
+    .single();
+
+  if (insertError) {
+    console.warn("[profile] create profile skipped:", insertError);
+    return fallbackProfile;
+  }
+
+  return inserted;
+}
+
+async function countTable(table, column = "user_id") {
+  if (!currentUser?.id) return 0;
+
+  const { count, error } = await supabase
+    .from(table)
+    .select("*", { count: "exact", head: true })
+    .eq(column, currentUser.id);
+
+  if (error) return 0;
+  return count || 0;
+}
+
+async function loadStats() {
+  if (!currentUser?.id) return;
+
+  const [followers, following, uploads, liveRooms] = await Promise.all([
+    countTable("followers", "following_id"),
+    countTable("followers", "follower_id"),
+    countTable("uploads", "user_id"),
+    countTable("live_streams", "creator_id")
   ]);
 
-  return {
-    followers: followersRes.count || 0,
-    following: followingRes.count || 0,
-    posts: postsRes.count || 0,
-    tracks: tracksRes.count || 0,
-    products: productsRes.count || 0
-  };
+  if (els.followers) els.followers.textContent = followers.toLocaleString();
+  if (els.following) els.following.textContent = following.toLocaleString();
+  if (els.uploads) els.uploads.textContent = uploads.toLocaleString();
+  if (els.live) els.live.textContent = liveRooms.toLocaleString();
 }
 
-async function renderCounts() {
-  if (!viewedUserId) return;
-
-  const counts = await fetchCounts(viewedUserId);
-
-  if (els.followerCount) els.followerCount.textContent = formatNumber(counts.followers);
-  if (els.followingCount) els.followingCount.textContent = formatNumber(counts.following);
-  if (els.postCount) els.postCount.textContent = formatNumber(counts.posts);
-  if (els.trackCount) els.trackCount.textContent = formatNumber(counts.tracks);
-  if (els.productCount) els.productCount.textContent = formatNumber(counts.products);
-
-  const balance = await getCreatorBalance(viewedUserId);
-  if (els.balanceValue) {
-    els.balanceValue.textContent = balance
-      ? formatMoney(balance.available_cents || 0, "USD")
-      : formatMoney(0, "USD");
-  }
-}
-
-async function syncFollowButton() {
-  if (!els.followBtn) return;
-
-  if (!currentUser?.id || !viewedUserId || currentUser.id === viewedUserId) {
-    els.followBtn.textContent = currentUser?.id === viewedUserId ? "Your profile" : "Follow";
-    els.followBtn.disabled = !currentUser?.id || currentUser.id === viewedUserId;
-    return;
-  }
-
-  const following = await isFollowing(currentUser.id, viewedUserId);
-  els.followBtn.textContent = following ? "Following" : "Follow";
-  els.followBtn.dataset.following = following ? "true" : "false";
-  els.followBtn.disabled = false;
-}
-
-async function handleFollowToggle() {
-  if (!els.followBtn || followBusy || !currentUser?.id || !viewedUserId || currentUser.id === viewedUserId) {
-    return;
-  }
-
-  followBusy = true;
-  els.followBtn.disabled = true;
-
-  try {
-    const following = els.followBtn.dataset.following === "true";
-
-    if (following) {
-      await unfollowUser(currentUser.id, viewedUserId);
-      els.followBtn.textContent = "Follow";
-      els.followBtn.dataset.following = "false";
-      setStatus("Unfollowed creator.", "success");
-    } else {
-      await followUser(currentUser.id, viewedUserId);
-      els.followBtn.textContent = "Following";
-      els.followBtn.dataset.following = "true";
-      setStatus("Creator followed.", "success");
-    }
-
-    await renderCounts();
-  } catch (error) {
-    console.error("[core/pages/profile] handleFollowToggle error:", error);
-    setStatus(error.message || "Could not update follow state.", "error");
-  } finally {
-    followBusy = false;
-    els.followBtn.disabled = false;
-  }
-}
-
-function fillEditForm() {
-  if (!isOwner() || !viewedProfile) return;
-
-  if (els.inputDisplayName) els.inputDisplayName.value = viewedProfile.display_name || "";
-  if (els.inputUsername) els.inputUsername.value = viewedProfile.username || "";
-  if (els.inputHandle) els.inputHandle.value = viewedProfile.handle || "";
-  if (els.inputBio) els.inputBio.value = viewedProfile.bio || "";
-  if (els.inputAvatar) els.inputAvatar.value = viewedProfile.avatar_url || viewedProfile.profile_image_url || "";
-  if (els.inputBanner) els.inputBanner.value = viewedProfile.banner_url || viewedProfile.cover_url || "";
-}
-
-async function saveProfile(event) {
-  if (event) event.preventDefault();
-
-  if (!isOwner() || !currentUser?.id) {
-    setStatus("You can only edit your own profile.", "error");
-    return;
-  }
-
-  if (els.saveBtn) els.saveBtn.disabled = true;
-
-  try {
-    const displayName = els.inputDisplayName?.value.trim() || "";
-    const username = slugify(els.inputUsername?.value.trim() || "");
-    const handle = slugify(els.inputHandle?.value.trim() || username || displayName || "richbizness");
-    const bio = els.inputBio?.value.trim() || null;
-    const avatarUrl = els.inputAvatar?.value.trim() || null;
-    const bannerUrl = els.inputBanner?.value.trim() || null;
-
-    const payload = {
-      display_name: displayName || getDisplayName(viewedProfile, currentUser),
-      username: username || getHandle(viewedProfile, currentUser),
-      handle,
-      bio,
-      avatar_url: avatarUrl,
-      profile_image_url: avatarUrl,
-      banner_url: bannerUrl,
-      cover_url: bannerUrl,
-      updated_at: new Date().toISOString()
-    };
-
-    const { error } = await supabase
-      .from("profiles")
-      .update(payload)
-      .eq("id", currentUser.id);
-
-    if (error) {
-      console.error("[core/pages/profile] saveProfile error:", error);
-      throw new Error(error.message || "Could not save profile.");
-    }
-
-    viewedProfile = await getProfile(currentUser.id);
-    fillEditForm();
-    renderProfileHero();
-    setStatus("Profile saved.", "success");
-  } catch (error) {
-    console.error("[core/pages/profile] saveProfile catch:", error);
-    setStatus(error.message || "Could not save profile.", "error");
-  } finally {
-    if (els.saveBtn) els.saveBtn.disabled = false;
-  }
-}
-
-function emptyCard(title = "Nothing here yet.", body = "This section will fill as content is added.") {
-  return `
-    <article class="card">
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${escapeHtml(body)}</p>
-    </article>
-  `;
-}
-
-function postCard(post = {}) {
-  const title = post.title || post.caption || "Rich Bizness post";
-  const body = post.body || post.description || "Creator content";
-  const media = post.thumbnail_url || post.cover_url || post.image_url || "";
-  const href = post.id ? `/feed.html?post=${encodeURIComponent(post.id)}` : ROUTES.feed;
-
-  return `
-    <article class="card">
-      ${media ? `<img class="cover-image mb-3" src="${escapeHtml(media)}" alt="${escapeHtml(title)}" />` : ""}
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${escapeHtml(body)}</p>
-      <div class="mt-3">
-        <a class="btn-ghost" href="${href}">Open Post</a>
-      </div>
-    </article>
-  `;
-}
-
-function trackCard(track = {}) {
-  const title = track.title || "Untitled Track";
-  const artist = track.artist_name || getDisplayName(viewedProfile, currentUser);
-  const cover = track.cover_url || BRAND_IMAGES.music;
-
-  return `
-    <article class="card">
-      <img class="cover-image mb-3" src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" />
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${escapeHtml(artist)}</p>
-      <div class="mt-3 inline-wrap">
-        <span class="badge">${formatNumber(track.play_count || 0)} plays</span>
-        <span class="badge">${formatNumber(track.like_count || 0)} likes</span>
-      </div>
-    </article>
-  `;
-}
-
-function productCard(product = {}) {
-  const title = product.name || product.title || "Product";
-  const image = product.image_url || product.thumbnail_url || BRAND_IMAGES.homeHero;
-  const price = formatMoney(product.price_cents || 0, product.currency || "USD");
-
-  return `
-    <article class="card">
-      <img class="cover-image mb-3" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" />
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${price}</p>
-      <div class="mt-3">
-        <a class="btn-ghost" href="${ROUTES.store}">Open Store</a>
-      </div>
-    </article>
-  `;
-}
-
-function premiumCard(item = {}) {
-  const title = item.title || "Premium Content";
-  const description = item.description || "Premium unlock";
-  const price = formatMoney(item.price_cents || 0, "USD");
-
-  return `
-    <article class="card">
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${escapeHtml(description)}</p>
-      <div class="mt-3 inline-wrap">
-        <span class="badge gold">${price}</span>
-      </div>
-    </article>
-  `;
-}
-
-function liveCard(stream = {}) {
-  const title = stream.title || "Live Stream";
-  const image = stream.thumbnail_url || stream.cover_url || BRAND_IMAGES.live;
-  const href = stream.slug
-    ? `/watch.html?slug=${encodeURIComponent(stream.slug)}`
-    : `/watch.html?id=${encodeURIComponent(stream.id)}`;
-
-  return `
-    <article class="card">
-      <img class="cover-image mb-3" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" />
-      <strong>${escapeHtml(title)}</strong>
-      <p class="mt-2">${escapeHtml(stream.status || "draft")}</p>
-      <div class="mt-3">
-        <a class="btn-ghost" href="${href}">Open Stream</a>
-      </div>
-    </article>
-  `;
-}
-
-async function loadPosts() {
-  if (!els.postsGrid || !viewedUserId) return;
+async function loadMoney() {
+  if (!currentUser?.id) return;
 
   const { data, error } = await supabase
-    .from("posts")
+    .from("creator_available_balances")
     .select("*")
-    .eq("user_id", viewedUserId)
-    .order("created_at", { ascending: false })
-    .limit(12);
+    .eq("artist_user_id", currentUser.id)
+    .maybeSingle();
 
-  if (error) {
-    console.error("[core/pages/profile] loadPosts error:", error);
-    els.postsGrid.innerHTML = emptyCard("Posts could not load.", "Try refreshing the page.");
+  if (error || !data) {
+    if (els.moneyAvailable) els.moneyAvailable.textContent = "$0.00";
+    if (els.moneyEarned) els.moneyEarned.textContent = "$0.00";
+    if (els.moneyPaidOut) els.moneyPaidOut.textContent = "$0.00";
+    if (els.revenue) els.revenue.textContent = "$0.00";
     return;
   }
 
-  els.postsGrid.innerHTML = data?.length
-    ? data.map(postCard).join("")
-    : emptyCard("No posts yet.", "Posts will appear here.");
+  if (els.moneyAvailable) els.moneyAvailable.textContent = money(data.available_cents);
+  if (els.moneyEarned) els.moneyEarned.textContent = money(data.earned_cents);
+  if (els.moneyPaidOut) els.moneyPaidOut.textContent = money(data.paid_out_cents);
+  if (els.revenue) els.revenue.textContent = money(data.earned_cents);
 }
 
-async function loadTracks() {
-  if (!els.musicGrid || !viewedUserId) return;
+async function loadUploads() {
+  if (!els.uploadList || !currentUser?.id) return;
 
   const { data, error } = await supabase
-    .from("tracks")
+    .from("uploads")
     .select("*")
-    .eq("creator_id", viewedUserId)
+    .eq("user_id", currentUser.id)
     .order("created_at", { ascending: false })
-    .limit(12);
+    .limit(6);
 
-  if (error) {
-    console.error("[core/pages/profile] loadTracks error:", error);
-    els.musicGrid.innerHTML = emptyCard("Music could not load.", "Try refreshing the page.");
+  if (error || !data?.length) {
+    els.uploadList.innerHTML = `
+      <div class="profile-empty">
+        <strong>No uploads loaded yet.</strong>
+        <span>Your drops will show here as the upload lanes connect.</span>
+      </div>
+    `;
     return;
   }
 
-  els.musicGrid.innerHTML = data?.length
-    ? data.map(trackCard).join("")
-    : emptyCard("No tracks yet.", "Music uploads will appear here.");
+  els.uploadList.innerHTML = data
+    .map((item) => {
+      const title = item.title || item.caption || item.name || "Untitled upload";
+      const type = item.content_type || item.category || item.type || "Upload";
+
+      return `
+        <article class="profile-list-card">
+          <strong>${title}</strong>
+          <span>${type}</span>
+        </article>
+      `;
+    })
+    .join("");
 }
 
-async function loadProducts() {
-  if (!els.productsGrid || !viewedUserId) return;
-
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("creator_id", viewedUserId)
-    .order("created_at", { ascending: false })
-    .limit(12);
-
-  if (error) {
-    console.error("[core/pages/profile] loadProducts error:", error);
-    els.productsGrid.innerHTML = emptyCard("Products could not load.", "Try refreshing the page.");
-    return;
-  }
-
-  els.productsGrid.innerHTML = data?.length
-    ? data.map(productCard).join("")
-    : emptyCard("No products yet.", "Store items will appear here.");
-}
-
-async function loadPremiumContent() {
-  if (!els.premiumGrid || !viewedUserId) return;
-
-  const { data, error } = await supabase
-    .from("premium_content")
-    .select("*")
-    .eq("creator_id", viewedUserId)
-    .order("created_at", { ascending: false })
-    .limit(12);
-
-  if (error) {
-    console.error("[core/pages/profile] loadPremiumContent error:", error);
-    els.premiumGrid.innerHTML = emptyCard("Premium content could not load.", "Try refreshing the page.");
-    return;
-  }
-
-  els.premiumGrid.innerHTML = data?.length
-    ? data.map(premiumCard).join("")
-    : emptyCard("No premium content yet.", "Premium unlocks will appear here.");
-}
-
-async function loadLiveStreams() {
-  if (!els.liveGrid || !viewedUserId) return;
+async function loadLiveRooms() {
+  if (!els.liveList || !currentUser?.id) return;
 
   const { data, error } = await supabase
     .from("live_streams")
     .select("*")
-    .eq("creator_id", viewedUserId)
+    .eq("creator_id", currentUser.id)
     .order("created_at", { ascending: false })
-    .limit(12);
+    .limit(6);
 
-  if (error) {
-    console.error("[core/pages/profile] loadLiveStreams error:", error);
-    els.liveGrid.innerHTML = emptyCard("Live streams could not load.", "Try refreshing the page.");
+  if (error || !data?.length) {
+    els.liveList.innerHTML = `
+      <div class="profile-empty">
+        <strong>No live rooms yet.</strong>
+        <span>Create a live room to start building the watch rail.</span>
+      </div>
+    `;
     return;
   }
 
-  els.liveGrid.innerHTML = data?.length
-    ? data.map(liveCard).join("")
-    : emptyCard("No live streams yet.", "Live history will appear here.");
+  els.liveList.innerHTML = data
+    .map((stream) => {
+      const href = stream.slug
+        ? `/watch.html?slug=${encodeURIComponent(stream.slug)}`
+        : `/watch.html?id=${encodeURIComponent(stream.id)}`;
+
+      return `
+        <article class="profile-list-card">
+          <strong>${stream.title || "Untitled live"}</strong>
+          <span>${stream.status || "draft"} • ${stream.category || "general"} • ${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
+          <a class="btn-ghost" href="${href}">Watch</a>
+        </article>
+      `;
+    })
+    .join("");
 }
 
-function activateTab(tabName) {
-  els.tabButtons.forEach((button) => {
-    const active = button.dataset.profileTab === tabName;
-    button.classList.toggle("active", active);
-  });
+function openEditModal() {
+  if (!currentProfile || !els.modal) return;
 
-  els.tabPanels.forEach((panel) => {
-    const active = panel.dataset.profilePanel === tabName;
-    panel.style.display = active ? "" : "none";
-  });
+  if (els.editDisplayName) {
+    els.editDisplayName.value = currentProfile.display_name || "";
+  }
+
+  if (els.editUsername) {
+    els.editUsername.value = currentProfile.username || currentProfile.handle || "";
+  }
+
+  if (els.editBio) {
+    els.editBio.value = currentProfile.bio || "";
+  }
+
+  if (els.editAvatarUrl) {
+    els.editAvatarUrl.value = currentProfile.avatar_url || currentProfile.profile_image_url || "";
+  }
+
+  if (els.editCoverUrl) {
+    els.editCoverUrl.value = currentProfile.cover_url || currentProfile.banner_url || "";
+  }
+
+  setEditStatus("Ready.");
+  els.modal.showModal();
 }
 
-function bindTabs() {
-  els.tabButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const tabName = button.dataset.profileTab;
-      if (!tabName) return;
-      activateTab(tabName);
-    });
-  });
+function closeEditModal() {
+  els.modal?.close();
 }
 
-function bindActions() {
-  els.followBtn?.addEventListener("click", handleFollowToggle);
+async function saveProfile(event) {
+  event.preventDefault();
+
+  if (!currentUser?.id) return;
+
+  setEditStatus("Saving profile...");
+
+  const payload = {
+    display_name: els.editDisplayName?.value?.trim() || null,
+    username: els.editUsername?.value?.trim() || null,
+    bio: els.editBio?.value?.trim() || null,
+    avatar_url: els.editAvatarUrl?.value?.trim() || null,
+    cover_url: els.editCoverUrl?.value?.trim() || null,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: currentUser.id,
+        email: currentUser.email,
+        ...payload
+      },
+      { onConflict: "id" }
+    )
+    .select("*")
+    .single();
+
+  if (error) {
+    setEditStatus(error.message || "Could not save profile.", "error");
+    return;
+  }
+
+  currentProfile = data;
+  renderProfile(currentProfile);
+  setEditStatus("Profile saved.", "success");
+
+  setTimeout(() => {
+    closeEditModal();
+  }, 700);
+}
+
+async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "/index.html";
+}
+
+function bindEvents() {
+  els.editBtn?.addEventListener("click", openEditModal);
+  els.closeModal?.addEventListener("click", closeEditModal);
   els.editForm?.addEventListener("submit", saveProfile);
-
-  els.shareBtn?.addEventListener("click", async () => {
-    const shareUrl = `${window.location.origin}/profile.html?user=${encodeURIComponent(viewedUserId || currentUser?.id || "")}`;
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setStatus("Profile link copied.", "success");
-    } catch (error) {
-      console.error("[core/pages/profile] share copy error:", error);
-      setStatus("Could not copy profile link.", "error");
-    }
-  });
+  els.logoutBtn?.addEventListener("click", logout);
 }
 
-async function loadViewedProfile() {
-  viewedUserId =
-    getQueryParam("user", "") ||
-    getQueryParam("id", "") ||
-    currentUser?.id ||
-    "";
-
-  if (!viewedUserId) {
-    throw new Error("No profile user id found.");
-  }
-
-  viewedProfile = await getProfile(viewedUserId);
-
-  if (!viewedProfile && currentUser?.id === viewedUserId) {
-    viewedProfile = currentOwnProfile;
-  }
-
-  if (!viewedProfile) {
-    throw new Error("Profile could not be loaded.");
-  }
-}
-
-async function bootProfilePage() {
-  await initApp();
+async function bootProfile() {
+  bindEvents();
 
   currentUser = getCurrentUserState();
-  currentOwnProfile = getCurrentProfileState();
 
-  if (els.navMount) {
-    mountEliteNav({
-      target: "#elite-platform-nav",
-      collapsed: false
-    });
+  if (!currentUser?.id) {
+    const { data } = await supabase.auth.getSession();
+    currentUser = data?.session?.user || null;
   }
 
-  await loadViewedProfile();
-  renderProfileHero();
-  fillEditForm();
-  await syncFollowButton();
-  await renderCounts();
+  if (!currentUser?.id) {
+    window.location.href = "/auth.html";
+    return;
+  }
+
+  currentProfile = await ensureProfile();
+  renderProfile(currentProfile);
 
   await Promise.all([
-    loadPosts(),
-    loadTracks(),
-    loadProducts(),
-    loadPremiumContent(),
-    loadLiveStreams()
+    loadStats(),
+    loadMoney(),
+    loadUploads(),
+    loadLiveRooms()
   ]);
 
-  bindTabs();
-  bindActions();
-  activateTab("posts");
-
-  if (els.editForm) {
-    show(els.editForm, isOwner() ? "" : "none");
-  }
-
-  setStatus("Profile loaded.", "success");
+  console.log("👤 Rich Bizness Profile Loaded");
 }
 
-if (document.body?.classList.contains("profile-page")) {
-  bootProfilePage().catch((error) => {
-    console.error("[core/pages/profile] bootProfilePage error:", error);
-    setStatus(error.message || "Could not load profile.", "error");
-  });
-}
-
-export { bootProfilePage };
+bootProfile().catch((error) => {
+  console.error("[profile] boot error:", error);
+});
