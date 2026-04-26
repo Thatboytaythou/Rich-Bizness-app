@@ -1,50 +1,347 @@
-// =========================
-// RICH BIZNESS FEED
-// /core/pages/feed.js
-// =========================
+// feed.js
+// Rich Bizness LLC — Final Feed System
 
-import { initApp, getSupabase, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
-import { mountEliteNav } from "/core/nav.js";
-import { bootLiveRail } from "/core/features/live/live-rail.js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-await initApp();
+const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
-const supabase = getSupabase();
-let currentUser = getCurrentUserState();
-let currentProfile = getCurrentProfileState();
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const $ = (id) => document.getElementById(id);
-
-const els = {
-  nav: $("elite-platform-nav"),
-  status: $("feed-status"),
-
-  form: $("post-form"),
-  submitBtn: $("submit-post-btn"),
-  title: $("post-title"),
-  body: $("post-body"),
-  category: $("post-category"),
-  mediaUrl: $("post-media-url"),
-
-  composerAvatar: $("composer-avatar"),
-  composerName: $("composer-name"),
-
-  feedList: $("feed-list")
+const state = {
+  user: null,
+  profile: null,
+  posts: [],
+  activeFilter: "all",
 };
 
-mountEliteNav({
-  target: "#elite-platform-nav",
-  collapsed: false
-});
+const els = {
+  feedList: document.querySelector("#feedList"),
+  postForm: document.querySelector("#postForm"),
+  postText: document.querySelector("#postText"),
+  postMedia: document.querySelector("#postMedia"),
+  postCategory: document.querySelector("#postCategory"),
+  emptyState: document.querySelector("#emptyState"),
+  authGate: document.querySelector("#authGate"),
+  userBadge: document.querySelector("#userBadge"),
+  filterButtons: document.querySelectorAll("[data-feed-filter]"),
+};
 
-function setStatus(message, type = "normal") {
-  if (!els.status) return;
+document.addEventListener("DOMContentLoaded", initFeed);
 
-  els.status.textContent = message;
-  els.status.classList.remove("is-error", "is-success");
+async function initFeed() {
+  await loadUser();
+  bindEvents();
+  await loadFeed();
+}
 
-  if (type === "error") els.status.classList.add("is-error");
-  if (type === "success") els.status.classList.add("is-success");
+async function loadUser() {
+  const { data } = await supabase.auth.getUser();
+  state.user = data?.user || null;
+
+  if (!state.user) {
+    if (els.authGate) els.authGate.style.display = "block";
+    if (els.postForm) els.postForm.style.display = "none";
+    return;
+  }
+
+  if (els.authGate) els.authGate.style.display = "none";
+  if (els.postForm) els.postForm.style.display = "block";
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", state.user.id)
+    .maybeSingle();
+
+  state.profile = profile || null;
+
+  if (els.userBadge) {
+    els.userBadge.textContent =
+      state.profile?.display_name ||
+      state.profile?.username ||
+      state.user.email ||
+      "Rich Bizness Member";
+  }
+}
+
+function bindEvents() {
+  if (els.postForm) {
+    els.postForm.addEventListener("submit", createPost);
+  }
+
+  els.filterButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      state.activeFilter = btn.dataset.feedFilter || "all";
+
+      els.filterButtons.forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      await loadFeed();
+    });
+  });
+}
+
+async function loadFeed() {
+  if (!els.feedList) return;
+
+  els.feedList.innerHTML = `<div class="feed-loading">Loading Rich Bizness feed...</div>`;
+
+  let query = supabase
+    .from("posts")
+    .select(`
+      id,
+      user_id,
+      body,
+      caption,
+      content,
+      category,
+      media_url,
+      image_url,
+      video_url,
+      created_at,
+      profiles (
+        id,
+        username,
+        display_name,
+        avatar_url
+      )
+    `)
+    .order("created_at", { ascending: false })
+    .limit(50);
+
+  if (state.activeFilter !== "all") {
+    query = query.eq("category", state.activeFilter);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error("Feed load error:", error);
+    els.feedList.innerHTML = `
+      <div class="feed-error">
+        Could not load the feed yet. Check your posts table columns.
+      </div>
+    `;
+    return;
+  }
+
+  state.posts = data || [];
+  renderFeed();
+}
+
+function renderFeed() {
+  if (!els.feedList) return;
+
+  if (!state.posts.length) {
+    els.feedList.innerHTML = "";
+    if (els.emptyState) els.emptyState.style.display = "block";
+    return;
+  }
+
+  if (els.emptyState) els.emptyState.style.display = "none";
+
+  els.feedList.innerHTML = state.posts.map(renderPostCard).join("");
+
+  document.querySelectorAll("[data-like-post]").forEach((btn) => {
+    btn.addEventListener("click", () => likePost(btn.dataset.likePost));
+  });
+
+  document.querySelectorAll("[data-delete-post]").forEach((btn) => {
+    btn.addEventListener("click", () => deletePost(btn.dataset.deletePost));
+  });
+}
+
+function renderPostCard(post) {
+  const profile = post.profiles || {};
+  const name =
+    profile.display_name ||
+    profile.username ||
+    "Rich Bizness Creator";
+
+  const avatar =
+    profile.avatar_url ||
+    "/images/brand/rich-bizness-profile.jpg";
+
+  const text =
+    post.body ||
+    post.caption ||
+    post.content ||
+    "";
+
+  const media =
+    post.media_url ||
+    post.image_url ||
+    post.video_url ||
+    "";
+
+  const category = post.category || "general";
+  const isOwner = state.user && post.user_id === state.user.id;
+
+  return `
+    <article class="feed-card">
+      <div class="feed-card-top">
+        <img class="feed-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(name)}" />
+
+        <div class="feed-meta">
+          <strong>${escapeHtml(name)}</strong>
+          <span>${formatDate(post.created_at)} · ${escapeHtml(category)}</span>
+        </div>
+
+        ${isOwner ? `
+          <button class="feed-delete" data-delete-post="${post.id}" title="Delete post">
+            ×
+          </button>
+        ` : ""}
+      </div>
+
+      ${text ? `<p class="feed-text">${escapeHtml(text)}</p>` : ""}
+
+      ${renderMedia(media)}
+
+      <div class="feed-actions">
+        <button data-like-post="${post.id}">🔥 Like</button>
+        <button onclick="window.location.href='profile.html?id=${post.user_id}'">View Profile</button>
+        <button onclick="window.location.href='messages.html?to=${post.user_id}'">Message</button>
+      </div>
+    </article>
+  `;
+}
+
+function renderMedia(url) {
+  if (!url) return "";
+
+  const safeUrl = escapeAttr(url);
+  const lower = url.toLowerCase();
+
+  if (lower.includes(".mp4") || lower.includes(".webm") || lower.includes(".mov")) {
+    return `
+      <video class="feed-media" controls playsinline>
+        <source src="${safeUrl}" />
+      </video>
+    `;
+  }
+
+  return `<img class="feed-media" src="${safeUrl}" alt="Feed media" />`;
+}
+
+async function createPost(event) {
+  event.preventDefault();
+
+  if (!state.user) {
+    window.location.href = "auth.html";
+    return;
+  }
+
+  const text = els.postText?.value?.trim() || "";
+  const category = els.postCategory?.value || "general";
+  const file = els.postMedia?.files?.[0] || null;
+
+  if (!text && !file) {
+    alert("Add text or media before posting.");
+    return;
+  }
+
+  let mediaUrl = null;
+
+  if (file) {
+    mediaUrl = await uploadFeedMedia(file);
+    if (!mediaUrl) return;
+  }
+
+  const payload = {
+    user_id: state.user.id,
+    body: text,
+    caption: text,
+    content: text,
+    category,
+    media_url: mediaUrl,
+    created_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase.from("posts").insert(payload);
+
+  if (error) {
+    console.error("Create post error:", error);
+    alert("Post could not be created. Check your posts table columns.");
+    return;
+  }
+
+  els.postForm.reset();
+  await loadFeed();
+}
+
+async function uploadFeedMedia(file) {
+  const ext = file.name.split(".").pop();
+  const path = `${state.user.id}/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from("uploads")
+    .upload(path, file, {
+      cacheControl: "3600",
+      upsert: false,
+    });
+
+  if (error) {
+    console.error("Upload error:", error);
+    alert("Media upload failed. Check your uploads bucket policy.");
+    return null;
+  }
+
+  const { data } = supabase.storage
+    .from("uploads")
+    .getPublicUrl(path);
+
+  return data.publicUrl;
+}
+
+async function likePost(postId) {
+  if (!state.user) {
+    window.location.href = "auth.html";
+    return;
+  }
+
+  const { error } = await supabase.from("post_reactions").insert({
+    post_id: postId,
+    user_id: state.user.id,
+    reaction: "fire",
+    created_at: new Date().toISOString(),
+  });
+
+  if (error) {
+    console.warn("Like may already exist or table policy blocked it:", error);
+  }
+
+  alert("🔥 Liked");
+}
+
+async function deletePost(postId) {
+  if (!confirm("Delete this post?")) return;
+
+  const { error } = await supabase
+    .from("posts")
+    .delete()
+    .eq("id", postId)
+    .eq("user_id", state.user.id);
+
+  if (error) {
+    console.error("Delete post error:", error);
+    alert("Could not delete this post.");
+    return;
+  }
+
+  await loadFeed();
+}
+
+function formatDate(value) {
+  if (!value) return "Just now";
+
+  return new Date(value).toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function escapeHtml(value = "") {
@@ -56,154 +353,6 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function safeDate(value) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString();
+function escapeAttr(value = "") {
+  return escapeHtml(value);
 }
-
-function getDisplayName(profile = null, user = null) {
-  return (
-    profile?.display_name ||
-    profile?.full_name ||
-    profile?.username ||
-    profile?.handle ||
-    user?.user_metadata?.display_name ||
-    user?.user_metadata?.username ||
-    user?.email?.split("@")[0] ||
-    "Rich Bizness Creator"
-  );
-}
-
-function getAvatar(profile = null) {
-  return (
-    profile?.avatar_url ||
-    profile?.profile_image_url ||
-    profile?.profile_image ||
-    "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
-  );
-}
-
-async function requireUser() {
-  if (currentUser?.id) return currentUser;
-
-  const { data } = await supabase.auth.getSession();
-  currentUser = data?.session?.user || null;
-
-  if (!currentUser?.id) {
-    window.location.href = "/auth.html";
-    return null;
-  }
-
-  return currentUser;
-}
-
-async function loadCurrentProfile() {
-  if (!currentUser?.id) return null;
-
-  if (currentProfile?.id) return currentProfile;
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", currentUser.id)
-    .maybeSingle();
-
-  if (!error && data) {
-    currentProfile = data;
-  }
-
-  return currentProfile;
-}
-
-function renderComposer() {
-  if (els.composerName) {
-    els.composerName.textContent = getDisplayName(currentProfile, currentUser);
-  }
-
-  if (els.composerAvatar) {
-    els.composerAvatar.src = getAvatar(currentProfile);
-  }
-}
-
-function getMediaMarkup(url = "") {
-  const cleanUrl = String(url || "").trim();
-  if (!cleanUrl) return "";
-
-  const lower = cleanUrl.toLowerCase();
-
-  if (
-    lower.endsWith(".mp4") ||
-    lower.endsWith(".mov") ||
-    lower.endsWith(".webm") ||
-    lower.includes("video")
-  ) {
-    return `
-      <div class="feed-media">
-        <video src="${escapeHtml(cleanUrl)}" controls playsinline></video>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="feed-media">
-      <img src="${escapeHtml(cleanUrl)}" alt="Feed media" loading="lazy" />
-    </div>
-  `;
-}
-
-function getProfileFromPost(post) {
-  if (Array.isArray(post.profiles)) return post.profiles[0] || null;
-  return post.profiles || null;
-}
-
-function getPostTitle(post) {
-  return post.title || post.caption || "Rich Bizness Move";
-}
-
-function getPostBody(post) {
-  return post.body || post.description || post.content || post.caption || "";
-}
-
-function getPostMedia(post) {
-  return (
-    post.media_url ||
-    post.image_url ||
-    post.video_url ||
-    post.file_url ||
-    post.thumbnail_url ||
-    ""
-  );
-}
-
-function getPostCategory(post) {
-  return post.category || post.content_type || post.type || "general";
-}
-
-function renderPost(post) {
-  const profile = getProfileFromPost(post);
-  const authorName = getDisplayName(profile, null);
-  const authorAvatar = getAvatar(profile);
-  const title = getPostTitle(post);
-  const body = getPostBody(post);
-  const mediaUrl = getPostMedia(post);
-  const category = getPostCategory(post);
-  const authorId = post.user_id || post.creator_id || profile?.id || "";
-
-  return `
-    <article class="feed-card" data-post-id="${escapeHtml(post.id)}">
-      <div class="feed-card-head">
-        <a class="feed-author" href="${authorId ? `/profile.html?id=${encodeURIComponent(authorId)}` : "/profile.html"}">
-          <img src="${escapeHtml(authorAvatar)}" alt="${escapeHtml(authorName)} avatar" />
-          <div>
-            <strong>${escapeHtml(authorName)}</strong>
-            <span>${escapeHtml(category)} • ${safeDate(post.created_at)}</span>
-          </div>
-        </a>
-
-        <span class="feed-card-badge">${escapeHtml(String(category).toUpperCase())}</span>
-      </div>
-
-      <div class="feed-card-body">
-        <h3>${escapeHtml
