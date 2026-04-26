@@ -3,793 +3,180 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Feed</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <style>
-    * { box-sizing: border-box; }
+  <title>Rich Bizness — Feed</title>
+  <meta
+    name="description"
+    content="Rich Bizness feed for posts, creator updates, uploads, comments, reactions, and community motion."
+  />
 
-    :root {
-      --green: #7dff71;
-      --gold: #f5d76e;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.52);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
-    }
-
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.56), rgba(0,0,0,0.90)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat fixed;
-    }
-
-    .page {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 40px;
-    }
-
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.85rem;
-      font-weight: 900;
-    }
-
-    .brand img {
-      width: 58px;
-      height: 58px;
-      border-radius: 16px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 0.98;
-      color: var(--green);
-    }
-
-    .subtle,
-    .card-text,
-    .card-meta {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-red,
-    .pill-gold,
-    .pill-green {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-    }
-
-    .hero-kicker,
-    .pill,
-    .pill-green {
-      background: rgba(125,255,113,0.12);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ff9f9b;
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.28);
-      color: var(--gold);
-    }
-
-    .hero-actions,
-    .filter-row,
-    .card-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-gold,
-    .filter-btn {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 14px 18px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark,
-    .filter-btn {
-      background: var(--soft);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .btn-gold { background: var(--gold); color: black; }
-
-    .filter-btn.active {
-      background: var(--green);
-      color: black;
-    }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      line-height: 1.6;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .stats-row {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.44);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.75rem;
-      font-weight: 900;
-      color: var(--green);
-      word-break: break-word;
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-    }
-
-    .feed-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-
-    .card {
-      border-radius: 20px;
-      overflow: hidden;
-      background: var(--soft2);
-      border: 1px solid rgba(255,255,255,0.08);
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-cover {
-      height: 240px;
-      background:
-        linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)),
-        url("images/brand/logo-music-label.png") center center / cover no-repeat;
-      padding: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-    }
-
-    .card-cover.custom-bg {
-      background-size: cover;
-      background-position: center center;
-    }
-
-    .card-pill-wrap {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .card-body {
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-    }
-
-    .card-title {
-      color: var(--gold);
-      font-size: 1.12rem;
-      font-weight: 900;
-      margin-bottom: 8px;
-    }
-
-    .card-meta {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 10px;
-      line-height: 1.5;
-    }
-
-    .card-meta a {
-      color: var(--green);
-      text-decoration: none;
-    }
-
-    .empty-box {
-      padding: 20px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.78);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      grid-column: 1 / -1;
-    }
-
-    @media (max-width: 1320px) {
-      .stats-row {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .feed-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 860px) {
-      .stats-row,
-      .feed-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .card-cover {
-        height: 200px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+  <link rel="stylesheet" href="/styles/pages/feed.css" />
 </head>
-<body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Rich Bizness Feed</span>
+
+<body class="feed-page">
+  <div class="page-shell feed-shell">
+    <div id="elite-platform-nav"></div>
+
+    <section class="feed-hero">
+      <div>
+        <span class="feed-kicker">Rich Bizness Feed</span>
+        <h1>Post the move, react to the wave, and keep the whole platform active.</h1>
+        <p>
+          Share updates, promote uploads, push live rooms, and keep creators connected across music,
+          gaming, sports, gallery, and the money lane.
+        </p>
       </div>
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="feed.html" class="active">Feed</a>
-        <a href="music.html">Music</a>
-        <a href="artist.html">Artist</a>
-        <a href="gaming.html">Gaming</a>
-        <a href="sports.html">Sports</a>
-        <a href="live.html">Live</a>
-        <a href="watch.html">Watch</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <a href="profile.html">Profile</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
+      <div class="feed-hero-actions">
+        <a class="btn btn-gold" href="/upload.html">Upload</a>
+        <a class="btn" href="/live.html">WE LIT 🔥</a>
+        <a class="btn-ghost" href="/profile.html">Profile</a>
       </div>
-    </div>
+    </section>
 
-    <div class="hero">
-      <div class="hero-kicker">UNIFIED PLATFORM FEED</div>
-      <h1>Everything happening across Rich Bizness in one scroll.</h1>
-      <div class="subtle">
-        Live rooms, music drops, gaming clips, sports content, and artwork all come together here so the app feels like one real platform.
-      </div>
+    <section id="feed-status" class="feed-status">
+      Loading feed...
+    </section>
 
-      <div class="hero-actions">
-        <button id="refreshBtn" class="btn-green" type="button">Refresh Feed</button>
-        <a class="btn-dark" href="upload.html">Upload</a>
-        <a class="btn-dark" href="live.html">Go Live</a>
-      </div>
+    <main class="feed-layout">
+      <section class="feed-main">
+        <form id="post-form" class="post-composer">
+          <div class="composer-head">
+            <img
+              id="composer-avatar"
+              src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
+              alt="Your avatar"
+            />
+            <div>
+              <strong id="composer-name">Rich Bizness Creator</strong>
+              <span>Drop something into the feed.</span>
+            </div>
+          </div>
 
-      <div id="statusBox" class="status-box">Loading feed...</div>
+          <input
+            id="post-title"
+            type="text"
+            placeholder="Post title..."
+          />
 
-      <div class="stats-row">
-        <div class="stat">
-          <div id="allCountStat" class="stat-value">0</div>
-          <div class="stat-label">All Posts</div>
+          <textarea
+            id="post-body"
+            rows="4"
+            placeholder="What’s the move?"
+          ></textarea>
+
+          <div class="composer-grid">
+            <div>
+              <label for="post-category">Lane</label>
+              <select id="post-category">
+                <option value="general">General</option>
+                <option value="live">Live</option>
+                <option value="music">Music</option>
+                <option value="gaming">Gaming</option>
+                <option value="sports">Sports</option>
+                <option value="gallery">Gallery</option>
+                <option value="artist">Artist</option>
+                <option value="metaverse">Metaverse</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="post-media-url">Media URL</label>
+              <input
+                id="post-media-url"
+                type="url"
+                placeholder="https:// image/video link..."
+              />
+            </div>
+          </div>
+
+          <div class="composer-actions">
+            <button id="submit-post-btn" class="btn btn-gold" type="submit">
+              Post Move
+            </button>
+            <a class="btn-ghost" href="/upload.html">Upload Media</a>
+          </div>
+        </form>
+
+        <div id="feed-list" class="feed-list">
+          <div class="feed-empty">
+            <strong>No posts loaded yet.</strong>
+            <span>The feed will fill with creator moves, uploads, and community updates.</span>
+          </div>
         </div>
-        <div class="stat">
-          <div id="liveCountStat" class="stat-value">0</div>
-          <div class="stat-label">Live</div>
-        </div>
-        <div class="stat">
-          <div id="musicCountStat" class="stat-value">0</div>
-          <div class="stat-label">Music</div>
-        </div>
-        <div class="stat">
-          <div id="gamingCountStat" class="stat-value">0</div>
-          <div class="stat-label">Gaming</div>
-        </div>
-        <div class="stat">
-          <div id="sportsCountStat" class="stat-value">0</div>
-          <div class="stat-label">Sports</div>
-        </div>
-        <div class="stat">
-          <div id="artCountStat" class="stat-value">0</div>
-          <div class="stat-label">Artwork</div>
-        </div>
-      </div>
-    </div>
+      </section>
 
-    <div class="section">
-      <div class="filter-row">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="live">Live</button>
-        <button class="filter-btn" data-filter="music">Music</button>
-        <button class="filter-btn" data-filter="gaming">Gaming</button>
-        <button class="filter-btn" data-filter="sports">Sports</button>
-        <button class="filter-btn" data-filter="artwork">Artwork</button>
-      </div>
+      <aside class="feed-side">
+        <section class="feed-panel">
+          <div class="panel-head">
+            <h2>Quick lanes</h2>
+            <p>Jump into the parts that keep Rich Bizness moving.</p>
+          </div>
 
-      <div id="feedGrid" class="feed-grid">
-        <div class="empty-box">Loading feed...</div>
-      </div>
-    </div>
+          <div class="quick-lane-list">
+            <a href="/live.html"><strong>WE LIT 🔥</strong><span>Start a live room</span></a>
+            <a href="/watch.html"><strong>Watch</strong><span>See active streams</span></a>
+            <a href="/music.html"><strong>Music</strong><span>Artist world</span></a>
+            <a href="/gaming.html"><strong>Gaming</strong><span>Arcade ecosystem</span></a>
+            <a href="/sports.html"><strong>Sports</strong><span>Fan lane</span></a>
+            <a href="/gallery.html"><strong>Gallery</strong><span>Visual drops</span></a>
+          </div>
+        </section>
+
+        <section class="feed-panel">
+          <div class="panel-head">
+            <h2>Live rail</h2>
+            <p>Streams that are on right now.</p>
+          </div>
+
+          <div id="feed-live-rail" class="rb-live-rail feed-live-rail">
+            <div class="rb-live-empty">
+              <div>
+                <strong>No one live yet.</strong>
+                <span>Live rooms will show here.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="feed-panel">
+          <div class="panel-head">
+            <h2>Feed sync</h2>
+            <p>Everything should point back into the ecosystem.</p>
+          </div>
+
+          <div class="sync-stack">
+            <article>
+              <span>Posts</span>
+              <strong>Creator updates</strong>
+            </article>
+            <article>
+              <span>Comments</span>
+              <strong>Community talk</strong>
+            </article>
+            <article>
+              <span>Reactions</span>
+              <strong>Likes + energy</strong>
+            </article>
+            <article>
+              <span>Uploads</span>
+              <strong>Media lanes</strong>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </main>
   </div>
 
   <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const refreshBtn = document.getElementById("refreshBtn");
-      const statusBox = document.getElementById("statusBox");
-      const feedGrid = document.getElementById("feedGrid");
-
-      const allCountStat = document.getElementById("allCountStat");
-      const liveCountStat = document.getElementById("liveCountStat");
-      const musicCountStat = document.getElementById("musicCountStat");
-      const gamingCountStat = document.getElementById("gamingCountStat");
-      const sportsCountStat = document.getElementById("sportsCountStat");
-      const artCountStat = document.getElementById("artCountStat");
-
-      let currentUser = null;
-      let profileMap = {};
-      let feedCache = [];
-      let currentFilter = "all";
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      function getCreatorLabel(userId, fallback = "Creator") {
-        const profile = profileMap[userId] || {};
-        return profile.display_name || profile.username || profile.email || fallback;
-      }
-
-      function getArtistLink(userId) {
-        const profile = profileMap[userId] || {};
-        if (!profile.username) return "artist.html";
-        return `artist.html?u=${encodeURIComponent(profile.username)}`;
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function loadProfiles(userIds) {
-        const uniqueIds = [...new Set(userIds.filter(Boolean))];
-        if (!uniqueIds.length) return;
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .in("id", uniqueIds);
-
-        if (error) throw error;
-
-        profileMap = {};
-        (data || []).forEach(profile => {
-          profileMap[profile.id] = profile;
-        });
-      }
-
-      function mapLiveRows(rows) {
-        return rows.map(row => ({
-          feed_type: "live",
-          created_at: row.updated_at || row.created_at,
-          owner_id: row.host_user_id,
-          title: row.title || "Live Room",
-          body: row.announcement || row.description || "Live session happening now.",
-          image_url: row.thumbnail_url || "",
-          meta_1: row.category || "Live",
-          meta_2: row.tags || "",
-          is_featured: row.is_live,
-          is_vip: !!row.is_vip,
-          room_name: row.room_name,
-          file_url: "",
-        }));
-      }
-
-      function mapMusicRows(rows) {
-        return rows.map(row => ({
-          feed_type: "music",
-          created_at: row.created_at,
-          owner_id: row.user_id,
-          title: row.title || "Music Upload",
-          body: `${row.artist_name || "--"} • ${row.album_name || "--"} • ${row.mood || "--"}`,
-          image_url: row.cover_url || "",
-          meta_1: row.genre || "Music",
-          meta_2: `Views ${row.views || 0} • Likes ${row.likes || 0}`,
-          is_featured: !!row.is_featured,
-          is_vip: false,
-          room_name: "",
-          file_url: row.file_url || "",
-        }));
-      }
-
-      function mapGamingRows(rows) {
-        return rows.map(row => ({
-          feed_type: "gaming",
-          created_at: row.created_at,
-          owner_id: row.user_id,
-          title: row.title || "Gaming Upload",
-          body: `${row.game_title || "--"} • ${row.platform || "--"} • ${row.gamer_tag || "--"}`,
-          image_url: row.thumbnail_url || "",
-          meta_1: row.clip_type || row.content_type || "Gaming",
-          meta_2: `Views ${row.views || 0} • Likes ${row.likes || 0}`,
-          is_featured: !!row.is_featured,
-          is_vip: false,
-          room_name: "",
-          file_url: row.file_url || "",
-        }));
-      }
-
-      function mapSportsRows(rows) {
-        return rows.map(row => ({
-          feed_type: "sports",
-          created_at: row.created_at,
-          owner_id: row.user_id,
-          title: row.title || "Sports Upload",
-          body: `${row.sport_name || "--"} • ${row.team_name || "--"} • ${row.athlete_name || "--"}`,
-          image_url: row.thumbnail_url || "",
-          meta_1: row.clip_type || row.content_type || "Sports",
-          meta_2: `Views ${row.views || 0} • Likes ${row.likes || 0}`,
-          is_featured: !!row.is_featured,
-          is_vip: false,
-          room_name: "",
-          file_url: row.file_url || "",
-        }));
-      }
-
-      function mapArtRows(rows) {
-        return rows.map(row => ({
-          feed_type: "artwork",
-          created_at: row.created_at,
-          owner_id: row.user_id,
-          title: row.title || "Artwork Upload",
-          body: row.caption || "Creator artwork post.",
-          image_url: row.thumbnail_url || row.file_url || "",
-          meta_1: row.content_type || row.media_type || "Artwork",
-          meta_2: `Views ${row.views || 0} • Likes ${row.likes || 0}`,
-          is_featured: !!row.is_featured,
-          is_vip: false,
-          room_name: "",
-          file_url: row.file_url || "",
-        }));
-      }
-
-      function updateStats() {
-        allCountStat.textContent = String(feedCache.length);
-        liveCountStat.textContent = String(feedCache.filter(i => i.feed_type === "live").length);
-        musicCountStat.textContent = String(feedCache.filter(i => i.feed_type === "music").length);
-        gamingCountStat.textContent = String(feedCache.filter(i => i.feed_type === "gaming").length);
-        sportsCountStat.textContent = String(feedCache.filter(i => i.feed_type === "sports").length);
-        artCountStat.textContent = String(feedCache.filter(i => i.feed_type === "artwork").length);
-      }
-
-      function getFilteredFeed() {
-        if (currentFilter === "all") return feedCache;
-        return feedCache.filter(item => item.feed_type === currentFilter);
-      }
-
-      function cardButtons(item) {
-        if (item.feed_type === "live") {
-          return `
-            <a class="btn-green" href="watch.html?room=${encodeURIComponent(item.room_name || "")}">Watch</a>
-            <a class="btn-dark" href="${getArtistLink(item.owner_id)}">Artist</a>
-          `;
-        }
-
-        if (item.feed_type === "music") {
-          return `
-            <a class="btn-green" href="${item.file_url ? escapeHtml(item.file_url) : "music.html"}" target="${item.file_url ? "_blank" : "_self"}">Open</a>
-            <a class="btn-dark" href="music.html">Music</a>
-          `;
-        }
-
-        if (item.feed_type === "gaming") {
-          return `
-            <a class="btn-green" href="${item.file_url ? escapeHtml(item.file_url) : "gaming.html"}" target="${item.file_url ? "_blank" : "_self"}">Open</a>
-            <a class="btn-dark" href="gaming.html">Gaming</a>
-          `;
-        }
-
-        if (item.feed_type === "sports") {
-          return `
-            <a class="btn-green" href="${item.file_url ? escapeHtml(item.file_url) : "sports.html"}" target="${item.file_url ? "_blank" : "_self"}">Open</a>
-            <a class="btn-dark" href="sports.html">Sports</a>
-          `;
-        }
-
-        return `
-          <a class="btn-green" href="${item.file_url ? escapeHtml(item.file_url) : "gallery.html"}" target="${item.file_url ? "_blank" : "_self"}">Open</a>
-          <a class="btn-dark" href="gallery.html">Gallery</a>
-        `;
-      }
-
-      function typePillClass(type) {
-        if (type === "live") return "pill-red";
-        if (type === "music") return "pill-gold";
-        if (type === "gaming") return "pill-green";
-        if (type === "sports") return "pill-gold";
-        return "pill";
-      }
-
-      function renderFeed() {
-        const rows = getFilteredFeed();
-
-        if (!rows.length) {
-          feedGrid.innerHTML = `<div class="empty-box">No feed items found.</div>`;
-          return;
-        }
-
-        feedGrid.innerHTML = rows.map(item => {
-          const coverStyle = item.image_url
-            ? `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url('${String(item.image_url).replace(/'/g, "%27")}');`
-            : `background-image:linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0.18)), url("images/brand/logo-music-label.png");`;
-
-          const creator = getCreatorLabel(item.owner_id);
-          const creatorLink = getArtistLink(item.owner_id);
-
-          return `
-            <div class="card">
-              <div class="card-cover custom-bg" style="${coverStyle}">
-                <div class="card-pill-wrap">
-                  <span class="${typePillClass(item.feed_type)}">${escapeHtml(item.feed_type.toUpperCase())}</span>
-                  ${item.is_featured ? `<span class="pill-red">FEATURED</span>` : ``}
-                  ${item.is_vip ? `<span class="pill-gold">VIP</span>` : ``}
-                </div>
-              </div>
-
-              <div class="card-body">
-                <div class="card-title">${escapeHtml(item.title)}</div>
-                <div class="card-text">${escapeHtml(item.body || "")}</div>
-
-                <div class="card-meta">
-                  Creator: <a href="${creatorLink}">${escapeHtml(creator)}</a><br>
-                  Meta: ${escapeHtml(item.meta_1 || "--")}<br>
-                  Extra: ${escapeHtml(item.meta_2 || "--")}<br>
-                  Posted: ${escapeHtml(formatDate(item.created_at))}
-                </div>
-
-                <div class="card-actions">
-                  ${cardButtons(item)}
-                  <a class="btn-dark" href="${creatorLink}">Creator</a>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join("");
-      }
-
-      async function loadFeed() {
-        try {
-          setStatus("Loading feed...");
-
-          const [liveRes, musicRes, gamingRes, sportsRes, artRes] = await Promise.all([
-            supabase.from("live_rooms").select("*").order("updated_at", { ascending: false }).limit(12),
-            supabase.from("music_uploads").select("*").order("created_at", { ascending: false }).limit(12),
-            supabase.from("gaming_uploads").select("*").order("created_at", { ascending: false }).limit(12),
-            supabase.from("sports_uploads").select("*").order("created_at", { ascending: false }).limit(12),
-            supabase.from("artworks").select("*").order("created_at", { ascending: false }).limit(12)
-          ]);
-
-          if (liveRes.error && liveRes.error.code !== "42P01") throw liveRes.error;
-          if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
-          if (gamingRes.error && gamingRes.error.code !== "42P01") throw gamingRes.error;
-          if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
-          if (artRes.error && artRes.error.code !== "42P01") throw artRes.error;
-
-          const liveRows = liveRes.data || [];
-          const musicRows = musicRes.data || [];
-          const gamingRows = gamingRes.data || [];
-          const sportsRows = sportsRes.data || [];
-          const artRows = artRes.data || [];
-
-          const ownerIds = [
-            ...liveRows.map(r => r.host_user_id),
-            ...musicRows.map(r => r.user_id),
-            ...gamingRows.map(r => r.user_id),
-            ...sportsRows.map(r => r.user_id),
-            ...artRows.map(r => r.user_id)
-          ];
-
-          await loadProfiles(ownerIds);
-
-          feedCache = [
-            ...mapLiveRows(liveRows),
-            ...mapMusicRows(musicRows),
-            ...mapGamingRows(gamingRows),
-            ...mapSportsRows(sportsRows),
-            ...mapArtRows(artRows)
-          ].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-
-          updateStats();
-          renderFeed();
-          setStatus("✅ Feed fully synced.");
-        } catch (error) {
-          console.error("Feed load error:", error);
-          setStatus("❌ Feed load error: " + error.message);
-          feedGrid.innerHTML = `<div class="empty-box">Could not load feed right now.</div>`;
-        }
-      }
-
-      Array.from(document.querySelectorAll(".filter-btn")).forEach(btn => {
-        btn.addEventListener("click", () => {
-          currentFilter = btn.dataset.filter || "all";
-          Array.from(document.querySelectorAll(".filter-btn")).forEach(b => b.classList.remove("active"));
-          btn.classList.add("active");
-          renderFeed();
-        });
-      });
-
-      refreshBtn.addEventListener("click", loadFeed);
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      async function init() {
-        await loadSession();
-        await loadFeed();
-      }
-
-      init();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Feed Page Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
-    }
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
+
+  <script type="module" src="/core/pages/feed.js"></script>
 </body>
 </html>
