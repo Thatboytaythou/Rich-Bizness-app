@@ -1,536 +1,382 @@
-import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
+// =========================
+// RICH BIZNESS LIVE — FINAL
+// /core/pages/live.js
+// =========================
+
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
-import { supabase } from "/core/supabase.js";
 
-import {
-  fetchLiveCohosts,
-  inviteLiveCohost,
-  removeLiveCohost,
-  cohostStatusLabel,
-  richPlayaLabel
-} from "/core/features/live/live-cohosts.js";
+await initApp();
 
-import {
-  sendLiveDm as sendLiveDmMessage
-} from "/core/features/live/live-dm.js";
+const supabase = getSupabase();
+let currentUser = getCurrentUserState();
 
-function $(id) {
-  return document.getElementById(id);
-}
+mountEliteNav({ target: "#elite-platform-nav", collapsed: false });
+
+const $ = (id) => document.getElementById(id);
 
 const els = {
-  navMount: $("elite-platform-nav"),
-  previewVideo: $("studio-preview"),
-  liveForm: $("live-form"),
-  statusBox: $("live-status-box"),
-  recentLiveList: $("recent-live-list"),
+  status: $("live-status-message"),
 
-  setupActions: $("studio-setup-actions"),
-  liveActions: $("studio-live-actions"),
+  previewVideo: $("live-preview-video"),
+  previewStage: $("live-preview-stage"),
 
   startCameraBtn: $("start-camera-btn"),
   stopCameraBtn: $("stop-camera-btn"),
   createLiveBtn: $("create-live-btn"),
-  updateLiveBtn: $("update-live-btn"),
   goLiveBtn: $("go-live-btn"),
   endLiveBtn: $("end-live-btn"),
-  endLiveTopBtn: $("end-live-top-btn"),
-  refreshStreamBtn: $("refresh-stream-btn"),
-  clearLiveFormBtn: $("clear-live-form-btn"),
   openWatchBtn: $("open-watch-btn"),
-  copyWatchLinkBtn: $("copy-watch-link-btn"),
-  openWatchLiveBtn: $("open-watch-live-btn"),
-  copyWatchLiveBtn: $("copy-watch-live-btn"),
+  copyWatchBtn: $("copy-watch-link-btn"),
+  refreshBtn: $("refresh-current-stream-btn"),
+  clearBtn: $("clear-live-form-btn"),
 
-  liveTitle: $("live-title"),
-  liveDescription: $("live-description"),
-  liveCategory: $("live-category"),
-  liveAccess: $("live-access"),
-  livePrice: $("live-price"),
-  liveThumbnail: $("live-thumbnail"),
-  liveCover: $("live-cover"),
-  liveRoomName: $("live-room-name"),
-  liveChatEnabled: $("live-chat-enabled"),
-  liveReplayEnabled: $("live-replay-enabled"),
-  liveFeatured: $("live-featured"),
-  liveScheduledMode: $("live-scheduled-mode"),
-  liveScheduledFor: $("live-scheduled-for"),
-  liveCurrency: $("live-currency"),
-  scheduleWrap: $("schedule-wrap"),
+  title: $("live-title"),
+  description: $("live-description"),
+  category: $("live-category"),
+  accessType: $("live-access-type"),
+  price: $("live-price"),
+  thumbnailUrl: $("live-thumbnail-url"),
+  coverUrl: $("live-cover-url"),
+  roomName: $("live-room-name"),
+  chatEnabled: $("live-chat-enabled"),
+  replayEnabled: $("live-replay-enabled"),
+  featured: $("live-featured"),
+  scheduled: $("live-scheduled"),
 
-  badgeStatus: $("badge-status"),
-  badgeAccess: $("badge-access"),
-  badgeCategory: $("badge-category"),
-  previewTitle: $("preview-title"),
-  previewCopy: $("preview-copy"),
+  statStatus: $("live-stat-status"),
+  statSlug: $("live-stat-slug"),
+  statViewers: $("live-stat-viewers"),
+  statRevenue: $("live-stat-revenue"),
 
-  metaStatus: $("meta-status"),
-  metaSlug: $("meta-slug"),
-  metaViewers: $("meta-viewers"),
-  metaRevenue: $("meta-revenue"),
+  detailId: $("current-stream-id"),
+  detailWatchUrl: $("current-watch-url"),
+  detailRoom: $("current-room-name"),
+  detailTimes: $("current-stream-times"),
 
-  detailStreamId: $("detail-stream-id"),
-  detailWatchUrl: $("detail-watch-url"),
-  detailRoomName: $("detail-room-name"),
-  detailTimes: $("detail-times"),
-
-  cohostStatusBox: $("cohost-status-box"),
   cohostUserId: $("cohost-user-id"),
   cohostSlot: $("cohost-slot"),
-  bringEmInBtn: $("bring-em-in-btn"),
-  refreshCohostsBtn: $("refresh-cohosts-btn"),
-  cohostList: $("cohost-list"),
+  inviteCohostBtn: $("invite-cohost-btn"),
+  refreshCohostBtn: $("refresh-cohosts-btn"),
+  cohostStatus: $("cohost-status"),
 
-  metaVisionStatus: $("meta-vision-status"),
-  metaVisionTheme: $("meta-vision-theme"),
-  metaVisionLabel: $("meta-vision-label"),
-  enterMetaVisionBtn: $("enter-meta-vision-btn"),
-  exitMetaVisionBtn: $("exit-meta-vision-btn"),
+  metaTheme: $("meta-room-theme"),
+  metaLabel: $("meta-room-label"),
+  enterMetaBtn: $("enter-meta-btn"),
+  exitMetaBtn: $("exit-meta-btn"),
+  metaStatus: $("meta-status"),
 
-  dmPopup: $("live-dm-popup"),
-  dmTargetLabel: $("live-dm-target-label"),
-  dmBody: $("live-dm-body"),
-  dmSendBtn: $("live-dm-send-btn"),
-  dmCloseBtn: $("live-dm-close-btn"),
-  dmCancelBtn: $("live-dm-cancel-btn"),
-  dmStatus: $("live-dm-status")
+  recentList: $("recent-live-streams")
 };
 
-let currentUser = null;
-let currentProfile = null;
+let localStream = null;
+let livekitRoom = null;
 let currentStream = null;
-let previewStream = null;
-let activeDmTargetUserId = null;
-let activeDmTargetLabel = "Private message";
-
-function escapeHtml(value = "") {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
 
 function setStatus(message, type = "normal") {
-  if (!els.statusBox) return;
-  els.statusBox.textContent = message;
-  els.statusBox.classList.remove("is-error", "is-success");
-  if (type === "error") els.statusBox.classList.add("is-error");
-  if (type === "success") els.statusBox.classList.add("is-success");
+  if (!els.status) return;
+  els.status.textContent = message;
+  els.status.classList.remove("is-error", "is-success");
+  if (type === "error") els.status.classList.add("is-error");
+  if (type === "success") els.status.classList.add("is-success");
 }
 
-function setCohostStatus(message, type = "normal") {
-  if (!els.cohostStatusBox) return;
-  els.cohostStatusBox.textContent = message;
-  els.cohostStatusBox.classList.remove("is-error", "is-success");
-  if (type === "error") els.cohostStatusBox.classList.add("is-error");
-  if (type === "success") els.cohostStatusBox.classList.add("is-success");
-}
-
-function setMetaVisionStatus(message, type = "normal") {
-  if (!els.metaVisionStatus) return;
-  els.metaVisionStatus.textContent = message;
-  els.metaVisionStatus.classList.remove("is-error", "is-success");
-  if (type === "error") els.metaVisionStatus.classList.add("is-error");
-  if (type === "success") els.metaVisionStatus.classList.add("is-success");
-}
-
-function setDmStatus(message, type = "normal") {
-  if (!els.dmStatus) return;
-  els.dmStatus.textContent = message;
-  els.dmStatus.classList.remove("is-success", "is-error");
-  if (type === "success") els.dmStatus.classList.add("is-success");
-  if (type === "error") els.dmStatus.classList.add("is-error");
+function money(cents = 0) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(Number(cents || 0) / 100);
 }
 
 function slugify(value = "") {
   return String(value)
-    .trim()
     .toLowerCase()
+    .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 70);
 }
 
-function toMoney(cents = 0, currency = "USD") {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD"
-  }).format(Number(cents || 0) / 100);
+function makeSlug(title = "go-live") {
+  return `${slugify(title) || "go-live"}-${Date.now()}`;
 }
 
-function toCents(amount = 0) {
-  return Math.round(Number(amount || 0) * 100);
+function makeRoomName() {
+  return `bizness-party-${Date.now()}`;
 }
 
-function safeDateTime(value) {
+function watchUrl(stream = currentStream) {
+  if (!stream) return "";
+  const slug = stream.slug || "";
+  return `${window.location.origin}/watch.html?slug=${encodeURIComponent(slug)}`;
+}
+
+function safeDate(value) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleString();
 }
 
-function statusLabel(status) {
-  const value = String(status || "draft").toLowerCase();
-  if (value === "live") return "WE LIT 🔥";
-  if (value === "ended") return "Party’s Over";
-  if (value === "scheduled") return "On Deck";
-  return "In The Lab";
+async function requireUser() {
+  if (currentUser?.id) return currentUser;
+
+  const { data } = await supabase.auth.getSession();
+  currentUser = data?.session?.user || null;
+
+  if (!currentUser?.id) {
+    window.location.href = "/auth.html";
+    return null;
+  }
+
+  return currentUser;
 }
 
-function watchHrefFromStream(stream) {
-  if (!stream) return "/watch.html";
-  if (stream.slug) return `/watch.html?slug=${encodeURIComponent(stream.slug)}`;
-  if (stream.id) return `/watch.html?id=${encodeURIComponent(stream.id)}`;
-  return "/watch.html";
+function getFormPayload() {
+  const title = els.title?.value?.trim() || "WE LIT 🔥";
+  const roomName = els.roomName?.value?.trim() || makeRoomName();
+
+  return {
+    creator_id: currentUser.id,
+    title,
+    description: els.description?.value?.trim() || null,
+    category: els.category?.value || "music",
+    access_type: els.accessType?.value || "free",
+    price_cents: Math.round(Number(els.price?.value || 0) * 100),
+    currency: "usd",
+    thumbnail_url: els.thumbnailUrl?.value?.trim() || null,
+    cover_url: els.coverUrl?.value?.trim() || null,
+    livekit_room_name: roomName,
+    slug: currentStream?.slug || makeSlug(title),
+    is_chat_enabled: Boolean(els.chatEnabled?.checked ?? true),
+    is_featured: Boolean(els.featured?.checked ?? false),
+    metadata: {
+      replay_enabled: Boolean(els.replayEnabled?.checked ?? true),
+      schedule_mode: Boolean(els.scheduled?.checked ?? false),
+      meta_theme: els.metaTheme?.value || "Money Road",
+      meta_label: els.metaLabel?.value || "Meta Room Ready"
+    },
+    updated_at: new Date().toISOString()
+  };
 }
 
-function syncPreviewFromForm() {
-  if (els.previewTitle) {
-    els.previewTitle.textContent =
-      els.liveTitle?.value?.trim() || "Rich Bizness Live Studio";
-  }
+function hydrateForm(stream) {
+  if (!stream) return;
 
-  if (els.badgeAccess) {
-    els.badgeAccess.textContent = String(els.liveAccess?.value || "free").toUpperCase();
-  }
-
-  if (els.badgeCategory) {
-    els.badgeCategory.textContent = String(els.liveCategory?.value || "music").toUpperCase();
-  }
-
-  if (els.previewCopy) {
-    els.previewCopy.textContent =
-      els.liveDescription?.value?.trim() ||
-      "Build the room, test the camera, then call the madness.";
-  }
-}
-
-function syncScheduleVisibility() {
-  if (!els.scheduleWrap || !els.liveScheduledMode) return;
-  els.scheduleWrap.style.display = els.liveScheduledMode.checked ? "grid" : "none";
-}
-
-function syncLiveStateUI(stream) {
-  const isLive = String(stream?.status || "").toLowerCase() === "live";
-
-  els.setupActions?.classList.toggle("is-hidden", isLive);
-  els.liveActions?.classList.toggle("is-visible", isLive);
-
-  if (els.startCameraBtn) els.startCameraBtn.style.display = isLive ? "none" : "";
-  if (els.stopCameraBtn) els.stopCameraBtn.style.display = isLive ? "none" : "";
-
-  if (els.createLiveBtn) els.createLiveBtn.style.display = isLive ? "none" : "";
-  if (els.updateLiveBtn) els.updateLiveBtn.style.display = isLive ? "none" : "";
-  if (els.goLiveBtn) els.goLiveBtn.style.display = isLive ? "none" : "";
-  if (els.endLiveBtn) els.endLiveBtn.style.display = isLive ? "" : "none";
-
-  if (els.liveForm) {
-    els.liveForm.querySelectorAll("input, textarea, select").forEach((field) => {
-      const keepEditable =
-        field.id === "live-currency" ||
-        field.id === "live-chat-enabled" ||
-        field.id === "live-featured";
-
-      field.disabled = isLive && !keepEditable;
-    });
-  }
-
-  if (els.previewCopy) {
-    els.previewCopy.textContent = isLive
-      ? "You’re active. Room is open. Watch link is ready."
-      : els.liveDescription?.value?.trim() || "Build the room, test the camera, then call the madness.";
-  }
-}
-
-function applyMetaVisionUI(metadata = {}) {
-  const enabled = !!metadata.meta_vision_enabled;
-  const theme = metadata.meta_room_theme || "money-road";
-
-  document.body.classList.toggle("meta-vision-active", enabled);
-
-  [
-    "meta-theme-money-road",
-    "meta-theme-smoke-city",
-    "meta-theme-studio-galaxy",
-    "meta-theme-sports-arena",
-    "meta-theme-gallery-world"
-  ].forEach((className) => document.body.classList.remove(className));
-
-  if (enabled) document.body.classList.add(`meta-theme-${theme}`);
-
-  if (els.metaVisionTheme) els.metaVisionTheme.value = theme;
-  if (els.metaVisionLabel) {
-    els.metaVisionLabel.value = metadata.meta_room_label || "Meta Room Ready";
-  }
-
-  setMetaVisionStatus(
-    enabled ? `${metadata.meta_room_label || "Meta Room Ready"} — ${theme}` : "Meta Vision ready.",
-    enabled ? "success" : "normal"
-  );
+  if (els.title) els.title.value = stream.title || "";
+  if (els.description) els.description.value = stream.description || "";
+  if (els.category) els.category.value = stream.category || stream.lane || "music";
+  if (els.accessType) els.accessType.value = stream.access_type || "free";
+  if (els.price) els.price.value = Number(stream.price_cents || 0) / 100;
+  if (els.thumbnailUrl) els.thumbnailUrl.value = stream.thumbnail_url || "";
+  if (els.coverUrl) els.coverUrl.value = stream.cover_url || "";
+  if (els.roomName) els.roomName.value = stream.livekit_room_name || "";
+  if (els.chatEnabled) els.chatEnabled.checked = stream.is_chat_enabled !== false;
+  if (els.featured) els.featured.checked = Boolean(stream.is_featured);
+  if (els.replayEnabled) els.replayEnabled.checked = Boolean(stream.metadata?.replay_enabled ?? true);
+  if (els.scheduled) els.scheduled.checked = Boolean(stream.metadata?.schedule_mode ?? false);
+  if (els.metaTheme) els.metaTheme.value = stream.metadata?.meta_theme || "Money Road";
+  if (els.metaLabel) els.metaLabel.value = stream.metadata?.meta_label || "Meta Room Ready";
 }
 
 function renderCurrentStream(stream) {
   currentStream = stream || null;
 
-  const currentStatus = stream?.status || "draft";
-  const isLive = String(currentStatus).toLowerCase() === "live";
-
-  if (els.badgeStatus) {
-    els.badgeStatus.textContent = statusLabel(currentStatus);
-    els.badgeStatus.classList.toggle("is-live", isLive);
+  if (!stream) {
+    if (els.statStatus) els.statStatus.textContent = "In The Lab";
+    if (els.statSlug) els.statSlug.textContent = "—";
+    if (els.statViewers) els.statViewers.textContent = "0";
+    if (els.statRevenue) els.statRevenue.textContent = "$0.00";
+    if (els.detailId) els.detailId.textContent = "—";
+    if (els.detailWatchUrl) els.detailWatchUrl.textContent = "—";
+    if (els.detailRoom) els.detailRoom.textContent = "—";
+    if (els.detailTimes) els.detailTimes.textContent = "No live record yet.";
+    return;
   }
 
-  if (els.metaStatus) els.metaStatus.textContent = statusLabel(currentStatus);
-  if (els.metaSlug) els.metaSlug.textContent = stream?.slug || "—";
-  if (els.metaViewers) {
-    els.metaViewers.textContent = Number(stream?.viewer_count || 0).toLocaleString();
-  }
-  if (els.metaRevenue) {
-    els.metaRevenue.textContent = toMoney(
-      stream?.total_revenue_cents || 0,
-      stream?.currency || "USD"
-    );
-  }
+  if (els.statStatus) els.statStatus.textContent = stream.status || "draft";
+  if (els.statSlug) els.statSlug.textContent = stream.slug || "—";
+  if (els.statViewers) els.statViewers.textContent = Number(stream.viewer_count || 0).toLocaleString();
+  if (els.statRevenue) els.statRevenue.textContent = money(stream.total_revenue_cents || 0);
 
-  if (els.detailStreamId) els.detailStreamId.textContent = stream?.id || "—";
-  if (els.detailWatchUrl) {
-    els.detailWatchUrl.textContent = stream
-      ? `${window.location.origin}${watchHrefFromStream(stream)}`
-      : "—";
-  }
-  if (els.detailRoomName) els.detailRoomName.textContent = stream?.livekit_room_name || "—";
+  if (els.detailId) els.detailId.textContent = stream.id || "—";
+  if (els.detailWatchUrl) els.detailWatchUrl.textContent = watchUrl(stream);
+  if (els.detailRoom) els.detailRoom.textContent = stream.livekit_room_name || "—";
   if (els.detailTimes) {
-    els.detailTimes.textContent = stream
-      ? `Created: ${safeDateTime(stream.created_at)} | Started: ${safeDateTime(stream.started_at)} | Ended: ${safeDateTime(stream.ended_at)}`
-      : "No live record yet.";
+    els.detailTimes.textContent =
+      `Created: ${safeDate(stream.created_at)} | Started: ${safeDate(stream.started_at)} | Ended: ${safeDate(stream.ended_at)}`;
   }
 
-  syncLiveStateUI(stream);
-  applyMetaVisionUI(stream?.metadata || {});
+  hydrateForm(stream);
+  renderRecentStreams();
 }
 
-function fillFormFromStream(stream) {
-  if (!stream) return;
-
-  if (els.liveTitle) els.liveTitle.value = stream.title || "";
-  if (els.liveDescription) els.liveDescription.value = stream.description || "";
-  if (els.liveCategory) els.liveCategory.value = stream.category || "general";
-  if (els.liveAccess) els.liveAccess.value = stream.access_type || "free";
-
-  if (els.livePrice) {
-    els.livePrice.value =
-      Number(stream.price_cents || 0) > 0
-        ? (Number(stream.price_cents || 0) / 100).toFixed(2)
-        : "";
-  }
-
-  if (els.liveThumbnail) els.liveThumbnail.value = stream.thumbnail_url || "";
-  if (els.liveCover) els.liveCover.value = stream.cover_url || "";
-  if (els.liveRoomName) els.liveRoomName.value = stream.livekit_room_name || "";
-  if (els.liveChatEnabled) els.liveChatEnabled.checked = !!stream.is_chat_enabled;
-  if (els.liveReplayEnabled) els.liveReplayEnabled.checked = !!stream.is_replay_enabled;
-  if (els.liveFeatured) els.liveFeatured.checked = !!stream.is_featured;
-  if (els.liveCurrency) els.liveCurrency.value = stream.currency || "USD";
-
-  if (stream.scheduled_for) {
-    if (els.liveScheduledMode) els.liveScheduledMode.checked = true;
-
-    const local = new Date(stream.scheduled_for);
-    if (!Number.isNaN(local.getTime()) && els.liveScheduledFor) {
-      const iso = new Date(local.getTime() - local.getTimezoneOffset() * 60000)
-        .toISOString()
-        .slice(0, 16);
-      els.liveScheduledFor.value = iso;
-    }
-  } else {
-    if (els.liveScheduledMode) els.liveScheduledMode.checked = false;
-    if (els.liveScheduledFor) els.liveScheduledFor.value = "";
-  }
-
-  syncScheduleVisibility();
-  syncPreviewFromForm();
-  renderCurrentStream(stream);
-}
-
-function clearForm() {
-  currentStream = null;
-  els.liveForm?.reset();
-
-  if (els.liveAccess) els.liveAccess.value = "free";
-  if (els.liveCategory) els.liveCategory.value = "music";
-  if (els.liveCurrency) els.liveCurrency.value = "USD";
-  if (els.liveChatEnabled) els.liveChatEnabled.checked = true;
-  if (els.liveReplayEnabled) els.liveReplayEnabled.checked = true;
-  if (els.liveFeatured) els.liveFeatured.checked = false;
-  if (els.liveScheduledMode) els.liveScheduledMode.checked = false;
-
-  syncScheduleVisibility();
-  syncPreviewFromForm();
-  renderCurrentStream(null);
-  renderEmptyCohosts();
-  setStatus("Form cleared.");
-}
-
-async function startCameraPreview() {
+async function startCamera() {
   try {
-    if (previewStream) stopCameraPreview();
-
-    previewStream = await navigator.mediaDevices.getUserMedia({
+    localStream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true
     });
 
-    if (els.previewVideo) els.previewVideo.srcObject = previewStream;
+    if (els.previewVideo) {
+      els.previewVideo.srcObject = localStream;
+      els.previewVideo.muted = true;
+      els.previewVideo.playsInline = true;
+      await els.previewVideo.play();
+    }
+
     setStatus("Camera active. You ready to call the madness.", "success");
   } catch (error) {
-    console.error("[live] startCameraPreview error:", error);
-    setStatus("Could not get active. Check camera permissions.", "error");
+    setStatus(error.message || "Camera failed.", "error");
   }
 }
 
-function stopCameraPreview() {
-  if (!previewStream) return;
+function stopCamera() {
+  if (localStream) {
+    localStream.getTracks().forEach((track) => track.stop());
+    localStream = null;
+  }
 
-  previewStream.getTracks().forEach((track) => track.stop());
-  if (els.previewVideo) els.previewVideo.srcObject = null;
+  if (els.previewVideo) {
+    els.previewVideo.pause();
+    els.previewVideo.srcObject = null;
+  }
 
-  previewStream = null;
   setStatus("Camera cut. Itz over ✌🏽");
 }
 
-function buildPayload({ statusOverride = null } = {}) {
-  const user = getCurrentUserState();
-  if (!user?.id) throw new Error("You must be logged in.");
+async function createOrUpdateStream() {
+  const user = await requireUser();
+  if (!user?.id) return;
 
-  const title = els.liveTitle?.value?.trim() || "";
-  if (!title) throw new Error("Drop Name is required.");
-
-  const category = els.liveCategory?.value || "general";
-  const accessType = els.liveAccess?.value || "free";
-  const currency = (els.liveCurrency?.value || "USD").trim().toUpperCase();
-  const roomNameRaw = els.liveRoomName?.value?.trim() || "";
-
-  const scheduledEnabled = !!els.liveScheduledMode?.checked;
-  const scheduledFor =
-    scheduledEnabled && els.liveScheduledFor?.value
-      ? new Date(els.liveScheduledFor.value).toISOString()
-      : null;
-
-  const slugBase = slugify(title);
-  const slug = currentStream?.slug || `${slugBase}-${Date.now()}`;
-
-  return {
-    creator_id: user.id,
-    slug,
-    title,
-    description: els.liveDescription?.value?.trim() || null,
-    category,
-    status: statusOverride || (scheduledFor ? "scheduled" : currentStream?.status || "draft"),
-    access_type: accessType,
-    price_cents: accessType === "paid" ? toCents(els.livePrice?.value || 0) : 0,
-    currency,
-    thumbnail_url: els.liveThumbnail?.value?.trim() || null,
-    cover_url: els.liveCover?.value?.trim() || null,
-    livekit_room_name: roomNameRaw || `rb-party-${slug}`,
-    scheduled_for: scheduledFor,
-    started_at:
-      statusOverride === "live"
-        ? new Date().toISOString()
-        : currentStream?.started_at || null,
-    ended_at: statusOverride === "ended" ? new Date().toISOString() : null,
-    is_chat_enabled: !!els.liveChatEnabled?.checked,
-    is_replay_enabled: !!els.liveReplayEnabled?.checked,
-    is_featured: !!els.liveFeatured?.checked,
-    metadata: currentStream?.metadata || {},
-    last_activity_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
+  const payload = {
+    ...getFormPayload(),
+    status: currentStream?.status || "draft"
   };
-}
 
-async function createLiveStream() {
-  const payload = buildPayload();
+  setStatus("Creating Madness Call...");
+
+  if (currentStream?.id) {
+    const { data, error } = await supabase
+      .from("live_streams")
+      .update(payload)
+      .eq("id", currentStream.id)
+      .select("*")
+      .single();
+
+    if (error) {
+      setStatus(error.message || "Could not update stream.", "error");
+      return;
+    }
+
+    renderCurrentStream(data);
+    setStatus("Madness Call updated.", "success");
+    return;
+  }
 
   const { data, error } = await supabase
     .from("live_streams")
     .insert({
       ...payload,
+      status: "draft",
       viewer_count: 0,
       peak_viewers: 0,
-      total_chat_messages: 0,
       total_revenue_cents: 0,
       created_at: new Date().toISOString()
     })
     .select("*")
     .single();
 
-  if (error) throw new Error(error.message || "Could not create live stream.");
+  if (error) {
+    setStatus(error.message || "Could not create stream.", "error");
+    return;
+  }
 
-  fillFormFromStream(data);
-  setStatus("Madness Call created.", "success");
-  await Promise.all([loadRecentStreams(), loadCohosts()]);
+  currentStream = data;
 
-  return data;
+  await supabase.from("live_stream_members").insert({
+    stream_id: data.id,
+    user_id: user.id,
+    role: "host",
+    is_active: true,
+    status: "active",
+    metadata: { slot_number: 0 },
+    joined_at: new Date().toISOString(),
+    created_at: new Date().toISOString()
+  }).catch(() => {});
+
+  renderCurrentStream(data);
+  setStatus("Madness Call created. Watch link is ready.", "success");
 }
 
-async function updateLiveStream() {
-  if (!currentStream?.id) throw new Error("Create a live first before saving setup.");
+async function connectLiveKitAsHost() {
+  if (!currentStream?.livekit_room_name) {
+    setStatus("Create a Madness Call first.", "error");
+    return;
+  }
 
-  const payload = buildPayload();
+  if (!localStream) {
+    await startCamera();
+  }
 
-  const { data, error } = await supabase
-    .from("live_streams")
-    .update(payload)
-    .eq("id", currentStream.id)
-    .select("*")
-    .single();
+  try {
+    const res = await fetch("/api/livekit-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomName: currentStream.livekit_room_name,
+        identity: currentUser.id,
+        name: currentUser.email || "Rich Bizness Host",
+        role: "host"
+      })
+    });
 
-  if (error) throw new Error(error.message || "Could not save live setup.");
+    const tokenData = await res.json();
 
-  fillFormFromStream(data);
-  setStatus("Live setup saved.", "success");
-  await Promise.all([loadRecentStreams(), loadCohosts()]);
+    if (!res.ok || !tokenData?.token || !tokenData?.url) {
+      setStatus(tokenData?.error || "LiveKit token failed.", "error");
+      return false;
+    }
 
-  return data;
+    const LiveKit = await import("https://esm.sh/livekit-client@2");
+    livekitRoom = new LiveKit.Room();
+
+    await livekitRoom.connect(tokenData.url, tokenData.token);
+
+    if (localStream) {
+      for (const track of localStream.getTracks()) {
+        await livekitRoom.localParticipant.publishTrack(track);
+      }
+    }
+
+    setStatus("We 🔥 📺 — LiveKit room connected.", "success");
+    return true;
+  } catch (error) {
+    setStatus(error.message || "LiveKit connection failed.", "error");
+    return false;
+  }
 }
 
 async function goLiveNow() {
+  const user = await requireUser();
+  if (!user?.id) return;
+
   if (!currentStream?.id) {
-    currentStream = await createLiveStream();
+    await createOrUpdateStream();
   }
 
-  const payload = buildPayload({ statusOverride: "live" });
+  if (!currentStream?.id) return;
+
+  setStatus("Going live...");
+
+  const connected = await connectLiveKitAsHost();
 
   const { data, error } = await supabase
     .from("live_streams")
     .update({
-      ...payload,
-      scheduled_for: null,
-      started_at: new Date().toISOString(),
-      ended_at: null
-    })
-    .eq("id", currentStream.id)
-    .select("*")
-    .single();
-
-  if (error) throw new Error(error.message || "Could not go live.");
-
-  fillFormFromStream(data);
-  setStatus("WE LIT 🔥📺 — Bizness Party is open.", "success");
-  await Promise.all([loadRecentStreams(), loadCohosts()]);
-
-  return data;
-}
-
-async function endLiveStream() {
-  if (!currentStream?.id) throw new Error("No current live stream to end.");
-
-  const { data, error } = await supabase
-    .from("live_streams")
-    .update({
-      status: "ended",
-      ended_at: new Date().toISOString(),
+      status: "live",
+      started_at: currentStream.started_at || new Date().toISOString(),
+      ended_at: null,
       last_activity_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     })
@@ -538,506 +384,285 @@ async function endLiveStream() {
     .select("*")
     .single();
 
-  if (error) throw new Error(error.message || "Could not end live.");
-
-  fillFormFromStream(data);
-  setStatus("Party’s Over. Live ended clean.", "success");
-  await Promise.all([loadRecentStreams(), loadCohosts()]);
-
-  return data;
-}
-
-async function loadRecentStreams() {
-  if (!els.recentLiveList) return;
-
-  const user = getCurrentUserState();
-
-  if (!user?.id) {
-    els.recentLiveList.innerHTML = `<div class="status-box">Login first to load your live history.</div>`;
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("creator_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(6);
-
   if (error) {
-    els.recentLiveList.innerHTML = `<div class="status-box is-error">Could not load recent live streams.</div>`;
+    setStatus(error.message || "Could not update stream live.", "error");
     return;
   }
 
-  if (!data?.length) {
-    els.recentLiveList.innerHTML = `<div class="status-box">No streams yet.</div>`;
-    return;
-  }
+  renderCurrentStream(data);
 
-  els.recentLiveList.innerHTML = data
-    .map((stream) => {
-      const watchHref = watchHrefFromStream(stream);
-      const label =
-        String(stream.status || "").toLowerCase() === "live"
-          ? "WE ON 🔥"
-          : statusLabel(stream.status);
-
-      return `
-        <article class="recent-card">
-          <h4>${escapeHtml(stream.title || "Untitled Live")}</h4>
-          <div class="recent-meta">
-            <span>${escapeHtml(label)}</span>
-            <span>${escapeHtml(stream.category || "general")}</span>
-            <span>${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
-          </div>
-          <p>${escapeHtml(stream.description || "No description.")}</p>
-          <div class="recent-actions">
-            <button class="btn btn-dark" type="button" data-load-stream="${escapeHtml(stream.id)}">Load</button>
-            <a class="btn btn-dark" href="${watchHref}">Watch</a>
-          </div>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-async function loadStreamById(streamId) {
-  const { data, error } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("id", streamId)
-    .single();
-
-  if (error) {
-    setStatus("Could not load that stream.", "error");
-    return;
-  }
-
-  fillFormFromStream(data);
-  setStatus("Stream loaded into studio.", "success");
-  await loadCohosts();
-}
-
-function openWatchPage() {
-  window.location.href = watchHrefFromStream(currentStream);
-}
-
-async function copyWatchLink() {
-  const href = `${window.location.origin}${watchHrefFromStream(currentStream)}`;
-
-  try {
-    await navigator.clipboard.writeText(href);
-    setStatus("Watch link copied.", "success");
-  } catch {
-    setStatus("Could not copy watch link.", "error");
+  if (connected) {
+    setStatus("We 🔥 📺 — your Bizness Party is live.", "success");
+  } else {
+    setStatus("Stream marked live, but LiveKit needs attention.", "error");
   }
 }
 
-function renderEmptyCohosts() {
-  if (!els.cohostList) return;
-
-  els.cohostList.innerHTML = [1, 2, 3]
-    .map(
-      (slot) => `
-        <article class="cohost-card">
-          <strong>Rich Playa ${slot}</strong>
-          <span>Empty slot</span>
-        </article>
-      `
-    )
-    .join("");
-}
-
-async function loadCohosts() {
-  if (!els.cohostList) return;
-
+async function endLive() {
   if (!currentStream?.id) {
-    renderEmptyCohosts();
-    setCohostStatus("Create or load a live stream first.");
+    setStatus("No current stream to end.", "error");
     return;
   }
 
-  try {
-    const rows = await fetchLiveCohosts(currentStream.id);
-    const bySlot = new Map(rows.map((row) => [Number(row.slot_number || 0), row]));
+  setStatus("Ending Bizness Party...");
 
-    els.cohostList.innerHTML = [1, 2, 3]
-      .map((slot) => {
-        const row = bySlot.get(slot);
-
-        if (!row) {
-          return `
-            <article class="cohost-card">
-              <strong>Rich Playa ${slot}</strong>
-              <span>Empty slot</span>
-            </article>
-          `;
-        }
-
-        const status = String(row.status || "invited").toLowerCase();
-        const cardClass = status === "active" ? "is-active" : "is-invited";
-        const label = row.display_label || richPlayaLabel(slot);
-
-        return `
-          <article class="cohost-card ${cardClass}">
-            <strong>${escapeHtml(label)}</strong>
-            <span>${escapeHtml(cohostStatusLabel(status))}</span>
-            <span>User: ${escapeHtml(row.user_id)}</span>
-            <div class="cohost-card-actions">
-              <button class="btn btn-gold" type="button" data-dm-user="${escapeHtml(row.user_id)}" data-dm-label="${escapeHtml(label)}">
-                Slide In 🔥
-              </button>
-              <button class="btn btn-danger" type="button" data-cut-user="${escapeHtml(row.user_id)}">
-                Cut Em Off
-              </button>
-            </div>
-          </article>
-        `;
-      })
-      .join("");
-
-    setCohostStatus("Rich Playas loaded.", "success");
-  } catch (error) {
-    console.error("[live] loadCohosts error:", error);
-    setCohostStatus(error.message || "Could not load Rich Playas.", "error");
+  if (livekitRoom) {
+    await livekitRoom.disconnect();
+    livekitRoom = null;
   }
-}
-
-async function inviteCohost() {
-  if (!currentStream?.id) {
-    setCohostStatus("Create or load a live stream first.", "error");
-    return;
-  }
-
-  const targetUserId = els.cohostUserId?.value?.trim();
-  const slotNumber = Number(els.cohostSlot?.value || 1);
-
-  if (!targetUserId) {
-    setCohostStatus("Paste a Rich Playa user id first.", "error");
-    return;
-  }
-
-  if (targetUserId === currentUser?.id) {
-    setCohostStatus("You are already the host.", "error");
-    return;
-  }
-
-  if (els.bringEmInBtn) els.bringEmInBtn.disabled = true;
-
-  try {
-    await inviteLiveCohost({
-      streamId: currentStream.id,
-      userId: targetUserId,
-      slotNumber,
-      invitedBy: currentUser?.id || null
-    });
-
-    if (els.cohostUserId) els.cohostUserId.value = "";
-    setCohostStatus(`Rich Playa ${slotNumber} invited.`, "success");
-    await loadCohosts();
-  } catch (error) {
-    console.error("[live] inviteCohost error:", error);
-    setCohostStatus(error.message || "Could not bring them in.", "error");
-  } finally {
-    if (els.bringEmInBtn) els.bringEmInBtn.disabled = false;
-  }
-}
-
-async function cutCohost(targetUserId) {
-  if (!currentStream?.id || !targetUserId) return;
-
-  try {
-    await removeLiveCohost({
-      streamId: currentStream.id,
-      userId: targetUserId
-    });
-
-    setCohostStatus("Rich Playa cut off.", "success");
-    await loadCohosts();
-  } catch (error) {
-    console.error("[live] cutCohost error:", error);
-    setCohostStatus(error.message || "Could not cut them off.", "error");
-  }
-}
-
-async function updateMetaVision(enabled) {
-  if (!currentStream?.id) {
-    setMetaVisionStatus("Create or load a stream first.", "error");
-    return;
-  }
-
-  const oldMetadata = currentStream.metadata || {};
-  const theme = els.metaVisionTheme?.value || "money-road";
-  const label = els.metaVisionLabel?.value?.trim() || "Meta Room Ready";
-
-  const nextMetadata = {
-    ...oldMetadata,
-    meta_vision_enabled: enabled,
-    meta_room_theme: theme,
-    meta_room_label: label,
-    meta_updated_at: new Date().toISOString()
-  };
 
   const { data, error } = await supabase
     .from("live_streams")
     .update({
-      metadata: nextMetadata,
-      updated_at: new Date().toISOString(),
-      last_activity_at: new Date().toISOString()
+      status: "ended",
+      ended_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     })
     .eq("id", currentStream.id)
     .select("*")
     .single();
 
   if (error) {
-    setMetaVisionStatus(error.message || "Could not update Meta Vision.", "error");
+    setStatus(error.message || "Could not end live.", "error");
+    return;
+  }
+
+  await supabase
+    .from("live_stream_members")
+    .update({
+      is_active: false,
+      status: "left",
+      left_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    })
+    .eq("stream_id", currentStream.id)
+    .eq("user_id", currentUser.id)
+    .catch(() => {});
+
+  renderCurrentStream(data);
+  setStatus("Party’s Over. Stream ended clean.", "success");
+}
+
+function openWatch() {
+  if (!currentStream?.slug) {
+    setStatus("Create a Madness Call first.", "error");
+    return;
+  }
+
+  window.location.href = watchUrl(currentStream);
+}
+
+async function copyWatchLink() {
+  if (!currentStream?.slug) {
+    setStatus("Create a Madness Call first.", "error");
+    return;
+  }
+
+  await navigator.clipboard.writeText(watchUrl(currentStream));
+  setStatus("Watch link copied.", "success");
+}
+
+async function loadLatestStream() {
+  const user = await requireUser();
+  if (!user?.id) return;
+
+  const { data, error } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("creator_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    setStatus(error.message || "Could not load recent stream.", "error");
+    return;
+  }
+
+  if (!data?.length) {
+    renderCurrentStream(null);
+    setStatus("Ready.");
+    return;
+  }
+
+  renderCurrentStream(data[0]);
+  setStatus("Current stream loaded.", "success");
+}
+
+async function renderRecentStreams() {
+  if (!els.recentList || !currentUser?.id) return;
+
+  const { data } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("creator_id", currentUser.id)
+    .order("created_at", { ascending: false })
+    .limit(6);
+
+  if (!data?.length) {
+    els.recentList.innerHTML = `
+      <div class="live-empty-card">
+        <strong>No recent streams yet.</strong>
+        <span>Create your first Madness Call.</span>
+      </div>
+    `;
+    return;
+  }
+
+  els.recentList.innerHTML = data.map((stream) => `
+    <article class="recent-live-card">
+      <strong>${stream.title || "Untitled live"}</strong>
+      <span>${stream.status || "draft"} • ${stream.category || "music"} • ${Number(stream.viewer_count || 0)} viewers</span>
+      <div class="recent-live-actions">
+        <button class="btn-ghost" type="button" data-load-stream="${stream.id}">Load</button>
+        <a class="btn-ghost" href="/watch.html?slug=${encodeURIComponent(stream.slug || "")}">Watch</a>
+      </div>
+    </article>
+  `).join("");
+}
+
+async function loadStreamById(id) {
+  const { data, error } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    setStatus(error.message || "Could not load stream.", "error");
     return;
   }
 
   renderCurrentStream(data);
+  setStatus("Stream loaded.", "success");
 }
 
-function openLiveDmPopup(targetUserId, label = "Private message") {
-  if (!targetUserId) {
-    setStatus("No DM target selected.", "error");
-    return;
-  }
-
-  activeDmTargetUserId = targetUserId;
-  activeDmTargetLabel = label;
-
-  if (els.dmTargetLabel) els.dmTargetLabel.textContent = `To: ${label}`;
-  if (els.dmBody) els.dmBody.value = "";
-  if (els.dmPopup) els.dmPopup.hidden = false;
-
-  setDmStatus("Ready.");
-  setTimeout(() => els.dmBody?.focus(), 50);
-}
-
-function closeLiveDmPopup() {
-  activeDmTargetUserId = null;
-  activeDmTargetLabel = "Private message";
-
-  if (els.dmPopup) els.dmPopup.hidden = true;
-  if (els.dmBody) els.dmBody.value = "";
-  setDmStatus("Ready.");
-}
-
-async function sendLiveDm() {
-  const body = els.dmBody?.value?.trim();
-
-  if (!currentUser?.id) {
-    setDmStatus("Login required.", "error");
-    return;
-  }
-
-  if (!activeDmTargetUserId) {
-    setDmStatus("No DM target selected.", "error");
-    return;
-  }
-
-  if (!body) {
-    setDmStatus("Type your slide first.", "error");
-    return;
-  }
-
-  if (els.dmSendBtn) els.dmSendBtn.disabled = true;
-
-  try {
-    await sendLiveDmMessage({
-      currentUserId: currentUser.id,
-      targetUserId: activeDmTargetUserId,
-      body,
-      streamId: currentStream?.id || null,
-      targetLabel: activeDmTargetLabel
-    });
-
-    setDmStatus("Slide delivered 🔥", "success");
-    setTimeout(closeLiveDmPopup, 650);
-  } catch (error) {
-    console.error("[live] sendLiveDm error:", error);
-    setDmStatus(error.message || "Could not send DM.", "error");
-  } finally {
-    if (els.dmSendBtn) els.dmSendBtn.disabled = false;
-  }
-}
-
-async function handleCreateLive(event) {
-  event.preventDefault();
-  if (els.createLiveBtn) els.createLiveBtn.disabled = true;
-
-  try {
-    await createLiveStream();
-  } catch (error) {
-    setStatus(error.message || "Could not create stream.", "error");
-  } finally {
-    if (els.createLiveBtn) els.createLiveBtn.disabled = false;
-  }
-}
-
-async function handleUpdateLive() {
-  if (els.updateLiveBtn) els.updateLiveBtn.disabled = true;
-
-  try {
-    await updateLiveStream();
-  } catch (error) {
-    setStatus(error.message || "Could not save setup.", "error");
-  } finally {
-    if (els.updateLiveBtn) els.updateLiveBtn.disabled = false;
-  }
-}
-
-async function handleGoLive() {
-  if (els.goLiveBtn) els.goLiveBtn.disabled = true;
-
-  try {
-    await goLiveNow();
-  } catch (error) {
-    setStatus(error.message || "Could not go live.", "error");
-  } finally {
-    if (els.goLiveBtn) els.goLiveBtn.disabled = false;
-  }
-}
-
-async function handleEndLiveClick() {
-  if (els.endLiveBtn) els.endLiveBtn.disabled = true;
-  if (els.endLiveTopBtn) els.endLiveTopBtn.disabled = true;
-
-  try {
-    await endLiveStream();
-  } catch (error) {
-    setStatus(error.message || "Could not end live.", "error");
-  } finally {
-    if (els.endLiveBtn) els.endLiveBtn.disabled = false;
-    if (els.endLiveTopBtn) els.endLiveTopBtn.disabled = false;
-  }
-}
-
-async function handleRefreshStream() {
+async function inviteCohost() {
   if (!currentStream?.id) {
-    setStatus("No current stream selected.", "error");
+    setStatus("Create or load a stream first.", "error");
     return;
   }
 
-  await loadStreamById(currentStream.id);
-}
+  const userId = els.cohostUserId?.value?.trim();
+  const slot = Number(els.cohostSlot?.value || 1);
 
-async function handleRecentClick(event) {
-  const button = event.target.closest("[data-load-stream]");
-  if (!button) return;
-
-  const streamId = button.getAttribute("data-load-stream");
-  if (!streamId) return;
-
-  await loadStreamById(streamId);
-}
-
-async function handleCohostListClick(event) {
-  const cutBtn = event.target.closest("[data-cut-user]");
-  const dmBtn = event.target.closest("[data-dm-user]");
-
-  if (cutBtn) {
-    await cutCohost(cutBtn.getAttribute("data-cut-user"));
+  if (!userId) {
+    setStatus("Paste Rich Playa user UUID first.", "error");
     return;
   }
 
-  if (dmBtn) {
-    openLiveDmPopup(
-      dmBtn.getAttribute("data-dm-user"),
-      dmBtn.getAttribute("data-dm-label") || "Rich Playa"
-    );
+  const { error } = await supabase.from("live_stream_members").upsert(
+    {
+      stream_id: currentStream.id,
+      user_id: userId,
+      role: "cohost",
+      is_active: true,
+      status: "invited",
+      metadata: { slot_number: slot },
+      joined_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: "stream_id,user_id" }
+  );
+
+  if (error) {
+    setStatus(error.message || "Could not invite Rich Playa.", "error");
+    return;
   }
+
+  setStatus(`Rich Playa ${slot} invited.`, "success");
+  await loadCohosts();
+}
+
+async function loadCohosts() {
+  if (!currentStream?.id || !els.cohostStatus) return;
+
+  const { data, error } = await supabase
+    .from("live_stream_members")
+    .select("*, profiles:user_id (*)")
+    .eq("stream_id", currentStream.id)
+    .in("role", ["cohost", "moderator"])
+    .eq("is_active", true);
+
+  if (error) {
+    els.cohostStatus.textContent = error.message;
+    return;
+  }
+
+  const slots = [1, 2, 3].map((slot) => {
+    const member = data?.find((item) => Number(item.metadata?.slot_number) === slot);
+    const name =
+      member?.profiles?.display_name ||
+      member?.profiles?.username ||
+      member?.user_id ||
+      "Empty slot";
+
+    return `<strong>Rich Playa ${slot}</strong> ${name}`;
+  });
+
+  els.cohostStatus.innerHTML = slots.join("<br />");
+}
+
+function enterMetaVision() {
+  document.body.classList.add("meta-vision-on");
+  if (els.metaStatus) els.metaStatus.textContent = "Meta Vision active.";
+}
+
+function exitMetaVision() {
+  document.body.classList.remove("meta-vision-on");
+  if (els.metaStatus) els.metaStatus.textContent = "Meta Vision ready.";
+}
+
+function clearForm() {
+  currentStream = null;
+  [
+    els.title,
+    els.description,
+    els.price,
+    els.thumbnailUrl,
+    els.coverUrl,
+    els.roomName
+  ].forEach((input) => {
+    if (input) input.value = "";
+  });
+
+  renderCurrentStream(null);
+  setStatus("Form cleared.");
 }
 
 function bindEvents() {
-  els.liveAccess?.addEventListener("change", syncPreviewFromForm);
-  els.liveCategory?.addEventListener("change", syncPreviewFromForm);
-  els.liveTitle?.addEventListener("input", syncPreviewFromForm);
-  els.liveDescription?.addEventListener("input", syncPreviewFromForm);
-  els.liveScheduledMode?.addEventListener("change", syncScheduleVisibility);
+  els.startCameraBtn?.addEventListener("click", startCamera);
+  els.stopCameraBtn?.addEventListener("click", stopCamera);
+  els.createLiveBtn?.addEventListener("click", createOrUpdateStream);
+  els.goLiveBtn?.addEventListener("click", goLiveNow);
+  els.endLiveBtn?.addEventListener("click", endLive);
+  els.openWatchBtn?.addEventListener("click", openWatch);
+  els.copyWatchBtn?.addEventListener("click", copyWatchLink);
+  els.refreshBtn?.addEventListener("click", loadLatestStream);
+  els.clearBtn?.addEventListener("click", clearForm);
+  els.inviteCohostBtn?.addEventListener("click", inviteCohost);
+  els.refreshCohostBtn?.addEventListener("click", loadCohosts);
+  els.enterMetaBtn?.addEventListener("click", enterMetaVision);
+  els.exitMetaBtn?.addEventListener("click", exitMetaVision);
 
-  els.startCameraBtn?.addEventListener("click", startCameraPreview);
-  els.stopCameraBtn?.addEventListener("click", stopCameraPreview);
-  els.openWatchBtn?.addEventListener("click", openWatchPage);
-  els.copyWatchLinkBtn?.addEventListener("click", copyWatchLink);
-  els.openWatchLiveBtn?.addEventListener("click", openWatchPage);
-  els.copyWatchLiveBtn?.addEventListener("click", copyWatchLink);
-  els.clearLiveFormBtn?.addEventListener("click", clearForm);
-
-  els.liveForm?.addEventListener("submit", handleCreateLive);
-  els.updateLiveBtn?.addEventListener("click", handleUpdateLive);
-  els.goLiveBtn?.addEventListener("click", handleGoLive);
-  els.endLiveBtn?.addEventListener("click", handleEndLiveClick);
-  els.endLiveTopBtn?.addEventListener("click", handleEndLiveClick);
-  els.refreshStreamBtn?.addEventListener("click", handleRefreshStream);
-  els.recentLiveList?.addEventListener("click", handleRecentClick);
-
-  els.bringEmInBtn?.addEventListener("click", inviteCohost);
-  els.refreshCohostsBtn?.addEventListener("click", loadCohosts);
-  els.cohostList?.addEventListener("click", handleCohostListClick);
-
-  els.enterMetaVisionBtn?.addEventListener("click", () => updateMetaVision(true));
-  els.exitMetaVisionBtn?.addEventListener("click", () => updateMetaVision(false));
-  els.metaVisionTheme?.addEventListener("change", () => {
-    if (document.body.classList.contains("meta-vision-active")) {
-      updateMetaVision(true);
-    }
-  });
-
-  els.dmSendBtn?.addEventListener("click", sendLiveDm);
-  els.dmCloseBtn?.addEventListener("click", closeLiveDmPopup);
-  els.dmCancelBtn?.addEventListener("click", closeLiveDmPopup);
-  els.dmPopup?.addEventListener("click", (event) => {
-    if (event.target === els.dmPopup) closeLiveDmPopup();
+  els.recentList?.addEventListener("click", (event) => {
+    const btn = event.target.closest("[data-load-stream]");
+    if (!btn) return;
+    loadStreamById(btn.getAttribute("data-load-stream"));
   });
 }
 
-export async function bootLivePage() {
-  await initApp();
-
-  currentUser = getCurrentUserState();
-  currentProfile = getCurrentProfileState();
-
-  if (els.navMount) {
-    mountEliteNav({
-      target: "#elite-platform-nav",
-      collapsed: false
-    });
-  }
+async function bootLive() {
+  const user = await requireUser();
+  if (!user?.id) return;
 
   bindEvents();
+  await loadLatestStream();
+  await renderRecentStreams();
 
-  syncScheduleVisibility();
-  syncPreviewFromForm();
-  renderCurrentStream(null);
-  renderEmptyCohosts();
-
-  await loadRecentStreams();
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const streamIdFromUrl = urlParams.get("id");
-
-  if (streamIdFromUrl) {
-    await loadStreamById(streamIdFromUrl);
-  }
+  setStatus("Ready.", "success");
 }
 
-export function destroyLivePage() {
-  if (previewStream) {
-    previewStream.getTracks().forEach((track) => track.stop());
-    previewStream = null;
-  }
-
-  if (els.previewVideo) els.previewVideo.srcObject = null;
-
-  currentStream = null;
-}
-
-window.addEventListener("beforeunload", destroyLivePage);
-
-if (document.body?.classList.contains("live-page")) {
-  bootLivePage().catch((error) => {
-    console.error("[live] boot error:", error);
-    setStatus(error.message || "Could not load live studio.", "error");
-  });
-}
+bootLive().catch((error) => {
+  console.error("[live] boot error:", error);
+  setStatus(error.message || "Could not load live studio.", "error");
+});
