@@ -1,347 +1,56 @@
-// feed.js
-// Rich Bizness LLC — Final Feed System
+// =========================
+// RICH BIZNESS FEED — FINAL
+// /core/pages/feed.js
+// =========================
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import {
+  initApp,
+  getSupabase,
+  getCurrentUserState,
+  getCurrentProfileState
+} from "/core/app.js";
 
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+import { mountEliteNav } from "/core/nav.js";
+import { bootLiveRail } from "/core/features/live/live-rail.js";
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+await initApp();
 
-const state = {
-  user: null,
-  profile: null,
-  posts: [],
-  activeFilter: "all",
-};
+const supabase = getSupabase();
+let currentUser = getCurrentUserState();
+let currentProfile = getCurrentProfileState();
+
+const $ = (id) => document.getElementById(id);
 
 const els = {
-  feedList: document.querySelector("#feedList"),
-  postForm: document.querySelector("#postForm"),
-  postText: document.querySelector("#postText"),
-  postMedia: document.querySelector("#postMedia"),
-  postCategory: document.querySelector("#postCategory"),
-  emptyState: document.querySelector("#emptyState"),
-  authGate: document.querySelector("#authGate"),
-  userBadge: document.querySelector("#userBadge"),
-  filterButtons: document.querySelectorAll("[data-feed-filter]"),
+  nav: $("elite-platform-nav"),
+  status: $("feed-status"),
+
+  form: $("post-form"),
+  submitBtn: $("submit-post-btn"),
+  title: $("post-title"),
+  body: $("post-body"),
+  category: $("post-category"),
+  mediaUrl: $("post-media-url"),
+
+  composerAvatar: $("composer-avatar"),
+  composerName: $("composer-name"),
+
+  feedList: $("feed-list")
 };
 
-document.addEventListener("DOMContentLoaded", initFeed);
-
-async function initFeed() {
-  await loadUser();
-  bindEvents();
-  await loadFeed();
-}
-
-async function loadUser() {
-  const { data } = await supabase.auth.getUser();
-  state.user = data?.user || null;
-
-  if (!state.user) {
-    if (els.authGate) els.authGate.style.display = "block";
-    if (els.postForm) els.postForm.style.display = "none";
-    return;
-  }
-
-  if (els.authGate) els.authGate.style.display = "none";
-  if (els.postForm) els.postForm.style.display = "block";
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", state.user.id)
-    .maybeSingle();
-
-  state.profile = profile || null;
-
-  if (els.userBadge) {
-    els.userBadge.textContent =
-      state.profile?.display_name ||
-      state.profile?.username ||
-      state.user.email ||
-      "Rich Bizness Member";
-  }
-}
-
-function bindEvents() {
-  if (els.postForm) {
-    els.postForm.addEventListener("submit", createPost);
-  }
-
-  els.filterButtons.forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      state.activeFilter = btn.dataset.feedFilter || "all";
-
-      els.filterButtons.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      await loadFeed();
-    });
-  });
-}
-
-async function loadFeed() {
-  if (!els.feedList) return;
-
-  els.feedList.innerHTML = `<div class="feed-loading">Loading Rich Bizness feed...</div>`;
-
-  let query = supabase
-    .from("posts")
-    .select(`
-      id,
-      user_id,
-      body,
-      caption,
-      content,
-      category,
-      media_url,
-      image_url,
-      video_url,
-      created_at,
-      profiles (
-        id,
-        username,
-        display_name,
-        avatar_url
-      )
-    `)
-    .order("created_at", { ascending: false })
-    .limit(50);
-
-  if (state.activeFilter !== "all") {
-    query = query.eq("category", state.activeFilter);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error("Feed load error:", error);
-    els.feedList.innerHTML = `
-      <div class="feed-error">
-        Could not load the feed yet. Check your posts table columns.
-      </div>
-    `;
-    return;
-  }
-
-  state.posts = data || [];
-  renderFeed();
-}
-
-function renderFeed() {
-  if (!els.feedList) return;
-
-  if (!state.posts.length) {
-    els.feedList.innerHTML = "";
-    if (els.emptyState) els.emptyState.style.display = "block";
-    return;
-  }
-
-  if (els.emptyState) els.emptyState.style.display = "none";
-
-  els.feedList.innerHTML = state.posts.map(renderPostCard).join("");
-
-  document.querySelectorAll("[data-like-post]").forEach((btn) => {
-    btn.addEventListener("click", () => likePost(btn.dataset.likePost));
-  });
-
-  document.querySelectorAll("[data-delete-post]").forEach((btn) => {
-    btn.addEventListener("click", () => deletePost(btn.dataset.deletePost));
-  });
-}
-
-function renderPostCard(post) {
-  const profile = post.profiles || {};
-  const name =
-    profile.display_name ||
-    profile.username ||
-    "Rich Bizness Creator";
-
-  const avatar =
-    profile.avatar_url ||
-    "/images/brand/rich-bizness-profile.jpg";
-
-  const text =
-    post.body ||
-    post.caption ||
-    post.content ||
-    "";
-
-  const media =
-    post.media_url ||
-    post.image_url ||
-    post.video_url ||
-    "";
-
-  const category = post.category || "general";
-  const isOwner = state.user && post.user_id === state.user.id;
-
-  return `
-    <article class="feed-card">
-      <div class="feed-card-top">
-        <img class="feed-avatar" src="${escapeAttr(avatar)}" alt="${escapeAttr(name)}" />
-
-        <div class="feed-meta">
-          <strong>${escapeHtml(name)}</strong>
-          <span>${formatDate(post.created_at)} · ${escapeHtml(category)}</span>
-        </div>
-
-        ${isOwner ? `
-          <button class="feed-delete" data-delete-post="${post.id}" title="Delete post">
-            ×
-          </button>
-        ` : ""}
-      </div>
-
-      ${text ? `<p class="feed-text">${escapeHtml(text)}</p>` : ""}
-
-      ${renderMedia(media)}
-
-      <div class="feed-actions">
-        <button data-like-post="${post.id}">🔥 Like</button>
-        <button onclick="window.location.href='profile.html?id=${post.user_id}'">View Profile</button>
-        <button onclick="window.location.href='messages.html?to=${post.user_id}'">Message</button>
-      </div>
-    </article>
-  `;
-}
-
-function renderMedia(url) {
-  if (!url) return "";
-
-  const safeUrl = escapeAttr(url);
-  const lower = url.toLowerCase();
-
-  if (lower.includes(".mp4") || lower.includes(".webm") || lower.includes(".mov")) {
-    return `
-      <video class="feed-media" controls playsinline>
-        <source src="${safeUrl}" />
-      </video>
-    `;
-  }
-
-  return `<img class="feed-media" src="${safeUrl}" alt="Feed media" />`;
-}
-
-async function createPost(event) {
-  event.preventDefault();
-
-  if (!state.user) {
-    window.location.href = "auth.html";
-    return;
-  }
-
-  const text = els.postText?.value?.trim() || "";
-  const category = els.postCategory?.value || "general";
-  const file = els.postMedia?.files?.[0] || null;
-
-  if (!text && !file) {
-    alert("Add text or media before posting.");
-    return;
-  }
-
-  let mediaUrl = null;
-
-  if (file) {
-    mediaUrl = await uploadFeedMedia(file);
-    if (!mediaUrl) return;
-  }
-
-  const payload = {
-    user_id: state.user.id,
-    body: text,
-    caption: text,
-    content: text,
-    category,
-    media_url: mediaUrl,
-    created_at: new Date().toISOString(),
-  };
-
-  const { error } = await supabase.from("posts").insert(payload);
-
-  if (error) {
-    console.error("Create post error:", error);
-    alert("Post could not be created. Check your posts table columns.");
-    return;
-  }
-
-  els.postForm.reset();
-  await loadFeed();
-}
-
-async function uploadFeedMedia(file) {
-  const ext = file.name.split(".").pop();
-  const path = `${state.user.id}/${Date.now()}.${ext}`;
-
-  const { error } = await supabase.storage
-    .from("uploads")
-    .upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-
-  if (error) {
-    console.error("Upload error:", error);
-    alert("Media upload failed. Check your uploads bucket policy.");
-    return null;
-  }
-
-  const { data } = supabase.storage
-    .from("uploads")
-    .getPublicUrl(path);
-
-  return data.publicUrl;
-}
-
-async function likePost(postId) {
-  if (!state.user) {
-    window.location.href = "auth.html";
-    return;
-  }
-
-  const { error } = await supabase.from("post_reactions").insert({
-    post_id: postId,
-    user_id: state.user.id,
-    reaction: "fire",
-    created_at: new Date().toISOString(),
-  });
-
-  if (error) {
-    console.warn("Like may already exist or table policy blocked it:", error);
-  }
-
-  alert("🔥 Liked");
-}
-
-async function deletePost(postId) {
-  if (!confirm("Delete this post?")) return;
-
-  const { error } = await supabase
-    .from("posts")
-    .delete()
-    .eq("id", postId)
-    .eq("user_id", state.user.id);
-
-  if (error) {
-    console.error("Delete post error:", error);
-    alert("Could not delete this post.");
-    return;
-  }
-
-  await loadFeed();
-}
-
-function formatDate(value) {
-  if (!value) return "Just now";
-
-  return new Date(value).toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+mountEliteNav({
+  target: "#elite-platform-nav",
+  collapsed: false
+});
+
+function setStatus(message, type = "normal") {
+  if (!els.status) return;
+
+  els.status.textContent = message;
+  els.status.classList.remove("is-error", "is-success");
+
+  if (type === "error") els.status.classList.add("is-error");
+  if (type === "success") els.status.classList.add("is-success");
 }
 
 function escapeHtml(value = "") {
@@ -353,6 +62,384 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function escapeAttr(value = "") {
-  return escapeHtml(value);
+function safeDate(value) {
+  if (!value) return "—";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleString();
 }
+
+function getDisplayName(profile = null, user = null) {
+  return (
+    profile?.display_name ||
+    profile?.full_name ||
+    profile?.username ||
+    profile?.handle ||
+    user?.user_metadata?.display_name ||
+    user?.user_metadata?.username ||
+    user?.email?.split("@")[0] ||
+    "Rich Bizness Creator"
+  );
+}
+
+function getAvatar(profile = null) {
+  return (
+    profile?.avatar_url ||
+    profile?.profile_image_url ||
+    profile?.profile_image ||
+    "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
+  );
+}
+
+async function requireUser() {
+  if (currentUser?.id) return currentUser;
+
+  const { data } = await supabase.auth.getSession();
+  currentUser = data?.session?.user || null;
+
+  if (!currentUser?.id) {
+    window.location.href = "/auth.html";
+    return null;
+  }
+
+  return currentUser;
+}
+
+async function loadCurrentProfile() {
+  if (!currentUser?.id) return null;
+  if (currentProfile?.id) return currentProfile;
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if (!error && data) {
+    currentProfile = data;
+  }
+
+  return currentProfile;
+}
+
+function renderComposer() {
+  if (els.composerName) {
+    els.composerName.textContent = getDisplayName(currentProfile, currentUser);
+  }
+
+  if (els.composerAvatar) {
+    els.composerAvatar.src = getAvatar(currentProfile);
+  }
+}
+
+function getMediaMarkup(url = "") {
+  const cleanUrl = String(url || "").trim();
+  if (!cleanUrl) return "";
+
+  const lower = cleanUrl.toLowerCase();
+
+  if (
+    lower.endsWith(".mp4") ||
+    lower.endsWith(".mov") ||
+    lower.endsWith(".webm") ||
+    lower.includes("video")
+  ) {
+    return `
+      <div class="feed-media">
+        <video src="${escapeHtml(cleanUrl)}" controls playsinline></video>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="feed-media">
+      <img src="${escapeHtml(cleanUrl)}" alt="Feed media" loading="lazy" />
+    </div>
+  `;
+}
+
+function getProfileFromPost(post) {
+  if (Array.isArray(post.profiles)) return post.profiles[0] || null;
+  return post.profiles || null;
+}
+
+function getPostTitle(post) {
+  return post.title || post.caption || "Rich Bizness Move";
+}
+
+function getPostBody(post) {
+  return post.body || post.description || post.content || post.caption || "";
+}
+
+function getPostMedia(post) {
+  return (
+    post.media_url ||
+    post.image_url ||
+    post.video_url ||
+    post.file_url ||
+    post.thumbnail_url ||
+    ""
+  );
+}
+
+function getPostCategory(post) {
+  return post.category || post.content_type || post.type || "general";
+}
+
+function renderPost(post) {
+  const profile = getProfileFromPost(post);
+  const authorName = getDisplayName(profile, null);
+  const authorAvatar = getAvatar(profile);
+  const title = getPostTitle(post);
+  const body = getPostBody(post);
+  const mediaUrl = getPostMedia(post);
+  const category = getPostCategory(post);
+  const authorId = post.user_id || post.creator_id || profile?.id || "";
+
+  return `
+    <article class="feed-card" data-post-id="${escapeHtml(post.id)}">
+      <div class="feed-card-head">
+        <a class="feed-author" href="${authorId ? `/profile.html?id=${encodeURIComponent(authorId)}` : "/profile.html"}">
+          <img src="${escapeHtml(authorAvatar)}" alt="${escapeHtml(authorName)} avatar" />
+          <div>
+            <strong>${escapeHtml(authorName)}</strong>
+            <span>${escapeHtml(category)} • ${safeDate(post.created_at)}</span>
+          </div>
+        </a>
+
+        <span class="feed-card-badge">${escapeHtml(String(category).toUpperCase())}</span>
+      </div>
+
+      <div class="feed-card-body">
+        <h3>${escapeHtml(title)}</h3>
+        ${body ? `<p>${escapeHtml(body)}</p>` : ""}
+        ${getMediaMarkup(mediaUrl)}
+      </div>
+
+      <div class="feed-actions">
+        <button class="btn-ghost like-btn" type="button" data-like-post="${escapeHtml(post.id)}">❤️ Like</button>
+        <button class="btn-ghost comment-btn" type="button" data-comment-post="${escapeHtml(post.id)}">💬 Comment</button>
+        <button class="btn-ghost repost-btn" type="button" data-repost-post="${escapeHtml(post.id)}">🔁 Repost</button>
+      </div>
+    </article>
+  `;
+}
+
+async function loadFeed() {
+  setStatus("Loading feed...");
+
+  const { data, error } = await supabase
+    .from("posts")
+    .select(`
+      *,
+      profiles:user_id (*)
+    `)
+    .order("created_at", { ascending: false })
+    .limit(30);
+
+  if (error) {
+    console.error("[feed] loadFeed error:", error);
+    setStatus(error.message || "Failed to load feed.", "error");
+    return;
+  }
+
+  if (!data?.length) {
+    els.feedList.innerHTML = `
+      <div class="feed-empty">
+        <strong>No posts yet.</strong>
+        <span>Be the first to post a move.</span>
+      </div>
+    `;
+    setStatus("Feed ready.");
+    return;
+  }
+
+  els.feedList.innerHTML = data.map(renderPost).join("");
+  setStatus("Feed loaded.", "success");
+}
+
+async function createPost(event) {
+  event.preventDefault();
+
+  const user = await requireUser();
+  if (!user?.id) return;
+
+  const title = els.title?.value?.trim() || "";
+  const body = els.body?.value?.trim() || "";
+  const category = els.category?.value || "general";
+  const mediaUrl = els.mediaUrl?.value?.trim() || "";
+
+  if (!title && !body && !mediaUrl) {
+    setStatus("Add a title, message, or media before posting.", "error");
+    return;
+  }
+
+  if (els.submitBtn) els.submitBtn.disabled = true;
+  setStatus("Posting your move...");
+
+  const payload = {
+    user_id: user.id,
+    title: title || null,
+    body: body || null,
+    category,
+    media_url: mediaUrl || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabase.from("posts").insert(payload);
+
+  if (error) {
+    console.error("[feed] createPost error:", error);
+    setStatus(error.message || "Failed to post.", "error");
+    if (els.submitBtn) els.submitBtn.disabled = false;
+    return;
+  }
+
+  els.form?.reset();
+  setStatus("Posted to the feed.", "success");
+
+  if (els.submitBtn) els.submitBtn.disabled = false;
+
+  await loadFeed();
+}
+
+async function likePost(postId) {
+  const user = await requireUser();
+  if (!user?.id || !postId) return;
+
+  const { error } = await supabase.from("post_reactions").upsert(
+    {
+      post_id: postId,
+      user_id: user.id,
+      reaction_type: "like",
+      created_at: new Date().toISOString()
+    },
+    {
+      onConflict: "post_id,user_id"
+    }
+  );
+
+  if (error) {
+    console.warn("[feed] likePost skipped:", error);
+    setStatus(error.message || "Could not like post.", "error");
+    return;
+  }
+
+  setStatus("Liked.", "success");
+}
+
+async function repostPost(postId) {
+  const user = await requireUser();
+  if (!user?.id || !postId) return;
+
+  const { error } = await supabase.from("reposts").insert({
+    post_id: postId,
+    user_id: user.id,
+    created_at: new Date().toISOString()
+  });
+
+  if (error) {
+    console.warn("[feed] repostPost skipped:", error);
+    setStatus(error.message || "Could not repost.", "error");
+    return;
+  }
+
+  setStatus("Reposted.", "success");
+}
+
+function commentPost(postId) {
+  if (!postId) return;
+
+  const comment = window.prompt("Drop your comment:");
+  if (!comment?.trim()) return;
+
+  createComment(postId, comment.trim());
+}
+
+async function createComment(postId, body) {
+  const user = await requireUser();
+  if (!user?.id || !postId || !body) return;
+
+  const { error } = await supabase.from("comments").insert({
+    post_id: postId,
+    user_id: user.id,
+    body,
+    created_at: new Date().toISOString()
+  });
+
+  if (error) {
+    console.warn("[feed] comment skipped:", error);
+    setStatus(error.message || "Could not comment.", "error");
+    return;
+  }
+
+  setStatus("Comment added.", "success");
+}
+
+function bindFeedActions() {
+  els.feedList?.addEventListener("click", async (event) => {
+    const likeBtn = event.target.closest("[data-like-post]");
+    const commentBtn = event.target.closest("[data-comment-post]");
+    const repostBtn = event.target.closest("[data-repost-post]");
+
+    if (likeBtn) {
+      await likePost(likeBtn.getAttribute("data-like-post"));
+      return;
+    }
+
+    if (commentBtn) {
+      commentPost(commentBtn.getAttribute("data-comment-post"));
+      return;
+    }
+
+    if (repostBtn) {
+      await repostPost(repostBtn.getAttribute("data-repost-post"));
+    }
+  });
+}
+
+async function bootFeed() {
+  const user = await requireUser();
+  if (!user?.id) return;
+
+  await loadCurrentProfile();
+  renderComposer();
+
+  els.form?.addEventListener("submit", createPost);
+  bindFeedActions();
+
+  await loadFeed();
+
+  await bootLiveRail({
+    railElementId: "feed-live-rail",
+    limit: 5,
+    autoRefresh: true,
+    intervalMs: 15000,
+    channelKey: "feed"
+  });
+
+  supabase
+    .channel("rb-feed-posts")
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "posts"
+      },
+      async () => {
+        await loadFeed();
+      }
+    )
+    .subscribe();
+
+  console.log("🔥 Rich Bizness Feed Loaded");
+}
+
+bootFeed().catch((error) => {
+  console.error("[feed] boot error:", error);
+  setStatus(error.message || "Could not load feed.", "error");
+});
