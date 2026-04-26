@@ -88,7 +88,7 @@ signinForm.addEventListener("submit", async (e) => {
   setStatus("Welcome back. Redirecting...", "success");
 
   setTimeout(() => {
-    window.location.href = "/index.html";
+    window.location.href = "/profile.html";
   }, 900);
 });
 
