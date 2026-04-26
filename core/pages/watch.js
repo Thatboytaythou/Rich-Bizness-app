@@ -1,82 +1,99 @@
-import { initApp, getCurrentUserState, getCurrentProfileState } from "/core/app.js";
-import { mountEliteNav } from "/core/nav.js";
-import {
-  supabase,
-  isFollowing,
-  followUser,
-  unfollowUser
-} from "/core/supabase.js";
-import { getQueryParam, safeDate, formatMoney, formatNumber } from "/core/utils.js";
-import { BRAND_IMAGES, ROUTES } from "/core/config.js";
-import { bootLiveRoom, disconnectRoom } from "/core/features/live/live-room.js";
-import { bootLiveChat, destroyLiveChat } from "/core/features/live/live-chat.js";
-import { bootLiveReactions, destroyLiveReactions } from "/core/features/live/live-reactions.js";
-import {
-  fetchLivePermissionState,
-  getPermissionMessage
-} from "/core/features/live/live-permissions.js";
+// =========================
+// RICH BIZNESS WATCH — FINAL EXTREME
+// /core/pages/watch.js
+// =========================
 
-function $(id) {
-  return document.getElementById(id);
-}
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
+import { mountEliteNav } from "/core/nav.js";
+import { bootLiveRail } from "/core/features/live/live-rail.js";
+
+await initApp();
+
+const supabase = getSupabase();
+let currentUser = getCurrentUserState();
+
+const $ = (id) => document.getElementById(id);
 
 const els = {
+  status: $("watch-status"),
+
+  video: $("watch-video"),
+  emptyState: $("watch-empty-state"),
+  playerStage: $("watch-player-stage"),
+
+  liveBadge: $("watch-live-badge"),
+  accessBadge: $("watch-access-badge"),
+  categoryBadge: $("watch-category-badge"),
+
+  title: $("watch-title"),
+  description: $("watch-description"),
   heroTitle: $("watch-hero-title"),
   heroCopy: $("watch-hero-copy"),
-  playerStage: $("player-stage"),
-  playerTitle: $("player-title"),
-  playerCopy: $("player-copy"),
-  playerActions: $("player-actions"),
-  statusBox: $("watch-status"),
-  categoryBadge: $("stream-category-badge"),
-  accessBadge: $("stream-access-badge"),
-  streamTitle: $("stream-title"),
-  streamDescription: $("stream-description"),
-  metaStatus: $("meta-status"),
-  metaViewers: $("meta-viewers"),
-  metaAccess: $("meta-access"),
-  metaPrice: $("meta-price"),
-  statViewers: $("stat-viewers"),
-  statPeakViewers: $("stat-peak-viewers"),
-  statChatCount: $("stat-chat-count"),
-  statRevenue: $("stat-revenue"),
-  creatorAvatar: $("creator-avatar"),
-  creatorName: $("creator-name"),
-  creatorHandle: $("creator-handle"),
-  creatorProfileLink: $("creator-profile-link"),
-  creatorMessageLink: $("creator-message-link"),
-  followBtn: $("follow-creator-btn"),
-  lockedState: $("stream-locked-state"),
-  lockedCopy: $("locked-copy"),
-  lockedActionLink: $("locked-action-link"),
-  chatList: $("chat-list"),
-  chatForm: $("chat-form"),
-  chatInput: $("chat-input"),
-  chatSubmit: $("chat-submit"),
-  navMount: $("elite-platform-nav"),
-  playerVideoMount: $("live-video"),
-  reactionBar: $("live-reaction-bar"),
-  reactionBurst: $("live-reaction-burst"),
-  chatCount: $("live-chat-count")
+
+  copyLinkBtn: $("copy-watch-link-btn"),
+  refreshBtn: $("refresh-watch-btn"),
+  creatorLink: $("creator-profile-link"),
+
+  statStatus: $("watch-stat-status"),
+  statViewers: $("watch-stat-viewers"),
+  statPeak: $("watch-stat-peak"),
+  statRevenue: $("watch-stat-revenue"),
+
+  gatePanel: $("watch-gate-panel"),
+  gateTitle: $("watch-gate-title"),
+  gateCopy: $("watch-gate-copy"),
+  unlockBtn: $("unlock-watch-btn"),
+  vipLink: $("vip-access-link"),
+
+  chatList: $("watch-chat-list"),
+  chatForm: $("watch-chat-form"),
+  chatInput: $("watch-chat-input"),
+  sendChatBtn: $("send-chat-btn"),
+  refreshChatBtn: $("refresh-chat-btn"),
+
+  reactionBurst: $("watch-reaction-burst"),
+
+  dmInput: $("watch-dm-input"),
+  dmBtn: $("send-watch-dm-btn"),
+  dmStatus: $("watch-dm-status"),
+
+  detailId: $("detail-stream-id"),
+  detailSlug: $("detail-stream-slug"),
+  detailRoom: $("detail-room-name"),
+  detailStarted: $("detail-started-at"),
+
+  metaLabel: $("watch-meta-label"),
+  enterMetaBtn: $("enter-meta-btn"),
+  exitMetaBtn: $("exit-meta-btn")
 };
 
-let currentUser = null;
-let currentProfile = null;
-let currentStream = null;
-let currentCreator = null;
-let streamChannel = null;
-let followBusy = false;
+mountEliteNav({ target: "#elite-platform-nav", collapsed: false });
 
-const slug = getQueryParam("slug", "");
-const streamId = getQueryParam("id", "") || getQueryParam("stream", "");
+let activeStream = null;
+let accessGranted = false;
+let livekitRoom = null;
+let chatChannel = null;
 
 function setStatus(message, type = "normal") {
-  if (!els.statusBox) return;
-  els.statusBox.textContent = message;
-  els.statusBox.classList.remove("is-error", "is-success");
+  if (!els.status) return;
+  els.status.textContent = message;
+  els.status.classList.remove("is-error", "is-success");
+  if (type === "error") els.status.classList.add("is-error");
+  if (type === "success") els.status.classList.add("is-success");
+}
 
-  if (type === "error") els.statusBox.classList.add("is-error");
-  if (type === "success") els.statusBox.classList.add("is-success");
+function money(cents = 0) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+  }).format(Number(cents || 0) / 100);
+}
+
+function safeDate(value) {
+  if (!value) return "—";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "—";
+  return date.toLocaleString();
 }
 
 function escapeHtml(value = "") {
@@ -88,459 +105,496 @@ function escapeHtml(value = "") {
     .replaceAll("'", "&#039;");
 }
 
-function fallbackImage() {
-  return BRAND_IMAGES.live || BRAND_IMAGES.homeHero || "/images/brand/7F5D6348-B3DF-4584-A206-7F98B8BB0D53.png";
+function getParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
 }
 
-function normalizeProfile(profile) {
-  if (Array.isArray(profile)) return profile[0] || null;
-  return profile || null;
+async function getUser() {
+  if (currentUser?.id) return currentUser;
+  const { data } = await supabase.auth.getSession();
+  currentUser = data?.session?.user || null;
+  return currentUser;
 }
 
-function getCreatorName(profile = null) {
-  const normalized = normalizeProfile(profile);
-  return normalized?.display_name || normalized?.username || "Rich Bizness Creator";
-}
+async function loadStream() {
+  const slug = getParam("slug");
+  const id = getParam("id");
 
-function getCreatorHandle(profile = null) {
-  const normalized = normalizeProfile(profile);
-  return normalized?.handle || normalized?.username || "richbizness";
-}
+  let query = supabase.from("live_streams").select("*").limit(1);
 
-function getCreatorAvatar(profile = null) {
-  const normalized = normalizeProfile(profile);
-  return normalized?.avatar_url || normalized?.profile_image_url || BRAND_IMAGES.logo;
-}
+  if (slug) query = query.eq("slug", slug);
+  else if (id) query = query.eq("id", id);
+  else query = query.in("status", ["live", "active"]).order("created_at", { ascending: false });
 
-function getStreamPriceLabel(stream = null) {
-  if (!stream) return "Free";
-  const accessType = String(stream.access_type || "free").toLowerCase();
+  const { data, error } = await query;
 
-  if (accessType === "paid" && Number(stream.price_cents || 0) > 0) {
-    return formatMoney(stream.price_cents || 0, stream.currency || "USD");
+  if (error) {
+    setStatus(error.message || "Could not load stream.", "error");
+    return null;
   }
 
-  if (accessType === "vip") return "VIP";
-  return "Free";
-}
+  const stream = data?.[0] || null;
 
-function getWatchHref(stream = null) {
-  if (!stream) return ROUTES.watch;
-  if (stream.slug) return `${ROUTES.watch}?slug=${encodeURIComponent(stream.slug)}`;
-  if (stream.id) return `${ROUTES.watch}?id=${encodeURIComponent(stream.id)}`;
-  return ROUTES.watch;
-}
-
-function clearRealtime() {
-  if (streamChannel) {
-    supabase.removeChannel(streamChannel);
-    streamChannel = null;
+  if (!stream) {
+    setStatus("No stream selected yet.");
+    renderNoStream();
+    return null;
   }
+
+  activeStream = stream;
+  renderStream(stream);
+  return stream;
 }
 
 function renderNoStream() {
-  if (els.heroTitle) els.heroTitle.textContent = "No stream found.";
-  if (els.heroCopy) els.heroCopy.textContent = "This watch page could not find an active Rich Bizness stream with that slug or id.";
-  if (els.playerTitle) els.playerTitle.textContent = "No stream found";
-  if (els.playerCopy) els.playerCopy.textContent = "Check the watch link or go back to the homepage live rail.";
-  if (els.streamTitle) els.streamTitle.textContent = "No stream found";
-  if (els.streamDescription) els.streamDescription.textContent = "No live stream record matched the current watch link.";
-
-  if (els.playerActions) {
-    els.playerActions.innerHTML = `
-      <a class="btn" href="${ROUTES.home}">Back Home</a>
-      <a class="btn-ghost" href="${ROUTES.live}">Go Live</a>
-    `;
-  }
-
-  if (els.chatList) {
-    els.chatList.innerHTML = `
-      <div class="chat-empty">
-        <div>
-          <strong style="display:block;margin-bottom:8px;color:#ecfff4;">No stream chat.</strong>
-          <span>A valid stream is required before live chat can load.</span>
-        </div>
-      </div>
-    `;
-  }
-
-  if (els.lockedState) els.lockedState.style.display = "none";
-  setStatus("No live stream matched this watch link.", "error");
+  els.emptyState?.classList.remove("is-hidden");
+  if (els.video) els.video.style.display = "none";
 }
 
-async function fetchStream() {
-  if (!slug && !streamId) {
-    currentStream = null;
-    currentCreator = null;
-    renderNoStream();
-    return null;
-  }
+function renderStream(stream) {
+  const title = stream.title || stream.name || "Rich Bizness Watch Room";
+  const desc = stream.description || "Live room connected to the Rich Bizness watch system.";
+  const status = stream.status || "draft";
+  const access = stream.access_type || "free";
+  const category = stream.category || stream.lane || "watch";
 
-  let query = supabase
-    .from("live_streams")
-    .select(`
-      *,
-      profiles:creator_id (
-        id,
-        display_name,
-        username,
-        handle,
-        avatar_url,
-        profile_image_url,
-        bio
-      )
-    `);
-
-  if (slug) {
-    query = query.eq("slug", slug);
-  } else {
-    query = query.eq("id", streamId);
-  }
-
-  const { data, error } = await query.maybeSingle();
-
-  if (error) {
-    console.error("[core/pages/watch] fetchStream error:", error);
-    setStatus("Could not load stream.", "error");
-    renderNoStream();
-    return null;
-  }
-
-  if (!data) {
-    currentStream = null;
-    currentCreator = null;
-    renderNoStream();
-    return null;
-  }
-
-  currentStream = data;
-  currentCreator = normalizeProfile(data.profiles);
-  return data;
-}
-
-async function getPermissionState() {
-  return await fetchLivePermissionState({
-    stream: currentStream,
-    user: currentUser,
-    profile: currentProfile
-  });
-}
-
-function renderLockedState(permission) {
-  if (!els.lockedState || !els.lockedCopy || !els.lockedActionLink) return;
-
-  if (!permission?.canView) {
-    els.lockedState.style.display = "grid";
-    els.lockedCopy.textContent = getPermissionMessage(permission);
-
-    if (permission.needsLogin) {
-      els.lockedActionLink.href = ROUTES.auth;
-      els.lockedActionLink.textContent = "Login to continue";
-    } else if (permission.needsPurchase || permission.needsVip) {
-      els.lockedActionLink.href = ROUTES.monetization || "/monetization.html";
-      els.lockedActionLink.textContent = permission.needsVip ? "Unlock VIP access" : "Unlock stream";
-    } else {
-      els.lockedActionLink.href = ROUTES.home;
-      els.lockedActionLink.textContent = "Back Home";
-    }
-  } else {
-    els.lockedState.style.display = "none";
-  }
-}
-
-function renderPlayerMeta(stream, creator, permission) {
-  const image = stream.thumbnail_url || stream.cover_url || fallbackImage();
-  const title = stream.title || "Untitled Stream";
-  const category = String(stream.category || "live").toUpperCase();
-  const accessType = String(stream.access_type || "free").toUpperCase();
-  const price = getStreamPriceLabel(stream);
-
+  if (els.title) els.title.textContent = title;
+  if (els.description) els.description.textContent = desc;
   if (els.heroTitle) els.heroTitle.textContent = title;
-  if (els.heroCopy) {
-    els.heroCopy.textContent =
-      stream.description || "Creator live stream watch experience locked into the Rich Bizness ecosystem.";
+  if (els.heroCopy) els.heroCopy.textContent = desc;
+
+  if (els.liveBadge) els.liveBadge.textContent = status === "live" ? "LIVE" : status.toUpperCase();
+  if (els.accessBadge) els.accessBadge.textContent = access.toUpperCase();
+  if (els.categoryBadge) els.categoryBadge.textContent = String(category).toUpperCase();
+
+  if (els.statStatus) els.statStatus.textContent = status;
+  if (els.statViewers) els.statViewers.textContent = Number(stream.viewer_count || 0).toLocaleString();
+  if (els.statPeak) els.statPeak.textContent = Number(stream.peak_viewers || 0).toLocaleString();
+  if (els.statRevenue) els.statRevenue.textContent = money(stream.total_revenue_cents || 0);
+
+  if (els.detailId) els.detailId.textContent = stream.id || "—";
+  if (els.detailSlug) els.detailSlug.textContent = stream.slug || "—";
+  if (els.detailRoom) els.detailRoom.textContent = stream.livekit_room_name || stream.room_name || "—";
+  if (els.detailStarted) els.detailStarted.textContent = safeDate(stream.started_at);
+
+  if (els.creatorLink) {
+    els.creatorLink.href = stream.creator_id
+      ? `/profile.html?id=${encodeURIComponent(stream.creator_id)}`
+      : "/profile.html";
   }
 
-  if (els.playerTitle) els.playerTitle.textContent = title;
-  if (els.playerCopy) {
-    els.playerCopy.textContent = creator
-      ? `Now watching ${getCreatorName(creator)} on Rich Bizness.`
-      : "Now watching a Rich Bizness creator stream.";
-  }
-
-  if (els.categoryBadge) els.categoryBadge.textContent = category;
-  if (els.accessBadge) els.accessBadge.textContent = accessType;
-
-  if (els.streamTitle) els.streamTitle.textContent = title;
-  if (els.streamDescription) {
-    els.streamDescription.textContent = stream.description || "No stream description was added yet.";
-  }
-
-  if (els.metaStatus) els.metaStatus.textContent = `Status: ${String(stream.status || "live").toUpperCase()}`;
-  if (els.metaViewers) els.metaViewers.textContent = `Viewers: ${formatNumber(stream.viewer_count || 0)}`;
-  if (els.metaAccess) els.metaAccess.textContent = `Access: ${accessType}`;
-  if (els.metaPrice) els.metaPrice.textContent = `Price: ${price}`;
-
-  if (els.statViewers) els.statViewers.textContent = formatNumber(stream.viewer_count || 0);
-  if (els.statPeakViewers) els.statPeakViewers.textContent = formatNumber(stream.peak_viewers || 0);
-  if (els.statChatCount) els.statChatCount.textContent = formatNumber(stream.total_chat_messages || 0);
-  if (els.statRevenue) {
-    els.statRevenue.textContent = formatMoney(stream.total_revenue_cents || 0, stream.currency || "USD");
-  }
-
-  if (els.creatorAvatar) els.creatorAvatar.src = getCreatorAvatar(creator);
-  if (els.creatorName) els.creatorName.textContent = getCreatorName(creator);
-  if (els.creatorHandle) els.creatorHandle.textContent = `@${getCreatorHandle(creator)}`;
-
-  if (els.creatorProfileLink) {
-    els.creatorProfileLink.href = creator?.id
-      ? `/profile.html?id=${encodeURIComponent(creator.id)}`
-      : ROUTES.profile;
-  }
-
-  if (els.creatorMessageLink) {
-    els.creatorMessageLink.href = creator?.id
-      ? `/messages.html?user=${encodeURIComponent(creator.id)}`
-      : ROUTES.messages;
-  }
-
-  if (els.playerStage) {
-    els.playerStage.style.background = `
-      linear-gradient(180deg, rgba(5,8,6,0.74), rgba(3,5,4,0.96)),
-      url('${image}') center / cover no-repeat
-    `;
-  }
-
-  if (els.playerActions) {
-    if (!permission?.canView) {
-      if (permission.needsLogin) {
-        els.playerActions.innerHTML = `
-          <a class="btn" href="${ROUTES.auth}">Login</a>
-          <a class="btn-ghost" href="${ROUTES.home}">Back Home</a>
-        `;
-      } else {
-        els.playerActions.innerHTML = `
-          <a class="btn-gold" href="${ROUTES.monetization || "/monetization.html"}">Unlock Access</a>
-          <a class="btn-ghost" href="${ROUTES.home}">Back Home</a>
-        `;
-      }
-    } else {
-      els.playerActions.innerHTML = `
-        <a class="btn" href="${ROUTES.live}">Go Live</a>
-        <a class="btn-ghost" href="${ROUTES.home}">Back Home</a>
-      `;
-    }
-  }
+  renderGate(stream);
 }
 
-async function syncFollowButton() {
-  if (!els.followBtn) return;
+async function renderGate(stream) {
+  const access = stream.access_type || "free";
+  const price = Number(stream.price_cents || 0);
 
-  if (!currentUser || !currentCreator?.id || currentUser.id === currentCreator.id) {
-    els.followBtn.textContent = currentUser?.id === currentCreator?.id ? "Your profile" : "Follow";
-    els.followBtn.disabled = !currentCreator?.id || currentUser?.id === currentCreator?.id;
+  if (access === "free" || price <= 0) {
+    accessGranted = true;
+    if (els.gateTitle) els.gateTitle.textContent = "Free room access";
+    if (els.gateCopy) els.gateCopy.textContent = "This room is open. Tap in and enjoy the Bizness Party.";
+    if (els.unlockBtn) els.unlockBtn.textContent = "Room Open";
+    enableRoomTools();
     return;
   }
 
-  const following = await isFollowing(currentUser.id, currentCreator.id);
-  els.followBtn.textContent = following ? "Following" : "Follow";
-  els.followBtn.disabled = false;
-  els.followBtn.dataset.following = following ? "true" : "false";
-}
+  accessGranted = false;
 
-async function handleFollowToggle() {
-  if (followBusy || !currentUser || !currentCreator?.id || currentUser.id === currentCreator.id) return;
+  if (els.gateTitle) els.gateTitle.textContent = "Paid / VIP room";
+  if (els.gateCopy) els.gateCopy.textContent = `Unlock this room for ${money(price)} or use VIP access.`;
+  if (els.unlockBtn) els.unlockBtn.textContent = `Unlock ${money(price)}`;
 
-  followBusy = true;
-  els.followBtn.disabled = true;
+  const user = await getUser();
+  if (!user?.id) return;
 
-  try {
-    const following = els.followBtn.dataset.following === "true";
+  const { data } = await supabase
+    .from("live_stream_purchases")
+    .select("*")
+    .eq("stream_id", stream.id)
+    .eq("user_id", user.id)
+    .eq("status", "paid")
+    .maybeSingle();
 
-    if (following) {
-      await unfollowUser(currentUser.id, currentCreator.id);
-      els.followBtn.textContent = "Follow";
-      els.followBtn.dataset.following = "false";
-      setStatus("Unfollowed creator.", "success");
-    } else {
-      await followUser(currentUser.id, currentCreator.id);
-      els.followBtn.textContent = "Following";
-      els.followBtn.dataset.following = "true";
-      setStatus("Creator followed.", "success");
-    }
-  } catch (error) {
-    console.error("[core/pages/watch] follow toggle error:", error);
-    setStatus(error.message || "Could not update follow state.", "error");
-  } finally {
-    followBusy = false;
-    els.followBtn.disabled = false;
+  if (data) {
+    accessGranted = true;
+    if (els.gateTitle) els.gateTitle.textContent = "Access unlocked";
+    if (els.gateCopy) els.gateCopy.textContent = "You already unlocked this Bizness Party.";
+    enableRoomTools();
   }
 }
 
-function bindStreamRealtime() {
-  clearRealtime();
+function enableRoomTools() {
+  if (els.chatInput) els.chatInput.disabled = false;
+  if (els.sendChatBtn) els.sendChatBtn.disabled = false;
+  els.emptyState?.classList.add("is-hidden");
+}
 
-  if (!currentStream?.id) return;
+async function unlockRoom() {
+  if (!activeStream) return;
 
-  streamChannel = supabase
-    .channel(`rb-watch-stream-${currentStream.id}`)
+  const user = await getUser();
+  if (!user?.id) {
+    window.location.href = `/auth.html?next=${encodeURIComponent(location.pathname + location.search)}`;
+    return;
+  }
+
+  const price = Number(activeStream.price_cents || 0);
+  if ((activeStream.access_type || "free") === "free" || price <= 0) {
+    accessGranted = true;
+    enableRoomTools();
+    setStatus("Room open.", "success");
+    return;
+  }
+
+  setStatus("Creating checkout...");
+
+  const res = await fetch("/api/live-stream-purchase", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      streamId: activeStream.id,
+      userId: user.id,
+      successUrl: `${location.origin}/watch.html?slug=${encodeURIComponent(activeStream.slug || "")}`,
+      cancelUrl: location.href
+    })
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok || !data?.url) {
+    setStatus(data?.error || "Could not create checkout.", "error");
+    return;
+  }
+
+  window.location.href = data.url;
+}
+
+async function connectLiveKit() {
+  if (!activeStream || !accessGranted) return;
+
+  const roomName = activeStream.livekit_room_name || activeStream.room_name;
+  if (!roomName) {
+    setStatus("No LiveKit room name on this stream yet.");
+    return;
+  }
+
+  const user = await getUser();
+  const identity = user?.id || `viewer-${crypto.randomUUID()}`;
+
+  try {
+    const res = await fetch("/api/livekit-token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        roomName,
+        identity,
+        name: user?.email || "Rich Bizness Viewer",
+        role: "viewer"
+      })
+    });
+
+    const tokenData = await res.json();
+
+    if (!res.ok || !tokenData?.token || !tokenData?.url) {
+      setStatus(tokenData?.error || "LiveKit token failed.", "error");
+      return;
+    }
+
+    const LiveKit = await import("https://esm.sh/livekit-client@2");
+    livekitRoom = new LiveKit.Room();
+
+    livekitRoom.on(LiveKit.RoomEvent.TrackSubscribed, (track) => {
+      if (track.kind === "video" && els.video) {
+        track.attach(els.video);
+        els.video.style.display = "block";
+        els.emptyState?.classList.add("is-hidden");
+      }
+
+      if (track.kind === "audio") {
+        const audio = track.attach();
+        audio.autoplay = true;
+        document.body.appendChild(audio);
+      }
+    });
+
+    await livekitRoom.connect(tokenData.url, tokenData.token);
+    setStatus("Connected to live room.", "success");
+  } catch (error) {
+    console.warn("[watch] LiveKit connect skipped:", error);
+    setStatus("Watch loaded. LiveKit is not connected yet.", "error");
+  }
+}
+
+async function loadChat() {
+  if (!activeStream?.id || !els.chatList) return;
+
+  const { data, error } = await supabase
+    .from("live_chat_messages")
+    .select("*, profiles:user_id (*)")
+    .eq("stream_id", activeStream.id)
+    .order("created_at", { ascending: true })
+    .limit(80);
+
+  if (error) {
+    els.chatList.innerHTML = `<div class="watch-empty-box"><strong>Chat unavailable.</strong><span>${escapeHtml(error.message)}</span></div>`;
+    return;
+  }
+
+  if (!data?.length) {
+    els.chatList.innerHTML = `
+      <div class="watch-empty-box">
+        <strong>No chat yet.</strong>
+        <span>Be the first to talk in the room.</span>
+      </div>
+    `;
+    return;
+  }
+
+  els.chatList.innerHTML = data.map((msg) => {
+    const name =
+      msg.profiles?.display_name ||
+      msg.profiles?.username ||
+      "Rich Viewer";
+
+    return `
+      <article class="chat-message">
+        <img src="${escapeHtml(msg.profiles?.avatar_url || "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png")}" alt="" />
+        <div>
+          <strong>${escapeHtml(name)}</strong>
+          <p>${escapeHtml(msg.body || msg.message || "")}</p>
+          <span>${safeDate(msg.created_at)}</span>
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  els.chatList.scrollTop = els.chatList.scrollHeight;
+}
+
+async function sendChat(event) {
+  event.preventDefault();
+
+  if (!activeStream?.id) return;
+
+  const user = await getUser();
+  if (!user?.id) {
+    window.location.href = "/auth.html";
+    return;
+  }
+
+  const body = els.chatInput?.value?.trim();
+  if (!body) return;
+
+  els.chatInput.value = "";
+
+  const { error } = await supabase.from("live_chat_messages").insert({
+    stream_id: activeStream.id,
+    user_id: user.id,
+    body,
+    created_at: new Date().toISOString()
+  });
+
+  if (error) {
+    setStatus(error.message || "Could not send chat.", "error");
+    return;
+  }
+
+  await loadChat();
+}
+
+function subscribeChat() {
+  if (!activeStream?.id) return;
+
+  if (chatChannel) supabase.removeChannel(chatChannel);
+
+  chatChannel = supabase
+    .channel(`watch-chat-${activeStream.id}`)
     .on(
       "postgres_changes",
       {
-        event: "*",
+        event: "INSERT",
         schema: "public",
-        table: "live_streams",
-        filter: `id=eq.${currentStream.id}`
+        table: "live_chat_messages",
+        filter: `stream_id=eq.${activeStream.id}`
       },
-      async () => {
-        await refreshWatchPage();
-      }
+      () => loadChat()
     )
     .subscribe();
 }
 
-async function mountLiveVideo(permission) {
-  if (!els.playerVideoMount) return;
+function burstReaction(emoji) {
+  if (!els.reactionBurst) return;
 
-  if (!permission?.canView) {
-    els.playerVideoMount.innerHTML = "";
-    return;
-  }
+  const item = document.createElement("span");
+  item.className = "reaction-float";
+  item.textContent = emoji;
+  item.style.left = `${15 + Math.random() * 70}%`;
+  item.style.animationDuration = `${1.8 + Math.random() * 1.4}s`;
 
-  els.playerVideoMount.innerHTML = "";
+  els.reactionBurst.appendChild(item);
 
-  try {
-    await bootLiveRoom({
-      videoContainerId: "live-video",
-      slug,
-      id: streamId
-    });
-  } catch (error) {
-    console.error("[core/pages/watch] mountLiveVideo error:", error);
-    els.playerVideoMount.innerHTML = "Failed to load stream";
-  }
+  setTimeout(() => item.remove(), 3500);
 }
 
-async function mountChat(permission) {
-  if (!els.chatList) return;
+async function sendReaction(emoji) {
+  burstReaction(emoji);
 
-  if (!permission?.canView) {
-    els.chatList.innerHTML = `
-      <div class="chat-empty">
-        <div>
-          <strong style="display:block;margin-bottom:8px;color:#ecfff4;">Chat locked.</strong>
-          <span>You need stream access before chat can load.</span>
-        </div>
-      </div>
-    `;
+  if (!activeStream?.id) return;
+
+  const user = await getUser();
+
+  await supabase.from("live_reactions").insert({
+    stream_id: activeStream.id,
+    user_id: user?.id || null,
+    reaction: emoji,
+    created_at: new Date().toISOString()
+  }).catch(() => {});
+}
+
+async function sendDM() {
+  const body = els.dmInput?.value?.trim();
+
+  if (!body || !activeStream?.creator_id) return;
+
+  const user = await getUser();
+  if (!user?.id) {
+    window.location.href = "/auth.html";
     return;
   }
 
-  if (!permission.canChat) {
-    els.chatList.innerHTML = `
-      <div class="chat-empty">
-        <div>
-          <strong style="display:block;margin-bottom:8px;color:#ecfff4;">Chat unavailable.</strong>
-          <span>Chat is disabled for this stream.</span>
-        </div>
-      </div>
-    `;
+  if (els.dmStatus) els.dmStatus.textContent = "Sending Slide In...";
+
+  const { data: thread, error: threadError } = await supabase
+    .from("dm_threads")
+    .insert({ created_by: user.id, title: "Live Slide In", is_group: false })
+    .select("*")
+    .single();
+
+  if (threadError) {
+    if (els.dmStatus) els.dmStatus.textContent = threadError.message;
     return;
   }
 
-  await bootLiveChat({
-    streamId: currentStream.id,
-    userId: currentUser?.id || null,
-    listElementId: "chat-list",
-    formElementId: "chat-form",
-    inputElementId: "chat-input",
-    countElementId: "live-chat-count",
-    onMessage: async () => {
-      if (els.statChatCount && currentStream) {
-        const nextValue = Number(els.statChatCount.textContent.replace(/,/g, "") || 0) + 1;
-        els.statChatCount.textContent = formatNumber(nextValue);
-      }
+  await supabase.from("dm_thread_members").insert([
+    { thread_id: thread.id, user_id: user.id },
+    { thread_id: thread.id, user_id: activeStream.creator_id }
+  ]);
+
+  const { error } = await supabase.from("dm_messages").insert({
+    thread_id: thread.id,
+    sender_id: user.id,
+    body,
+    message_type: "live_slide_in",
+    metadata: { stream_id: activeStream.id },
+    created_at: new Date().toISOString()
+  });
+
+  if (error) {
+    if (els.dmStatus) els.dmStatus.textContent = error.message;
+    return;
+  }
+
+  els.dmInput.value = "";
+  if (els.dmStatus) els.dmStatus.textContent = "Slide In sent.";
+}
+
+async function loadCohosts() {
+  if (!activeStream?.id) return;
+
+  const { data } = await supabase
+    .from("live_stream_members")
+    .select("*, profiles:user_id (*)")
+    .eq("stream_id", activeStream.id)
+    .in("role", ["cohost", "moderator"])
+    .eq("is_active", true)
+    .limit(3);
+
+  for (let i = 1; i <= 3; i++) {
+    const member = data?.[i - 1];
+    const nameEl = $(`cohost-name-${i}`);
+    const roleEl = $(`cohost-role-${i}`);
+
+    if (nameEl) {
+      nameEl.textContent =
+        member?.profiles?.display_name ||
+        member?.profiles?.username ||
+        "Empty slot";
     }
-  });
 
-  if (els.chatInput) {
-    els.chatInput.disabled = !permission.canChat;
-  }
-  if (els.chatSubmit) {
-    els.chatSubmit.disabled = !permission.canChat;
+    if (roleEl) {
+      roleEl.textContent = member?.role || "Waiting";
+    }
   }
 }
 
-async function mountReactions(permission) {
-  if (!els.reactionBar) return;
-
-  if (!permission?.canView || !permission?.canSendReactions) {
-    els.reactionBar.innerHTML = "";
-    return;
-  }
-
-  await bootLiveReactions({
-    streamId: currentStream.id,
-    userId: currentUser?.id || null,
-    reactionBarElementId: "live-reaction-bar",
-    reactionBurstElementId: "live-reaction-burst"
-  });
+function toggleMeta(on) {
+  document.body.classList.toggle("meta-vision-on", on);
+  if (els.metaLabel) els.metaLabel.textContent = on ? "Meta Vision Active" : "Meta Room Ready";
 }
 
-async function refreshWatchPage() {
-  const stream = await fetchStream();
-  if (!stream) return;
-
-  const permission = await getPermissionState();
-  renderPlayerMeta(currentStream, currentCreator, permission);
-  renderLockedState(permission);
-  await syncFollowButton();
-  await mountLiveVideo(permission);
-  await mountChat(permission);
-  await mountReactions(permission);
-  bindStreamRealtime();
-
-  setStatus(getPermissionMessage(permission), permission.canView ? "success" : "error");
+async function copyLink() {
+  await navigator.clipboard.writeText(location.href);
+  setStatus("Watch link copied.", "success");
 }
 
 function bindEvents() {
-  els.followBtn?.addEventListener("click", handleFollowToggle);
+  els.unlockBtn?.addEventListener("click", unlockRoom);
+  els.refreshBtn?.addEventListener("click", bootWatch);
+  els.copyLinkBtn?.addEventListener("click", copyLink);
+  els.refreshChatBtn?.addEventListener("click", loadChat);
+  els.chatForm?.addEventListener("submit", sendChat);
+  els.dmBtn?.addEventListener("click", sendDM);
+  els.enterMetaBtn?.addEventListener("click", () => toggleMeta(true));
+  els.exitMetaBtn?.addEventListener("click", () => toggleMeta(false));
+
+  document.querySelectorAll(".reaction-btn").forEach((btn) => {
+    btn.addEventListener("click", () => sendReaction(btn.dataset.reaction || "🔥"));
+  });
 }
 
-export async function bootWatchPage() {
-  await initApp();
+async function countViewerSession() {
+  if (!activeStream?.id) return;
 
-  currentUser = getCurrentUserState();
-  currentProfile = getCurrentProfileState();
+  await supabase.from("live_view_sessions").insert({
+    stream_id: activeStream.id,
+    user_id: currentUser?.id || null,
+    started_at: new Date().toISOString()
+  }).catch(() => {});
+}
 
-  if (els.navMount) {
-    mountEliteNav({
-      target: "#elite-platform-nav",
-      collapsed: false
-    });
+async function bootWatch() {
+  setStatus("Loading watch room...");
+
+  await getUser();
+
+  const stream = await loadStream();
+  if (!stream) return;
+
+  await renderGate(stream);
+  await loadChat();
+  subscribeChat();
+  await loadCohosts();
+  await countViewerSession();
+
+  if (accessGranted) {
+    await connectLiveKit();
   }
 
-  bindEvents();
-  await refreshWatchPage();
-}
-
-export function destroyWatchPage() {
-  clearRealtime();
-  destroyLiveChat();
-  destroyLiveReactions();
-  disconnectRoom();
-
-  currentStream = null;
-  currentCreator = null;
-}
-
-if (document.body?.classList.contains("watch-page")) {
-  bootWatchPage().catch((error) => {
-    console.error("[core/pages/watch] bootWatchPage error:", error);
-    setStatus(error.message || "Could not boot watch page.", "error");
+  await bootLiveRail({
+    railElementId: "watch-live-rail",
+    limit: 4,
+    autoRefresh: true,
+    intervalMs: 15000,
+    channelKey: "watch"
   });
 
-  window.addEventListener("beforeunload", () => {
-    destroyWatchPage();
-  });
+  setStatus("Watch room ready.", "success");
 }
+
+bindEvents();
+
+bootWatch().catch((error) => {
+  console.error("[watch] boot error:", error);
+  setStatus(error.message || "Could not load watch room.", "error");
+});
