@@ -175,7 +175,7 @@ async function checkSession() {
     setStatus("You're already tapped in. Redirecting...", "success");
 
     setTimeout(() => {
-      window.location.href = "/index.html";
+      window.location.href = "/profile.html";
     }, 800);
   }
 }
