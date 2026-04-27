@@ -1,0 +1,241 @@
+/* =========================
+   RICH BIZNESS — NOTIFICATIONS GOD MODE
+========================= */
+
+:root {
+  --notif-bg: #050505;
+  --notif-panel: rgba(10,10,12,0.9);
+  --notif-border: rgba(255,206,88,0.18);
+  --notif-gold: #ffce58;
+  --notif-red: #ff3c5f;
+  --notif-green: #69ffb4;
+  --notif-text: #fffaf0;
+  --notif-muted: rgba(255,255,255,0.65);
+  --notif-img: url("/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png");
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+.notifications-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at center, rgba(255,206,88,0.12), transparent 40%),
+    linear-gradient(180deg, #000, #050505),
+    var(--notif-img) center/cover fixed;
+  color: var(--notif-text);
+}
+
+.notifications-bg {
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  background: var(--notif-img) center/cover no-repeat;
+  opacity: 0.18;
+  animation: bgMove 16s ease-in-out infinite alternate;
+}
+
+@keyframes bgMove {
+  from { transform: scale(1.05) translate(-10px, -8px); }
+  to   { transform: scale(1.15) translate(20px, 14px); }
+}
+
+/* =========================
+   STATUS
+========================= */
+.notifications-status {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid var(--notif-border);
+}
+
+/* =========================
+   LAYOUT
+========================= */
+.notifications-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+}
+
+.notifications-main {
+  display: grid;
+  gap: 16px;
+}
+
+/* =========================
+   FILTERS
+========================= */
+.notifications-filters {
+  background: var(--notif-panel);
+  border-radius: 20px;
+  padding: 16px;
+  border: 1px solid var(--notif-border);
+}
+
+.filter-btn {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.filter-btn.active {
+  background: var(--notif-gold);
+  color: black;
+}
+
+/* =========================
+   LIST
+========================= */
+.notifications-list {
+  display: grid;
+  gap: 14px;
+}
+
+/* =========================
+   CARD
+========================= */
+.notification-card {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  position: relative;
+  overflow: hidden;
+  transition: 0.25s;
+}
+
+/* =========================
+   💥 EXPLOSION EFFECT
+========================= */
+.notification-card.is-unread::before {
+  content: "";
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle, rgba(255,206,88,0.3), transparent 60%);
+  animation: explodePulse 1.6s ease-out;
+}
+
+@keyframes explodePulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* =========================
+   📣 BING FLASH
+========================= */
+.notification-card.is-unread::after {
+  content: "📣";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 18px;
+  animation: notifPop 0.6s ease;
+}
+
+@keyframes notifPop {
+  0% { transform: scale(0.3) rotate(-20deg); opacity: 0; }
+  80% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* =========================
+   ICON
+========================= */
+.notification-icon {
+  font-size: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   UNREAD GLOW + SHAKE
+========================= */
+.notification-card.is-unread {
+  border-color: var(--notif-gold);
+  box-shadow: 0 0 20px rgba(255,206,88,0.3);
+  animation: shakeNotif 0.4s ease;
+}
+
+@keyframes shakeNotif {
+  0% { transform: translateX(-3px); }
+  50% { transform: translateX(3px); }
+  100% { transform: translateX(0); }
+}
+
+/* =========================
+   READ STATE
+========================= */
+.notification-card.is-read {
+  opacity: 0.6;
+}
+
+/* =========================
+   BODY
+========================= */
+.notification-body strong {
+  font-size: 15px;
+}
+
+.notification-body p {
+  margin: 6px 0;
+  color: var(--notif-muted);
+}
+
+/* =========================
+   META
+========================= */
+.notification-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.unread-pill {
+  background: var(--notif-red);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+.notification-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+/* =========================
+   HOVER EFFECT (ENERGY)
+========================= */
+.notification-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5),
+              0 0 25px rgba(255,206,88,0.25);
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media (max-width: 900px) {
+  .notifications-layout {
+    grid-template-columns: 1fr;
+  }
+}
