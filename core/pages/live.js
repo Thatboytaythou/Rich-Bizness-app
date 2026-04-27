@@ -1,7 +1,8 @@
 // =========================
-// RICH BIZNESS LIVE — FINAL MATCHED
+// RICH BIZNESS LIVE — FINAL LOCKED
 // /core/pages/live.js
-// Matches current /live.html exactly
+// Matches /live.html
+// Core-only setup
 // =========================
 
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
@@ -21,7 +22,6 @@ const els = {
 
   startCameraBtn: $("start-camera-btn"),
   stopCameraBtn: $("stop-camera-btn"),
-
   createLiveBtn: $("create-live-btn"),
   updateLiveBtn: $("update-live-btn"),
   goLiveBtn: $("go-live-btn"),
@@ -105,10 +105,8 @@ let currentStream = null;
 
 function setStatus(message, type = "normal") {
   if (!els.statusBox) return;
-
   els.statusBox.textContent = message;
-  els.statusBox.classList.remove("is-success", "is-error");
-
+  els.statusBox.className = "status-box";
   if (type === "success") els.statusBox.classList.add("is-success");
   if (type === "error") els.statusBox.classList.add("is-error");
 }
@@ -148,8 +146,8 @@ function makeSlug(title = "go-live") {
   return `${slugify(title) || "go-live"}-${Date.now()}`;
 }
 
-function makeRoomName() {
-  return `rb-party-room-${Date.now()}`;
+function makeRoomName(title = "party") {
+  return `rb-${slugify(title) || "party"}-${Date.now()}`;
 }
 
 function getWatchUrl(stream = currentStream) {
@@ -164,6 +162,7 @@ async function requireUser() {
   currentUser = data?.session?.user || null;
 
   if (!currentUser?.id) {
+    setStatus("Please sign in first.", "error");
     window.location.href = "/auth.html";
     return null;
   }
@@ -173,27 +172,29 @@ async function requireUser() {
 
 function getFormPayload() {
   const title = els.title?.value?.trim() || "WE LIT 🔥";
-  const roomName = els.roomName?.value?.trim() || currentStream?.livekit_room_name || makeRoomName();
-  const currency = (els.currency?.value?.trim() || "USD").toLowerCase();
+  const roomName =
+    els.roomName?.value?.trim() ||
+    currentStream?.livekit_room_name ||
+    makeRoomName(title);
 
   return {
     creator_id: currentUser.id,
     title,
     description: els.description?.value?.trim() || null,
     category: els.category?.value || "music",
+    status: currentStream?.status || "draft",
     access_type: els.access?.value || "free",
     price_cents: Math.round(Number(els.price?.value || 0) * 100),
-    currency,
+    currency: (els.currency?.value?.trim() || "USD").toLowerCase(),
     thumbnail_url: els.thumbnail?.value?.trim() || null,
     cover_url: els.cover?.value?.trim() || null,
     livekit_room_name: roomName,
     slug: currentStream?.slug || makeSlug(title),
+    scheduled_for: els.scheduledMode?.checked ? els.scheduledFor?.value || null : null,
     is_chat_enabled: Boolean(els.chatEnabled?.checked ?? true),
+    is_replay_enabled: Boolean(els.replayEnabled?.checked ?? true),
     is_featured: Boolean(els.featured?.checked ?? false),
     metadata: {
-      replay_enabled: Boolean(els.replayEnabled?.checked ?? true),
-      schedule_mode: Boolean(els.scheduledMode?.checked ?? false),
-      scheduled_for: els.scheduledFor?.value || null,
       meta_theme: els.metaVisionTheme?.value || "money-road",
       meta_label: els.metaVisionLabel?.value || "Meta Room Ready"
     },
@@ -215,15 +216,24 @@ function hydrateForm(stream) {
   if (els.currency) els.currency.value = (stream.currency || "usd").toUpperCase();
 
   if (els.chatEnabled) els.chatEnabled.checked = stream.is_chat_enabled !== false;
+  if (els.replayEnabled) els.replayEnabled.checked = stream.is_replay_enabled !== false;
   if (els.featured) els.featured.checked = Boolean(stream.is_featured);
-  if (els.replayEnabled) els.replayEnabled.checked = Boolean(stream.metadata?.replay_enabled ?? true);
-  if (els.scheduledMode) els.scheduledMode.checked = Boolean(stream.metadata?.schedule_mode ?? false);
-  if (els.scheduledFor && stream.metadata?.scheduled_for) els.scheduledFor.value = stream.metadata.scheduled_for;
+
+  if (els.scheduledMode) els.scheduledMode.checked = Boolean(stream.scheduled_for);
+  if (els.scheduledFor) els.scheduledFor.value = stream.scheduled_for || "";
 
   if (els.metaVisionTheme) els.metaVisionTheme.value = stream.metadata?.meta_theme || "money-road";
   if (els.metaVisionLabel) els.metaVisionLabel.value = stream.metadata?.meta_label || "Meta Room Ready";
 
   toggleScheduleWrap();
+}
+
+function showLiveState(isLive) {
+  if (els.setupActions) els.setupActions.style.display = isLive ? "none" : "";
+  if (els.liveActions) {
+    els.liveActions.hidden = false;
+    els.liveActions.style.display = isLive ? "" : "none";
+  }
 }
 
 function renderStream(stream) {
@@ -251,20 +261,16 @@ function renderStream(stream) {
     return;
   }
 
-  const status = stream.status || "draft";
-  const isLive = status === "live";
+  const isLive = stream.status === "live";
 
-  if (els.badgeStatus) els.badgeStatus.textContent = isLive ? "LIVE" : status.toUpperCase();
-  if (els.badgeAccess) els.badgeAccess.textContent = (stream.access_type || "free").toUpperCase();
-  if (els.badgeCategory) els.badgeCategory.textContent = (stream.category || "music").toUpperCase();
+  if (els.badgeStatus) els.badgeStatus.textContent = isLive ? "LIVE" : String(stream.status || "draft").toUpperCase();
+  if (els.badgeAccess) els.badgeAccess.textContent = String(stream.access_type || "free").toUpperCase();
+  if (els.badgeCategory) els.badgeCategory.textContent = String(stream.category || "music").toUpperCase();
 
   if (els.previewTitle) els.previewTitle.textContent = stream.title || "Rich Bizness Live Studio";
-  if (els.previewCopy) {
-    els.previewCopy.textContent =
-      stream.description || "Build the room, test the camera, then call the madness.";
-  }
+  if (els.previewCopy) els.previewCopy.textContent = stream.description || "Build the room, test the camera, then call the madness.";
 
-  if (els.metaStatus) els.metaStatus.textContent = status;
+  if (els.metaStatus) els.metaStatus.textContent = stream.status || "draft";
   if (els.metaSlug) els.metaSlug.textContent = stream.slug || "—";
   if (els.metaViewers) els.metaViewers.textContent = Number(stream.viewer_count || 0).toLocaleString();
   if (els.metaRevenue) els.metaRevenue.textContent = money(stream.total_revenue_cents || 0);
@@ -281,11 +287,6 @@ function renderStream(stream) {
   showLiveState(isLive);
 }
 
-function showLiveState(isLive) {
-  if (els.setupActions) els.setupActions.style.display = isLive ? "none" : "";
-  if (els.liveActions) els.liveActions.style.display = isLive ? "" : "none";
-}
-
 function toggleScheduleWrap() {
   if (!els.scheduleWrap) return;
   els.scheduleWrap.style.display = els.scheduledMode?.checked ? "" : "none";
@@ -293,6 +294,12 @@ function toggleScheduleWrap() {
 
 async function startCamera() {
   try {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      throw new Error("Camera is not available in this browser.");
+    }
+
+    if (localStream) stopCamera(false);
+
     localStream = await navigator.mediaDevices.getUserMedia({
       video: true,
       audio: true
@@ -302,17 +309,19 @@ async function startCamera() {
       els.previewVideo.srcObject = localStream;
       els.previewVideo.muted = true;
       els.previewVideo.playsInline = true;
-      await els.previewVideo.play();
+      await els.previewVideo.play().catch(() => {});
     }
 
     setStatus("Camera active. You ready to call the madness.", "success");
+    return localStream;
   } catch (error) {
     console.error("[live] camera error:", error);
     setStatus(error.message || "Camera failed.", "error");
+    return null;
   }
 }
 
-function stopCamera() {
+function stopCamera(showMessage = true) {
   if (localStream) {
     localStream.getTracks().forEach((track) => track.stop());
     localStream = null;
@@ -323,21 +332,18 @@ function stopCamera() {
     els.previewVideo.srcObject = null;
   }
 
-  setStatus("Camera cut. Itz over ✌🏽");
+  if (showMessage) setStatus("Camera cut. Itz over ✌🏽");
 }
 
 async function createOrUpdateStream(event) {
   event?.preventDefault?.();
 
   const user = await requireUser();
-  if (!user?.id) return;
+  if (!user?.id) return null;
 
   setStatus(currentStream?.id ? "Saving live setup..." : "Creating Madness Call...");
 
-  const payload = {
-    ...getFormPayload(),
-    status: currentStream?.status || "draft"
-  };
+  const payload = getFormPayload();
 
   if (currentStream?.id) {
     const { data, error } = await supabase
@@ -349,13 +355,14 @@ async function createOrUpdateStream(event) {
 
     if (error) {
       setStatus(error.message || "Could not save live setup.", "error");
-      return;
+      return null;
     }
 
     renderStream(data);
     await renderRecentStreams();
+    await loadCohosts();
     setStatus("Live setup saved. Watch link ready.", "success");
-    return;
+    return data;
   }
 
   const { data, error } = await supabase
@@ -374,32 +381,35 @@ async function createOrUpdateStream(event) {
 
   if (error) {
     setStatus(error.message || "Could not create live room.", "error");
-    return;
+    return null;
   }
 
-  await supabase
-    .from("live_stream_members")
-    .upsert(
-      {
-        stream_id: data.id,
-        user_id: user.id,
-        role: "host",
-        is_active: true,
-        status: "active",
-        livekit_participant_identity: user.id,
-        metadata: { slot_number: 0, label: "Host" },
-        joined_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      { onConflict: "stream_id,user_id" }
-    )
-    .catch(() => {});
+  await supabase.from("live_stream_members").upsert(
+    {
+      stream_id: data.id,
+      user_id: user.id,
+      role: "host",
+      is_active: true,
+      status: "active",
+      livekit_participant_identity: user.id,
+      metadata: { slot_number: 0, label: "Host" },
+      joined_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    { onConflict: "stream_id,user_id" }
+  ).catch(() => {});
 
   renderStream(data);
   await renderRecentStreams();
   await loadCohosts();
 
   setStatus("Madness Call created. Watch link is ready.", "success");
+  return data;
+}
+
+async function getSessionAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data?.session?.access_token || null;
 }
 
 async function connectLiveKitAsHost() {
@@ -408,19 +418,35 @@ async function connectLiveKitAsHost() {
     return false;
   }
 
+  const user = await requireUser();
+  if (!user?.id) return false;
+
   if (!localStream) {
-    await startCamera();
+    const stream = await startCamera();
+    if (!stream) return false;
   }
 
   try {
+    const accessToken = await getSessionAccessToken();
+
     const res = await fetch("/api/livekit-token", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+      },
       body: JSON.stringify({
+        streamId: currentStream.id,
         roomName: currentStream.livekit_room_name,
-        identity: currentUser.id,
-        name: currentUser.email || "Rich Bizness Host",
-        role: "host"
+        participantName: user.id,
+        participantMetadata: {
+          role: "host",
+          streamId: currentStream.id,
+          title: currentStream.title
+        },
+        role: "host",
+        canPublish: true,
+        canSubscribe: true
       })
     });
 
@@ -431,15 +457,26 @@ async function connectLiveKitAsHost() {
       return false;
     }
 
-    const LiveKit = await import("https://esm.sh/livekit-client@2");
-    livekitRoom = new LiveKit.Room();
+    const LiveKit = await import("https://esm.sh/livekit-client@2.15.3");
+
+    if (livekitRoom) {
+      await livekitRoom.disconnect();
+      livekitRoom = null;
+    }
+
+    livekitRoom = new LiveKit.Room({
+      adaptiveStream: true,
+      dynacast: true
+    });
+
+    livekitRoom.on(LiveKit.RoomEvent.Disconnected, () => {
+      setStatus("LiveKit disconnected.");
+    });
 
     await livekitRoom.connect(tokenData.url, tokenData.token);
 
-    if (localStream) {
-      for (const track of localStream.getTracks()) {
-        await livekitRoom.localParticipant.publishTrack(track);
-      }
+    for (const track of localStream.getTracks()) {
+      await livekitRoom.localParticipant.publishTrack(track);
     }
 
     setStatus("We 🔥 📺 — LiveKit connected.", "success");
@@ -487,9 +524,7 @@ async function goLiveNow() {
   await renderRecentStreams();
 
   setStatus(
-    connected
-      ? "We 🔥 📺 — your Bizness Party is live."
-      : "Stream marked live, but LiveKit needs attention.",
+    connected ? "We 🔥 📺 — your Bizness Party is live." : "Stream saved live, but camera token failed.",
     connected ? "success" : "error"
   );
 }
@@ -506,6 +541,8 @@ async function endLive() {
     await livekitRoom.disconnect();
     livekitRoom = null;
   }
+
+  stopCamera(false);
 
   const { data, error } = await supabase
     .from("live_streams")
@@ -578,7 +615,7 @@ async function loadLatestStream() {
 
   if (!data?.length) {
     renderStream(null);
-    setStatus("Ready.");
+    setStatus("Ready.", "success");
     return;
   }
 
@@ -656,6 +693,7 @@ async function inviteCohost() {
         role: "cohost",
         is_active: true,
         status: "invited",
+        livekit_participant_identity: userId,
         metadata: {
           slot_number: slot,
           label: `Rich Playa ${slot}`
@@ -690,7 +728,7 @@ async function loadCohosts() {
     return;
   }
 
-  const slots = [1, 2, 3].map((slot) => {
+  els.cohostList.innerHTML = [1, 2, 3].map((slot) => {
     const member = data?.find((item) => Number(item.metadata?.slot_number) === slot);
 
     const name =
@@ -708,10 +746,9 @@ async function loadCohosts() {
         <small>${status}</small>
       </article>
     `;
-  });
+  }).join("");
 
-  els.cohostList.innerHTML = slots.join("");
-  setCohostStatus(currentStream ? "Rich Playa system ready." : "Create or load a stream first.");
+  setCohostStatus("Rich Playa system ready.");
 }
 
 function enterMetaVision() {
@@ -726,7 +763,6 @@ function exitMetaVision() {
 
 function clearForm() {
   currentStream = null;
-
   els.form?.reset();
 
   if (els.chatEnabled) els.chatEnabled.checked = true;
@@ -735,17 +771,11 @@ function clearForm() {
 
   toggleScheduleWrap();
   renderStream(null);
-  setStatus("Form cleared.");
-}
-
-function openDmPopup() {
-  if (!els.dmPopup) return;
-  els.dmPopup.hidden = false;
+  setStatus("Form cleared.", "success");
 }
 
 function closeDmPopup() {
-  if (!els.dmPopup) return;
-  els.dmPopup.hidden = true;
+  if (els.dmPopup) els.dmPopup.hidden = true;
 }
 
 async function sendLiveDM() {
@@ -807,7 +837,7 @@ async function sendLiveDM() {
 
 function bindEvents() {
   els.startCameraBtn?.addEventListener("click", startCamera);
-  els.stopCameraBtn?.addEventListener("click", stopCamera);
+  els.stopCameraBtn?.addEventListener("click", () => stopCamera(true));
 
   els.form?.addEventListener("submit", createOrUpdateStream);
   els.createLiveBtn?.addEventListener("click", createOrUpdateStream);
@@ -845,6 +875,8 @@ function bindEvents() {
 }
 
 async function bootLive() {
+  setStatus("Loading live studio...");
+
   const user = await requireUser();
   if (!user?.id) return;
 
