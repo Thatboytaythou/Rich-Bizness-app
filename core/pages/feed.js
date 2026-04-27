@@ -232,9 +232,7 @@ async function loadFeed() {
 
   const { data, error } = await supabase
     .from("posts")
-    .select(`
-      *,
-      profiles:user_id (*)
+    .select("*")
     `)
     .order("created_at", { ascending: false })
     .limit(30);
