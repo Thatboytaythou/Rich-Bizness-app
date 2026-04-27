@@ -5,165 +5,185 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Rich Bizness — Feed</title>
-  <meta
-    name="description"
-    content="Rich Bizness feed for posts, creator updates, uploads, comments, reactions, and community motion."
-  />
+  <meta name="description" content="Rich Bizness social feed for posts, live rooms, creators, reactions, comments, reposts, and platform energy." />
 
   <link rel="stylesheet" href="/styles/main.css" />
   <link rel="stylesheet" href="/styles/mobile.css" />
-  <link rel="stylesheet" href="/styles/pages/feed.css" />
+  <link rel="stylesheet" href="/styles/feed.css" />
 </head>
 
 <body class="feed-page">
+  <div class="feed-bg"></div>
+
   <div class="page-shell feed-shell">
     <div id="elite-platform-nav"></div>
 
     <section class="feed-hero">
       <div>
-        <span class="feed-kicker">Rich Bizness Feed</span>
-        <h1>Post the move, react to the wave, and keep the whole platform active.</h1>
+        <span class="feed-kicker">Rich Bizness Social Engine</span>
+        <h1>Post moves. Catch lives. Build the empire.</h1>
         <p>
-          Share updates, promote uploads, push live rooms, and keep creators connected across music,
-          gaming, sports, gallery, and the money lane.
+          Feed posts, reactions, comments, reposts, live rooms, creators, uploads, and notifications
+          all sync through the Rich Bizness social core.
         </p>
-      </div>
 
-      <div class="feed-hero-actions">
-        <a class="btn btn-gold" href="/upload.html">Upload</a>
-        <a class="btn" href="/live.html">WE LIT 🔥</a>
-        <a class="btn-ghost" href="/profile.html">Profile</a>
+        <div class="feed-hero-actions">
+          <a class="btn btn-gold" href="/upload.html">Upload</a>
+          <a class="btn btn-dark" href="/live.html">Go Live</a>
+          <a class="btn btn-dark" href="/music.html">Music</a>
+          <a class="btn btn-dark" href="/gaming.html">Gaming</a>
+          <button class="btn btn-primary" id="refresh-feed-btn" type="button">Refresh Feed</button>
+        </div>
       </div>
     </section>
 
-    <section id="feed-status" class="feed-status">
-      Loading feed...
-    </section>
+    <section id="feed-status" class="feed-status">Loading feed engine...</section>
 
     <main class="feed-layout">
       <section class="feed-main">
-        <form id="post-form" class="post-composer">
-          <div class="composer-head">
-            <img
-              id="composer-avatar"
-              src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
-              alt="Your avatar"
-            />
+        <section class="feed-panel composer-panel">
+          <div class="panel-head">
             <div>
-              <strong id="composer-name">Rich Bizness Creator</strong>
-              <span>Drop something into the feed.</span>
+              <h2>Drop a Move</h2>
+              <p>Main source: posts</p>
             </div>
           </div>
 
-          <input
-            id="post-title"
-            type="text"
-            placeholder="Post title..."
-          />
+          <div class="panel-body">
+            <form id="post-form" class="post-form">
+              <div class="composer-head">
+                <img id="composer-avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Profile" />
+                <div>
+                  <strong id="composer-name">Rich Bizness Creator</strong>
+                  <span>Post to the empire feed</span>
+                </div>
+              </div>
 
-          <textarea
-            id="post-body"
-            rows="4"
-            placeholder="What’s the move?"
-          ></textarea>
+              <div class="form-grid-2">
+                <label>
+                  Title
+                  <input id="post-title" type="text" placeholder="What’s the move?" />
+                </label>
 
-          <div class="composer-grid">
+                <label>
+                  Category
+                  <select id="post-category">
+                    <option value="general">General</option>
+                    <option value="music">Music</option>
+                    <option value="gaming">Gaming</option>
+                    <option value="sports">Sports</option>
+                    <option value="gallery">Gallery</option>
+                    <option value="live">Live</option>
+                    <option value="store">Store</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                Message
+                <textarea id="post-body" rows="4" placeholder="Say something to your fans..."></textarea>
+              </label>
+
+              <label>
+                Media URL
+                <input id="post-media-url" type="url" placeholder="Image, video, or file URL..." />
+              </label>
+
+              <div class="composer-actions">
+                <button id="submit-post-btn" class="btn btn-gold" type="submit">Post Move</button>
+                <a class="btn btn-dark" href="/upload.html">Upload Media</a>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="feed-panel">
+          <div class="panel-head">
             <div>
-              <label for="post-category">Lane</label>
-              <select id="post-category">
-                <option value="general">General</option>
-                <option value="live">Live</option>
-                <option value="music">Music</option>
-                <option value="gaming">Gaming</option>
-                <option value="sports">Sports</option>
-                <option value="gallery">Gallery</option>
-                <option value="artist">Artist</option>
-                <option value="metaverse">Metaverse</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="post-media-url">Media URL</label>
-              <input
-                id="post-media-url"
-                type="url"
-                placeholder="https:// image/video link..."
-              />
+              <h2>Empire Feed</h2>
+              <p>Posts, comments, likes, and reposts from the Rich Bizness network.</p>
             </div>
           </div>
 
-          <div class="composer-actions">
-            <button id="submit-post-btn" class="btn btn-gold" type="submit">
-              Post Move
-            </button>
-            <a class="btn-ghost" href="/upload.html">Upload Media</a>
+          <div class="panel-body">
+            <div id="feed-list" class="feed-list">
+              <div class="status-box">Loading posts...</div>
+            </div>
           </div>
-        </form>
-
-        <div id="feed-list" class="feed-list">
-          <div class="feed-empty">
-            <strong>No posts loaded yet.</strong>
-            <span>The feed will fill with creator moves, uploads, and community updates.</span>
-          </div>
-        </div>
+        </section>
       </section>
 
       <aside class="feed-side">
         <section class="feed-panel">
           <div class="panel-head">
-            <h2>Quick lanes</h2>
-            <p>Jump into the parts that keep Rich Bizness moving.</p>
+            <div>
+              <h2>Live Now</h2>
+              <p>Connected source: live_streams</p>
+            </div>
+            <a class="btn btn-dark" href="/live.html">Studio</a>
           </div>
 
-          <div class="quick-lane-list">
-            <a href="/live.html"><strong>WE LIT 🔥</strong><span>Start a live room</span></a>
-            <a href="/watch.html"><strong>Watch</strong><span>See active streams</span></a>
-            <a href="/music.html"><strong>Music</strong><span>Artist world</span></a>
-            <a href="/gaming.html"><strong>Gaming</strong><span>Arcade ecosystem</span></a>
-            <a href="/sports.html"><strong>Sports</strong><span>Fan lane</span></a>
-            <a href="/gallery.html"><strong>Gallery</strong><span>Visual drops</span></a>
-          </div>
-        </section>
-
-        <section class="feed-panel">
-          <div class="panel-head">
-            <h2>Live rail</h2>
-            <p>Streams that are on right now.</p>
-          </div>
-
-          <div id="feed-live-rail" class="rb-live-rail feed-live-rail">
-            <div class="rb-live-empty">
-              <div>
-                <strong>No one live yet.</strong>
-                <span>Live rooms will show here.</span>
-              </div>
+          <div class="panel-body">
+            <div id="feed-live-rail" class="rb-live-rail">
+              <div class="status-box">Loading live rooms...</div>
             </div>
           </div>
         </section>
 
         <section class="feed-panel">
           <div class="panel-head">
-            <h2>Feed sync</h2>
-            <p>Everything should point back into the ecosystem.</p>
+            <div>
+              <h2>Quick Drops</h2>
+              <p>Jump into each platform lane.</p>
+            </div>
           </div>
 
-          <div class="sync-stack">
-            <article>
-              <span>Posts</span>
-              <strong>Creator updates</strong>
-            </article>
-            <article>
-              <span>Comments</span>
-              <strong>Community talk</strong>
-            </article>
-            <article>
-              <span>Reactions</span>
-              <strong>Likes + energy</strong>
-            </article>
-            <article>
-              <span>Uploads</span>
-              <strong>Media lanes</strong>
-            </article>
+          <div class="panel-body">
+            <div class="quick-grid">
+              <a href="/music.html">🎵 Music</a>
+              <a href="/gaming.html">🎮 Gaming</a>
+              <a href="/sports.html">🏆 Sports</a>
+              <a href="/gallery.html">🎨 Gallery</a>
+              <a href="/store.html">🛒 Store</a>
+              <a href="/watch.html">📺 Watch</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="feed-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Account</h2>
+              <p>Messages, alerts, and profile.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="feed-side-actions">
+              <a class="btn btn-gold" href="/profile.html">Profile</a>
+              <a class="btn btn-dark" href="/messages.html">Messages</a>
+              <a class="btn btn-dark" href="/notifications.html">Notifications</a>
+              <a class="btn btn-dark" href="/monetization.html">Revenue</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="feed-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Feed Sources</h2>
+              <p>Synced tables</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="source-stack">
+              <span>posts</span>
+              <span>comments</span>
+              <span>post_reactions</span>
+              <span>reposts</span>
+              <span>live_streams</span>
+            </div>
           </div>
         </section>
       </aside>
@@ -173,8 +193,12 @@
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
     window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
     window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    window.SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
   <script type="module" src="/core/pages/feed.js"></script>
