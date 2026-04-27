@@ -718,7 +718,7 @@ async function loadCohosts() {
 
   const { data, error } = await supabase
     .from("live_stream_members")
-    .select("*, profiles:user_id (*)")
+    .select("*")
     .eq("stream_id", currentStream.id)
     .in("role", ["cohost", "moderator"])
     .eq("is_active", true);
