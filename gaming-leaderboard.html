@@ -3,519 +3,347 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness — Gaming Leaderboard</title>
+
+  <title>Rich Bizness — Pro League Leaderboard</title>
+
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+
   <style>
-    :root{
-      --bg:#07110c;
-      --panel:rgba(8,16,12,.84);
-      --line:rgba(93,255,170,.14);
-      --line-strong:rgba(93,255,170,.34);
-      --text:#ecfff4;
-      --muted:#9fbea9;
-      --green:#43f59b;
-      --green-2:#18c972;
-      --gold:#f2c767;
-      --blue:#55c8ff;
-      --shadow:0 24px 60px rgba(0,0,0,.42);
-      --radius-xl:30px;
-      --radius-lg:22px;
-      --radius-md:16px;
-      --max:1460px;
-    }
-
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      padding:0;
-      min-height:100%;
-      font-family:Inter,system-ui,sans-serif;
-      color:var(--text);
+    body {
+      min-height: 100vh;
       background:
-        linear-gradient(180deg, rgba(3,7,5,.56), rgba(7,17,12,.94)),
-        url('/images/brand/DA020CC3-8296-4089-832E-5825D02435FA.png') center top / cover no-repeat fixed;
-      background-color:var(--bg);
+        linear-gradient(rgba(0,0,0,.62), rgba(0,0,0,.9)),
+        url("/images/83FAD785-46D7-4EB3-8A3F-1E4A8BB78C90.png") center/cover fixed;
+      color: #fff;
     }
 
-    a{color:inherit;text-decoration:none}
-    button,input,select{font:inherit}
-    img{display:block;max-width:100%}
-
-    .page-shell{
-      width:min(var(--max), calc(100% - 24px));
-      margin:0 auto;
-      padding:18px 0 42px;
+    .leaderboard-shell {
+      display: grid;
+      gap: 20px;
+      padding-bottom: 40px;
     }
 
-    .topbar{
-      position:sticky;
-      top:12px;
-      z-index:50;
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:16px;
-      flex-wrap:wrap;
-      padding:14px 16px;
-      margin-bottom:18px;
-      border:1px solid var(--line);
-      border-radius:18px;
-      background:rgba(8,15,11,.84);
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(14px);
+    .leaderboard-hero,
+    .leaderboard-panel {
+      border: 1px solid rgba(105,255,180,.18);
+      background: rgba(5, 12, 9, .82);
+      border-radius: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 22px 60px rgba(0,0,0,.38);
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
+    .leaderboard-hero {
+      padding: 28px;
+      min-height: 260px;
+      display: grid;
+      align-items: end;
+      overflow: hidden;
+      position: relative;
     }
 
-    .brand-logo{
-      width:58px;
-      height:58px;
-      border-radius:18px;
-      overflow:hidden;
-      border:1px solid var(--line-strong);
-      background:rgba(255,255,255,.04);
-      flex-shrink:0;
+    .leaderboard-hero::before {
+      content: "";
+      position: absolute;
+      inset: -8%;
+      background: url("/images/83FAD785-46D7-4EB3-8A3F-1E4A8BB78C90.png") center/cover no-repeat;
+      opacity: .3;
+      animation: bgMove 12s ease-in-out infinite alternate;
+      z-index: -1;
     }
 
-    .brand-logo img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
+    @keyframes bgMove {
+      from { transform: scale(1.05) translate(-10px, -8px); }
+      to { transform: scale(1.14) translate(18px, 12px); }
     }
 
-    .brand-copy h1{
-      margin:0;
-      font-size:20px;
+    .kicker {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(105,255,180,.12);
+      border: 1px solid rgba(105,255,180,.25);
+      color: #69ffb4;
+      font-size: .78rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
     }
 
-    .brand-copy p{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:12px;
+    h1 {
+      font-size: clamp(2.2rem, 7vw, 5.4rem);
+      line-height: .9;
+      letter-spacing: -.06em;
+      margin: 0 0 12px;
     }
 
-    .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
+    .leaderboard-hero p {
+      max-width: 720px;
+      color: rgba(255,255,255,.72);
+      margin: 0;
     }
 
-    .nav-link,.btn,.pill,.tab-btn{
-      min-height:44px;
-      padding:11px 15px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
-      font-weight:800;
-      cursor:pointer;
+    .leaderboard-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 16px;
     }
 
-    .btn{
-      background:linear-gradient(135deg,var(--green),var(--green-2));
-      color:#062312;
-      border-color:transparent;
+    .game-filter {
+      min-height: 44px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(0,0,0,.42);
+      color: #fff;
+      padding: 10px 14px;
+      font-weight: 800;
+      cursor: pointer;
     }
 
-    .tab-btn.active{
-      border-color:var(--line-strong);
-      background:rgba(67,245,155,.12);
-      color:#dfffee;
+    .game-filter.active {
+      background: linear-gradient(135deg, #69ffb4, #32e08d);
+      color: #031108;
     }
 
-    .notice{
-      display:none;
-      margin-bottom:14px;
-      padding:14px 16px;
-      border-radius:16px;
-      font-size:14px;
+    .leaderboard-panel {
+      overflow: hidden;
     }
 
-    .notice.error{
-      background:rgba(255,90,115,.1);
-      border:1px solid rgba(255,90,115,.22);
-      color:#ffd0d8;
+    .panel-head {
+      padding: 18px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .notice.success{
-      background:rgba(67,245,155,.1);
-      border:1px solid rgba(67,245,155,.22);
-      color:#d8ffea;
+    .panel-head h2 {
+      margin: 0;
     }
 
-    .hero{
-      border:1px solid var(--line);
-      border-radius:var(--radius-xl);
-      background:
-        linear-gradient(90deg, rgba(5,11,8,.88), rgba(5,11,8,.58)),
-        url('/images/brand/9B78765E-1848-4173-8FD4-11B4C908104D.png') center center / cover no-repeat;
-      padding:34px;
-      margin-bottom:18px;
-      box-shadow:var(--shadow);
+    .leaderboard-list {
+      display: grid;
+      gap: 10px;
+      padding: 18px;
     }
 
-    .hero h2{
-      margin:0;
-      font-size:clamp(38px,5vw,72px);
-      line-height:.94;
-      letter-spacing:-.05em;
-      max-width:760px;
+    .rank-row {
+      display: grid;
+      grid-template-columns: 70px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,.38);
+      border: 1px solid rgba(255,255,255,.08);
     }
 
-    .hero p{
-      margin:16px 0 0;
-      max-width:760px;
-      color:var(--muted);
-      font-size:16px;
-      line-height:1.8;
+    .rank {
+      font-size: 1.4rem;
+      font-weight: 1000;
+      color: #ffce58;
     }
 
-    .hero-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-top:20px;
+    .player strong {
+      display: block;
+      font-size: 1rem;
     }
 
-    .stats-grid{
-      display:grid;
-      grid-template-columns:repeat(5,minmax(0,1fr));
-      gap:12px;
-      margin-bottom:18px;
+    .player span {
+      display: block;
+      color: rgba(255,255,255,.64);
+      font-size: .84rem;
+      margin-top: 4px;
     }
 
-    .stat-card{
-      padding:16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(8,16,12,.82);
-      box-shadow:var(--shadow);
+    .score {
+      color: #69ffb4;
+      font-size: 1.35rem;
+      font-weight: 1000;
     }
 
-    .stat-card span{
-      display:block;
-      color:var(--muted);
-      font-size:12px;
-      margin-bottom:6px;
+    .status-box {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.72);
     }
 
-    .stat-card strong{
-      font-size:30px;
-      letter-spacing:-.04em;
-    }
+    @media (max-width: 640px) {
+      .rank-row {
+        grid-template-columns: 48px 1fr;
+      }
 
-    .panel{
-      border:1px solid var(--line);
-      border-radius:var(--radius-xl);
-      overflow:hidden;
-      background:linear-gradient(180deg, rgba(10,18,14,.9), rgba(7,14,11,.94));
-      box-shadow:var(--shadow);
-      margin-bottom:18px;
-    }
-
-    .panel-head{
-      padding:20px 22px;
-      border-bottom:1px solid var(--line);
-      display:flex;
-      justify-content:space-between;
-      gap:14px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .panel-head h3{
-      margin:0;
-      font-size:26px;
-    }
-
-    .panel-head p{
-      margin:6px 0 0;
-      color:var(--muted);
-      font-size:13px;
-    }
-
-    .panel-body{
-      padding:22px;
-    }
-
-    .toolbar{
-      display:grid;
-      grid-template-columns:1fr auto auto;
-      gap:12px;
-      margin-bottom:16px;
-    }
-
-    .toolbar input,.toolbar select{
-      width:100%;
-      min-height:46px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.04);
-      color:var(--text);
-      padding:12px 14px;
-      outline:none;
-    }
-
-    .tab-bar{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      margin-bottom:18px;
-    }
-
-    .leaderboard-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .leaderboard-item{
-      display:grid;
-      grid-template-columns:auto 92px 1fr auto;
-      gap:14px;
-      align-items:center;
-      padding:16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-    }
-
-    .rank-pill{
-      width:48px;
-      height:48px;
-      border-radius:16px;
-      display:grid;
-      place-items:center;
-      font-weight:900;
-      color:var(--green);
-      border:1px solid var(--line-strong);
-      background:rgba(67,245,155,.12);
-      font-size:18px;
-    }
-
-    .game-thumb{
-      width:92px;
-      height:92px;
-      border-radius:16px;
-      overflow:hidden;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-    }
-
-    .game-thumb img{
-      width:100%;
-      height:100%;
-      object-fit:cover;
-    }
-
-    .item-title{
-      margin:0;
-      font-size:18px;
-      font-weight:900;
-    }
-
-    .item-sub{
-      margin:8px 0 0;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .pill-row{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-top:10px;
-    }
-
-    .score-pill{
-      min-width:108px;
-      min-height:44px;
-      padding:10px 14px;
-      border-radius:14px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.05);
-      font-weight:900;
-      color:var(--gold);
-      font-size:18px;
-    }
-
-    .mini-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:18px;
-    }
-
-    .mini-list{
-      display:grid;
-      gap:12px;
-    }
-
-    .mini-card{
-      padding:16px;
-      border-radius:18px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-    }
-
-    .mini-card h4{
-      margin:0;
-      font-size:18px;
-    }
-
-    .meta{
-      margin-top:8px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.7;
-    }
-
-    .empty-state{
-      min-height:170px;
-      border-radius:18px;
-      border:1px dashed rgba(67,245,155,.18);
-      display:grid;
-      place-items:center;
-      text-align:center;
-      padding:20px;
-      color:var(--muted);
-      background:rgba(255,255,255,.03);
-    }
-
-    @media (max-width: 1180px){
-      .stats-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-      .mini-grid{grid-template-columns:1fr}
-    }
-
-    @media (max-width: 900px){
-      .toolbar{grid-template-columns:1fr}
-      .leaderboard-item{grid-template-columns:auto 1fr}
-      .game-thumb{display:none}
-    }
-
-    @media (max-width: 760px){
-      .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .score {
+        grid-column: 2;
+      }
     }
   </style>
 </head>
+
 <body>
-  <div class="page-shell">
-    <header class="topbar">
-      <div class="brand">
-        <a class="brand-logo" href="/profile.html" title="Open profile">
-          <img src="/images/brand/rich-bizness-profile.jpg" alt="Rich Bizness profile" onerror="this.src='/images/brand/9B78765E-1848-4173-8FD4-11B4C908104D.png';" />
-        </a>
+  <div class="page-shell leaderboard-shell">
+    <div id="elite-platform-nav"></div>
 
-        <div class="brand-copy">
-          <h1>Rich Bizness Leaderboard</h1>
-          <p>Top scores • Per-game ranking • Ecosystem score tracking</p>
-        </div>
-      </div>
-
-      <nav class="nav">
-        <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link" href="/gaming.html">Gaming Hub</a>
-        <a class="nav-link" href="/gaming-admin.html">Gaming Admin</a>
-        <a class="nav-link" href="/gaming-tournaments.html">Tournaments</a>
-        <a class="btn" href="/upload-gaming.html">Upload Game</a>
-      </nav>
-    </header>
-
-    <div id="leaderboard-error" class="notice error"></div>
-    <div id="leaderboard-success" class="notice success"></div>
-
-    <section class="hero">
-      <h2>Top players. Top scores. Full pressure lane.</h2>
-      <p>
-        This leaderboard stays tied to the same gaming ecosystem you already built:
-        games, score submissions, tournaments, and challenges all read from the same lane.
-      </p>
-
-      <div class="hero-actions">
-        <a class="btn" href="/gaming.html">Back to Gaming Hub</a>
-        <a class="nav-link" href="/games/chess/index.html">Open Rich Chess</a>
+    <section class="leaderboard-hero">
+      <div>
+        <span class="kicker">Rich Bizness Pro League</span>
+        <h1>Leaderboard</h1>
+        <p>Track the top players across Ride, Chess, Money Road Runner, Studio Showdown, and every Rich Bizness game.</p>
       </div>
     </section>
 
-    <section class="stats-grid">
-      <div class="stat-card"><span>Total Score Rows</span><strong id="stat-total-rows">0</strong></div>
-      <div class="stat-card"><span>Top Score</span><strong id="stat-top-score">0</strong></div>
-      <div class="stat-card"><span>Games With Scores</span><strong id="stat-games-covered">0</strong></div>
-      <div class="stat-card"><span>Money Road Runner</span><strong id="stat-mrr-top">0</strong></div>
-      <div class="stat-card"><span>Rich Chess</span><strong id="stat-chess-top">0</strong></div>
+    <section class="leaderboard-panel">
+      <div class="leaderboard-controls">
+        <button class="game-filter active" data-game="">All Games</button>
+        <button class="game-filter" data-game="ride">Ride</button>
+        <button class="game-filter" data-game="rich-chess">Rich Chess</button>
+        <button class="game-filter" data-game="money-road-runner">Money Road Runner</button>
+        <button class="game-filter" data-game="studio-showdown">Studio Showdown</button>
+        <button class="game-filter" data-game="smoke-city-hustle">Smoke City Hustle</button>
+      </div>
     </section>
 
-    <section class="panel">
+    <section class="leaderboard-panel">
       <div class="panel-head">
         <div>
-          <h3>Leaderboard Control</h3>
-          <p>Filter the score lane by game, mode, or player.</p>
+          <h2 id="leaderboard-title">Top Scores</h2>
+          <p id="leaderboard-status">Loading leaderboard...</p>
         </div>
+        <a class="btn btn-gold" href="/gaming.html">Back to Gaming</a>
       </div>
 
-      <div class="panel-body">
-        <div class="toolbar">
-          <input id="leaderboard-search" type="text" placeholder="Search player, game, mode..." />
-          <select id="leaderboard-game-filter">
-            <option value="all">All Games</option>
-          </select>
-          <select id="leaderboard-sort">
-            <option value="top">Top Score</option>
-            <option value="recent">Most Recent</option>
-          </select>
-        </div>
-
-        <div class="tab-bar">
-          <button class="tab-btn active" data-mode="all" type="button">All Modes</button>
-          <button class="tab-btn" data-mode="Arcade" type="button">Arcade</button>
-          <button class="tab-btn" data-mode="Beat Tap" type="button">Beat Tap</button>
-          <button class="tab-btn" data-mode="Chess" type="button">Chess</button>
-        </div>
-
-        <div id="leaderboard-list" class="leaderboard-list"></div>
+      <div id="leaderboard-list" class="leaderboard-list">
+        <div class="status-box">Loading scores...</div>
       </div>
-    </section>
-
-    <section class="mini-grid">
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Top By Game</h3>
-            <p>Best current score in each game lane.</p>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="top-by-game-list" class="mini-list"></div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Recent Score Activity</h3>
-            <p>Latest score drops hitting the system.</p>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="recent-scores-list" class="mini-list"></div>
-        </div>
-      </section>
     </section>
   </div>
 
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    window.SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
-  <script type="module" src="/src/gaming/gaming-leaderboard.js"></script>
-  <script type="module" src="/src/shared/navbar-session.js"></script>
+
+  <script type="module">
+    import { initApp, getSupabase } from "/core/app.js";
+    import { mountEliteNav } from "/core/nav.js";
+
+    await initApp();
+    mountEliteNav({ target: "#elite-platform-nav", collapsed: false });
+
+    const supabase = getSupabase();
+
+    const list = document.getElementById("leaderboard-list");
+    const status = document.getElementById("leaderboard-status");
+    const title = document.getElementById("leaderboard-title");
+
+    const params = new URLSearchParams(window.location.search);
+    let activeGame = params.get("game") || "";
+
+    function escapeHtml(value = "") {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function safeDate(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleString();
+    }
+
+    function gameLabel(slug) {
+      const labels = {
+        "ride": "Ride",
+        "rich-chess": "Rich Chess",
+        "money-road-runner": "Money Road Runner",
+        "studio-showdown": "Studio Showdown",
+        "smoke-city-hustle": "Smoke City Hustle"
+      };
+      return labels[slug] || slug || "All Games";
+    }
+
+    async function loadLeaderboard() {
+      status.textContent = "Loading scores...";
+      title.textContent = activeGame ? `${gameLabel(activeGame)} Leaderboard` : "Top Scores";
+
+      let query = supabase
+        .from("game_scores")
+        .select("*")
+        .order("score", { ascending: false })
+        .limit(50);
+
+      if (activeGame) query = query.eq("game_slug", activeGame);
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error("[leaderboard] error:", error);
+        status.textContent = error.message || "Could not load leaderboard.";
+        list.innerHTML = `<div class="status-box">Could not load scores.</div>`;
+        return;
+      }
+
+      if (!data?.length) {
+        status.textContent = "No scores yet.";
+        list.innerHTML = `<div class="status-box">No scores yet. Play a game and claim the board.</div>`;
+        return;
+      }
+
+      status.textContent = `${data.length} score${data.length === 1 ? "" : "s"} loaded.`;
+
+      list.innerHTML = data.map((row, index) => `
+        <article class="rank-row">
+          <div class="rank">#${index + 1}</div>
+          <div class="player">
+            <strong>${escapeHtml(row.game_slug || "game")}</strong>
+            <span>${escapeHtml(row.mode || "arcade")} • ${safeDate(row.created_at)}</span>
+          </div>
+          <div class="score">${Number(row.score || 0).toLocaleString()}</div>
+        </article>
+      `).join("");
+    }
+
+    document.querySelectorAll(".game-filter").forEach((btn) => {
+      const game = btn.dataset.game || "";
+      if (game === activeGame) btn.classList.add("active");
+      else btn.classList.remove("active");
+
+      btn.addEventListener("click", async () => {
+        activeGame = game;
+
+        document.querySelectorAll(".game-filter").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const url = new URL(window.location.href);
+        if (activeGame) url.searchParams.set("game", activeGame);
+        else url.searchParams.delete("game");
+        history.replaceState({}, "", url);
+
+        await loadLeaderboard();
+      });
+    });
+
+    await loadLeaderboard();
+
+    supabase
+      .channel("rb-pro-league-leaderboard")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "game_scores" }, loadLeaderboard)
+      .subscribe();
+  </script>
 </body>
 </html>
