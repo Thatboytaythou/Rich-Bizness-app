@@ -1,3 +1,8 @@
+// =========================
+// RICH BIZNESS — FINAL GAME SCORE API
+// /api/submit-game-score.js
+// =========================
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -7,8 +12,9 @@ export default async function handler(req, res) {
     const {
       gameSlug,
       score = 0,
-      mode = "Arcade",
+      mode = "arcade",
       metadata = {},
+      duration = 0,
       userId = null
     } = req.body || {};
 
@@ -16,84 +22,64 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing gameSlug" });
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY_NEW;
+    const supabaseUrl =
+      process.env.SUPABASE_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    const serviceRoleKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY_NEW;
 
     if (!supabaseUrl || !serviceRoleKey) {
-      return res.status(500).json({ error: "Missing Supabase server environment variables" });
+      return res.status(500).json({
+        error: "Missing Supabase environment variables"
+      });
     }
 
     const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { data: game, error: gameError } = await supabase
-      .from("games")
-      .select("id, title, slug, play_count")
-      .eq("slug", gameSlug)
-      .maybeSingle();
-
-    if (gameError) {
-      return res.status(500).json({ error: gameError.message });
-    }
-
-    if (!game) {
-      return res.status(404).json({ error: "Game not found" });
-    }
-
-    const safeScore = Number(score) || 0;
-    const safeUserId = userId || null;
-
-    if (safeUserId) {
-      const { error: scoreError } = await supabase
-        .from("game_scores")
-        .insert({
-          game_id: game.id,
-          user_id: safeUserId,
-          score: safeScore,
-          mode,
-          game_title: game.title,
-          metadata
-        });
-
-      if (scoreError) {
-        console.error("[submit-game-score] game_scores insert error:", scoreError);
-      }
-
-      const { error: runError } = await supabase
-        .from("arcade_runs")
-        .insert({
-          user_id: safeUserId,
-          game_slug: game.slug,
-          game_id: game.id,
-          score: safeScore,
-          metadata
-        });
-
-      if (runError) {
-        console.error("[submit-game-score] arcade_runs insert error:", runError);
-      }
-    }
-
-    const { error: updateGameError } = await supabase
-      .from("games")
-      .update({
-        play_count: Number(game.play_count || 0) + 1,
-        last_played_at: new Date().toISOString()
-      })
-      .eq("id", game.id);
-
-    if (updateGameError) {
-      console.error("[submit-game-score] games update error:", updateGameError);
-    }
-
-    return res.status(200).json({
-      ok: true,
-      gameId: game.id,
-      gameSlug: game.slug,
-      score: safeScore
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { persistSession: false }
     });
-  } catch (error) {
-    console.error("[submit-game-score] fatal error:", error);
-    return res.status(500).json({ error: error.message || "Unknown server error" });
+
+    // =========================
+    // 1. INSERT GAME SESSION
+    // =========================
+    await supabase.from("game_sessions").insert({
+      user_id: userId,
+      game_slug: gameSlug,
+      score,
+      duration_seconds: duration,
+      metadata,
+      created_at: new Date().toISOString()
+    });
+
+    // =========================
+    // 2. INSERT SCORE (LEADERBOARD)
+    // =========================
+    await supabase.from("game_scores").insert({
+      user_id: userId,
+      game_slug: gameSlug,
+      score,
+      mode,
+      metadata,
+      created_at: new Date().toISOString()
+    });
+
+    // =========================
+    // 3. RESPONSE
+    // =========================
+    return res.status(200).json({
+      success: true,
+      gameSlug,
+      score
+    });
+
+  } catch (err) {
+    console.error("[submit-game-score] error:", err);
+
+    return res.status(500).json({
+      error: "Internal server error"
+    });
   }
 }
