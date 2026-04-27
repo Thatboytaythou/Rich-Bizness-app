@@ -5,103 +5,121 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Rich Bizness — Messages</title>
-  <meta
-    name="description"
-    content="Rich Bizness private messages for creator conversations, live Slide In messages, and community connections."
-  />
 
   <link rel="stylesheet" href="/styles/main.css" />
   <link rel="stylesheet" href="/styles/mobile.css" />
-  <link rel="stylesheet" href="/styles/pages/messages.css" />
+  <link rel="stylesheet" href="/styles/messages.css" />
 </head>
 
 <body class="messages-page">
+  <div class="messages-bg"></div>
+
   <div class="page-shell messages-shell">
     <div id="elite-platform-nav"></div>
 
     <section class="messages-hero">
       <div>
-        <span class="messages-kicker">Private Messages</span>
-        <h1>Slide in, build connections, and keep the movement close.</h1>
+        <span class="messages-kicker">Rich Bizness Messaging</span>
+        <h1>DMs for the whole empire.</h1>
         <p>
-          Message creators, Rich Playas, artists, gamers, athletes, and supporters from one synced Rich Bizness inbox.
+          Message creators, artists, gamers, buyers, fans, co-hosts, and customers from one synced Rich Bizness inbox.
         </p>
-      </div>
 
-      <div class="messages-hero-actions">
-        <a class="btn-ghost" href="/profile.html">Profile</a>
-        <a class="btn-ghost" href="/live.html">WE LIT 🔥</a>
-        <a class="btn-gold" href="/feed.html">Open Feed</a>
+        <div class="messages-actions">
+          <a class="btn btn-gold" href="/feed.html">Feed</a>
+          <a class="btn btn-dark" href="/profile.html">Profile</a>
+          <a class="btn btn-dark" href="/notifications.html">Notifications</a>
+          <button class="btn btn-primary" id="refresh-messages-btn" type="button">Refresh Messages</button>
+        </div>
       </div>
     </section>
 
-    <section id="messages-status" class="messages-status">
-      Loading messages...
-    </section>
+    <section id="messages-status" class="messages-status">Loading message engine...</section>
 
     <main class="messages-layout">
-      <aside class="threads-panel">
-        <div class="panel-head">
-          <div>
-            <h2>Inbox</h2>
-            <p>Your active conversations and live Slide In threads.</p>
-          </div>
-          <button id="refresh-threads-btn" class="btn-ghost" type="button">Refresh</button>
-        </div>
-
-        <div class="new-message-box">
-          <label for="new-message-user-id">Start message by user ID</label>
-          <div class="new-message-row">
-            <input id="new-message-user-id" type="text" placeholder="Paste user UUID..." />
-            <button id="start-message-btn" class="btn btn-gold" type="button">Start</button>
-          </div>
-        </div>
-
-        <div id="thread-list" class="thread-list">
-          <div class="message-empty">
-            <strong>No threads loaded.</strong>
-            <span>Your conversations will show here.</span>
-          </div>
-        </div>
-      </aside>
-
-      <section class="chat-panel">
-        <div class="chat-head">
-          <div class="chat-person">
-            <img
-              id="chat-avatar"
-              src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"
-              alt="Conversation avatar"
-            />
+      <aside class="messages-sidebar">
+        <section class="messages-panel">
+          <div class="panel-head">
             <div>
-              <h2 id="chat-title">Select a conversation</h2>
-              <p id="chat-subtitle">Choose a thread or start a new message.</p>
+              <h2>New Message</h2>
+              <p>Start a DM with any Rich Bizness user ID.</p>
             </div>
           </div>
 
-          <div class="chat-actions">
-            <a id="chat-profile-link" class="btn-ghost" href="/profile.html">Profile</a>
-          </div>
-        </div>
+          <div class="panel-body">
+            <form id="new-thread-form" class="message-form">
+              <label>
+                Recipient User ID
+                <input id="new-thread-user-id" type="text" placeholder="Paste user UUID..." />
+              </label>
 
-        <div id="message-list" class="message-list">
-          <div class="message-empty">
-            <strong>No conversation selected.</strong>
-            <span>Tap a thread from the inbox to start messaging.</span>
-          </div>
-        </div>
+              <label>
+                Message
+                <textarea id="new-thread-body" rows="3" placeholder="Write your message..."></textarea>
+              </label>
 
-        <form id="message-form" class="message-form">
-          <textarea
-            id="message-body"
-            placeholder="Type your message..."
-            rows="2"
-            disabled
-          ></textarea>
-          <button id="send-message-btn" class="btn btn-gold" type="submit" disabled>
-            Send
-          </button>
-        </form>
+              <button class="btn btn-gold" type="submit">Start DM</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="messages-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Inbox</h2>
+              <p>Main source: dm_threads + dm_thread_members</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div id="threads-list" class="threads-list">
+              <div class="status-box">Loading inbox...</div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="messages-main">
+        <section class="messages-panel thread-panel">
+          <div class="panel-head">
+            <div>
+              <h2 id="active-thread-title">Select a Conversation</h2>
+              <p id="active-thread-subtitle">Messages sync through dm_messages.</p>
+            </div>
+          </div>
+
+          <div id="messages-list" class="messages-list">
+            <div class="empty-thread">
+              <strong>No thread selected.</strong>
+              <span>Choose a conversation or start a new DM.</span>
+            </div>
+          </div>
+
+          <form id="message-send-form" class="send-message-form">
+            <textarea id="message-body" rows="2" placeholder="Type a message..." disabled></textarea>
+            <button id="send-message-btn" class="btn btn-gold" type="submit" disabled>Send</button>
+          </form>
+        </section>
+
+        <section class="messages-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Message Routes</h2>
+              <p>All site sections can route DMs here.</p>
+            </div>
+          </div>
+
+          <div class="panel-body route-grid">
+            <span>Artist DMs</span>
+            <span>Live Slide In</span>
+            <span>Store Support</span>
+            <span>Gaming Challenges</span>
+            <span>Sports Fans</span>
+            <span>Gallery Buyers</span>
+            <span>Creator Collabs</span>
+            <span>Profile Messages</span>
+          </div>
+        </section>
       </section>
     </main>
   </div>
@@ -109,8 +127,12 @@
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
     window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
     window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    window.SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
   </script>
 
   <script type="module" src="/core/pages/messages.js"></script>
