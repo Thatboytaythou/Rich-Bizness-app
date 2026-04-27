@@ -1,1 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rich Bizness Ride — Pro League</title>
 
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  font-family:Arial, sans-serif;
+  color:#fff;
+  overflow:hidden;
+  background:
+    linear-gradient(rgba(0,0,0,.6), rgba(0,0,0,.9)),
+    url("/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png") center/cover fixed;
+}
+
+#ui{
+  position:fixed;
+  top:10px; left:10px;
+  z-index:10;
+  font-size:14px;
+}
+
+#ui div{margin-bottom:6px}
+
+#gameCanvas{
+  display:block;
+}
+
+#startScreen, #gameOver{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  background:rgba(0,0,0,.8);
+  z-index:20;
+}
+
+button{
+  padding:12px 20px;
+  margin-top:10px;
+  border:none;
+  background:#00ffcc;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+  <div>Score: <span id="score">0</span></div>
+  <div>Speed: <span id="speed">1</span>x</div>
+  <div>Combo: <span id="combo">1</span>x</div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="startScreen">
+  <h1>🚗 Rich Bizness Ride</h1>
+  <p>Pro League Mode</p>
+  <button onclick="startGame()">Start Ride</button>
+</div>
+
+<div id="gameOver" style="display:none;">
+  <h1>💥 Game Over</h1>
+  <p id="finalScore"></p>
+  <button onclick="restartGame()">Run Again</button>
+</div>
+
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let running = false;
+
+const player = {
+  lane:1,
+  y: canvas.height - 120,
+  size:40,
+  shield:false
+};
+
+const lanes = [canvas.width*0.25, canvas.width*0.5, canvas.width*0.75];
+
+let obstacles = [];
+let coins = [];
+let speed = 4;
+let score = 0;
+let combo = 1;
+
+function spawnObstacle(){
+  obstacles.push({
+    lane: Math.floor(Math.random()*3),
+    y:-40
+  });
+}
+
+function spawnCoin(){
+  coins.push({
+    lane: Math.floor(Math.random()*3),
+    y:-40
+  });
+}
+
+function drawPlayer(){
+  ctx.fillStyle = player.shield ? "#00ffcc" : "#fff";
+  ctx.fillRect(lanes[player.lane]-20, player.y, 40, 40);
+}
+
+function drawObstacles(){
+  ctx.fillStyle = "red";
+  obstacles.forEach(o=>{
+    ctx.fillRect(lanes[o.lane]-20, o.y, 40, 40);
+  });
+}
+
+function drawCoins(){
+  ctx.fillStyle = "gold";
+  coins.forEach(c=>{
+    ctx.beginPath();
+    ctx.arc(lanes[c.lane], c.y, 10, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+function update(){
+  speed += 0.002;
+
+  obstacles.forEach(o=>o.y += speed*2);
+  coins.forEach(c=>c.y += speed*2);
+
+  obstacles = obstacles.filter(o=>{
+    if(o.y > canvas.height) return false;
+
+    if(o.lane === player.lane && o.y > player.y && o.y < player.y+40){
+      if(player.shield){
+        player.shield = false;
+        return false;
+      }
+      endGame();
+    }
+    return true;
+  });
+
+  coins = coins.filter(c=>{
+    if(c.y > canvas.height) return false;
+
+    if(c.lane === player.lane && c.y > player.y && c.y < player.y+40){
+      score += 50 * combo;
+      combo++;
+      return false;
+    }
+    return true;
+  });
+
+  score += Math.floor(speed * combo);
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  drawPlayer();
+  drawObstacles();
+  drawCoins();
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("speed").innerText = speed.toFixed(1);
+  document.getElementById("combo").innerText = combo;
+}
+
+function loop(){
+  if(!running) return;
+
+  update();
+  draw();
+
+  if(Math.random()<0.02) spawnObstacle();
+  if(Math.random()<0.03) spawnCoin();
+
+  requestAnimationFrame(loop);
+}
+
+function startGame(){
+  document.getElementById("startScreen").style.display="none";
+  running = true;
+  loop();
+}
+
+function restartGame(){
+  location.reload();
+}
+
+function endGame(){
+  running=false;
+
+  document.getElementById("gameOver").style.display="flex";
+  document.getElementById("finalScore").innerText = "Score: " + score;
+
+  submitScore();
+}
+
+function submitScore(){
+  fetch("/api/submit-game-score", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({
+      gameSlug:"ride",
+      score,
+      mode:"pro-league",
+      duration:0,
+      userId:null
+    })
+  });
+}
+
+window.addEventListener("keydown", e=>{
+  if(e.key==="ArrowLeft") player.lane = Math.max(0, player.lane-1);
+  if(e.key==="ArrowRight") player.lane = Math.min(2, player.lane+1);
+});
+
+window.addEventListener("touchstart", e=>{
+  const x = e.touches[0].clientX;
+  if(x < canvas.width/2) player.lane--;
+  else player.lane++;
+
+  player.lane = Math.max(0, Math.min(2, player.lane));
+});
+</script>
+
+</body>
+</html>
