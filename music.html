@@ -3,637 +3,440 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Rich Bizness — Music</title>
-  <meta
-    name="description"
-    content="Rich Bizness Music for real tracks, albums, playlists, artist releases, and full music lane discovery."
-  />
+
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
 
   <style>
     :root {
-      --bg: #06100b;
-      --panel: rgba(8, 18, 13, 0.82);
-      --panel-2: rgba(12, 28, 20, 0.84);
-      --line: rgba(110, 255, 176, 0.14);
-      --line-strong: rgba(110, 255, 176, 0.32);
-      --text: #ecfff4;
-      --muted: #97b8a6;
-      --green: #43f59b;
-      --green-2: #18c972;
-      --shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
-      --radius-xl: 30px;
-      --radius-lg: 22px;
-      --radius-md: 16px;
-      --max: 1400px;
+      --music-bg: #050505;
+      --music-panel: rgba(10, 10, 12, 0.82);
+      --music-border: rgba(255, 206, 88, 0.18);
+      --music-gold: #ffce58;
+      --music-green: #69ffb4;
+      --music-pink: #ff4fd8;
+      --music-text: #fffaf0;
+      --music-muted: rgba(255, 250, 240, 0.68);
+      --music-img: url("/images/83FAD785-46D7-4EB3-8A3F-1E4A8BB78C90.png");
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      min-height: 100%;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+    body.music-page {
+      min-height: 100vh;
+      color: var(--music-text);
       background:
-        linear-gradient(180deg, rgba(4, 9, 5, 0.56), rgba(6, 16, 11, 0.92)),
-        radial-gradient(circle at top, rgba(67, 245, 155, 0.10), transparent 26%),
-        url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center center / cover no-repeat fixed;
-      background-color: #06100b;
+        radial-gradient(circle at top left, rgba(255, 79, 216, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(255, 206, 88, 0.14), transparent 24%),
+        linear-gradient(180deg, rgba(0,0,0,0.48), rgba(0,0,0,0.92)),
+        var(--music-img) center/cover fixed;
+      overflow-x: hidden;
     }
 
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    img {
-      display: block;
-      max-width: 100%;
-    }
-
-    button,
-    input {
-      font: inherit;
-    }
-
-    .page-shell {
-      width: min(var(--max), calc(100% - 24px));
-      margin: 0 auto;
-      padding: 18px 0 42px;
-    }
-
-    .topbar {
-      position: sticky;
-      top: 12px;
-      z-index: 60;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      border: 1px solid var(--line);
-      background: rgba(7, 16, 12, 0.78);
-      backdrop-filter: blur(14px);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .brand-mark {
-      width: 50px;
-      height: 50px;
-      border-radius: 16px;
+    .music-shell {
+      position: relative;
+      z-index: 1;
       display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, rgba(67,245,155,0.22), rgba(24,201,114,0.12));
-      border: 1px solid var(--line-strong);
-      color: var(--green);
-      font-weight: 900;
-      box-shadow: 0 0 24px rgba(67,245,155,0.16);
-      flex-shrink: 0;
+      gap: 22px;
+      padding-bottom: 120px;
     }
 
-    .brand-copy h1 {
-      margin: 0;
-      font-size: 18px;
-      line-height: 1;
-      letter-spacing: 0.02em;
-    }
-
-    .brand-copy p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .nav {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .nav-link,
-    .btn,
-    .btn-ghost,
-    .music-tab-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 11px 15px;
-      border-radius: 14px;
-      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-      font-weight: 800;
-      cursor: pointer;
-      border: 1px solid transparent;
-    }
-
-    .nav-link:hover,
-    .btn:hover,
-    .btn-ghost:hover,
-    .music-tab-btn:hover {
-      transform: translateY(-1px);
-    }
-
-    .nav-link,
-    .btn-ghost,
-    .music-tab-btn {
-      background: rgba(255,255,255,0.04);
-      border-color: rgba(255,255,255,0.07);
-      color: var(--text);
-    }
-
-    .btn {
-      background: linear-gradient(135deg, var(--green), var(--green-2));
-      color: #062312;
-      box-shadow: 0 10px 28px rgba(24, 201, 114, 0.28);
-    }
-
-    .notice {
-      display: none;
-      margin-bottom: 14px;
-      padding: 14px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      border: 1px solid transparent;
-    }
-
-    .notice.error {
-      background: rgba(255, 90, 115, 0.1);
-      border-color: rgba(255, 90, 115, 0.24);
-      color: #ffd0d8;
-    }
-
-    .notice.success {
-      background: rgba(67, 245, 155, 0.1);
-      border-color: rgba(67, 245, 155, 0.24);
-      color: #d8ffea;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.08fr 0.92fr;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-
-    .panel {
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(10,22,16,0.88), rgba(7,15,12,0.92));
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
+    .music-hero {
+      min-height: 430px;
+      border: 1px solid var(--music-border);
+      border-radius: 30px;
+      background:
+        linear-gradient(135deg, rgba(0,0,0,0.48), rgba(0,0,0,0.88)),
+        var(--music-img) center/cover no-repeat;
+      box-shadow: 0 28px 80px rgba(0,0,0,0.5);
+      position: relative;
       overflow: hidden;
-    }
-
-    .hero {
+      display: grid;
+      align-items: end;
       padding: 34px;
-      min-height: 340px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      background:
-        radial-gradient(circle at top left, rgba(67,245,155,0.14), transparent 26%),
-        linear-gradient(180deg, rgba(10,22,16,0.52), rgba(7,15,12,0.78));
+      isolation: isolate;
     }
 
-    .eyebrow {
+    .music-hero::before {
+      content: "";
+      position: absolute;
+      inset: -8%;
+      z-index: -1;
+      background: var(--music-img) center/cover no-repeat;
+      opacity: 0.38;
+      transform: scale(1.08);
+      animation: musicMotion 13s ease-in-out infinite alternate;
+    }
+
+    @keyframes musicMotion {
+      from { transform: scale(1.06) translate(-10px, -8px); filter: saturate(1.05); }
+      to { transform: scale(1.15) translate(18px, 12px); filter: saturate(1.38); }
+    }
+
+    .music-kicker {
       display: inline-flex;
-      align-items: center;
       width: fit-content;
-      min-height: 34px;
-      padding: 7px 12px;
+      padding: 8px 12px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--line);
-      color: #d9ffea;
-      font-size: 12px;
+      background: rgba(255,206,88,0.13);
+      border: 1px solid rgba(255,206,88,0.28);
+      color: var(--music-gold);
       font-weight: 900;
+      font-size: 0.78rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      margin-bottom: 14px;
     }
 
-    .hero h2 {
-      margin: 20px 0 0;
-      font-size: clamp(40px, 5vw, 76px);
-      line-height: 0.94;
-      letter-spacing: -0.05em;
-      max-width: 880px;
+    .music-hero h1 {
+      font-size: clamp(2.5rem, 7vw, 6rem);
+      line-height: 0.88;
+      letter-spacing: -0.07em;
+      margin: 0 0 14px;
+      text-shadow: 0 18px 44px rgba(0,0,0,0.58);
     }
 
-    .hero p {
-      margin: 18px 0 0;
-      color: #d7f6e4;
-      font-size: 16px;
-      line-height: 1.8;
-      max-width: 760px;
+    .music-hero p {
+      max-width: 740px;
+      color: var(--music-muted);
+      font-size: 1.05rem;
+      margin: 0;
     }
 
-    .hero-actions {
+    .music-actions {
       display: flex;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
+      margin-top: 22px;
     }
 
-    .side-stack {
-      padding: 22px;
+    .music-status {
+      padding: 13px 16px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.48);
+      border: 1px solid var(--music-border);
+      color: var(--music-muted);
+      font-weight: 800;
+    }
+
+    .music-layout {
       display: grid;
-      gap: 14px;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 22px;
+    }
+
+    .music-main,
+    .music-side {
+      display: grid;
+      gap: 22px;
       align-content: start;
     }
 
-    .side-card {
-      padding: 18px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .side-card strong {
-      display: block;
-      font-size: 15px;
-      margin-bottom: 6px;
-    }
-
-    .side-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.65;
-    }
-
-    .section-gap {
-      display: grid;
-      gap: 18px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat-card {
-      padding: 16px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-    }
-
-    .stat-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
-
-    .stat-card strong {
-      font-size: 28px;
-      letter-spacing: -0.03em;
-    }
-
-    .toolbar {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 14px;
-      margin-bottom: 18px;
-    }
-
-    .search-box input {
-      width: 100%;
-      border: 1px solid rgba(255,255,255,0.08);
-      background: rgba(255,255,255,0.04);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 14px 16px;
-      outline: none;
-      backdrop-filter: blur(6px);
-    }
-
-    .search-box input:focus {
-      border-color: var(--line-strong);
-      box-shadow: 0 0 0 3px rgba(67,245,155,0.10);
-    }
-
-    .tab-bar {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .music-tab-btn.active {
-      background: linear-gradient(135deg, rgba(67,245,155,0.18), rgba(24,201,114,0.10));
-      border-color: var(--line-strong);
-      color: #dfffee;
-    }
-
-    .music-sections {
-      display: grid;
-      gap: 18px;
+    .music-panel {
+      border: 1px solid var(--music-border);
+      border-radius: 24px;
+      background: var(--music-panel);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 22px 60px rgba(0,0,0,0.34);
+      overflow: hidden;
     }
 
     .panel-head {
-      padding: 20px 22px;
-      border-bottom: 1px solid var(--line);
+      padding: 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       display: flex;
-      align-items: center;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
-    .panel-head h3 {
+    .panel-head h2 {
       margin: 0;
-      font-size: 26px;
-      letter-spacing: -0.02em;
+      font-size: 1.25rem;
     }
 
     .panel-head p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
+      margin: 4px 0 0;
+      color: var(--music-muted);
+      font-size: 0.92rem;
     }
 
     .panel-body {
-      padding: 22px;
+      padding: 18px;
     }
 
-    .media-grid {
+    .track-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
     }
 
-    .footer {
-      margin-top: 24px;
-      padding: 18px;
+    .track-card,
+    .artist-card,
+    .playlist-card,
+    .radio-card,
+    .podcast-card {
+      padding: 14px;
       border-radius: 20px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,0.04);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      background: rgba(0,0,0,0.38);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: grid;
+      gap: 10px;
     }
 
-    .footer p {
+    .track-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 16px;
+      background: #111;
+    }
+
+    .track-card h3,
+    .artist-card h3,
+    .playlist-card h3,
+    .radio-card h3,
+    .podcast-card h3 {
       margin: 0;
-      color: var(--muted);
-      font-size: 13px;
+      font-size: 1.05rem;
     }
 
-    .footer-links {
+    .track-card p,
+    .artist-card p,
+    .playlist-card p,
+    .radio-card p,
+    .podcast-card p {
+      margin: 0;
+      color: var(--music-muted);
+      font-size: 0.9rem;
+    }
+
+    .music-meta {
       display: flex;
+      justify-content: space-between;
+      gap: 10px;
       flex-wrap: wrap;
+      color: var(--music-muted);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .stack-list {
+      display: grid;
       gap: 12px;
     }
 
-    .footer-links a {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
+    .music-player {
+      position: fixed;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      z-index: 50;
+      border: 1px solid rgba(255,206,88,0.28);
+      border-radius: 22px;
+      background: rgba(5,5,6,0.94);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+      padding: 12px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
     }
 
-    @media (max-width: 1180px) {
-      .hero-grid {
+    .player-info {
+      min-width: 0;
+    }
+
+    .player-info strong {
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .player-info span {
+      color: var(--music-muted);
+      font-size: 0.86rem;
+    }
+
+    audio {
+      width: min(520px, 44vw);
+    }
+
+    .status-box {
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: var(--music-muted);
+    }
+
+    @media (max-width: 980px) {
+      .music-layout {
         grid-template-columns: 1fr;
       }
 
-      .media-grid,
-      .stats-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 900px) {
-      .topbar {
-        position: static;
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .nav {
-        justify-content: flex-start;
-        width: 100%;
-      }
-
-      .toolbar {
+      .track-grid {
         grid-template-columns: 1fr;
       }
 
-      .tab-bar {
-        justify-content: flex-start;
+      .music-hero {
+        min-height: 360px;
+        padding: 24px;
       }
 
-      .media-grid,
-      .stats-grid {
+      .music-player {
         grid-template-columns: 1fr;
       }
-    }
 
-    @media (max-width: 640px) {
-      .page-shell {
-        width: min(100% - 16px, 100%);
-      }
-
-      .nav-link,
-      .btn,
-      .btn-ghost,
-      .music-tab-btn {
-        width: 100%;
-      }
-
-      #global-session-nav {
-        width: 100%;
-      }
-
-      #global-session-nav .nav-link,
-      #global-session-nav .btn,
-      #global-session-nav .btn-ghost {
+      audio {
         width: 100%;
       }
     }
   </style>
 </head>
-<body>
-  <div class="page-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">RB</div>
-        <div class="brand-copy">
-          <h1>Rich Bizness Music</h1>
-          <p>Tracks • Albums • Playlists • Artist Growth</p>
+
+<body class="music-page">
+  <div class="page-shell music-shell">
+    <div id="elite-platform-nav"></div>
+
+    <section class="music-hero">
+      <div>
+        <span class="music-kicker">Rich Bizness Music Empire</span>
+        <h1>Stream. Build fans. Own the sound.</h1>
+        <p>
+          Tracks, playlists, albums, radio, podcasts, artist channels, unlocks, and music revenue
+          all connect back to the Rich Bizness music engine.
+        </p>
+
+        <div class="music-actions">
+          <a class="btn btn-gold" href="/artist/upload.html">Upload Music</a>
+          <a class="btn btn-dark" href="/playlist.html">Playlists</a>
+          <a class="btn btn-dark" href="/radio.html">Radio</a>
+          <a class="btn btn-dark" href="/podcast.html">Podcasts</a>
+          <button class="btn btn-primary" id="refresh-music-btn" type="button">Refresh Music</button>
         </div>
       </div>
+    </section>
 
-      <nav class="nav">
-        <a class="nav-link" href="/index.html">Home</a>
-        <a class="nav-link" href="/profile.html">Profile</a>
-        <a class="nav-link" href="/artist/">Artist</a>
-        <a class="nav-link" href="/playlist.html">Playlists</a>
-        <a class="nav-link" href="/album.html">Albums</a>
-        <a class="nav-link" href="/upload.html">Upload</a>
-        <a class="nav-link" href="/podcast.html">Podcast</a>
-        <a class="btn" href="/live.html">WE LIT 🔥 Go Live</a>
-        <div id="global-session-nav" style="display:flex;gap:10px;flex-wrap:wrap;"></div>
-      </nav>
-    </header>
+    <section id="music-status" class="music-status">Loading music engine...</section>
 
-    <div id="music-error" class="notice error"></div>
-    <div id="music-success" class="notice success"></div>
-
-    <section class="hero-grid">
-      <section class="panel hero">
-        <div>
-          <div class="eyebrow">Music empire</div>
-          <h2>Upload, release, organize, and build your full sound inside Rich Bizness.</h2>
-          <p>
-            This is the real music lane for tracks, albums, playlists, radio flow, and artist releases.
-            Once your songs are uploaded, this page becomes the front door to your whole music ecosystem.
-          </p>
-        </div>
-
-        <div class="section-gap">
-          <div class="hero-actions">
-            <a class="btn" href="/upload.html">Upload Music</a>
-            <a class="btn-ghost" href="/album.html">Albums</a>
-            <a class="btn-ghost" href="/playlist.html">Playlists</a>
-            <a class="btn-ghost" href="/radio.html">Radio</a>
-          </div>
-
-          <div id="music-summary-stats" class="stats-grid">
-            <div class="stat-card">
-              <span>Tracks</span>
-              <strong>0</strong>
-            </div>
-            <div class="stat-card">
-              <span>Albums</span>
-              <strong>0</strong>
-            </div>
-            <div class="stat-card">
-              <span>Playlists</span>
-              <strong>0</strong>
+    <main class="music-layout">
+      <section class="music-main">
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Tracks</h2>
+              <p>Main source: music_tracks</p>
             </div>
           </div>
-        </div>
+          <div class="panel-body">
+            <div id="music-tracks-grid" class="track-grid">
+              <div class="status-box">Loading tracks...</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Artist Channels</h2>
+              <p>Artist identity layer: artist_channels</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="artist-channels-list" class="stack-list">
+              <div class="status-box">Loading artist channels...</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Playlists</h2>
+              <p>Playlist layer: playlists + playlist_tracks</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="playlists-list" class="stack-list">
+              <div class="status-box">Loading playlists...</div>
+            </div>
+          </div>
+        </section>
       </section>
 
-      <aside class="panel side-stack">
-        <div class="side-card">
-          <strong>Built to scale</strong>
-          <span>Tracks, albums, playlists, radio, and podcast can all connect from this one music lane.</span>
-        </div>
+      <aside class="music-side">
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Radio</h2>
+              <p>Radio layer: radio_stations</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="radio-stations-list" class="stack-list">
+              <div class="status-box">Loading radio...</div>
+            </div>
+          </div>
+        </section>
 
-        <div class="side-card">
-          <strong>Artist-first flow</strong>
-          <span>Every upload can grow into releases, playlist placement, live rooms, and full catalog power.</span>
-        </div>
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Podcasts</h2>
+              <p>Podcast layer: podcast_shows</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div id="podcast-shows-list" class="stack-list">
+              <div class="status-box">Loading podcasts...</div>
+            </div>
+          </div>
+        </section>
 
-        <div class="side-card">
-          <strong>What this page does</strong>
-          <span>This page now works as the shell that your music client fills with real Supabase data.</span>
-        </div>
+        <section class="music-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Quick Links</h2>
+              <p>Music ecosystem routes</p>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="music-actions">
+              <a class="btn btn-gold" href="/artist/index.html">Artists</a>
+              <a class="btn btn-dark" href="/artist/manage.html">Manage</a>
+              <a class="btn btn-dark" href="/artist/analytics.html">Analytics</a>
+              <a class="btn btn-dark" href="/monetization.html">Revenue</a>
+            </div>
+          </div>
+        </section>
       </aside>
-    </section>
-
-    <section class="toolbar">
-      <div class="search-box">
-        <input
-          id="music-search"
-          type="search"
-          placeholder="Search tracks, albums, playlists..."
-          data-music-search
-        />
-      </div>
-
-      <div id="music-tab-bar" class="tab-bar" data-music-tab-bar>
-        <button class="music-tab-btn active" type="button" data-tab="all">All</button>
-        <button class="music-tab-btn" type="button" data-tab="tracks">Tracks</button>
-        <button class="music-tab-btn" type="button" data-tab="albums">Albums</button>
-        <button class="music-tab-btn" type="button" data-tab="playlists">Playlists</button>
-      </div>
-    </section>
-
-    <div id="music-sections-wrap" class="music-sections" data-music-sections-wrap>
-      <section id="music-tracks-grid-section" class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Tracks</h3>
-            <p>Latest uploaded music inside Rich Bizness.</p>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="music-tracks-grid" class="media-grid" data-music-tracks-grid>
-            <div style="padding:18px;border-radius:18px;border:1px dashed rgba(110,255,176,0.18);background:rgba(255,255,255,0.03);color:#97b8a6;">
-              Tracks will load here.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="music-albums-grid-section" class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Albums</h3>
-            <p>Projects, EPs, singles, and mixtapes.</p>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="music-albums-grid" class="media-grid" data-music-albums-grid>
-            <div style="padding:18px;border-radius:18px;border:1px dashed rgba(110,255,176,0.18);background:rgba(255,255,255,0.03);color:#97b8a6;">
-              Albums will load here.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="music-playlists-grid-section" class="panel">
-        <div class="panel-head">
-          <div>
-            <h3>Playlists</h3>
-            <p>Curated mixes, mood lanes, and radio foundations.</p>
-          </div>
-        </div>
-        <div class="panel-body">
-          <div id="music-playlists-grid" class="media-grid" data-music-playlists-grid>
-            <div style="padding:18px;border-radius:18px;border:1px dashed rgba(110,255,176,0.18);background:rgba(255,255,255,0.03);color:#97b8a6;">
-              Playlists will load here.
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-
-    <footer class="footer">
-      <p>Rich Bizness • music lane locked</p>
-      <div class="footer-links">
-        <a href="/index.html">Home</a>
-        <a href="/artist/">Artist</a>
-        <a href="/playlist.html">Playlists</a>
-        <a href="/album.html">Albums</a>
-        <a href="/radio.html">Radio</a>
-      </div>
-    </footer>
+    </main>
   </div>
 
-  <script type="module" src="/src/music/music-client.js"></script>
-  <script type="module" src="/src/shared/navbar-session.js"></script>
+  <section class="music-player">
+    <div class="player-info">
+      <strong id="player-title">Select a track</strong>
+      <span id="player-artist">Rich Bizness Music</span>
+    </div>
+    <audio id="music-audio-player" controls preload="metadata"></audio>
+  </section>
+
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+    window.SUPABASE_URL = window.NEXT_PUBLIC_SUPABASE_URL;
+    window.SUPABASE_PUBLISHABLE_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+    window.NEXT_PUBLIC_SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    window.SUPABASE_ANON_KEY = window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  </script>
+
+  <script type="module" src="/core/pages/music.js"></script>
 </body>
 </html>
