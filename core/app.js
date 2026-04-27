@@ -1,7 +1,7 @@
 // core/app.js
 
-import { supabase, getUser, getProfile } from '/core/supabase.js';
-import { ROUTES, BRAND_IMAGES } from '/core/config.js';
+import { supabase, getUser, getProfile } from "/core/supabase.js";
+import { ROUTES, BRAND_IMAGES } from "/core/config.js";
 
 let currentUser = null;
 let currentProfile = null;
@@ -9,6 +9,10 @@ let appBooted = false;
 let authSubscription = null;
 let logoutBound = false;
 let navRenderedForUserId = null;
+
+export function getSupabase() {
+  return supabase;
+}
 
 export function getCurrentUserState() {
   return currentUser;
@@ -44,17 +48,17 @@ async function hydrateSessionState() {
 }
 
 function setupGlobalNav() {
-  const navContainer = document.getElementById('global-session-nav');
+  const navContainer = document.getElementById("global-session-nav");
   if (!navContainer) return;
 
-  const currentUserId = currentUser?.id || 'guest';
+  const currentUserId = currentUser?.id || "guest";
 
-  if (navRenderedForUserId === currentUserId && navContainer.dataset.rbReady === 'true') {
+  if (navRenderedForUserId === currentUserId && navContainer.dataset.rbReady === "true") {
     return;
   }
 
   navRenderedForUserId = currentUserId;
-  navContainer.dataset.rbReady = 'true';
+  navContainer.dataset.rbReady = "true";
 
   if (!currentUser) {
     navContainer.innerHTML = `
@@ -76,7 +80,7 @@ function setupGlobalNav() {
     currentUser?.user_metadata?.display_name ||
     currentUser?.user_metadata?.username ||
     currentUser?.email ||
-    'Profile';
+    "Profile";
 
   navContainer.innerHTML = `
     <a class="nav-link" href="${ROUTES.notifications}" aria-label="Notifications">🔔</a>
@@ -93,9 +97,9 @@ function setupGlobalNav() {
 }
 
 function setupAuthUI() {
-  const nameTargets = document.querySelectorAll('[data-user-name]');
-  const avatarTargets = document.querySelectorAll('[data-user-avatar]');
-  const emailTargets = document.querySelectorAll('[data-user-email]');
+  const nameTargets = document.querySelectorAll("[data-user-name]");
+  const avatarTargets = document.querySelectorAll("[data-user-avatar]");
+  const emailTargets = document.querySelectorAll("[data-user-email]");
   const loggedInTargets = document.querySelectorAll('[data-auth="in"]');
   const loggedOutTargets = document.querySelectorAll('[data-auth="out"]');
 
@@ -105,7 +109,7 @@ function setupAuthUI() {
     currentUser?.user_metadata?.display_name ||
     currentUser?.user_metadata?.username ||
     currentUser?.email ||
-    'Rich Bizness User';
+    "Rich Bizness User";
 
   const avatar =
     currentProfile?.avatar_url ||
@@ -118,21 +122,21 @@ function setupAuthUI() {
   });
 
   avatarTargets.forEach((el) => {
-    if ('src' in el) {
+    if ("src" in el) {
       el.src = avatar;
     }
   });
 
   emailTargets.forEach((el) => {
-    el.textContent = currentUser?.email || '';
+    el.textContent = currentUser?.email || "";
   });
 
   loggedInTargets.forEach((el) => {
-    el.style.display = currentUser ? '' : 'none';
+    el.style.display = currentUser ? "" : "none";
   });
 
   loggedOutTargets.forEach((el) => {
-    el.style.display = currentUser ? 'none' : '';
+    el.style.display = currentUser ? "none" : "";
   });
 }
 
@@ -140,19 +144,19 @@ function setupGlobalActions() {
   if (logoutBound) return;
   logoutBound = true;
 
-  document.addEventListener('click', async (event) => {
-    const logoutButton = event.target.closest('#logoutBtn');
+  document.addEventListener("click", async (event) => {
+    const logoutButton = event.target.closest("#logoutBtn");
     if (!logoutButton) return;
 
     try {
       logoutButton.disabled = true;
-      logoutButton.textContent = 'Logging out...';
+      logoutButton.textContent = "Logging out...";
       await supabase.auth.signOut();
       window.location.href = ROUTES.auth;
     } catch (error) {
-      console.error('[core/app] logout failed:', error);
+      console.error("[core/app] logout failed:", error);
       logoutButton.disabled = false;
-      logoutButton.textContent = 'Logout';
+      logoutButton.textContent = "Logout";
     }
   });
 }
@@ -174,7 +178,7 @@ function bindAuthListener() {
     setupAuthUI();
 
     document.dispatchEvent(
-      new CustomEvent('rb:auth-changed', {
+      new CustomEvent("rb:auth-changed", {
         detail: {
           user: currentUser,
           profile: currentProfile,
@@ -197,11 +201,11 @@ export function destroyApp() {
   navRenderedForUserId = null;
 }
 
-function escapeHtml(value = '') {
+function escapeHtml(value = "") {
   return String(value)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#039;');
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
