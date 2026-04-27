@@ -104,17 +104,24 @@
       margin: 0;
     }
 
+    .panel-head p {
+      margin: 4px 0 0;
+      color: rgba(255,255,255,.7);
+    }
+
     .panel-body {
       padding: 18px;
     }
 
-    .challenge-list {
+    .challenge-list,
+    .stack-list {
       display: grid;
       gap: 14px;
     }
 
     .challenge-card,
-    .entry-card {
+    .entry-card,
+    .invite-card {
       padding: 16px;
       border-radius: 18px;
       background: rgba(0,0,0,.38);
@@ -123,11 +130,13 @@
       gap: 10px;
     }
 
-    .challenge-card h3 {
+    .challenge-card h3,
+    .invite-card h3 {
       margin: 0;
     }
 
-    .challenge-card p {
+    .challenge-card p,
+    .invite-card p {
       margin: 0;
       color: rgba(255,255,255,.7);
     }
@@ -181,6 +190,23 @@
       margin-top: 10px;
     }
 
+    .invite-actions,
+    .card-actions,
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .danger-text {
+      color: #ff8b94;
+    }
+
+    .success-text {
+      color: #69ffb4;
+    }
+
     @media (max-width: 980px) {
       .challenge-layout {
         grid-template-columns: 1fr;
@@ -198,12 +224,13 @@
         <span class="kicker">Rich Bizness Pro League</span>
         <h1>Challenges</h1>
         <p>
-          Create tournaments, enter battles, compete for rank, and build the Rich Bizness gaming league.
+          Create tournaments, enter battles, send player-vs-player challenges, and compete for rank inside the Rich Bizness gaming league.
         </p>
 
         <div class="hero-actions">
           <a class="btn btn-gold" href="/gaming.html">Gaming Hub</a>
           <a class="btn btn-dark" href="/games/leaderboard.html">Leaderboard</a>
+          <a class="btn btn-dark" href="/gaming-leaderboard.html">Alt Leaderboard</a>
           <a class="btn btn-dark" href="/games/rich-bizness-ride/index.html">Play Ride</a>
         </div>
       </div>
@@ -230,7 +257,7 @@
         <div class="panel-head">
           <div>
             <h2>Create Challenge</h2>
-            <p>Set a game, entry fee, prize, and deadline.</p>
+            <p>Set game, entry fee, prize, and deadline.</p>
           </div>
         </div>
 
@@ -287,7 +314,7 @@
         </div>
 
         <div class="panel-body">
-          <div id="my-entries-list">
+          <div id="my-entries-list" class="stack-list">
             <div class="status-box">Loading entries...</div>
           </div>
         </div>
@@ -313,11 +340,44 @@
               <input id="invite-user-id" type="text" placeholder="Paste player UUID" />
             </label>
 
+            <label>
+              Message
+              <textarea id="invite-message" rows="3" placeholder="Pull up, I challenge you."></textarea>
+            </label>
+
             <button class="btn btn-gold" type="submit">Send Challenge</button>
-            <div id="invite-status" class="small-status">
-              Invite table comes next: game_challenge_invites.
-            </div>
+            <div id="invite-status" class="small-status">Ready.</div>
           </form>
+        </div>
+      </aside>
+
+      <section class="challenge-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Incoming Invites</h2>
+            <p>Accept or decline player-vs-player challenges.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div id="incoming-invites-list" class="stack-list">
+            <div class="status-box">Loading incoming invites...</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="challenge-panel">
+        <div class="panel-head">
+          <div>
+            <h2>Sent Invites</h2>
+            <p>Challenges you sent to other players.</p>
+          </div>
+        </div>
+
+        <div class="panel-body">
+          <div id="sent-invites-list" class="stack-list">
+            <div class="status-box">Loading sent invites...</div>
+          </div>
         </div>
       </aside>
     </main>
@@ -364,7 +424,11 @@
       inviteForm: $("invite-form"),
       inviteChallengeId: $("invite-challenge-id"),
       inviteUserId: $("invite-user-id"),
-      inviteStatus: $("invite-status")
+      inviteMessage: $("invite-message"),
+      inviteStatus: $("invite-status"),
+
+      incomingInvitesList: $("incoming-invites-list"),
+      sentInvitesList: $("sent-invites-list")
     };
 
     function escapeHtml(value = "") {
@@ -419,7 +483,7 @@
 
       els.list.innerHTML = data.map((challenge) => `
         <article class="challenge-card">
-          <span class="kicker">${escapeHtml(challenge.game_slug || "pro-league")}</span>
+          <span class="kicker">ID #${escapeHtml(challenge.id)} • ${escapeHtml(challenge.game_slug || "pro-league")}</span>
           <h3>${escapeHtml(challenge.title || "Pro League Challenge")}</h3>
           <p>${escapeHtml(challenge.description || "Highest score wins.")}</p>
 
@@ -429,8 +493,9 @@
             <span>Ends: ${safeDate(challenge.ends_at)}</span>
           </div>
 
-          <div class="hero-actions">
+          <div class="card-actions">
             <button class="btn btn-gold" type="button" data-enter="${escapeHtml(challenge.id)}">Enter Challenge</button>
+            <button class="btn btn-dark" type="button" data-copy-challenge="${escapeHtml(challenge.id)}">Copy ID</button>
             <a class="btn btn-dark" href="/games/leaderboard.html?game=${encodeURIComponent(challenge.game_slug || "")}">View Board</a>
           </div>
         </article>
@@ -548,33 +613,196 @@
 
       const challengeId = els.inviteChallengeId.value.trim();
       const targetUserId = els.inviteUserId.value.trim();
+      const message =
+        els.inviteMessage.value.trim() ||
+        "You got challenged in the Rich Bizness Pro League.";
 
       if (!challengeId || !targetUserId) {
         els.inviteStatus.textContent = "Add challenge ID and player user ID.";
         return;
       }
 
-      const { error } = await supabase.from("notifications").insert({
+      els.inviteStatus.textContent = "Sending challenge...";
+
+      const { data: invite, error: inviteError } = await supabase
+        .from("game_challenge_invites")
+        .insert({
+          challenge_id: Number(challengeId),
+          sender_id: user.id,
+          receiver_id: targetUserId,
+          status: "pending",
+          message,
+          metadata: {
+            source: "challenges_page"
+          }
+        })
+        .select("*")
+        .single();
+
+      if (inviteError) {
+        els.inviteStatus.textContent = inviteError.message;
+        return;
+      }
+
+      await supabase.from("notifications").insert({
         user_id: targetUserId,
         actor_id: user.id,
-        type: "game_challenge",
+        type: "game_challenge_invite",
         title: "You got challenged 🎮",
-        body: `A Rich Bizness player sent you challenge #${challengeId}.`,
-        link_url: `/games/challenges.html?challenge=${encodeURIComponent(challengeId)}`,
+        body: `A Rich Bizness player challenged you to battle #${challengeId}.`,
+        link_url: `/games/challenges.html?invite=${invite.id}`,
         metadata: {
+          invite_id: invite.id,
           challenge_id: challengeId,
           from_user_id: user.id
         },
         created_at: new Date().toISOString()
       });
 
-      if (error) {
-        els.inviteStatus.textContent = error.message;
+      els.inviteForm.reset();
+      els.inviteStatus.textContent = "Challenge invite sent.";
+      await loadSentInvites();
+    }
+
+    async function loadIncomingInvites() {
+      const user = await getUser();
+
+      if (!user?.id) {
+        els.incomingInvitesList.innerHTML = `<div class="status-box">Sign in to see incoming invites.</div>`;
         return;
       }
 
-      els.inviteForm.reset();
-      els.inviteStatus.textContent = "Challenge sent.";
+      const { data, error } = await supabase
+        .from("game_challenge_invites")
+        .select("*")
+        .eq("receiver_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        els.incomingInvitesList.innerHTML = `<div class="status-box">${escapeHtml(error.message)}</div>`;
+        return;
+      }
+
+      if (!data?.length) {
+        els.incomingInvitesList.innerHTML = `<div class="status-box">No incoming challenge invites yet.</div>`;
+        return;
+      }
+
+      els.incomingInvitesList.innerHTML = data.map((invite) => `
+        <article class="invite-card">
+          <span class="kicker">Invite #${escapeHtml(invite.id)} • ${escapeHtml(invite.status)}</span>
+          <h3>Challenge #${escapeHtml(invite.challenge_id)}</h3>
+          <p>${escapeHtml(invite.message || "You got challenged.")}</p>
+          <small>Sent: ${safeDate(invite.created_at)}</small>
+
+          ${
+            invite.status === "pending"
+              ? `
+                <div class="invite-actions">
+                  <button class="btn btn-gold" type="button" data-accept-invite="${escapeHtml(invite.id)}" data-challenge-id="${escapeHtml(invite.challenge_id)}">Accept</button>
+                  <button class="btn btn-dark" type="button" data-decline-invite="${escapeHtml(invite.id)}">Decline</button>
+                </div>
+              `
+              : `<strong class="${invite.status === "accepted" ? "success-text" : "danger-text"}">${escapeHtml(invite.status.toUpperCase())}</strong>`
+          }
+        </article>
+      `).join("");
+    }
+
+    async function loadSentInvites() {
+      const user = await getUser();
+
+      if (!user?.id) {
+        els.sentInvitesList.innerHTML = `<div class="status-box">Sign in to see sent invites.</div>`;
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("game_challenge_invites")
+        .select("*")
+        .eq("sender_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+
+      if (error) {
+        els.sentInvitesList.innerHTML = `<div class="status-box">${escapeHtml(error.message)}</div>`;
+        return;
+      }
+
+      if (!data?.length) {
+        els.sentInvitesList.innerHTML = `<div class="status-box">No sent challenge invites yet.</div>`;
+        return;
+      }
+
+      els.sentInvitesList.innerHTML = data.map((invite) => `
+        <article class="invite-card">
+          <span class="kicker">Invite #${escapeHtml(invite.id)} • ${escapeHtml(invite.status)}</span>
+          <h3>Challenge #${escapeHtml(invite.challenge_id)}</h3>
+          <p>${escapeHtml(invite.message || "Challenge sent.")}</p>
+          <small>Sent to: ${escapeHtml(invite.receiver_id)} • ${safeDate(invite.created_at)}</small>
+        </article>
+      `).join("");
+    }
+
+    async function acceptInvite(inviteId, challengeId) {
+      const user = await getUser();
+      if (!user?.id) return;
+
+      const { error: updateError } = await supabase
+        .from("game_challenge_invites")
+        .update({
+          status: "accepted",
+          responded_at: new Date().toISOString()
+        })
+        .eq("id", Number(inviteId))
+        .eq("receiver_id", user.id);
+
+      if (updateError) {
+        alert(updateError.message);
+        return;
+      }
+
+      const { error: entryError } = await supabase.from("game_challenge_entries").insert({
+        challenge_id: Number(challengeId),
+        user_id: user.id,
+        best_score: 0,
+        payment_status: "free",
+        created_at: new Date().toISOString(),
+        metadata: {
+          source: "challenge_invite_accept",
+          invite_id: Number(inviteId)
+        }
+      });
+
+      if (entryError) {
+        alert(entryError.message);
+      }
+
+      await Promise.all([loadIncomingInvites(), loadMyEntries()]);
+      alert("Challenge accepted.");
+    }
+
+    async function declineInvite(inviteId) {
+      const user = await getUser();
+      if (!user?.id) return;
+
+      const { error } = await supabase
+        .from("game_challenge_invites")
+        .update({
+          status: "declined",
+          responded_at: new Date().toISOString()
+        })
+        .eq("id", Number(inviteId))
+        .eq("receiver_id", user.id);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      await loadIncomingInvites();
+      alert("Challenge declined.");
     }
 
     els.refresh?.addEventListener("click", loadChallenges);
@@ -582,18 +810,51 @@
     els.inviteForm?.addEventListener("submit", sendChallengeInvite);
 
     els.list?.addEventListener("click", async (event) => {
-      const btn = event.target.closest("[data-enter]");
-      if (!btn) return;
-      await enterChallenge(btn.getAttribute("data-enter"));
+      const enterBtn = event.target.closest("[data-enter]");
+      const copyBtn = event.target.closest("[data-copy-challenge]");
+
+      if (enterBtn) {
+        await enterChallenge(enterBtn.getAttribute("data-enter"));
+        return;
+      }
+
+      if (copyBtn) {
+        const id = copyBtn.getAttribute("data-copy-challenge");
+        await navigator.clipboard.writeText(id);
+        alert(`Challenge ID copied: ${id}`);
+      }
+    });
+
+    els.incomingInvitesList?.addEventListener("click", async (event) => {
+      const acceptBtn = event.target.closest("[data-accept-invite]");
+      const declineBtn = event.target.closest("[data-decline-invite]");
+
+      if (acceptBtn) {
+        await acceptInvite(
+          acceptBtn.getAttribute("data-accept-invite"),
+          acceptBtn.getAttribute("data-challenge-id")
+        );
+        return;
+      }
+
+      if (declineBtn) {
+        await declineInvite(declineBtn.getAttribute("data-decline-invite"));
+      }
     });
 
     await loadChallenges();
     await loadMyEntries();
+    await loadIncomingInvites();
+    await loadSentInvites();
 
     supabase
       .channel("rb-game-challenges")
       .on("postgres_changes", { event: "*", schema: "public", table: "game_challenges" }, loadChallenges)
       .on("postgres_changes", { event: "*", schema: "public", table: "game_challenge_entries" }, loadMyEntries)
+      .on("postgres_changes", { event: "*", schema: "public", table: "game_challenge_invites" }, async () => {
+        await loadIncomingInvites();
+        await loadSentInvites();
+      })
       .subscribe();
   </script>
 </body>
