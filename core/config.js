@@ -15,7 +15,7 @@ export const SUPABASE_PROJECT_URL = "https://ksvdequymkceevocgpdj.supabase.co";
 export const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
 
 export const DEFAULT_CURRENCY = "usd";
-export const DEFAULT_PLATFORM_FEE_BPS = 1000;
+export const DEFAULT_PLATFORM_FEE_BPS = 10000;
 
 /* =========================
    ROUTES
