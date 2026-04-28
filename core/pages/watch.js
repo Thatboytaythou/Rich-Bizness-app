@@ -1,8 +1,8 @@
 // =========================
-// RICH BIZNESS WATCH — FINAL LOCKED
+// RICH BIZNESS WATCH — FINAL REPAIR
 // /core/pages/watch.js
 // Matches /watch.html
-// Core-only setup
+// Viewer side: stream load, access gate, LiveKit, chat, reactions, co-hosts, DM
 // =========================
 
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
@@ -80,11 +80,21 @@ let activeStream = null;
 let accessGranted = false;
 let livekitRoom = null;
 let viewSessionId = null;
+let chatChannel = null;
 
 function setStatus(message, type = "") {
   if (!els.status) return;
   els.status.textContent = message;
   els.status.className = `watch-status ${type}`.trim();
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function money(cents = 0) {
@@ -112,8 +122,10 @@ function getWatchUrl() {
 
 async function getUser() {
   if (currentUser?.id) return currentUser;
+
   const { data } = await supabase.auth.getSession();
   currentUser = data?.session?.user || null;
+
   return currentUser;
 }
 
@@ -136,6 +148,10 @@ function renderStream(stream) {
     if (els.statViewers) els.statViewers.textContent = "0";
     if (els.statPeak) els.statPeak.textContent = "0";
     if (els.statRevenue) els.statRevenue.textContent = "$0.00";
+    if (els.detailId) els.detailId.textContent = "—";
+    if (els.detailSlug) els.detailSlug.textContent = "—";
+    if (els.detailRoom) els.detailRoom.textContent = "—";
+    if (els.detailStarted) els.detailStarted.textContent = "—";
     return;
   }
 
@@ -159,8 +175,17 @@ function renderStream(stream) {
   if (els.detailRoom) els.detailRoom.textContent = stream.livekit_room_name || "—";
   if (els.detailStarted) els.detailStarted.textContent = safeDate(stream.started_at);
 
-  if (els.heroTitle) els.heroTitle.textContent = isLive ? "Watch the Bizness Party live." : "Stream loaded.";
-  if (els.metaLabel) els.metaLabel.textContent = stream.metadata?.meta_label || "Meta Room Ready";
+  if (els.heroTitle) {
+    els.heroTitle.textContent = isLive ? "Watch the Bizness Party live." : "Stream loaded.";
+  }
+
+  if (els.heroCopy) {
+    els.heroCopy.textContent = stream.description || "Live rooms, paid access, VIP gates, chat, reactions, and co-hosts connect here.";
+  }
+
+  if (els.metaLabel) {
+    els.metaLabel.textContent = stream.metadata?.meta_label || "Meta Room Ready";
+  }
 
   if (els.creatorLink && stream.creator_id) {
     els.creatorLink.href = `/profile.html?id=${encodeURIComponent(stream.creator_id)}`;
@@ -169,18 +194,20 @@ function renderStream(stream) {
 
 async function loadStream() {
   const slug = getParam("slug");
+  const id = getParam("id");
 
-  if (!slug) {
+  if (!slug && !id) {
     setStatus("No stream selected.");
     renderStream(null);
     return null;
   }
 
-  const { data, error } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+  let query = supabase.from("live_streams").select("*");
+
+  if (slug) query = query.eq("slug", slug);
+  if (!slug && id) query = query.eq("id", id);
+
+  const { data, error } = await query.maybeSingle();
 
   if (error) {
     setStatus(error.message || "Could not load stream.", "error");
@@ -202,9 +229,15 @@ async function checkAccess() {
   const stream = activeStream;
   const user = await getUser();
 
-  if (!stream) return false;
+  if (!stream) {
+    accessGranted = false;
+    return false;
+  }
 
-  if (stream.access_type === "free" || Number(stream.price_cents || 0) <= 0) {
+  const accessType = stream.access_type || "free";
+  const price = Number(stream.price_cents || 0);
+
+  if (accessType === "free" || price <= 0) {
     accessGranted = true;
     return true;
   }
@@ -214,30 +247,61 @@ async function checkAccess() {
     return false;
   }
 
-  const { data } = await supabase
+  if (accessType === "vip") {
+    const { data: vip } = await supabase
+      .from("vip_live_access")
+      .select("id")
+      .eq("stream_id", stream.id)
+      .eq("user_id", user.id)
+      .maybeSingle()
+      .catch(() => ({ data: null }));
+
+    if (vip) {
+      accessGranted = true;
+      return true;
+    }
+  }
+
+  const { data: purchase } = await supabase
     .from("live_stream_purchases")
     .select("id")
     .eq("stream_id", stream.id)
     .eq("user_id", user.id)
-    .eq("status", "paid")
-    .maybeSingle();
+    .in("status", ["paid", "succeeded", "complete", "completed"])
+    .maybeSingle()
+    .catch(() => ({ data: null }));
 
-  accessGranted = Boolean(data);
+  accessGranted = Boolean(purchase);
   return accessGranted;
 }
 
 function renderGate() {
-  if (!activeStream) return;
+  if (!activeStream || !els.gatePanel) return;
 
   if (accessGranted) {
+    els.gatePanel.classList.add("is-unlocked");
     if (els.gateTitle) els.gateTitle.textContent = "Room unlocked";
     if (els.gateCopy) els.gateCopy.textContent = "You have access to this Bizness Party.";
     if (els.unlockBtn) els.unlockBtn.style.display = "none";
     return;
   }
 
-  if (els.gateTitle) els.gateTitle.textContent = "Unlock Room";
-  if (els.gateCopy) els.gateCopy.textContent = "This room needs paid or VIP access before watching.";
+  els.gatePanel.classList.remove("is-unlocked");
+
+  const accessType = activeStream.access_type || "free";
+  const price = money(activeStream.price_cents || 0);
+
+  if (els.gateTitle) {
+    els.gateTitle.textContent = accessType === "vip" ? "VIP Room Access" : "Unlock Room";
+  }
+
+  if (els.gateCopy) {
+    els.gateCopy.textContent =
+      accessType === "vip"
+        ? "This is a VIP room. Sign in and unlock VIP access before watching."
+        : `This paid room unlocks for ${price}.`;
+  }
+
   if (els.unlockBtn) els.unlockBtn.style.display = "";
 }
 
@@ -287,6 +351,13 @@ async function connectLiveKit() {
     const user = await getUser();
     const token = await getSessionAccessToken();
 
+    const viewerIdentity =
+      user?.id ||
+      window.localStorage.getItem("rb_guest_viewer_id") ||
+      `viewer-${crypto.randomUUID()}`;
+
+    window.localStorage.setItem("rb_guest_viewer_id", viewerIdentity);
+
     const res = await fetch("/api/livekit-token", {
       method: "POST",
       headers: {
@@ -296,7 +367,7 @@ async function connectLiveKit() {
       body: JSON.stringify({
         streamId: activeStream.id,
         roomName: activeStream.livekit_room_name,
-        participantName: user?.id || `viewer-${crypto.randomUUID()}`,
+        participantName: viewerIdentity,
         participantMetadata: {
           role: "viewer",
           streamId: activeStream.id
@@ -346,6 +417,7 @@ async function connectLiveKit() {
     });
 
     await livekitRoom.connect(tokenData.url, tokenData.token);
+
     setStatus(activeStream.status === "live" ? "Live room connected." : "Stream loaded.");
     return true;
   } catch (error) {
@@ -359,13 +431,19 @@ async function startViewSession() {
   if (!activeStream?.id) return;
 
   const user = await getUser();
+  const viewerIdentity =
+    user?.id ||
+    window.localStorage.getItem("rb_guest_viewer_id") ||
+    `guest-${crypto.randomUUID()}`;
+
+  window.localStorage.setItem("rb_guest_viewer_id", viewerIdentity);
 
   const { data } = await supabase
     .from("live_view_sessions")
     .insert({
       stream_id: activeStream.id,
       user_id: user?.id || null,
-      viewer_identity: user?.id || `guest-${crypto.randomUUID()}`,
+      viewer_identity: viewerIdentity,
       started_at: new Date().toISOString(),
       last_seen_at: new Date().toISOString(),
       is_active: true
@@ -375,6 +453,22 @@ async function startViewSession() {
     .catch(() => ({ data: null }));
 
   viewSessionId = data?.id || null;
+}
+
+async function endViewSession() {
+  if (!viewSessionId) return;
+
+  await supabase
+    .from("live_view_sessions")
+    .update({
+      is_active: false,
+      ended_at: new Date().toISOString(),
+      last_seen_at: new Date().toISOString()
+    })
+    .eq("id", viewSessionId)
+    .catch(() => {});
+
+  viewSessionId = null;
 }
 
 async function loadCohosts() {
@@ -394,7 +488,12 @@ async function loadCohosts() {
     const nameEl = els[`cohostName${slot}`];
     const roleEl = els[`cohostRole${slot}`];
 
-    if (nameEl) nameEl.textContent = member?.user_id || "Empty slot";
+    const name =
+      member?.metadata?.label ||
+      member?.user_id ||
+      "Empty slot";
+
+    if (nameEl) nameEl.textContent = name;
     if (roleEl) roleEl.textContent = member?.status || "Waiting";
   });
 }
@@ -422,12 +521,30 @@ async function loadChat() {
 
   els.chatList.innerHTML = data.map((msg) => `
     <article class="watch-chat-message">
-      <strong>${msg.sender_name || msg.user_id || "Rich Playa"}</strong>
-      <span>${msg.body || msg.message || ""}</span>
+      <strong>${escapeHtml(msg.sender_name || msg.user_id || "Rich Playa")}</strong>
+      <span>${escapeHtml(msg.body || msg.message || "")}</span>
     </article>
   `).join("");
 
   els.chatList.scrollTop = els.chatList.scrollHeight;
+}
+
+function subscribeChat() {
+  if (!activeStream?.id || chatChannel) return;
+
+  chatChannel = supabase
+    .channel(`watch-chat-${activeStream.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "*",
+        schema: "public",
+        table: "live_chat_messages",
+        filter: `stream_id=eq.${activeStream.id}`
+      },
+      () => loadChat()
+    )
+    .subscribe();
 }
 
 async function sendChat(event) {
@@ -443,6 +560,7 @@ async function sendChat(event) {
   const { error } = await supabase.from("live_chat_messages").insert({
     stream_id: activeStream.id,
     user_id: user?.id || null,
+    sender_name: user?.email?.split("@")[0] || "Guest",
     body,
     message: body,
     created_at: new Date().toISOString()
@@ -547,12 +665,21 @@ async function copyWatchLink() {
 
 async function refreshWatch() {
   setStatus("Refreshing room...");
+
   await loadStream();
+
+  if (!activeStream) return;
+
   await checkAccess();
   renderGate();
   enableChat();
   await loadCohosts();
   await loadChat();
+
+  if (accessGranted && !livekitRoom) {
+    await connectLiveKit();
+  }
+
   setStatus(activeStream?.status === "live" ? "Live room refreshed." : "Stream refreshed.");
 }
 
@@ -583,11 +710,11 @@ async function boot() {
   bindEvents();
 
   setStatus("Loading watch room...");
-
   await getUser();
 
   if (getParam("checkout") === "success") {
     setStatus("Payment successful — unlocking...");
+    await new Promise((resolve) => setTimeout(resolve, 1200));
   }
 
   await loadStream();
@@ -600,6 +727,7 @@ async function boot() {
 
   await loadCohosts();
   await loadChat();
+  subscribeChat();
 
   await startViewSession();
 
@@ -617,17 +745,8 @@ async function boot() {
   setStatus(activeStream.status === "live" ? "Live." : "Stream loaded.");
 }
 
-window.addEventListener("beforeunload", async () => {
-  if (!viewSessionId) return;
-
-  await supabase
-    .from("live_view_sessions")
-    .update({
-      is_active: false,
-      ended_at: new Date().toISOString(),
-      last_seen_at: new Date().toISOString()
-    })
-    .eq("id", viewSessionId);
+window.addEventListener("beforeunload", () => {
+  endViewSession();
 });
 
 boot().catch((error) => {
