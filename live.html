@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <title>Rich Bizness — Live Studio</title>
+  <meta name="description" content="Rich Bizness Live Studio with LiveKit, co-hosts, paid access, VIP, chat, Meta Vision, and creator controls." />
 
   <link rel="stylesheet" href="/styles/main.css" />
   <link rel="stylesheet" href="/styles/mobile.css" />
@@ -17,175 +18,381 @@
   <div class="page-shell live-shell">
     <div id="elite-platform-nav"></div>
 
-    <!-- HERO -->
     <section class="live-hero">
       <div>
         <span class="live-kicker">Rich Bizness Studio Mode</span>
-        <h1>Go Live. Build the moment.</h1>
+        <h1>Go Live. Bring the room. Build the moment.</h1>
         <p>
-          Multi-user streaming, paid access, live chat, and full creator control —
-          powered by LiveKit + Rich Bizness monetization.
+          Multi-host streaming, paid rooms, VIP access, LiveKit camera, co-hosts, Meta Vision,
+          watch links, creator stats, and live control all sync from one studio.
         </p>
 
         <div class="live-hero-actions">
-          <button id="start-camera-btn" class="btn btn-gold">Start Camera</button>
-          <button id="stop-camera-btn" class="btn btn-dark">Stop Camera</button>
+          <button id="start-camera-btn" class="btn btn-gold" type="button">Start Camera</button>
+          <button id="stop-camera-btn" class="btn btn-dark" type="button">Stop Camera</button>
+          <button id="end-live-top-btn" class="btn btn-dark" type="button">End Live</button>
         </div>
       </div>
     </section>
 
-    <section id="live-status" class="live-status">Studio ready.</section>
+    <section id="live-status-box" class="status-box">Loading live studio...</section>
 
     <main class="live-layout">
-      <!-- MAIN STUDIO -->
       <section class="live-main">
-
-        <!-- VIDEO PREVIEW -->
-        <section class="live-panel">
+        <section class="live-panel live-preview-panel">
           <div class="panel-head">
-            <h2>Camera Preview</h2>
+            <div>
+              <h2 id="preview-title">Rich Bizness Live Studio</h2>
+              <p id="preview-copy">Build the room, test the camera, then call the madness.</p>
+            </div>
+
+            <div class="live-badges">
+              <span id="badge-status">IN THE LAB</span>
+              <span id="badge-access">FREE</span>
+              <span id="badge-category">MUSIC</span>
+            </div>
           </div>
 
           <div class="panel-body">
-            <video
-              id="studio-preview"
-              autoplay
-              muted
-              playsinline
-              class="live-video"
-            ></video>
-          </div>
-        </section>
-
-        <!-- STREAM CONTROL -->
-        <section class="live-panel">
-          <div class="panel-head">
-            <h2>Stream Setup</h2>
-          </div>
-
-          <div class="panel-body">
-            <div class="form-grid-2">
-              <label>
-                Title
-                <input id="live-title" type="text" placeholder="Stream title..." />
-              </label>
-
-              <label>
-                Category
-                <input id="live-category" type="text" placeholder="music, gaming..." />
-              </label>
-            </div>
-
-            <label>
-              Description
-              <textarea id="live-description" rows="3"></textarea>
-            </label>
-
-            <div class="form-grid-2">
-              <label>
-                Access
-                <select id="live-access-type">
-                  <option value="public">Public</option>
-                  <option value="paid">Paid</option>
-                  <option value="vip">VIP</option>
-                </select>
-              </label>
-
-              <label>
-                Price ($)
-                <input id="live-price" type="number" step="0.01" min="0" />
-              </label>
-            </div>
-
-            <label>
-              Thumbnail
-              <input id="live-thumbnail" type="url" placeholder="https://..." />
-            </label>
-
-            <div class="live-actions">
-              <button id="create-live-btn" class="btn btn-primary">Create</button>
-              <button id="update-live-btn" class="btn btn-dark">Update</button>
-              <button id="go-live-btn" class="btn btn-gold">GO LIVE</button>
-              <button id="end-live-btn" class="btn btn-dark">End</button>
+            <div class="studio-stage">
+              <video id="studio-preview" autoplay muted playsinline></video>
+              <div class="studio-stage-overlay">
+                <span>Rich Bizness Studio Preview</span>
+              </div>
             </div>
           </div>
         </section>
 
-        <!-- WATCH LINK -->
         <section class="live-panel">
           <div class="panel-head">
-            <h2>Watch Link</h2>
+            <div>
+              <h2>Stream Setup</h2>
+              <p>Source table: live_streams</p>
+            </div>
           </div>
 
           <div class="panel-body">
-            <div class="live-link-box">
-              <input id="watch-link" readonly />
-              <button id="copy-watch-link-btn" class="btn btn-dark">Copy</button>
+            <form id="live-form" class="live-form">
+              <div class="form-grid-2">
+                <label>
+                  Title
+                  <input id="live-title" type="text" placeholder="WE LIT 🔥" />
+                </label>
+
+                <label>
+                  Category
+                  <select id="live-category">
+                    <option value="music">Music</option>
+                    <option value="gaming">Gaming</option>
+                    <option value="sports">Sports</option>
+                    <option value="gallery">Gallery</option>
+                    <option value="talk">Talk</option>
+                    <option value="store">Store</option>
+                  </select>
+                </label>
+              </div>
+
+              <label>
+                Description
+                <textarea id="live-description" rows="4" placeholder="Tell viewers what this Bizness Party is about..."></textarea>
+              </label>
+
+              <div class="form-grid-3">
+                <label>
+                  Access
+                  <select id="live-access">
+                    <option value="free">Free</option>
+                    <option value="paid">Paid</option>
+                    <option value="vip">VIP</option>
+                    <option value="members">Members</option>
+                  </select>
+                </label>
+
+                <label>
+                  Price
+                  <input id="live-price" type="number" min="0" step="0.01" placeholder="0.00" />
+                </label>
+
+                <label>
+                  Currency
+                  <input id="live-currency" type="text" value="USD" placeholder="USD" />
+                </label>
+              </div>
+
+              <div class="form-grid-2">
+                <label>
+                  Thumbnail URL
+                  <input id="live-thumbnail" type="url" placeholder="https://..." />
+                </label>
+
+                <label>
+                  Cover URL
+                  <input id="live-cover" type="url" placeholder="https://..." />
+                </label>
+              </div>
+
+              <label>
+                LiveKit Room Name
+                <input id="live-room-name" type="text" placeholder="Auto-generated if empty" />
+              </label>
+
+              <div class="live-switch-grid">
+                <label class="switch-row">
+                  <input id="live-chat-enabled" type="checkbox" checked />
+                  <span>Chat Enabled</span>
+                </label>
+
+                <label class="switch-row">
+                  <input id="live-replay-enabled" type="checkbox" checked />
+                  <span>Replay Enabled</span>
+                </label>
+
+                <label class="switch-row">
+                  <input id="live-featured" type="checkbox" />
+                  <span>Featured</span>
+                </label>
+
+                <label class="switch-row">
+                  <input id="live-scheduled-mode" type="checkbox" />
+                  <span>Schedule Mode</span>
+                </label>
+              </div>
+
+              <div id="schedule-wrap" class="schedule-wrap" style="display:none;">
+                <label>
+                  Scheduled For
+                  <input id="live-scheduled-for" type="datetime-local" />
+                </label>
+              </div>
+
+              <div id="studio-setup-actions" class="live-actions">
+                <button id="create-live-btn" class="btn btn-gold" type="button">Create Madness Call</button>
+                <button id="update-live-btn" class="btn btn-dark" type="button">Save Setup</button>
+                <button id="go-live-btn" class="btn btn-primary" type="button">GO LIVE</button>
+                <button id="clear-live-form-btn" class="btn btn-dark" type="button">Clear</button>
+              </div>
+
+              <div id="studio-live-actions" class="live-actions" hidden>
+                <button id="end-live-btn" class="btn btn-dark" type="button">End Live</button>
+                <button id="open-watch-live-btn" class="btn btn-gold" type="button">Open Watch</button>
+                <button id="copy-watch-live-btn" class="btn btn-dark" type="button">Copy Watch Link</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="live-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Watch Link + Stream Details</h2>
+              <p>Use this to send viewers into the watch room.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="watch-link-box">
+              <strong id="detail-watch-url">—</strong>
+              <div class="live-actions">
+                <button id="open-watch-btn" class="btn btn-gold" type="button">Open Watch</button>
+                <button id="copy-watch-link-btn" class="btn btn-dark" type="button">Copy Link</button>
+                <button id="refresh-stream-btn" class="btn btn-dark" type="button">Refresh</button>
+              </div>
             </div>
 
-            <div class="live-actions">
-              <button id="open-watch-btn" class="btn btn-gold">Open Watch</button>
-              <button id="open-watch-live-btn" class="btn btn-dark">Open Live</button>
-              <button id="copy-watch-live-btn" class="btn btn-dark">Copy Live Link</button>
+            <div class="detail-grid">
+              <article><span>Stream ID</span><strong id="detail-stream-id">—</strong></article>
+              <article><span>Room</span><strong id="detail-room-name">—</strong></article>
+              <article><span>Times</span><strong id="detail-times">No live record yet.</strong></article>
             </div>
           </div>
         </section>
 
+        <section class="live-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Recent Streams</h2>
+              <p>Load or reopen your latest live records.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div id="recent-live-list" class="recent-live-list">
+              <div class="status-box">No recent streams loaded yet.</div>
+            </div>
+          </div>
+        </section>
       </section>
 
-      <!-- SIDE PANEL -->
       <aside class="live-side">
-
-        <!-- LIVE STATS -->
         <section class="live-panel">
           <div class="panel-head">
-            <h2>Live Stats</h2>
+            <div>
+              <h2>Studio Stats</h2>
+              <p>Live stream performance snapshot.</p>
+            </div>
           </div>
 
-          <div class="panel-body live-stats">
-            <span>Viewers: <strong id="live-viewers">0</strong></span>
-            <span>Peak: <strong id="live-peak">0</strong></span>
-            <span>Chat: <strong id="live-chat-count">0</strong></span>
-            <span>Revenue: <strong id="live-revenue">$0.00</strong></span>
+          <div class="panel-body live-stats-grid">
+            <article><span>Status</span><strong id="meta-status">In The Lab</strong></article>
+            <article><span>Slug</span><strong id="meta-slug">—</strong></article>
+            <article><span>Viewers</span><strong id="meta-viewers">0</strong></article>
+            <article><span>Revenue</span><strong id="meta-revenue">$0.00</strong></article>
           </div>
         </section>
 
-        <!-- LIVE CHAT -->
-        <section class="live-panel">
+        <section class="live-panel cohost-panel">
           <div class="panel-head">
-            <h2>Live Chat</h2>
+            <div>
+              <h2>Rich Playa Co-Host Room</h2>
+              <p>Invite co-hosts into your Bizness Party.</p>
+            </div>
           </div>
 
           <div class="panel-body">
-            <div id="live-chat-list" class="live-chat-list"></div>
+            <div id="cohost-status-box" class="cohost-status-box">Co-host system ready.</div>
 
-            <div class="live-chat-input">
-              <input id="live-chat-message" placeholder="Send message..." />
-              <button id="send-chat-btn" class="btn btn-gold">Send</button>
+            <div class="cohost-grid">
+              <article class="cohost-slot">
+                <div class="cohost-video-slot">Rich Playa 1</div>
+                <strong>Slot 1</strong>
+                <span>Waiting</span>
+              </article>
+
+              <article class="cohost-slot">
+                <div class="cohost-video-slot">Rich Playa 2</div>
+                <strong>Slot 2</strong>
+                <span>Waiting</span>
+              </article>
+
+              <article class="cohost-slot">
+                <div class="cohost-video-slot">Rich Playa 3</div>
+                <strong>Slot 3</strong>
+                <span>Waiting</span>
+              </article>
+            </div>
+
+            <div class="form-grid-2 cohost-form">
+              <label>
+                Co-host User UUID
+                <input id="cohost-user-id" type="text" placeholder="Paste user UUID" />
+              </label>
+
+              <label>
+                Slot
+                <select id="cohost-slot">
+                  <option value="1">Rich Playa 1</option>
+                  <option value="2">Rich Playa 2</option>
+                  <option value="3">Rich Playa 3</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="live-actions">
+              <button id="bring-em-in-btn" class="btn btn-gold" type="button">Bring Em In</button>
+              <button id="refresh-cohosts-btn" class="btn btn-dark" type="button">Refresh Co-hosts</button>
+            </div>
+
+            <div id="cohost-list" class="cohost-list"></div>
+          </div>
+        </section>
+
+        <section class="live-panel meta-vision-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Meta Vision</h2>
+              <p>Future VR-ready creator room layer.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div id="meta-vision-status" class="meta-vision-status">Meta Vision ready.</div>
+
+            <label>
+              Meta Theme
+              <select id="meta-vision-theme">
+                <option value="money-road">Money Road</option>
+                <option value="smoke-city">Smoke City</option>
+                <option value="studio-mode">Studio Mode</option>
+                <option value="sports-arena">Sports Arena</option>
+                <option value="music-label">Music Label</option>
+              </select>
+            </label>
+
+            <label>
+              Meta Label
+              <input id="meta-vision-label" type="text" value="Meta Room Ready" />
+            </label>
+
+            <div class="meta-orb-wrap">
+              <div class="meta-orb"></div>
+              <strong>Live-powered • VR-ready • Creator-first</strong>
+            </div>
+
+            <div class="live-actions">
+              <button id="enter-meta-vision-btn" class="btn btn-gold" type="button">Enter Meta Vision</button>
+              <button id="exit-meta-vision-btn" class="btn btn-dark" type="button">Exit Meta Vision</button>
             </div>
           </div>
         </section>
 
-        <!-- QUICK LINKS -->
         <section class="live-panel">
           <div class="panel-head">
-            <h2>Studio Links</h2>
+            <div>
+              <h2>Live Chat Preview</h2>
+              <p>Chat syncs on the watch room.</p>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="live-chat-list" id="live-chat-list">
+              <div class="status-box">Chat messages appear in Watch.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="live-panel">
+          <div class="panel-head">
+            <div>
+              <h2>Studio Links</h2>
+              <p>Jump across the platform.</p>
+            </div>
           </div>
 
           <div class="panel-body live-links">
-            <a href="/creator-dashboard.html">Dashboard</a>
+            <a href="/watch.html">Watch</a>
+            <a href="/creator-dashboard.html">Creator Dashboard</a>
             <a href="/feed.html">Feed</a>
             <a href="/music.html">Music</a>
             <a href="/gaming.html">Gaming</a>
+            <a href="/sports.html">Sports</a>
             <a href="/profile.html">Profile</a>
           </div>
         </section>
-
       </aside>
     </main>
   </div>
 
-  <!-- SUPABASE -->
+  <section id="live-dm-popup" class="live-dm-popup" hidden>
+    <div class="live-dm-card">
+      <div class="panel-head">
+        <div>
+          <h2>Live Slide In</h2>
+          <p>Send a private message connected to this live.</p>
+        </div>
+        <button id="live-dm-close-btn" class="btn btn-dark" type="button">Close</button>
+      </div>
+
+      <div class="panel-body">
+        <textarea id="live-dm-body" rows="4" placeholder="Write message..."></textarea>
+        <div id="live-dm-status" class="status-box">Ready.</div>
+        <div class="live-actions">
+          <button id="live-dm-send-btn" class="btn btn-gold" type="button">Send DM</button>
+          <button id="live-dm-cancel-btn" class="btn btn-dark" type="button">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <script>
     window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
     window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
