@@ -1,37 +1,57 @@
 /* =========================
-   RICH BIZNESS MOBILE STYLE
-   styles/mobile.css
+   RICH BIZNESS — MOBILE SYSTEM REPAIR
+   /styles/mobile.css
+   Purpose:
+   - Keep elite desktop/page CSS
+   - Repair phone/tablet behavior
+   - Stop desktop + mobile fighting each other
 ========================= */
 
-/* ========= MOBILE-FIRST PATCHES =========
-   This file stacks on top of styles/main.css
-   and tightens the full app for phones/tablets.
-========================================= */
-
 :root {
-  --rb-mobile-header: 72px;
-  --rb-mobile-bottom-nav: 82px;
+  --rb-mobile-gutter: 14px;
+  --rb-mobile-radius: 18px;
+  --rb-mobile-bottom-nav: 86px;
+  --rb-mobile-safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* ========= GLOBAL MOBILE BEHAVIOR ========= */
-html,
-body {
+/* =========================
+   GLOBAL DEVICE SAFETY
+========================= */
+
+html {
+  width: 100%;
   max-width: 100%;
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  overscroll-behavior-y: none;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 img,
 video,
+canvas,
 iframe,
-canvas {
+svg {
   max-width: 100%;
+}
+
+img,
+video,
+canvas {
   height: auto;
 }
 
@@ -39,215 +59,660 @@ button,
 input,
 select,
 textarea {
+  font: inherit;
   font-size: 16px;
 }
 
-/* ========= DEFAULT SAFE SPACING ========= */
+a,
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* =========================
+   APP WIDTH CONTROL
+========================= */
+
 .page-shell,
 .app-shell,
-.rb-app-shell {
-  width: 100%;
+.rb-app-shell,
+.creator-dashboard-shell,
+.live-shell,
+.watch-shell,
+profile-shell,
+.upload-shell,
+.auth-shell,
+.music-shell,
+.gaming-shell,
+.sports-shell,
+.gallery-shell,
+.messages-shell,
+.notifications-shell {
+  width: min(100%, 1440px);
   max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.panel,
-.glass,
-.card,
-.rb-card,
-.card-soft,
-.hero,
-.page-hero {
-  max-width: 100%;
+/* =========================
+   TABLET REPAIR
+========================= */
+
+@media (max-width: 1180px) {
+  .live-layout,
+  .watch-layout,
+  .profile-layout,
+  .upload-layout,
+  .music-layout,
+  .gaming-layout,
+  .sports-layout,
+  .gallery-layout,
+  .messages-layout,
+  .notifications-layout,
+  .creator-dashboard-grid,
+  .creator-summary-grid,
+  .creator-balance-grid,
+  .feed-layout,
+  .dashboard-layout,
+  .two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .creator-stats-grid,
+  .profile-stats-grid,
+  .watch-stats-grid,
+  .pro-strip,
+  .stat-grid,
+  .four-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .three-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
 }
 
-/* ========= MOBILE HEADER ========= */
+/* =========================
+   PHONE APP LAYOUT
+========================= */
+
+@media (max-width: 780px) {
+  body {
+    min-width: 0;
+  }
+
+  .page-shell,
+  .app-shell,
+  .rb-app-shell,
+  .creator-dashboard-shell,
+  .live-shell,
+  .watch-shell,
+  .profile-shell,
+  .upload-shell,
+  .auth-shell,
+  .music-shell,
+  .gaming-shell,
+  .sports-shell,
+  .gallery-shell,
+  .messages-shell,
+  .notifications-shell {
+    width: 100%;
+    padding-left: var(--rb-mobile-gutter);
+    padding-right: var(--rb-mobile-gutter);
+    gap: 14px;
+  }
+
+  .page-shell > *,
+  .app-shell > *,
+  .rb-app-shell > * {
+    min-width: 0;
+  }
+}
+
+/* =========================
+   NAV / HEADER REPAIR
+========================= */
+
 @media (max-width: 980px) {
+  #elite-platform-nav,
   .site-header,
   .app-header,
-  .rb-header {
-    min-height: var(--rb-mobile-header);
-    padding-top: env(safe-area-inset-top, 0);
+  .rb-header,
+  .elite-nav,
+  .platform-nav {
+    width: 100%;
+    max-width: 100%;
+    z-index: 1000;
   }
 
   .site-header-inner,
   .app-header-inner,
-  .rb-header-inner {
+  .rb-header-inner,
+  .elite-nav-inner,
+  .platform-nav-inner {
     width: 100%;
-    padding: 12px 14px;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .brand-wrap,
-  .brand-lockup {
-    flex: 1 1 auto;
-    min-width: 0;
+    max-width: 100%;
+    padding: 10px var(--rb-mobile-gutter);
     gap: 10px;
-  }
-
-  .brand-logo,
-  .site-logo,
-  .app-logo {
-    width: 44px;
-    height: 44px;
-    border-radius: 14px;
-  }
-
-  .brand-name,
-  .site-brand-name {
-    font-size: 1rem;
-    line-height: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .brand-subtitle,
-  .site-brand-subtitle {
-    font-size: 0.72rem;
-    line-height: 1.2;
+    flex-wrap: wrap;
   }
 
   .nav-links,
   .top-nav,
-  .rb-nav {
+  .rb-nav,
+  .elite-nav-links,
+  .platform-nav-links {
     width: 100%;
+    max-width: 100%;
+    display: flex;
     gap: 8px;
     overflow-x: auto;
+    overflow-y: hidden;
     flex-wrap: nowrap;
-    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
+    padding-bottom: 4px;
   }
 
   .nav-links::-webkit-scrollbar,
   .top-nav::-webkit-scrollbar,
-  .rb-nav::-webkit-scrollbar {
+  .rb-nav::-webkit-scrollbar,
+  .elite-nav-links::-webkit-scrollbar,
+  .platform-nav-links::-webkit-scrollbar {
     display: none;
   }
 
   .nav-link,
   .nav-pill,
-  .rb-pill {
+  .rb-pill,
+  .elite-nav a,
+  .platform-nav a {
     flex: 0 0 auto;
     min-height: 40px;
-    padding: 9px 14px;
-    font-size: 0.88rem;
     white-space: nowrap;
   }
 }
 
-/* ========= HERO MOBILE ========= */
-@media (max-width: 980px) {
+/* =========================
+   HERO REPAIR — KEEP ELITE, FIT MOBILE
+========================= */
+
+@media (max-width: 780px) {
   .hero,
-  .page-hero {
-    padding: 22px 16px;
-    border-radius: 18px;
-    min-height: unset;
-    background-position: center center;
-  }
-
-  .hero-content,
-  .page-hero-content {
+  .page-hero,
+  .live-hero,
+  .watch-hero,
+  .profile-hero,
+  .upload-hero,
+  .music-hero,
+  .gaming-hero,
+  .sports-hero,
+  .gallery-hero,
+  .messages-hero,
+  .notifications-hero,
+  .creator-hero-card,
+  .leaderboard-hero,
+  .challenge-hero {
+    width: 100%;
     max-width: 100%;
+    min-height: 320px;
+    border-radius: 22px;
+    padding: 22px;
+    background-position: center;
   }
 
-  .page-title,
-  .section-title,
-  .hero-title {
-    font-size: clamp(1.65rem, 7vw, 2.5rem);
-    line-height: 0.96;
-    letter-spacing: -0.04em;
+  .hero h1,
+  .page-hero h1,
+  .live-hero h1,
+  .watch-hero h1,
+  .profile-hero h1,
+  .upload-hero h1,
+  .music-hero h1,
+  .gaming-hero h1,
+  .sports-hero h1,
+  .gallery-hero h1,
+  .messages-hero h1,
+  .notifications-hero h1,
+  .creator-hero-copy h1,
+  .leaderboard-hero h1,
+  .challenge-hero h1 {
+    font-size: clamp(2rem, 10vw, 3.2rem);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
   }
 
-  .hero-actions {
-    display: grid;
+  .hero p,
+  .page-hero p,
+  .live-hero p,
+  .watch-hero p,
+  .profile-hero p,
+  .upload-hero p,
+  .music-hero p,
+  .gaming-hero p,
+  .sports-hero p,
+  .gallery-hero p,
+  .messages-hero p,
+  .notifications-hero p,
+  .creator-hero-copy p,
+  .leaderboard-hero p,
+  .challenge-hero p {
+    font-size: 0.95rem;
+  }
+}
+
+/* =========================
+   ACTION BUTTON REPAIR
+========================= */
+
+@media (max-width: 780px) {
+  .hero-actions,
+  .live-hero-actions,
+  .watch-hero-actions,
+  .profile-hero-actions,
+  .upload-actions,
+  .music-actions,
+  .gaming-actions,
+  .sports-actions,
+  .gallery-actions,
+  .messages-actions,
+  .notifications-actions,
+  .creator-hero-actions,
+  .live-actions,
+  .watch-stream-actions,
+  .watch-gate-actions,
+  .watch-meta-actions,
+  .composer-actions,
+  .profile-edit-actions,
+  .upload-submit-row,
+  .auth-actions {
+    display: grid !important;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
+    width: 100%;
+  }
+
+  .btn,
+  .rb-btn,
+  button,
+  a.btn {
+    min-height: 44px;
   }
 
   .hero-actions .btn,
-  .hero-actions .rb-btn,
-  .hero-actions a {
+  .live-hero-actions .btn,
+  .watch-hero-actions .btn,
+  .profile-hero-actions .btn,
+  .upload-actions .btn,
+  .music-actions .btn,
+  .gaming-actions .btn,
+  .sports-actions .btn,
+  .gallery-actions .btn,
+  .messages-actions .btn,
+  .notifications-actions .btn,
+  .creator-hero-actions .btn,
+  .live-actions .btn,
+  .watch-stream-actions .btn,
+  .watch-gate-actions .btn,
+  .watch-meta-actions .btn,
+  .composer-actions .btn,
+  .profile-edit-actions .btn,
+  .upload-submit-row .btn,
+  .auth-actions .btn,
+  .hero-actions a,
+  .live-hero-actions a,
+  .watch-hero-actions a,
+  .profile-hero-actions a,
+  .upload-actions a,
+  .music-actions a,
+  .gaming-actions a,
+  .sports-actions a,
+  .gallery-actions a,
+  .messages-actions a,
+  .notifications-actions a,
+  .creator-hero-actions a,
+  .live-actions a,
+  .watch-stream-actions a,
+  .watch-gate-actions a,
+  .watch-meta-actions a,
+  .composer-actions a,
+  .profile-edit-actions a,
+  .upload-submit-row a,
+  .auth-actions a,
+  .hero-actions button,
+  .live-hero-actions button,
+  .watch-hero-actions button,
+  .profile-hero-actions button,
+  .upload-actions button,
+  .music-actions button,
+  .gaming-actions button,
+  .sports-actions button,
+  .gallery-actions button,
+  .messages-actions button,
+  .notifications-actions button,
+  .creator-hero-actions button,
+  .live-actions button,
+  .watch-stream-actions button,
+  .watch-gate-actions button,
+  .watch-meta-actions button,
+  .composer-actions button,
+  .profile-edit-actions button,
+  .upload-submit-row button,
+  .auth-actions button {
     width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }
 
-@media (max-width: 560px) {
-  .hero-actions {
+@media (max-width: 480px) {
+  .hero-actions,
+  .live-hero-actions,
+  .watch-hero-actions,
+  .profile-hero-actions,
+  .upload-actions,
+  .music-actions,
+  .gaming-actions,
+  .sports-actions,
+  .gallery-actions,
+  .messages-actions,
+  .notifications-actions,
+  .creator-hero-actions,
+  .live-actions,
+  .watch-stream-actions,
+  .watch-gate-actions,
+  .watch-meta-actions,
+  .composer-actions,
+  .profile-edit-actions,
+  .upload-submit-row,
+  .auth-actions {
     grid-template-columns: 1fr;
   }
 }
 
-/* ========= GRID COLLAPSE ========= */
-@media (max-width: 1100px) {
-  .feed-layout,
-  .two-col,
-  .dashboard-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+/* =========================
+   PANEL / CARD REPAIR
+========================= */
 
-  .three-col,
-  .four-col,
-  .stat-grid,
-  .form-grid-2 {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-}
-
-/* ========= CARDS / PANELS MOBILE ========= */
-@media (max-width: 980px) {
+@media (max-width: 780px) {
+  .panel,
+  .glass,
   .card,
   .rb-card,
-  .panel,
-  .glass {
-    padding: 14px;
-    border-radius: 16px;
+  .live-panel,
+  .watch-player-card,
+  .watch-gate-panel,
+  .watch-cohost-panel,
+  .watch-meta-panel,
+  .watch-chat-panel,
+  .watch-reactions-panel,
+  .watch-dm-panel,
+  .watch-stream-details,
+  .watch-more-panel,
+  .profile-panel,
+  .upload-panel,
+  .music-panel,
+  .gaming-panel,
+  .sports-panel,
+  .gallery-panel,
+  .messages-panel,
+  .notifications-panel,
+  .dashboard-panel,
+  .creator-hero-card,
+  .auth-card,
+  .auth-brand-panel,
+  .leaderboard-panel,
+  .challenge-panel {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
   }
 
-  .card-soft {
-    padding: 12px;
+  .panel-head,
+  .panel-body {
+    padding: 14px;
+  }
+
+  .panel-head {
+    align-items: flex-start;
+  }
+}
+
+/* =========================
+   GRID REPAIR — ALL SECTION GRIDS
+========================= */
+
+@media (max-width: 780px) {
+  .form-grid-2,
+  .form-grid-3,
+  .upload-extra-grid,
+  .live-switch-grid,
+  .detail-grid,
+  .live-stats-grid,
+  .watch-stats-grid,
+  .watch-cohost-grid,
+  .reaction-grid,
+  .profile-stats-grid,
+  .creator-stats-grid,
+  .creator-balance-grid,
+  .creator-summary-grid,
+  .creator-dashboard-grid,
+  .track-grid,
+  .games-grid,
+  .sports-grid,
+  .artworks-grid,
+  .quick-grid,
+  .route-grid,
+  .pro-strip,
+  .leaderboard-controls,
+  .challenge-layout,
+  .auth-feature-grid,
+  .profile-link-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stat-grid,
+  .four-col,
+  .three-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Keep small stat blocks useful on phones */
+@media (min-width: 430px) and (max-width: 780px) {
+  .profile-stats-grid,
+  .creator-stats-grid,
+  .watch-stats-grid,
+  .live-stats-grid,
+  .pro-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* =========================
+   LIVE / WATCH VIDEO REPAIR
+========================= */
+
+@media (max-width: 780px) {
+  .studio-stage,
+  .watch-player-stage {
+    width: 100%;
+    min-height: 280px;
+    border-radius: 18px;
+  }
+
+  .studio-stage video,
+  #studio-preview,
+  #watch-video {
+    width: 100%;
+    min-height: 280px;
+    max-height: 58vh;
+    object-fit: cover;
+  }
+
+  .watch-badges,
+  .live-badges {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .watch-stream-info {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .studio-stage,
+  .watch-player-stage,
+  .studio-stage video,
+  #studio-preview,
+  #watch-video {
+    min-height: 230px;
+  }
+}
+
+/* =========================
+   PROFILE REPAIR
+========================= */
+
+@media (max-width: 780px) {
+  .profile-hero {
+    min-height: 390px;
+  }
+
+  .profile-hero-overlay,
+  .creator-hero-overlay {
+    grid-template-columns: 1fr !important;
+    align-items: end;
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .profile-avatar,
+  .creator-hero-avatar {
+    width: 92px;
+    height: 92px;
+    border-radius: 24px;
+  }
+
+  .profile-meta-row {
+    display: grid;
+    gap: 8px;
+  }
+
+  .profile-edit-panel {
+    border-radius: 20px;
+  }
+}
+
+/* =========================
+   AUTH REPAIR
+========================= */
+
+@media (max-width: 900px) {
+  .auth-shell {
+    min-height: 100vh;
+    grid-template-columns: 1fr !important;
+    padding: 14px;
+  }
+
+  .auth-brand-panel,
+  .auth-card {
+    min-width: 0;
+  }
+
+  .auth-logo-orb {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* =========================
+   MESSAGES / NOTIFICATIONS REPAIR
+========================= */
+
+@media (max-width: 780px) {
+  .messages-layout,
+  .notifications-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .messages-sidebar,
+  .messages-main,
+  .notifications-filters,
+  .notifications-main {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .messages-list {
+    min-height: 360px;
+    max-height: 62vh;
+  }
+
+  .send-message-form {
+    grid-template-columns: 1fr !important;
+  }
+
+  .notifications-filters {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .notifications-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .notifications-filters h3 {
+    display: none;
+  }
+
+  .filter-btn {
+    flex: 0 0 auto;
+    width: auto;
+    white-space: nowrap;
+  }
+
+  .notification-card {
+    grid-template-columns: 44px 1fr;
+    gap: 10px;
+  }
+}
+
+/* =========================
+   FORMS
+========================= */
+
+@media (max-width: 780px) {
+  label {
+    font-size: 0.88rem;
+  }
+
+  input,
+  textarea,
+  select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
     border-radius: 14px;
   }
 
-  .stat-card {
-    padding: 14px;
-  }
-
-  .stat-value {
-    font-size: 1.35rem;
-  }
-
-  .badge,
-  .rb-badge {
-    min-height: 28px;
-    padding: 6px 10px;
-    font-size: 0.74rem;
+  textarea {
+    min-height: 112px;
   }
 }
 
-/* ========= BUTTONS MOBILE ========= */
-@media (max-width: 980px) {
-  .btn,
-  .rb-btn {
-    min-height: 44px;
-    padding: 11px 14px;
-    font-size: 0.92rem;
-    border-radius: 13px;
-  }
+/* =========================
+   TABLES / WIDE CONTENT
+========================= */
 
-  .btn-block-mobile {
-    width: 100%;
-  }
-
-  .inline-row,
-  .justify-between {
-    flex-wrap: wrap;
-  }
-}
-
-/* ========= TABLE WRAP ========= */
 .table-wrap,
 .rb-table-wrap {
   width: 100%;
@@ -255,125 +720,99 @@ textarea {
   -webkit-overflow-scrolling: touch;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 780px) {
   table {
-    min-width: 720px;
+    min-width: 680px;
   }
 
   th,
   td {
-    padding: 12px 10px;
-    font-size: 0.85rem;
+    padding: 10px;
+    font-size: 0.84rem;
+  }
+
+  pre,
+  code {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 }
 
-/* ========= FORM MOBILE ========= */
-@media (max-width: 980px) {
-  label {
-    font-size: 0.88rem;
-    margin-bottom: 6px;
+/* =========================
+   MEDIA CARDS
+========================= */
+
+@media (max-width: 780px) {
+  .track-card img,
+  .sports-media img,
+  .sports-media video,
+  .artwork-card img,
+  .game-card img {
+    width: 100%;
+    height: auto;
+    max-height: 360px;
+    object-fit: cover;
   }
 
-  input,
-  textarea,
-  select {
-    padding: 12px 13px;
-    border-radius: 12px;
+  .product-card {
+    display: grid !important;
+    grid-template-columns: 78px 1fr;
   }
 
-  textarea {
-    min-height: 110px;
-  }
-
-  .form-row,
-  .form-grid-2 {
-    gap: 12px;
-  }
-}
-
-/* ========= MEDIA BLOCKS ========= */
-@media (max-width: 980px) {
-  .cover-image,
-  .banner-image,
-  .hero-image {
-    min-height: 160px;
-    border-radius: 16px;
-  }
-
-  .avatar,
-  .profile-avatar {
-    width: 48px;
-    height: 48px;
-  }
-
-  .avatar-lg {
-    width: 76px;
-    height: 76px;
+  .product-card img {
+    width: 78px;
+    height: 78px;
   }
 }
 
-/* ========= MOBILE DRAWER / MENU HELPERS ========= */
-.mobile-only {
-  display: none !important;
-}
+/* =========================
+   FIXED PLAYERS / BOTTOM UI
+========================= */
 
-@media (max-width: 980px) {
-  .mobile-only {
-    display: block !important;
+@media (max-width: 780px) {
+  .music-player {
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + var(--rb-mobile-safe-bottom));
+    grid-template-columns: 1fr !important;
+    border-radius: 18px;
   }
 
-  .desktop-only {
-    display: none !important;
+  body.music-page {
+    padding-bottom: 150px;
   }
 
-  .mobile-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .mobile-stack {
-    display: grid;
-    gap: 10px;
-  }
-}
-
-/* ========= STICKY MOBILE FOOTER NAV ========= */
-.mobile-bottom-nav {
-  display: none;
-}
-
-@media (max-width: 980px) {
   .mobile-bottom-nav {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 8px;
     position: fixed;
-    left: 12px;
-    right: 12px;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0));
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + var(--rb-mobile-safe-bottom));
     z-index: 1300;
     padding: 10px;
     border-radius: 18px;
-    background: rgba(7, 11, 8, 0.92);
-    border: 1px solid rgba(105, 255, 180, 0.14);
+    background: rgba(7, 9, 11, 0.92);
+    border: 1px solid rgba(255, 206, 88, 0.16);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.34);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.38);
   }
 
   .mobile-bottom-nav a,
   .mobile-bottom-nav button {
-    min-height: 44px;
+    min-height: 42px;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255,255,255,0.05);
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.06);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    border: 1px solid rgba(255,255,255,0.07);
+    display: grid;
+    place-items: center;
     font-size: 0.72rem;
-    font-weight: 800;
+    font-weight: 850;
     text-align: center;
     padding: 6px;
   }
@@ -384,100 +823,98 @@ textarea {
   }
 }
 
-/* ========= PAGE-SPECIFIC SAFE HELPERS ========= */
-.mobile-page-pad {
-  padding-left: 14px;
-  padding-right: 14px;
+.mobile-bottom-nav {
+  display: none;
 }
 
-.mobile-section-gap {
-  gap: 12px;
-}
+/* =========================
+   MODALS / POPUPS
+========================= */
 
-.mobile-card-list {
-  display: grid;
-  gap: 12px;
-}
-
-.mobile-center {
-  text-align: center;
-}
-
-.mobile-full {
-  width: 100%;
-}
-
-/* ========= PROFILE / FEED / WATCH HELPERS ========= */
-@media (max-width: 980px) {
-  .profile-header,
-  .creator-header,
-  .feed-header,
-  .watch-header,
-  .live-header {
-    display: grid;
-    gap: 12px;
-  }
-
-  .profile-actions,
-  .creator-actions,
-  .feed-actions,
-  .watch-actions,
-  .live-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-}
-
-@media (max-width: 560px) {
-  .profile-actions,
-  .creator-actions,
-  .feed-actions,
-  .watch-actions,
-  .live-actions {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ========= MOBILE SCROLL CONTAINERS ========= */
-.horizontal-scroll,
-.mobile-scroll-x {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding-bottom: 4px;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
-}
-
-.horizontal-scroll > *,
-.mobile-scroll-x > * {
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-}
-
-/* ========= MODALS ========= */
-@media (max-width: 980px) {
+@media (max-width: 780px) {
   .modal,
   .rb-modal,
   .dialog,
-  .rb-dialog {
-    width: calc(100vw - 20px);
-    max-width: calc(100vw - 20px);
-    max-height: calc(100vh - 30px);
-    margin: 10px auto;
-    border-radius: 18px;
+  .rb-dialog,
+  .live-dm-card {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 28px);
+    border-radius: 20px;
   }
 
   .modal-content,
   .rb-modal-content,
   .dialog-content {
-    padding: 16px;
+    padding: 14px;
   }
 }
 
-/* ========= FLICKER / SAFARI FRIENDLY ========= */
+/* =========================
+   SCROLL HELPERS
+========================= */
+
+.horizontal-scroll,
+.mobile-scroll-x,
+.leaderboard-controls {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.horizontal-scroll::-webkit-scrollbar,
+.mobile-scroll-x::-webkit-scrollbar,
+.leaderboard-controls::-webkit-scrollbar {
+  display: none;
+}
+
+.horizontal-scroll > *,
+.mobile-scroll-x > * {
+  flex: 0 0 auto;
+}
+
+/* =========================
+   UTILITY VISIBILITY
+========================= */
+
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 780px) {
+  .mobile-only {
+    display: block !important;
+  }
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-stack {
+    display: grid !important;
+    gap: 10px;
+  }
+
+  .mobile-row {
+    display: flex !important;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-full {
+    width: 100% !important;
+  }
+
+  .mobile-center {
+    text-align: center !important;
+  }
+}
+
+/* =========================
+   SAFARI / iPHONE FIXES
+========================= */
+
 body,
 .site-header,
 .app-header,
@@ -486,80 +923,143 @@ body,
 .glass,
 .card,
 .rb-card,
+.live-panel,
+.watch-player-card,
+.profile-panel,
+.upload-panel,
+.music-panel,
+.gaming-panel,
+.sports-panel,
+.gallery-panel,
+.messages-panel,
+.dashboard-panel,
 .hero,
 .page-hero {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transform: translateZ(0);
 }
 
 @supports (-webkit-touch-callout: none) {
-  body::before {
-    background-attachment: scroll;
+  .live-page,
+  .watch-page,
+  .profile-page,
+  .upload-page,
+  .music-page,
+  .gaming-page,
+  .sports-page,
+  .gallery-page,
+  .messages-page,
+  .notifications-page,
+  .creator-dashboard-page {
+    background-attachment: scroll !important;
+  }
+
+  .live-bg,
+  .watch-bg,
+  .profile-bg,
+  .upload-bg,
+  .music-bg,
+  .gaming-bg,
+  .sports-bg,
+  .gallery-bg,
+  .messages-bg,
+  .notifications-bg,
+  .creator-dashboard-bg {
+    background-attachment: scroll !important;
   }
 }
 
-/* ========= SMALL PHONE ========= */
+/* =========================
+   SMALL PHONE FINAL TUNE
+========================= */
+
 @media (max-width: 420px) {
+  :root {
+    --rb-mobile-gutter: 12px;
+  }
+
   .page-shell,
   .app-shell,
-  .rb-app-shell {
+  .rb-app-shell,
+  .creator-dashboard-shell,
+  .live-shell,
+  .watch-shell,
+  .profile-shell,
+  .upload-shell,
+  .auth-shell,
+  .music-shell,
+  .gaming-shell,
+  .sports-shell,
+  .gallery-shell,
+  .messages-shell,
+  .notifications-shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .panel-head,
+  .panel-body {
     padding: 12px;
   }
 
-  .site-header-inner,
-  .app-header-inner,
-  .rb-header-inner {
-    padding: 10px 12px;
+  .live-hero,
+  .watch-hero,
+  .profile-hero,
+  .upload-hero,
+  .music-hero,
+  .gaming-hero,
+  .sports-hero,
+  .gallery-hero,
+  .messages-hero,
+  .notifications-hero,
+  .creator-hero-card {
+    border-radius: 20px;
+    padding: 18px;
   }
 
-  .hero,
-  .page-hero,
-  .card,
-  .rb-card,
-  .panel,
-  .glass {
-    padding: 12px;
+  .live-hero h1,
+  .watch-hero h1,
+  .profile-hero h1,
+  .upload-hero h1,
+  .music-hero h1,
+  .gaming-hero h1,
+  .sports-hero h1,
+  .gallery-hero h1,
+  .messages-hero h1,
+  .notifications-hero h1,
+  .creator-hero-copy h1 {
+    font-size: clamp(2rem, 11vw, 2.75rem);
   }
 
-  .brand-logo,
-  .site-logo,
-  .app-logo {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
-  }
-
-  .page-title,
-  .section-title,
-  .hero-title {
-    font-size: clamp(1.45rem, 8vw, 2rem);
-  }
-
-  .nav-link,
-  .nav-pill,
-  .rb-pill {
-    min-height: 38px;
-    padding: 8px 12px;
-    font-size: 0.82rem;
+  .btn,
+  .rb-btn,
+  button,
+  a.btn {
+    font-size: 0.9rem;
   }
 }
 
-/* ========= LARGE TABLET ========= */
-@media (min-width: 981px) and (max-width: 1280px) {
+/* =========================
+   LARGE TABLET / SMALL LAPTOP
+========================= */
+
+@media (min-width: 781px) and (max-width: 1280px) {
   .page-shell,
   .app-shell,
-  .rb-app-shell {
+  .rb-app-shell,
+  .creator-dashboard-shell,
+  .live-shell,
+  .watch-shell,
+  .profile-shell,
+  .upload-shell,
+  .auth-shell,
+  .music-shell,
+  .gaming-shell,
+  .sports-shell,
+  .gallery-shell,
+  .messages-shell,
+  .notifications-shell {
     padding-left: 18px;
     padding-right: 18px;
-  }
-
-  .three-col {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .four-col,
-  .stat-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
