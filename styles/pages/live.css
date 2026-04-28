@@ -827,3 +827,172 @@ body.meta-vision-on .studio-stage {
     padding: 11px;
   }
 }
+
+/* =========================
+   LIVE EFFECTS PACK — ADD-ON
+   Put at bottom of /styles/live.css
+========================= */
+
+/* LIVE badge pulse */
+#badge-status {
+  position: relative;
+}
+
+#badge-status:is(:contains("LIVE")) {
+  animation: liveBadgePulse 1.4s ease-in-out infinite;
+}
+
+/* fallback: JS changes text only, so style by body/live state if added later */
+.live-page .live-badges span:first-child {
+  box-shadow: 0 0 18px rgba(255, 95, 109, 0.18);
+}
+
+/* Camera stage energy */
+.studio-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background:
+    linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.08) 45%, transparent 58%);
+  transform: translateX(-120%);
+  animation: studioScan 5s ease-in-out infinite;
+}
+
+/* Viewer/stat pulse */
+#meta-viewers,
+#meta-revenue {
+  color: var(--live-green);
+  text-shadow: 0 0 18px rgba(105,255,180,0.28);
+}
+
+/* Co-host slot live frame */
+.cohost-video-slot {
+  position: relative;
+  overflow: hidden;
+}
+
+.cohost-video-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(105,255,180,0.35);
+  box-shadow:
+    inset 0 0 22px rgba(105,255,180,0.12),
+    0 0 22px rgba(105,255,180,0.1);
+  animation: cohostFrameGlow 2.8s ease-in-out infinite alternate;
+}
+
+/* GO LIVE button breathing */
+#go-live-btn {
+  animation: goLiveBreath 1.8s ease-in-out infinite alternate;
+}
+
+/* Meta Vision active mood */
+body.meta-vision-on .live-panel {
+  border-color: rgba(168,85,247,0.34);
+}
+
+body.meta-vision-on .meta-orb {
+  animation:
+    metaOrb 3.8s ease-in-out infinite alternate,
+    metaOrbSpin 8s linear infinite;
+}
+
+/* Recent stream hover power */
+.recent-live-card:hover,
+.cohost-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,206,88,0.28);
+  box-shadow: 0 16px 38px rgba(0,0,0,0.35);
+}
+
+/* Button shine */
+.live-page .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.live-page .btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: translateX(-130%);
+}
+
+.live-page .btn:hover::after {
+  animation: btnShine 0.7s ease;
+}
+
+/* Animations */
+@keyframes studioScan {
+  0%, 55% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+  65% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes cohostFrameGlow {
+  from {
+    opacity: 0.55;
+    box-shadow:
+      inset 0 0 18px rgba(105,255,180,0.08),
+      0 0 16px rgba(105,255,180,0.08);
+  }
+  to {
+    opacity: 1;
+    box-shadow:
+      inset 0 0 28px rgba(105,255,180,0.18),
+      0 0 28px rgba(105,255,180,0.16);
+  }
+}
+
+@keyframes goLiveBreath {
+  from {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 10px 28px rgba(105,255,180,0.2);
+  }
+  to {
+    transform: translateY(-1px) scale(1.025);
+    box-shadow:
+      0 14px 36px rgba(105,255,180,0.32),
+      0 0 34px rgba(56,189,248,0.18);
+  }
+}
+
+@keyframes metaOrbSpin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes btnShine {
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* Reduce motion for older phones / accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .studio-stage::after,
+  .cohost-video-slot::after,
+  #go-live-btn,
+  body.meta-vision-on .meta-orb,
+  .live-bg,
+  .live-hero::before {
+    animation: none !important;
+  }
+}
