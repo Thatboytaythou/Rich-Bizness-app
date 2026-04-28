@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS GLOBAL NAV
+// RICH BIZNESS GLOBAL NAV — FINAL ELITE SYNC
 // /core/nav.js
 // =========================
 
@@ -12,56 +12,95 @@ export function mountEliteNav({ target = "#elite-platform-nav", collapsed = fals
   const supabase = getSupabase();
   let user = getCurrentUserState();
 
-  function render() {
-    container.innerHTML = `
-      <nav class="rb-global-nav ${collapsed ? "collapsed" : ""}">
-        <div class="rb-nav-left">
-          <a href="/index.html" class="rb-brand">
-            <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" />
-            <span>Rich Bizness</span>
-          </a>
+  const currentPath = window.location.pathname;
 
-          <div class="rb-nav-links">
-            <a href="/feed.html">Feed</a>
-            <a href="/watch.html">Watch</a>
-            <a href="/live.html">Live</a>
-            <a href="/music.html">Music</a>
-            <a href="/gaming.html">Gaming</a>
-            <a href="/sports.html">Sports</a>
-            <a href="/gallery.html">Gallery</a>
-          </div>
-        </div>
+  const links = [
+    ["Home", "/index.html"],
+    ["Feed", "/feed.html"],
+    ["Watch", "/watch.html"],
+    ["Live", "/live.html"],
+    ["Music", "/music.html"],
+    ["Gaming", "/gaming.html"],
+    ["Sports", "/sports.html"],
+    ["Gallery", "/gallery.html"],
+    ["Upload", "/upload.html"],
+    ["Store", "/store.html"],
+    ["Meta", "/metaverse.html"],
+    ["Dashboard", "/creator-dashboard.html"]
+  ];
 
-        <div class="rb-nav-right" id="rb-session-area">
-          ${renderSession()}
-        </div>
-      </nav>
-    `;
+  function isActive(href) {
+    return currentPath === href || currentPath.endsWith(href.replace("/", ""));
+  }
+
+  function renderLinks() {
+    return links.map(([label, href]) => {
+      return `
+        <a class="${isActive(href) ? "active" : ""}" href="${href}">
+          ${label}
+        </a>
+      `;
+    }).join("");
   }
 
   function renderSession() {
     if (!user) {
       return `
-        <a class="btn-ghost" href="/auth.html">Tap In 🔓</a>
+        <a class="rb-nav-action ghost" href="/auth.html">Tap In 🔓</a>
       `;
     }
 
     return `
-      <a class="btn-ghost" href="/messages.html">Messages</a>
-      <a class="btn-ghost" href="/notifications.html">Alerts</a>
-      <a class="btn" href="/profile.html">Profile</a>
-      <button class="btn-ghost" id="rb-logout-btn">Tap Out 🚪</button>
+      <a class="rb-nav-action ghost" href="/messages.html">Messages</a>
+      <a class="rb-nav-action ghost" href="/notifications.html">Alerts</a>
+      <a class="rb-nav-action primary" href="/profile.html">Profile</a>
+      <button class="rb-nav-action ghost" id="rb-logout-btn" type="button">Tap Out 🚪</button>
+    `;
+  }
+
+  function render() {
+    container.innerHTML = `
+      <nav class="rb-global-nav ${collapsed ? "collapsed" : ""}">
+        <div class="rb-nav-inner">
+          <div class="rb-nav-top">
+            <a href="/index.html" class="rb-brand">
+              <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" alt="Rich Bizness" />
+              <span>
+                <strong>Rich Bizness</strong>
+                <small>Creator Empire</small>
+              </span>
+            </a>
+
+            <button class="rb-mobile-menu-btn" id="rb-mobile-menu-btn" type="button">
+              ☰
+            </button>
+
+            <div class="rb-nav-right" id="rb-session-area">
+              ${renderSession()}
+            </div>
+          </div>
+
+          <div class="rb-nav-links" id="rb-nav-links">
+            ${renderLinks()}
+          </div>
+        </div>
+      </nav>
     `;
   }
 
   function bind() {
-    const logoutBtn = document.getElementById("rb-logout-btn");
-    if (logoutBtn) {
-      logoutBtn.onclick = async () => {
-        await supabase.auth.signOut();
-        window.location.href = "/index.html";
-      };
-    }
+    const logoutBtn = container.querySelector("#rb-logout-btn");
+    const menuBtn = container.querySelector("#rb-mobile-menu-btn");
+    const navLinks = container.querySelector("#rb-nav-links");
+
+    logoutBtn?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/index.html";
+    });
+
+    menuBtn?.addEventListener("click", () => {
+      navLinks?.classList.toggle("is-open");
+    });
   }
 
   async function refreshSession() {
@@ -78,7 +117,6 @@ export function mountEliteNav({ target = "#elite-platform-nav", collapsed = fals
   render();
   bind();
 
-  // keep session synced
   supabase.auth.onAuthStateChange(() => {
     refreshSession();
   });
