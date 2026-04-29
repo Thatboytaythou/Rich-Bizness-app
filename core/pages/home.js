@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS HOME CONTROLLER
+// RICH BIZNESS HOME CONTROLLER — FINAL PATCHED
 // /core/pages/home.js
 // =========================
 
@@ -34,6 +34,38 @@ await bootLiveRail({
 });
 
 // =========================
+// TOPBAR SESSION NAV
+// =========================
+async function hydrateTopSessionNav() {
+  const container = document.getElementById("global-session-nav");
+  if (!container) return;
+
+  const { data } = await supabase.auth.getSession();
+  const session = data?.session;
+
+  if (session?.user) {
+    container.innerHTML = `
+      <a href="/profile.html">Profile</a>
+      <a href="/messages.html">Messages</a>
+      <a href="/notifications.html">Alerts</a>
+      <button id="home-topbar-logout-btn" type="button">Tap Out 🚪</button>
+    `;
+
+    document.getElementById("home-topbar-logout-btn")?.addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.reload();
+    });
+
+    return;
+  }
+
+  container.innerHTML = `
+    <a href="/auth.html">Tap In 🔓</a>
+    <a href="/auth.html">Join The Bizness</a>
+  `;
+}
+
+// =========================
 // AUTH BAR (BOTTOM)
 // =========================
 async function hydrateAuthBar() {
@@ -46,31 +78,42 @@ async function hydrateAuthBar() {
   if (session?.user) {
     container.innerHTML = `
       <a href="/profile.html" class="btn">My Profile 👤</a>
-      <button id="logout-btn" class="btn-ghost">Tap Out 🚪</button>
+      <button id="logout-btn" class="btn-ghost" type="button">Tap Out 🚪</button>
     `;
 
-    document.getElementById("logout-btn").onclick = async () => {
+    document.getElementById("logout-btn")?.addEventListener("click", async () => {
       await supabase.auth.signOut();
-      location.reload();
-    };
-  } else {
-    container.innerHTML = `
-      <a href="/auth.html" class="btn btn-gold">Tap In 🔓</a>
-      <a href="/auth.html" class="btn-ghost">Join Now</a>
-    `;
+      window.location.reload();
+    });
+
+    return;
   }
+
+  container.innerHTML = `
+    <a href="/auth.html" class="btn btn-gold">Tap In 🔓</a>
+    <a href="/auth.html" class="btn-ghost">Join The Bizness</a>
+  `;
 }
 
+await hydrateTopSessionNav();
 await hydrateAuthBar();
+
+// =========================
+// KEEP HOME SESSION SYNCED
+// =========================
+supabase.auth.onAuthStateChange(async () => {
+  await hydrateTopSessionNav();
+  await hydrateAuthBar();
+});
 
 // =========================
 // HERO MOTION SYSTEM
 // =========================
-
-// subtle floating particles
 function spawnParticles() {
   const container = document.querySelector(".hero-particles");
   if (!container) return;
+
+  container.innerHTML = "";
 
   for (let i = 0; i < 18; i++) {
     const dot = document.createElement("span");
@@ -94,7 +137,6 @@ function spawnParticles() {
   }
 }
 
-// inject animation keyframes once
 function injectParticleStyles() {
   if (document.getElementById("rb-particles-style")) return;
 
@@ -106,15 +148,18 @@ function injectParticleStyles() {
         transform: translateY(0) scale(1);
         opacity: 0;
       }
+
       10% {
         opacity: 1;
       }
+
       100% {
         transform: translateY(-120vh) scale(1.4);
         opacity: 0;
       }
     }
   `;
+
   document.head.appendChild(style);
 }
 
@@ -128,12 +173,10 @@ function initHeroVideo() {
   const video = document.querySelector(".hero-video-layer");
   if (!video) return;
 
-  // if you add a real video later, just drop file here:
   const VIDEO_SRC = "/videos/rich-bizness-hero.mp4";
 
-  // don't break if file doesn't exist yet
   fetch(VIDEO_SRC, { method: "HEAD" })
-    .then(res => {
+    .then((res) => {
       if (res.ok) {
         video.src = VIDEO_SRC;
         video.style.opacity = "0.35";
@@ -149,14 +192,14 @@ function initHeroVideo() {
 initHeroVideo();
 
 // =========================
-// SMOOTH SCROLL (OPTIONAL UX)
+// SMOOTH SCROLL
 // =========================
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener("click", function (e) {
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+  anchor.addEventListener("click", function (event) {
     const target = document.querySelector(this.getAttribute("href"));
     if (!target) return;
 
-    e.preventDefault();
+    event.preventDefault();
     target.scrollIntoView({ behavior: "smooth" });
   });
 });
