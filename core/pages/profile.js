@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE
+// RICH BIZNESS PROFILE — GTA UPGRADED (FINAL FIXED)
 // /core/pages/profile.js
 // =========================
 
@@ -57,6 +57,10 @@ mountEliteNav({
   collapsed: false
 });
 
+// =========================
+// HELPERS
+// =========================
+
 function money(cents = 0) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -73,6 +77,10 @@ function setEditStatus(message, type = "normal") {
   if (type === "error") els.editStatus.classList.add("is-error");
 }
 
+// =========================
+// RENDER PROFILE
+// =========================
+
 function renderProfile(profile = {}) {
   const displayName =
     profile.display_name ||
@@ -88,24 +96,22 @@ function renderProfile(profile = {}) {
 
   const avatar =
     profile.avatar_url ||
-    profile.profile_image_url ||
     "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png";
 
   const cover =
     profile.cover_url ||
-    profile.banner_url ||
     "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png";
 
-  // ===== TEXT =====
+  // TEXT
   if (els.displayName) els.displayName.textContent = displayName;
   if (els.handle) els.handle.textContent = `@${username}`;
   if (els.bio) {
     els.bio.textContent =
       profile.bio ||
-      "Building my lane across Rich Bizness live, music, gaming, sports, gallery, and money moves.";
+      "Building my lane across Rich Bizness.";
   }
 
-  // ===== GTA AVATAR SYSTEM =====
+  // GTA AVATAR SYSTEM
   if (els.avatar) {
     els.avatar.src = avatar;
 
@@ -125,7 +131,7 @@ function renderProfile(profile = {}) {
     }
   }
 
-  // ===== COVER =====
+  // COVER
   if (els.cover) {
     els.cover.style.backgroundImage = `
       linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.85)),
@@ -133,23 +139,19 @@ function renderProfile(profile = {}) {
     `;
   }
 
-  // ===== MESSAGE LINK =====
+  // MESSAGE LINK
   if (els.messageLink) {
     els.messageLink.href = currentUser?.id
       ? `/messages.html?user=${encodeURIComponent(currentUser.id)}`
       : "/messages.html";
   }
-
-  // ===== SMOOTH LOAD (no ugly pop-in) =====
-  document.body.classList.add("profile-loaded");
 }
 
-async function ensureProfile() {
-  if (!currentUser?.id) {
-    window.location.href = "/auth.html";
-    return null;
-  }
+// =========================
+// PROFILE LOAD / CREATE
+// =========================
 
+async function ensureProfile() {
   const { data } = await supabase
     .from("profiles")
     .select("*")
@@ -181,21 +183,22 @@ async function ensureProfile() {
   return inserted;
 }
 
+// =========================
+// SAVE PROFILE
+// =========================
+
 async function saveProfile(event) {
   event.preventDefault();
 
-  if (!currentUser?.id) return;
-
-  setEditStatus("Saving profile...");
+  setEditStatus("Saving...");
 
   const payload = {
-    display_name: els.editDisplayName?.value?.trim() || null,
-    username: els.editUsername?.value?.trim() || null,
-    bio: els.editBio?.value?.trim() || null,
-    avatar_url: els.editAvatarUrl?.value?.trim() || null,
-    cover_url: els.editCoverUrl?.value?.trim() || null,
+    display_name: els.editDisplayName?.value?.trim(),
+    username: els.editUsername?.value?.trim(),
+    bio: els.editBio?.value?.trim(),
+    avatar_url: els.editAvatarUrl?.value?.trim(),
+    cover_url: els.editCoverUrl?.value?.trim(),
 
-    // ===== GTA SETTINGS =====
     avatar_type: "gta",
     avatar_style: "hybrid",
 
@@ -222,42 +225,63 @@ async function saveProfile(event) {
 
   currentProfile = data;
   renderProfile(currentProfile);
-  setEditStatus("Profile saved.", "success");
+
+  setEditStatus("Saved", "success");
 
   setTimeout(() => {
     els.modal?.close();
   }, 600);
 }
 
+// =========================
+// EVENTS
+// =========================
+
 function bindEvents() {
   els.editBtn?.addEventListener("click", () => els.modal?.showModal());
   els.closeModal?.addEventListener("click", () => els.modal?.close());
   els.editForm?.addEventListener("submit", saveProfile);
+
   els.logoutBtn?.addEventListener("click", async () => {
     await supabase.auth.signOut();
     window.location.href = "/index.html";
   });
 }
 
+// =========================
+// BOOT (FIXED — NO BLANK SCREEN)
+// =========================
+
 async function bootProfile() {
-  bindEvents();
+  try {
+    bindEvents();
 
-  currentUser = getCurrentUserState();
+    currentUser = getCurrentUserState();
 
-  if (!currentUser?.id) {
-    const { data } = await supabase.auth.getSession();
-    currentUser = data?.session?.user || null;
+    if (!currentUser?.id) {
+      const { data } = await supabase.auth.getSession();
+      currentUser = data?.session?.user || null;
+    }
+
+    if (!currentUser?.id) {
+      window.location.href = "/auth.html";
+      return;
+    }
+
+    currentProfile = await ensureProfile();
+
+    // 👇 ALWAYS SHOW PAGE (CRITICAL FIX)
+    document.body.classList.add("profile-loaded");
+
+    renderProfile(currentProfile);
+
+    console.log("👤 Profile Ready (GTA Mode)");
+  } catch (err) {
+    console.error("❌ Profile crash:", err);
+
+    // FAILSAFE
+    document.body.classList.add("profile-loaded");
   }
-
-  if (!currentUser?.id) {
-    window.location.href = "/auth.html";
-    return;
-  }
-
-  currentProfile = await ensureProfile();
-  renderProfile(currentProfile);
-
-  console.log("👤 Profile Ready (GTA Mode)");
 }
 
 bootProfile();
