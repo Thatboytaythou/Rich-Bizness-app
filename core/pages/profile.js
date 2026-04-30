@@ -64,10 +64,6 @@ function money(cents = 0) {
   }).format(Number(cents || 0) / 100);
 }
 
-function safeText(value, fallback = "") {
-  return value || fallback;
-}
-
 function setEditStatus(message, type = "normal") {
   if (!els.editStatus) return;
   els.editStatus.textContent = message;
@@ -100,6 +96,7 @@ function renderProfile(profile = {}) {
     profile.banner_url ||
     "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png";
 
+  // ===== TEXT =====
   if (els.displayName) els.displayName.textContent = displayName;
   if (els.handle) els.handle.textContent = `@${username}`;
   if (els.bio) {
@@ -108,20 +105,43 @@ function renderProfile(profile = {}) {
       "Building my lane across Rich Bizness live, music, gaming, sports, gallery, and money moves.";
   }
 
-  if (els.avatar) els.avatar.src = avatar;
+  // ===== GTA AVATAR SYSTEM =====
+  if (els.avatar) {
+    els.avatar.src = avatar;
 
+    els.avatar.classList.remove(
+      "gta-avatar",
+      "avatar-hybrid",
+      "avatar-anime",
+      "avatar-real"
+    );
+
+    if (profile.avatar_type === "gta") {
+      els.avatar.classList.add("gta-avatar");
+    }
+
+    if (profile.avatar_style) {
+      els.avatar.classList.add(`avatar-${profile.avatar_style}`);
+    }
+  }
+
+  // ===== COVER =====
   if (els.cover) {
     els.cover.style.backgroundImage = `
-      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.78)),
+      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.85)),
       url("${cover}")
     `;
   }
 
+  // ===== MESSAGE LINK =====
   if (els.messageLink) {
     els.messageLink.href = currentUser?.id
       ? `/messages.html?user=${encodeURIComponent(currentUser.id)}`
       : "/messages.html";
   }
+
+  // ===== SMOOTH LOAD (no ugly pop-in) =====
+  document.body.classList.add("profile-loaded");
 }
 
 async function ensureProfile() {
@@ -130,202 +150,35 @@ async function ensureProfile() {
     return null;
   }
 
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", currentUser.id)
     .maybeSingle();
-
-  if (error) {
-    console.warn("[profile] load profile error:", error);
-  }
 
   if (data) return data;
 
   const fallbackProfile = {
     id: currentUser.id,
     email: currentUser.email,
-    display_name:
-      currentUser.user_metadata?.display_name ||
-      currentUser.user_metadata?.name ||
-      "Rich Bizness Creator",
-    username:
-      currentUser.user_metadata?.username ||
-      currentUser.email?.split("@")[0] ||
-      `creator_${Date.now()}`,
+    display_name: "Rich Bizness Creator",
+    username: currentUser.email?.split("@")[0],
     avatar_url: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png",
     cover_url: "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png",
     bio: "Building my Rich Bizness lane.",
+    avatar_type: "gta",
+    avatar_style: "hybrid",
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
 
-  const { data: inserted, error: insertError } = await supabase
+  const { data: inserted } = await supabase
     .from("profiles")
     .insert(fallbackProfile)
     .select("*")
     .single();
 
-  if (insertError) {
-    console.warn("[profile] create profile skipped:", insertError);
-    return fallbackProfile;
-  }
-
   return inserted;
-}
-
-async function countTable(table, column = "user_id") {
-  if (!currentUser?.id) return 0;
-
-  const { count, error } = await supabase
-    .from(table)
-    .select("*", { count: "exact", head: true })
-    .eq(column, currentUser.id);
-
-  if (error) return 0;
-  return count || 0;
-}
-
-async function loadStats() {
-  if (!currentUser?.id) return;
-
-  const [followers, following, uploads, liveRooms] = await Promise.all([
-    countTable("followers", "following_id"),
-    countTable("followers", "follower_id"),
-    countTable("uploads", "user_id"),
-    countTable("live_streams", "creator_id")
-  ]);
-
-  if (els.followers) els.followers.textContent = followers.toLocaleString();
-  if (els.following) els.following.textContent = following.toLocaleString();
-  if (els.uploads) els.uploads.textContent = uploads.toLocaleString();
-  if (els.live) els.live.textContent = liveRooms.toLocaleString();
-}
-
-async function loadMoney() {
-  if (!currentUser?.id) return;
-
-  const { data, error } = await supabase
-    .from("creator_available_balances")
-    .select("*")
-    .eq("artist_user_id", currentUser.id)
-    .maybeSingle();
-
-  if (error || !data) {
-    if (els.moneyAvailable) els.moneyAvailable.textContent = "$0.00";
-    if (els.moneyEarned) els.moneyEarned.textContent = "$0.00";
-    if (els.moneyPaidOut) els.moneyPaidOut.textContent = "$0.00";
-    if (els.revenue) els.revenue.textContent = "$0.00";
-    return;
-  }
-
-  if (els.moneyAvailable) els.moneyAvailable.textContent = money(data.available_cents);
-  if (els.moneyEarned) els.moneyEarned.textContent = money(data.earned_cents);
-  if (els.moneyPaidOut) els.moneyPaidOut.textContent = money(data.paid_out_cents);
-  if (els.revenue) els.revenue.textContent = money(data.earned_cents);
-}
-
-async function loadUploads() {
-  if (!els.uploadList || !currentUser?.id) return;
-
-  const { data, error } = await supabase
-    .from("uploads")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  if (error || !data?.length) {
-    els.uploadList.innerHTML = `
-      <div class="profile-empty">
-        <strong>No uploads loaded yet.</strong>
-        <span>Your drops will show here as the upload lanes connect.</span>
-      </div>
-    `;
-    return;
-  }
-
-  els.uploadList.innerHTML = data
-    .map((item) => {
-      const title = item.title || item.caption || item.name || "Untitled upload";
-      const type = item.content_type || item.category || item.type || "Upload";
-
-      return `
-        <article class="profile-list-card">
-          <strong>${title}</strong>
-          <span>${type}</span>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-async function loadLiveRooms() {
-  if (!els.liveList || !currentUser?.id) return;
-
-  const { data, error } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("creator_id", currentUser.id)
-    .order("created_at", { ascending: false })
-    .limit(6);
-
-  if (error || !data?.length) {
-    els.liveList.innerHTML = `
-      <div class="profile-empty">
-        <strong>No live rooms yet.</strong>
-        <span>Create a live room to start building the watch rail.</span>
-      </div>
-    `;
-    return;
-  }
-
-  els.liveList.innerHTML = data
-    .map((stream) => {
-      const href = stream.slug
-        ? `/watch.html?slug=${encodeURIComponent(stream.slug)}`
-        : `/watch.html?id=${encodeURIComponent(stream.id)}`;
-
-      return `
-        <article class="profile-list-card">
-          <strong>${stream.title || "Untitled live"}</strong>
-          <span>${stream.status || "draft"} • ${stream.category || "general"} • ${Number(stream.viewer_count || 0).toLocaleString()} viewers</span>
-          <a class="btn-ghost" href="${href}">Watch</a>
-        </article>
-      `;
-    })
-    .join("");
-}
-
-function openEditModal() {
-  if (!currentProfile || !els.modal) return;
-
-  if (els.editDisplayName) {
-    els.editDisplayName.value = currentProfile.display_name || "";
-  }
-
-  if (els.editUsername) {
-    els.editUsername.value = currentProfile.username || currentProfile.handle || "";
-  }
-
-  if (els.editBio) {
-    els.editBio.value = currentProfile.bio || "";
-  }
-
-  if (els.editAvatarUrl) {
-    els.editAvatarUrl.value = currentProfile.avatar_url || currentProfile.profile_image_url || "";
-  }
-
-  if (els.editCoverUrl) {
-    els.editCoverUrl.value = currentProfile.cover_url || currentProfile.banner_url || "";
-  }
-
-  setEditStatus("Ready.");
-  els.modal.showModal();
-}
-
-function closeEditModal() {
-  els.modal?.close();
 }
 
 async function saveProfile(event) {
@@ -341,6 +194,11 @@ async function saveProfile(event) {
     bio: els.editBio?.value?.trim() || null,
     avatar_url: els.editAvatarUrl?.value?.trim() || null,
     cover_url: els.editCoverUrl?.value?.trim() || null,
+
+    // ===== GTA SETTINGS =====
+    avatar_type: "gta",
+    avatar_style: "hybrid",
+
     updated_at: new Date().toISOString()
   };
 
@@ -358,7 +216,7 @@ async function saveProfile(event) {
     .single();
 
   if (error) {
-    setEditStatus(error.message || "Could not save profile.", "error");
+    setEditStatus(error.message, "error");
     return;
   }
 
@@ -367,20 +225,18 @@ async function saveProfile(event) {
   setEditStatus("Profile saved.", "success");
 
   setTimeout(() => {
-    closeEditModal();
-  }, 700);
-}
-
-async function logout() {
-  await supabase.auth.signOut();
-  window.location.href = "/index.html";
+    els.modal?.close();
+  }, 600);
 }
 
 function bindEvents() {
-  els.editBtn?.addEventListener("click", openEditModal);
-  els.closeModal?.addEventListener("click", closeEditModal);
+  els.editBtn?.addEventListener("click", () => els.modal?.showModal());
+  els.closeModal?.addEventListener("click", () => els.modal?.close());
   els.editForm?.addEventListener("submit", saveProfile);
-  els.logoutBtn?.addEventListener("click", logout);
+  els.logoutBtn?.addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/index.html";
+  });
 }
 
 async function bootProfile() {
@@ -401,16 +257,7 @@ async function bootProfile() {
   currentProfile = await ensureProfile();
   renderProfile(currentProfile);
 
-  await Promise.all([
-    loadStats(),
-    loadMoney(),
-    loadUploads(),
-    loadLiveRooms()
-  ]);
-
-  console.log("👤 Rich Bizness Profile Loaded");
+  console.log("👤 Profile Ready (GTA Mode)");
 }
 
-bootProfile().catch((error) => {
-  console.error("[profile] boot error:", error);
-});
+bootProfile();
