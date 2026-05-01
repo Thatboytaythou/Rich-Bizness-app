@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS WATCH — FINAL SYNCED
+// RICH BIZNESS WATCH — FINAL SYNCED (REPAIRED)
 // /core/pages/watch.js
 // =========================
 
@@ -60,11 +60,15 @@ function money(cents = 0) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD"
-  }).format(cents / 100);
+  }).format(Number(cents || 0) / 100);
 }
 
 function getParam(name) {
   return new URLSearchParams(location.search).get(name);
+}
+
+function safeText(el, value) {
+  if (el) el.textContent = value ?? "";
 }
 
 /* =========================
@@ -72,85 +76,100 @@ function getParam(name) {
 ========================= */
 
 async function loadStream() {
-  const slug = getParam("slug");
-  if (!slug) return;
+  try {
+    const slug = getParam("slug");
+    if (!slug) return;
 
-  const { data } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
+    const { data, error } = await supabase
+      .from("live_streams")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
 
-  if (!data) return;
+    if (error) {
+      console.error("stream load error:", error);
+      return;
+    }
 
-  activeStream = data;
+    if (!data) return;
 
-  els.title.textContent = data.title || "Untitled";
-  els.description.textContent = data.description || "";
-  els.viewers.textContent = data.viewer_count || 0;
-  els.revenue.textContent = money(data.total_revenue_cents || 0);
+    activeStream = data;
 
-  // 🔥 hide empty state
-  if (els.empty) els.empty.style.display = "none";
+    safeText(els.title, data.title || "Untitled");
+    safeText(els.description, data.description || "");
+    safeText(els.viewers, data.viewer_count || 0);
+    safeText(els.revenue, money(data.total_revenue_cents || 0));
+
+    if (els.empty) els.empty.style.display = "none";
+  } catch (err) {
+    console.error("loadStream crash:", err);
+  }
 }
 
 /* =========================
-   LIVEKIT (FIXED)
+   LIVEKIT
 ========================= */
 
 async function connectLive() {
-  if (!activeStream?.id) return;
+  try {
+    if (!activeStream?.id) return;
 
-  const { data } = await supabase.auth.getSession();
-  const accessToken = data?.session?.access_token;
+    // 🔥 always refresh session
+    const { data } = await supabase.auth.getSession();
+    const accessToken = data?.session?.access_token;
 
-  const res = await fetch("/api/livekit-token", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`
-    },
-    body: JSON.stringify({
-      streamId: activeStream.id,
-      roomName: activeStream.livekit_room_name,
-      participantName: currentUser?.id || "viewer",
-      requestedRole: "viewer"
-    })
-  });
+    const res = await fetch("/api/livekit-token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken || ""}`
+      },
+      body: JSON.stringify({
+        streamId: activeStream.id,
+        roomName: activeStream.livekit_room_name,
+        participantName: currentUser?.id || crypto.randomUUID(),
+        requestedRole: "viewer"
+      })
+    });
 
-  const tokenData = await res.json();
+    const tokenData = await res.json();
 
-  if (!res.ok) {
-    console.error("LiveKit token error:", tokenData);
-    return;
+    if (!res.ok || !tokenData?.token) {
+      console.error("LiveKit token error:", tokenData);
+      return;
+    }
+
+    const LiveKit = await import("https://esm.sh/livekit-client@2.15.3");
+
+    livekitRoom = new LiveKit.Room({
+      adaptiveStream: true,
+      dynacast: true
+    });
+
+    livekitRoom.on(LiveKit.RoomEvent.TrackSubscribed, (track) => {
+      const el = track.attach();
+
+      if (track.kind === "video") {
+        el.style.width = "100%";
+        el.style.height = "100%";
+
+        // 🔥 safer replace
+        if (els.video && els.video.parentNode) {
+          els.video.parentNode.replaceChild(el, els.video);
+          els.video = el;
+        }
+      }
+
+      if (track.kind === "audio") {
+        el.style.display = "none";
+        document.body.appendChild(el);
+      }
+    });
+
+    await livekitRoom.connect(tokenData.url, tokenData.token);
+  } catch (err) {
+    console.error("connectLive crash:", err);
   }
-
-  const LiveKit = await import("https://esm.sh/livekit-client@2.15.3");
-
-  livekitRoom = new LiveKit.Room({
-    adaptiveStream: true,
-    dynacast: true
-  });
-
-  livekitRoom.on(LiveKit.RoomEvent.TrackSubscribed, (track) => {
-    const el = track.attach();
-
-    if (track.kind === "video") {
-      el.style.width = "100%";
-      el.style.height = "100%";
-
-      // 🔥 FIX: replace main video
-      const main = document.getElementById("watch-video");
-      if (main) main.replaceWith(el);
-    }
-
-    if (track.kind === "audio") {
-      el.style.display = "none";
-      document.body.appendChild(el);
-    }
-  });
-
-  await livekitRoom.connect(tokenData.url, tokenData.token);
 }
 
 /* =========================
@@ -158,14 +177,18 @@ async function connectLive() {
 ========================= */
 
 function appendChat(msg) {
+  if (!els.chatList) return;
+
   const el = document.createElement("div");
   el.className = "chat-msg";
-  el.innerHTML = `<strong>${msg.sender_name || "User"}</strong>: ${msg.body}`;
+  el.innerHTML = `<strong>${msg.sender_name || "User"}</strong>: ${msg.body || ""}`;
   els.chatList.appendChild(el);
   els.chatList.scrollTop = els.chatList.scrollHeight;
 }
 
 function subscribeChat() {
+  if (!activeStream?.id) return;
+
   chatChannel = supabase
     .channel(`chat-${activeStream.id}`)
     .on(
@@ -183,8 +206,8 @@ function subscribeChat() {
 async function sendChat(e) {
   e.preventDefault();
 
-  const body = els.chatInput.value.trim();
-  if (!body) return;
+  const body = els.chatInput?.value?.trim();
+  if (!body || !activeStream?.id) return;
 
   await supabase.from("live_chat_messages").insert({
     stream_id: activeStream.id,
@@ -200,6 +223,8 @@ async function sendChat(e) {
 ========================= */
 
 function burst(reaction) {
+  if (!els.reactionBurst) return;
+
   els.reactionBurst.textContent = reaction;
   els.reactionBurst.classList.add("pop");
 
@@ -209,6 +234,8 @@ function burst(reaction) {
 }
 
 function subscribeReactions() {
+  if (!activeStream?.id) return;
+
   reactionChannel = supabase
     .channel(`react-${activeStream.id}`)
     .on(
@@ -219,13 +246,17 @@ function subscribeReactions() {
         filter: `stream_id=eq.${activeStream.id}`
       },
       (payload) => {
-        if (payload.new.reaction) burst(payload.new.reaction);
+        if (payload.new?.reaction) {
+          burst(payload.new.reaction);
+        }
       }
     )
     .subscribe();
 }
 
 function sendReaction(emoji) {
+  if (!activeStream?.id) return;
+
   supabase.from("live_chat_messages").insert({
     stream_id: activeStream.id,
     reaction: emoji
@@ -235,10 +266,12 @@ function sendReaction(emoji) {
 }
 
 /* =========================
-   PRESENCE (VIEWERS)
+   PRESENCE
 ========================= */
 
 function subscribePresence() {
+  if (!activeStream?.id) return;
+
   presenceChannel = supabase.channel(`presence-${activeStream.id}`);
 
   presenceChannel.on("presence", { event: "sync" }, () => {
@@ -262,6 +295,8 @@ function subscribePresence() {
 ========================= */
 
 async function loadCohosts() {
+  if (!activeStream?.id || !els.cohostGrid) return;
+
   const { data } = await supabase
     .from("live_stream_members")
     .select("*")
@@ -283,6 +318,8 @@ async function loadCohosts() {
 ========================= */
 
 async function sendDM() {
+  if (!activeStream?.id) return;
+
   await supabase.from("dm_messages").insert({
     body: els.dmInput.value,
     metadata: { stream: activeStream.id }
@@ -314,7 +351,6 @@ async function boot() {
   await loadStream();
   if (!activeStream) return;
 
-  // 🔥 only connect if live
   if (activeStream.status === "live") {
     await connectLive();
   }
