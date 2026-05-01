@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS WATCH — FINAL MAXED CONTROLLER
+// RICH BIZNESS WATCH — MAX LEVEL
 // /core/pages/watch.js
 // =========================
 
@@ -16,85 +16,63 @@ mountEliteNav({ target: "#elite-platform-nav" });
 
 const $ = (id) => document.getElementById(id);
 
+/* =========================
+   ELEMENTS
+========================= */
+
 const els = {
-  status: $("watch-status"),
   video: $("watch-video"),
-  emptyState: $("watch-empty-state"),
+  empty: $("watch-empty-state"),
 
   title: $("watch-title"),
   description: $("watch-description"),
 
-  liveBadge: $("watch-live-badge"),
-  accessBadge: $("watch-access-badge"),
-  categoryBadge: $("watch-category-badge"),
-
-  statStatus: $("watch-stat-status"),
-  statViewers: $("watch-stat-viewers"),
-  statPeak: $("watch-stat-peak"),
-  statRevenue: $("watch-stat-revenue"),
-
-  unlockBtn: $("unlock-watch-btn"),
+  viewers: $("watch-stat-viewers"),
+  revenue: $("watch-stat-revenue"),
 
   chatList: $("watch-chat-list"),
   chatForm: $("watch-chat-form"),
   chatInput: $("watch-chat-input"),
-  sendChatBtn: $("send-chat-btn"),
 
   reactionBurst: $("watch-reaction-burst"),
 
-  dmInput: $("watch-dm-input"),
-  dmSendBtn: $("send-watch-dm-btn"),
+  cohostGrid: $("watch-cohost-grid"),
 
-  cohostName1: $("cohost-name-1"),
-  cohostName2: $("cohost-name-2"),
-  cohostName3: $("cohost-name-3"),
-  cohostRole1: $("cohost-role-1"),
-  cohostRole2: $("cohost-role-2"),
-  cohostRole3: $("cohost-role-3")
+  dmInput: $("watch-dm-input"),
+  dmBtn: $("send-watch-dm-btn")
 };
 
+/* =========================
+   STATE
+========================= */
+
 let activeStream = null;
-let accessGranted = false;
 let livekitRoom = null;
 let chatChannel = null;
-let cohostChannel = null;
-let streamChannel = null;
-let viewSessionId = null;
-let heartbeat = null;
+let presenceChannel = null;
+let reactionChannel = null;
 
 /* =========================
    HELPERS
 ========================= */
 
-function setStatus(msg) {
-  if (els.status) els.status.textContent = msg;
-}
-
 function money(cents = 0) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD"
-  }).format(Number(cents) / 100);
+  }).format(cents / 100);
 }
 
 function getParam(name) {
   return new URLSearchParams(location.search).get(name);
 }
 
-async function getUser() {
-  if (currentUser?.id) return currentUser;
-  const { data } = await supabase.auth.getSession();
-  currentUser = data?.session?.user || null;
-  return currentUser;
-}
-
 /* =========================
-   STREAM
+   LOAD STREAM
 ========================= */
 
 async function loadStream() {
   const slug = getParam("slug");
-  if (!slug) return;
 
   const { data } = await supabase
     .from("live_streams")
@@ -106,99 +84,154 @@ async function loadStream() {
 
   activeStream = data;
 
-  if (els.title) els.title.textContent = data.title;
-  if (els.description) els.description.textContent = data.description;
-
-  if (els.liveBadge) els.liveBadge.textContent = data.status?.toUpperCase();
-  if (els.accessBadge) els.accessBadge.textContent = data.access_type?.toUpperCase();
-
-  if (els.statViewers) els.statViewers.textContent = data.viewer_count || 0;
-  if (els.statRevenue) els.statRevenue.textContent = money(data.total_revenue_cents);
-
-  return data;
+  els.title.textContent = data.title;
+  els.description.textContent = data.description;
+  els.viewers.textContent = data.viewer_count || 0;
+  els.revenue.textContent = money(data.total_revenue_cents || 0);
 }
 
 /* =========================
-   ACCESS
-========================= */
-
-async function checkAccess() {
-  if (!activeStream) return false;
-
-  if (activeStream.access_type === "free") {
-    accessGranted = true;
-    return true;
-  }
-
-  const user = await getUser();
-  if (!user) return false;
-
-  const { data } = await supabase
-    .from("live_stream_purchases")
-    .select("id")
-    .eq("stream_id", activeStream.id)
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  accessGranted = !!data;
-  return accessGranted;
-}
-
-/* =========================
-   LIVEKIT
+   LIVEKIT MULTI VIDEO
 ========================= */
 
 async function connectLive() {
-  if (!accessGranted) return;
-
   const res = await fetch("/api/livekit-token", {
     method: "POST",
-    body: JSON.stringify({
-      streamId: activeStream.id
-    })
+    body: JSON.stringify({ streamId: activeStream.id })
   });
 
-  const tokenData = await res.json();
+  const { token, url } = await res.json();
 
   const LiveKit = await import("https://esm.sh/livekit-client");
 
-  livekitRoom = new LiveKit.Room();
+  livekitRoom = new LiveKit.Room({
+    adaptiveStream: true,
+    dynacast: true
+  });
 
-  livekitRoom.on("trackSubscribed", (track) => {
+  livekitRoom.on("trackSubscribed", (track, pub, participant) => {
+    const el = track.attach();
+
     if (track.kind === "video") {
-      track.attach(els.video);
+      el.className = "watch-video-tile";
+      els.cohostGrid.appendChild(el);
+    }
+
+    if (track.kind === "audio") {
+      el.style.display = "none";
+      document.body.appendChild(el);
     }
   });
 
-  await livekitRoom.connect(tokenData.url, tokenData.token);
+  await livekitRoom.connect(url, token);
 }
 
 /* =========================
-   CHAT (REALTIME FIXED)
+   CHAT (REALTIME CLEAN)
 ========================= */
 
 function appendChat(msg) {
   const el = document.createElement("div");
-  el.innerHTML = `<strong>${msg.sender_name}</strong>: ${msg.body}`;
+  el.className = "chat-msg";
+  el.innerHTML = `<strong>${msg.sender_name || "User"}</strong>: ${msg.body}`;
   els.chatList.appendChild(el);
+  els.chatList.scrollTop = els.chatList.scrollHeight;
 }
 
 function subscribeChat() {
   chatChannel = supabase
-    .channel("chat")
+    .channel(`chat-${activeStream.id}`)
     .on(
       "postgres_changes",
       {
         event: "INSERT",
-        table: "live_chat_messages"
+        table: "live_chat_messages",
+        filter: `stream_id=eq.${activeStream.id}`
       },
       (payload) => appendChat(payload.new)
     )
     .subscribe();
 }
 
+async function sendChat(e) {
+  e.preventDefault();
+
+  const body = els.chatInput.value.trim();
+  if (!body) return;
+
+  await supabase.from("live_chat_messages").insert({
+    stream_id: activeStream.id,
+    body,
+    sender_name: currentUser?.email?.split("@")[0] || "Guest"
+  });
+
+  els.chatInput.value = "";
+}
+
 /* =========================
-   COHOST (FIXED)
+   REACTIONS (REAL SYNC)
+========================= */
+
+function burst(reaction) {
+  els.reactionBurst.textContent = reaction;
+  els.reactionBurst.classList.add("pop");
+
+  setTimeout(() => {
+    els.reactionBurst.classList.remove("pop");
+  }, 600);
+}
+
+function subscribeReactions() {
+  reactionChannel = supabase
+    .channel(`react-${activeStream.id}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        table: "live_chat_messages",
+        filter: `stream_id=eq.${activeStream.id}`
+      },
+      (payload) => {
+        if (payload.new.reaction) burst(payload.new.reaction);
+      }
+    )
+    .subscribe();
+}
+
+function sendReaction(emoji) {
+  supabase.from("live_chat_messages").insert({
+    stream_id: activeStream.id,
+    reaction: emoji
+  });
+
+  burst(emoji);
+}
+
+/* =========================
+   PRESENCE (VIEWERS LIVE)
+========================= */
+
+function subscribePresence() {
+  presenceChannel = supabase.channel(`presence-${activeStream.id}`);
+
+  presenceChannel.on("presence", { event: "sync" }, () => {
+    const state = presenceChannel.presenceState();
+    const count = Object.keys(state).length;
+
+    if (els.viewers) els.viewers.textContent = count;
+  });
+
+  presenceChannel.subscribe(async (status) => {
+    if (status === "SUBSCRIBED") {
+      await presenceChannel.track({
+        user: currentUser?.id || crypto.randomUUID()
+      });
+    }
+  });
+}
+
+/* =========================
+   COHOST UI (REAL SLOTS)
 ========================= */
 
 async function loadCohosts() {
@@ -208,49 +241,27 @@ async function loadCohosts() {
     .eq("stream_id", activeStream.id)
     .eq("role", "cohost");
 
-  [1,2,3].forEach(slot => {
-    const m = data.find(x => x.slot_number === slot);
+  els.cohostGrid.innerHTML = "";
 
-    els[`cohostName${slot}`].textContent =
-      m?.user_id || "Empty";
-
-    els[`cohostRole${slot}`].textContent =
-      m?.status || "Waiting";
+  data.forEach((c) => {
+    const el = document.createElement("div");
+    el.className = "cohost-box";
+    el.textContent = c.user_id;
+    els.cohostGrid.appendChild(el);
   });
 }
 
-function subscribeCohosts() {
-  cohostChannel = supabase
-    .channel("cohosts")
-    .on(
-      "postgres_changes",
-      { event: "*", table: "live_stream_members" },
-      loadCohosts
-    )
-    .subscribe();
-}
-
 /* =========================
-   VIEW SESSION + HEARTBEAT
+   DM (SIMPLE)
 ========================= */
 
-async function startSession() {
-  const { data } = await supabase
-    .from("live_view_sessions")
-    .insert({
-      stream_id: activeStream.id
-    })
-    .select()
-    .single();
+async function sendDM() {
+  await supabase.from("dm_messages").insert({
+    body: els.dmInput.value,
+    metadata: { stream: activeStream.id }
+  });
 
-  viewSessionId = data.id;
-
-  heartbeat = setInterval(() => {
-    supabase
-      .from("live_view_sessions")
-      .update({ last_seen_at: new Date().toISOString() })
-      .eq("id", viewSessionId);
-  }, 15000);
+  els.dmInput.value = "";
 }
 
 /* =========================
@@ -258,23 +269,12 @@ async function startSession() {
 ========================= */
 
 function bindEvents() {
-  els.chatForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  els.chatForm?.addEventListener("submit", sendChat);
 
-    const msg = els.chatInput.value;
+  els.dmBtn?.addEventListener("click", sendDM);
 
-    await supabase.from("live_chat_messages").insert({
-      stream_id: activeStream.id,
-      body: msg
-    });
-
-    els.chatInput.value = "";
-  });
-
-  els.dmSendBtn?.addEventListener("click", async () => {
-    await supabase.from("dm_messages").insert({
-      body: els.dmInput.value
-    });
+  document.querySelectorAll(".reaction-btn").forEach((btn) => {
+    btn.onclick = () => sendReaction(btn.dataset.reaction);
   });
 }
 
@@ -288,24 +288,17 @@ async function boot() {
   await loadStream();
   if (!activeStream) return;
 
-  await checkAccess();
-
-  await loadCohosts();
-  subscribeCohosts();
+  await connectLive();
 
   subscribeChat();
+  subscribeReactions();
+  subscribePresence();
 
-  await startSession();
-
-  if (accessGranted) {
-    await connectLive();
-  }
+  await loadCohosts();
 
   await bootLiveRail({
     railElementId: "watch-live-rail"
   });
-
-  setStatus("READY");
 }
 
 boot();
