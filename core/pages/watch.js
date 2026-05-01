@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS WATCH — MAX LEVEL
+// RICH BIZNESS WATCH — FINAL SYNCED
 // /core/pages/watch.js
 // =========================
 
@@ -73,6 +73,7 @@ function getParam(name) {
 
 async function loadStream() {
   const slug = getParam("slug");
+  if (!slug) return;
 
   const { data } = await supabase
     .from("live_streams")
@@ -84,37 +85,63 @@ async function loadStream() {
 
   activeStream = data;
 
-  els.title.textContent = data.title;
-  els.description.textContent = data.description;
+  els.title.textContent = data.title || "Untitled";
+  els.description.textContent = data.description || "";
   els.viewers.textContent = data.viewer_count || 0;
   els.revenue.textContent = money(data.total_revenue_cents || 0);
+
+  // 🔥 hide empty state
+  if (els.empty) els.empty.style.display = "none";
 }
 
 /* =========================
-   LIVEKIT MULTI VIDEO
+   LIVEKIT (FIXED)
 ========================= */
 
 async function connectLive() {
+  if (!activeStream?.id) return;
+
+  const { data } = await supabase.auth.getSession();
+  const accessToken = data?.session?.access_token;
+
   const res = await fetch("/api/livekit-token", {
     method: "POST",
-    body: JSON.stringify({ streamId: activeStream.id })
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`
+    },
+    body: JSON.stringify({
+      streamId: activeStream.id,
+      roomName: activeStream.livekit_room_name,
+      participantName: currentUser?.id || "viewer",
+      requestedRole: "viewer"
+    })
   });
 
-  const { token, url } = await res.json();
+  const tokenData = await res.json();
 
-  const LiveKit = await import("https://esm.sh/livekit-client");
+  if (!res.ok) {
+    console.error("LiveKit token error:", tokenData);
+    return;
+  }
+
+  const LiveKit = await import("https://esm.sh/livekit-client@2.15.3");
 
   livekitRoom = new LiveKit.Room({
     adaptiveStream: true,
     dynacast: true
   });
 
-  livekitRoom.on("trackSubscribed", (track, pub, participant) => {
+  livekitRoom.on(LiveKit.RoomEvent.TrackSubscribed, (track) => {
     const el = track.attach();
 
     if (track.kind === "video") {
-      el.className = "watch-video-tile";
-      els.cohostGrid.appendChild(el);
+      el.style.width = "100%";
+      el.style.height = "100%";
+
+      // 🔥 FIX: replace main video
+      const main = document.getElementById("watch-video");
+      if (main) main.replaceWith(el);
     }
 
     if (track.kind === "audio") {
@@ -123,11 +150,11 @@ async function connectLive() {
     }
   });
 
-  await livekitRoom.connect(url, token);
+  await livekitRoom.connect(tokenData.url, tokenData.token);
 }
 
 /* =========================
-   CHAT (REALTIME CLEAN)
+   CHAT
 ========================= */
 
 function appendChat(msg) {
@@ -169,7 +196,7 @@ async function sendChat(e) {
 }
 
 /* =========================
-   REACTIONS (REAL SYNC)
+   REACTIONS
 ========================= */
 
 function burst(reaction) {
@@ -208,7 +235,7 @@ function sendReaction(emoji) {
 }
 
 /* =========================
-   PRESENCE (VIEWERS LIVE)
+   PRESENCE (VIEWERS)
 ========================= */
 
 function subscribePresence() {
@@ -231,7 +258,7 @@ function subscribePresence() {
 }
 
 /* =========================
-   COHOST UI (REAL SLOTS)
+   COHOSTS
 ========================= */
 
 async function loadCohosts() {
@@ -243,7 +270,7 @@ async function loadCohosts() {
 
   els.cohostGrid.innerHTML = "";
 
-  data.forEach((c) => {
+  data?.forEach((c) => {
     const el = document.createElement("div");
     el.className = "cohost-box";
     el.textContent = c.user_id;
@@ -252,7 +279,7 @@ async function loadCohosts() {
 }
 
 /* =========================
-   DM (SIMPLE)
+   DM
 ========================= */
 
 async function sendDM() {
@@ -270,7 +297,6 @@ async function sendDM() {
 
 function bindEvents() {
   els.chatForm?.addEventListener("submit", sendChat);
-
   els.dmBtn?.addEventListener("click", sendDM);
 
   document.querySelectorAll(".reaction-btn").forEach((btn) => {
@@ -288,7 +314,10 @@ async function boot() {
   await loadStream();
   if (!activeStream) return;
 
-  await connectLive();
+  // 🔥 only connect if live
+  if (activeStream.status === "live") {
+    await connectLive();
+  }
 
   subscribeChat();
   subscribeReactions();
