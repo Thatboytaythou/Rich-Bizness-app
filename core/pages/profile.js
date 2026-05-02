@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — FINAL SYNCED (META + AVATAR CONNECTED)
+// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL GOD MODE)
 // /core/pages/profile.js
 // =========================
 
@@ -51,7 +51,14 @@ const els = {
   editUsername: $("edit-username"),
   editBio: $("edit-bio"),
   editAvatarUrl: $("edit-avatar-url"),
-  editCoverUrl: $("edit-cover-url")
+  editCoverUrl: $("edit-cover-url"),
+
+  // 🔥 COMMAND CENTER
+  cmdLive: $("cmd-live-count"),
+  cmdUploads: $("cmd-upload-count"),
+  cmdFollowers: $("cmd-follower-count"),
+  cmdMoney: $("cmd-money"),
+  enterMetaBtn: $("enter-metaverse-btn")
 };
 
 // =========================
@@ -85,7 +92,7 @@ function setEditStatus(message, type = "normal") {
 }
 
 // =========================
-// 🔥 META AVATAR CONNECT (NEW)
+// 🔥 META AVATAR SYSTEM
 // =========================
 
 function cacheAvatarForMetaverse(profile) {
@@ -108,8 +115,6 @@ function openMetaverse() {
   if (!currentProfile) return;
 
   cacheAvatarForMetaverse(currentProfile);
-
-  // 🔥 go to metaverse with context
   window.location.href = "/metaverse.html";
 }
 
@@ -124,9 +129,7 @@ function renderProfile(profile = {}) {
     currentUser?.email ||
     "Rich Bizness Creator";
 
-  const username =
-    profile.username ||
-    "richbizness";
+  const username = profile.username || "richbizness";
 
   const avatar =
     profile.avatar_url ||
@@ -138,10 +141,10 @@ function renderProfile(profile = {}) {
 
   if (els.displayName) els.displayName.textContent = displayName;
   if (els.handle) els.handle.textContent = `@${username}`;
+
   if (els.bio) {
     els.bio.textContent =
-      profile.bio ||
-      "Building my lane across Rich Bizness.";
+      profile.bio || "Building my lane across Rich Bizness.";
   }
 
   // 🔥 AVATAR SYSTEM
@@ -179,8 +182,46 @@ function renderProfile(profile = {}) {
       : "/messages.html";
   }
 
-  // 🔥 ALWAYS CACHE META AVATAR
+  // 🔥 ADMIN BUTTON CONTROL (if exists)
+  const adminLink = document.getElementById("admin-dashboard-link");
+  if (adminLink) {
+    const isAdmin =
+      profile.role === "admin" ||
+      profile.is_admin === true ||
+      profile.account_role === "admin";
+
+    adminLink.style.display = isAdmin ? "inline-flex" : "none";
+  }
+
   cacheAvatarForMetaverse(profile);
+}
+
+// =========================
+// COMMAND CENTER DATA
+// =========================
+
+async function loadCommandCenter() {
+  if (!currentUser?.id) return;
+
+  try {
+    const [liveRes, uploadRes, followerRes, balanceRes] = await Promise.all([
+      supabase.from("live_streams").select("*", { count: "exact", head: true }).eq("host_id", currentUser.id),
+      supabase.from("uploads").select("*", { count: "exact", head: true }).eq("user_id", currentUser.id),
+      supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", currentUser.id),
+      supabase.from("creator_available_balances").select("*").eq("artist_user_id", currentUser.id).maybeSingle()
+    ]);
+
+    if (els.cmdLive) els.cmdLive.textContent = liveRes.count || 0;
+    if (els.cmdUploads) els.cmdUploads.textContent = uploadRes.count || 0;
+    if (els.cmdFollowers) els.cmdFollowers.textContent = followerRes.count || 0;
+
+    if (els.cmdMoney) {
+      els.cmdMoney.textContent = money(balanceRes?.data?.available_cents || 0);
+    }
+
+  } catch (err) {
+    console.warn("Command center load failed", err);
+  }
 }
 
 // =========================
@@ -234,10 +275,8 @@ async function saveProfile(e) {
     bio: els.editBio.value,
     avatar_url: els.editAvatarUrl.value,
     cover_url: els.editCoverUrl.value,
-
     avatar_type: "gta",
     avatar_style: "hybrid",
-
     updated_at: new Date().toISOString()
   };
 
@@ -283,13 +322,7 @@ function bindEvents() {
     window.location.href = "/index.html";
   });
 
-  // 🔥 META ENTRY (NEW)
-  document.querySelectorAll('a[href="/metaverse.html"]').forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      openMetaverse();
-    });
-  });
+  els.enterMetaBtn?.addEventListener("click", openMetaverse);
 }
 
 // =========================
@@ -316,7 +349,10 @@ async function bootProfile() {
 
     renderProfile(currentProfile);
 
-    console.log("👤 PROFILE + META READY");
+    // 🔥 COMMAND CENTER LOAD
+    await loadCommandCenter();
+
+    console.log("👤 PROFILE COMMAND CENTER READY");
   } catch (err) {
     console.error("Profile crash:", err);
     document.body.classList.add("profile-loaded");
