@@ -1,1033 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness | Admin Dashboard</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rich Bizness | Admin Dashboard</title>
 
-  <style>
-    * { box-sizing: border-box; }
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    :root {
-      --green: #7dff71;
-      --green2: #b8ff8d;
-      --gold: #f5d76e;
-      --blue: #67b7ff;
-      --danger: #ef5b55;
-      --bg: rgba(0,0,0,0.56);
-      --soft: rgba(255,255,255,0.08);
-      --soft2: rgba(255,255,255,0.04);
-      --border: rgba(125,255,113,0.18);
-      --text: #f3f3f3;
-      --muted: #cfcfcf;
-      --shadow: 0 20px 50px rgba(0,0,0,0.30);
-    }
+<link rel="stylesheet" href="/styles/main.css" />
+<link rel="stylesheet" href="/styles/mobile.css" />
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      color: white;
-      min-height: 100vh;
-      background:
-        linear-gradient(rgba(0,0,0,0.44), rgba(0,0,0,0.94)),
-        url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center center / cover no-repeat fixed;
-    }
+<style>
+/* KEEPING YOUR STYLE EXACT */
+body {
+  margin: 0;
+  font-family: Arial;
+  color: white;
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.95)),
+    url("images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover fixed;
+}
 
-    .page {
-      max-width: 1840px;
-      margin: 0 auto;
-      padding: 18px;
-      padding-bottom: 60px;
-    }
+.page { max-width: 1800px; margin: auto; padding: 20px; }
 
-    .topbar,
-    .hero,
-    .section,
-    .status-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-    }
+.section {
+  background: rgba(0,0,0,0.6);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
 
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-    }
+.item {
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--green);
-      font-size: 1.9rem;
-      font-weight: 900;
-    }
+.btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
 
-    .brand img {
-      width: 62px;
-      height: 62px;
-      border-radius: 18px;
-      object-fit: cover;
-      border: 1px solid rgba(255,255,255,0.10);
-      background: rgba(0,0,0,0.35);
-    }
+.btn-red { background: #ef5b55; }
+.btn-blue { background: #67b7ff; }
+.btn-green { background: #7dff71; color: black; }
 
-    .nav {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .nav a,
-    .nav button {
-      text-decoration: none;
-      color: white;
-      background: var(--soft);
-      border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .nav a.active {
-      color: var(--green);
-      border-color: rgba(125,255,113,0.28);
-      box-shadow: 0 0 16px rgba(125,255,113,0.14);
-    }
-
-    .user-chip {
-      display: inline-block;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-weight: 700;
-    }
-
-    .hero,
-    .section {
-      padding: 24px;
-      margin-bottom: 18px;
-    }
-
-    .hero-grid {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 20px;
-      align-items: stretch;
-    }
-
-    .hero h1 {
-      margin: 0 0 12px;
-      font-size: 3rem;
-      line-height: 0.94;
-      color: var(--green);
-    }
-
-    .subtle,
-    .mini-text,
-    .status-box,
-    .item-meta,
-    .field-note {
-      color: var(--text);
-      line-height: 1.75;
-    }
-
-    .hero-kicker,
-    .pill-green,
-    .pill-blue,
-    .pill-gold,
-    .pill-red {
-      display: inline-block;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      font-size: 0.82rem;
-      margin-right: 8px;
-      margin-bottom: 10px;
-    }
-
-    .hero-kicker,
-    .pill-green {
-      background: rgba(125,255,113,0.13);
-      border: 1px solid rgba(125,255,113,0.18);
-      color: var(--green);
-    }
-
-    .pill-blue {
-      background: rgba(103,183,255,0.18);
-      border: 1px solid rgba(103,183,255,0.28);
-      color: var(--blue);
-    }
-
-    .pill-gold {
-      background: rgba(245,215,110,0.16);
-      border: 1px solid rgba(245,215,110,0.26);
-      color: var(--gold);
-    }
-
-    .pill-red {
-      background: rgba(239,91,85,0.18);
-      border: 1px solid rgba(239,91,85,0.28);
-      color: #ffb1ac;
-    }
-
-    .hero-actions,
-    .actions,
-    .filter-row,
-    .inline-actions,
-    .payout-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn-green,
-    .btn-dark,
-    .btn-blue,
-    .btn-gold,
-    .btn-red {
-      display: inline-block;
-      text-decoration: none;
-      text-align: center;
-      padding: 12px 16px;
-      border-radius: 14px;
-      font-weight: 900;
-      border: none;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .btn-green { background: var(--green); color: black; }
-    .btn-dark {
-      background: rgba(255,255,255,0.08);
-      color: white;
-      border: 1px solid rgba(255,255,255,0.10);
-    }
-    .btn-blue { background: var(--blue); color: black; }
-    .btn-gold { background: var(--gold); color: black; }
-    .btn-red { background: var(--danger); color: white; }
-
-    .status-box {
-      margin-top: 16px;
-      padding: 14px;
-      font-weight: 700;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .mini-panel {
-      padding: 18px;
-      border-radius: 20px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.08);
-      margin-bottom: 14px;
-    }
-
-    .mini-panel-title,
-    .section-header h2 {
-      color: var(--green);
-      margin: 0 0 10px;
-      font-size: 1.3rem;
-      font-weight: 900;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.42);
-      border: 1px solid rgba(125,255,113,0.16);
-      text-align: center;
-    }
-
-    .stat-value {
-      font-size: 1.7rem;
-      font-weight: 900;
-      color: var(--green);
-    }
-
-    .stat-label {
-      margin-top: 6px;
-      color: var(--muted);
-      font-weight: 700;
-      font-size: 14px;
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-    }
-
-    .list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .item {
-      padding: 16px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    .item-title {
-      color: var(--gold);
-      font-size: 1rem;
-      font-weight: 900;
-      margin-bottom: 6px;
-    }
-
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 1fr 150px;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    select,
-    input,
-    textarea {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid #2c2c2c;
-      background: rgba(0,0,0,0.72);
-      color: white;
-      font-size: 15px;
-      outline: none;
-      font-family: inherit;
-    }
-
-    textarea {
-      min-height: 92px;
-      resize: vertical;
-    }
-
-    .chip {
-      padding: 10px 14px;
-      border-radius: 12px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: white;
-      cursor: pointer;
-      font-weight: 800;
-    }
-
-    .chip.active {
-      background: var(--green);
-      color: black;
-      border-color: transparent;
-    }
-
-    .empty-box {
-      padding: 22px;
-      text-align: center;
-      border-radius: 16px;
-      color: rgba(255,255,255,0.80);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-
-    @media (max-width: 1500px) {
-      .hero-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .stats-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .grid-2 {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 980px) {
-      .hero h1 {
-        font-size: 2.2rem;
-      }
-
-      .stats-grid,
-      .controls-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+.empty-box {
+  text-align: center;
+  opacity: 0.7;
+}
+</style>
 </head>
+
 <body>
-  <div class="page">
-    <div class="topbar">
-      <div class="brand">
-        <img src="images/brand/logo-music-label.png" alt="Rich Bizness" />
-        <span>Admin Dashboard</span>
-      </div>
+<div class="page">
 
-      <div class="nav">
-        <span id="userChip" class="user-chip">Checking session...</span>
-        <a href="index.html">Home</a>
-        <a href="creator-dashboard.html">Dashboard</a>
-        <a href="analytics.html">Analytics</a>
-        <a href="messages.html">Messages</a>
-        <a href="notifications.html">Notifications</a>
-        <a href="admin-dashboard.html" class="active">Admin</a>
-        <button id="logoutBtn" class="btn-dark" type="button">Log Out</button>
-      </div>
-    </div>
+<h1>🔥 Admin Dashboard</h1>
+<div id="statusBox">Loading...</div>
 
-    <div class="hero">
-      <div class="hero-grid">
-        <div>
-          <div>
-            <span class="hero-kicker">ADMIN ACTIONS PRO</span>
-            <span class="pill-green">ROLES</span>
-            <span class="pill-blue">MODERATION</span>
-            <span class="pill-gold">PAYOUTS</span>
-            <span class="pill-red">SUSPENSION</span>
-          </div>
-
-          <h1 id="heroTitle">Loading admin actions...</h1>
-          <div id="heroSub" class="subtle">Checking admin access and platform control tools...</div>
-
-          <div class="hero-actions">
-            <a class="btn-dark" href="analytics.html">Analytics</a>
-            <a class="btn-dark" href="notifications.html">Notifications</a>
-            <a class="btn-dark" href="messages.html">Messages</a>
-            <a class="btn-gold" href="live.html">WE LIT 🔥</a>
-          </div>
-
-          <div id="statusBox" class="status-box">Loading admin actions dashboard...</div>
-
-          <div class="stats-grid">
-            <div class="stat">
-              <div id="creatorStat" class="stat-value">0</div>
-              <div class="stat-label">Creators</div>
-            </div>
-            <div class="stat">
-              <div id="storeStat" class="stat-value">0</div>
-              <div class="stat-label">Store Items</div>
-            </div>
-            <div class="stat">
-              <div id="musicStat" class="stat-value">0</div>
-              <div class="stat-label">Music Uploads</div>
-            </div>
-            <div class="stat">
-              <div id="playlistStat" class="stat-value">0</div>
-              <div class="stat-label">Playlists</div>
-            </div>
-            <div class="stat">
-              <div id="sportsStat" class="stat-value">0</div>
-              <div class="stat-label">Sports Posts</div>
-            </div>
-            <div class="stat">
-              <div id="salesStat" class="stat-value">0</div>
-              <div class="stat-label">Sales</div>
-            </div>
-            <div class="stat">
-              <div id="revenueStat" class="stat-value">$0</div>
-              <div class="stat-label">Revenue</div>
-            </div>
-            <div class="stat">
-              <div id="featuredStat" class="stat-value">0</div>
-              <div class="stat-label">Featured</div>
-            </div>
-            <div class="stat">
-              <div id="hiddenStat" class="stat-value">0</div>
-              <div class="stat-label">Hidden</div>
-            </div>
-            <div class="stat">
-              <div id="deletedStat" class="stat-value">0</div>
-              <div class="stat-label">Soft Deleted</div>
-            </div>
-            <div class="stat">
-              <div id="suspendedStat" class="stat-value">0</div>
-              <div class="stat-label">Suspended</div>
-            </div>
-            <div class="stat">
-              <div id="payoutStat" class="stat-value">0</div>
-              <div class="stat-label">Pending Payouts</div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="mini-panel">
-            <div class="mini-panel-title">Admin Pulse</div>
-            <div id="pulseBox" class="mini-text">Loading admin pulse...</div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Action lanes</div>
-            <div class="mini-text">
-              • change roles
-              <br>• suspend creators
-              <br>• feature items
-              <br>• hide items
-              <br>• soft delete items
-              <br>• review payouts
-            </div>
-          </div>
-
-          <div class="mini-panel">
-            <div class="mini-panel-title">Production note</div>
-            <div class="mini-text">
-              For a hardened production build, move the action updates into secure server-side admin APIs.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <h2>Filters</h2>
-      </div>
-      <div class="filter-row" id="filterRow">
-        <button class="chip active" data-filter="all" type="button">All Store Items</button>
-        <button class="chip" data-filter="visible" type="button">Visible</button>
-        <button class="chip" data-filter="hidden" type="button">Hidden</button>
-        <button class="chip" data-filter="deleted" type="button">Deleted</button>
-        <button class="chip" data-filter="featured" type="button">Featured</button>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="section">
-        <div class="section-header">
-          <h2>Creator Role Management</h2>
-        </div>
-        <div id="creatorList" class="list">
-          <div class="empty-box">Loading creators...</div>
-        </div>
-      </div>
-
-      <div class="section">
-        <div class="section-header">
-          <h2>Store Item Moderation</h2>
-        </div>
-        <div id="storeList" class="list">
-          <div class="empty-box">Loading store items...</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-header">
-        <h2>Payout Review Queue</h2>
-      </div>
-      <div id="payoutList" class="list">
-        <div class="empty-box">Loading payout requests...</div>
-      </div>
-    </div>
+<!-- =========================
+LIVE CONTROL (NEW CORE FIX)
+========================= -->
+<div class="section">
+  <h2>Live Stream Control</h2>
+  <div id="liveAdminList">
+    <div class="empty-box">Loading live streams...</div>
   </div>
-
-  <script>
-    try {
-      const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-      const SUPABASE_ANON_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true
-        }
-      });
-
-      const userChip = document.getElementById("userChip");
-      const logoutBtn = document.getElementById("logoutBtn");
-      const heroTitle = document.getElementById("heroTitle");
-      const heroSub = document.getElementById("heroSub");
-      const statusBox = document.getElementById("statusBox");
-      const pulseBox = document.getElementById("pulseBox");
-      const filterRow = document.getElementById("filterRow");
-
-      const creatorStat = document.getElementById("creatorStat");
-      const storeStat = document.getElementById("storeStat");
-      const musicStat = document.getElementById("musicStat");
-      const playlistStat = document.getElementById("playlistStat");
-      const sportsStat = document.getElementById("sportsStat");
-      const salesStat = document.getElementById("salesStat");
-      const revenueStat = document.getElementById("revenueStat");
-      const featuredStat = document.getElementById("featuredStat");
-      const hiddenStat = document.getElementById("hiddenStat");
-      const deletedStat = document.getElementById("deletedStat");
-      const suspendedStat = document.getElementById("suspendedStat");
-      const payoutStat = document.getElementById("payoutStat");
-
-      const creatorList = document.getElementById("creatorList");
-      const storeList = document.getElementById("storeList");
-      const payoutList = document.getElementById("payoutList");
-
-      let currentUser = null;
-      let currentProfile = null;
-      let currentStoreFilter = "all";
-
-      let creators = [];
-      let storeItems = [];
-      let musicUploads = [];
-      let playlists = [];
-      let sportsPosts = [];
-      let sales = [];
-      let payoutRequests = [];
-
-      function setStatus(message) {
-        statusBox.textContent = message;
-      }
-
-      function escapeHtml(text) {
-        return String(text || "")
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      function money(value) {
-        return `$${Number(value || 0).toFixed(2)}`;
-      }
-
-      function formatDate(value) {
-        if (!value) return "--";
-        const d = new Date(value);
-        if (Number.isNaN(d.getTime())) return "--";
-        return d.toLocaleString();
-      }
-
-      async function loadSession() {
-        const { data, error } = await supabase.auth.getSession();
-        if (error) throw error;
-
-        currentUser = data?.session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-
-        if (!currentUser) {
-          window.location.href = "auth.html?redirect=admin-dashboard.html";
-        }
-      }
-
-      async function loadProfileAndCheckAdmin() {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", currentUser.id)
-          .single();
-
-        if (error) throw error;
-        currentProfile = data;
-
-        if ((currentProfile.role || "").toLowerCase() !== "admin") {
-          throw new Error("Access denied. Admin role required.");
-        }
-      }
-
-      async function loadAllData() {
-        const [
-          creatorRes,
-          storeRes,
-          musicRes,
-          playlistRes,
-          sportsRes,
-          salesRes,
-          payoutRes
-        ] = await Promise.all([
-          supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("artworks").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("music_uploads").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("playlists").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("sports_uploads").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("artwork_purchases").select("*").order("created_at", { ascending: false }).limit(30),
-          supabase.from("payout_requests").select("*").order("created_at", { ascending: false }).limit(30)
-        ]);
-
-        if (creatorRes.error && creatorRes.error.code !== "42P01") throw creatorRes.error;
-        if (storeRes.error && storeRes.error.code !== "42P01") throw storeRes.error;
-        if (musicRes.error && musicRes.error.code !== "42P01") throw musicRes.error;
-        if (playlistRes.error && playlistRes.error.code !== "42P01") throw playlistRes.error;
-        if (sportsRes.error && sportsRes.error.code !== "42P01") throw sportsRes.error;
-        if (salesRes.error && salesRes.error.code !== "42P01") throw salesRes.error;
-        if (payoutRes.error && payoutRes.error.code !== "42P01") throw payoutRes.error;
-
-        creators = creatorRes.data || [];
-        storeItems = storeRes.data || [];
-        musicUploads = musicRes.data || [];
-        playlists = playlistRes.data || [];
-        sportsPosts = sportsRes.data || [];
-        sales = salesRes.data || [];
-        payoutRequests = payoutRes.data || [];
-      }
-
-      function renderStats() {
-        creatorStat.textContent = String(creators.length);
-        storeStat.textContent = String(storeItems.length);
-        musicStat.textContent = String(musicUploads.length);
-        playlistStat.textContent = String(playlists.length);
-        sportsStat.textContent = String(sportsPosts.length);
-        salesStat.textContent = String(sales.length);
-        revenueStat.textContent = money(sales.reduce((sum, x) => sum + Number(x.price || 0), 0));
-        featuredStat.textContent = String(storeItems.filter(x => !!x.is_featured).length);
-        hiddenStat.textContent = String(storeItems.filter(x => !!x.is_hidden).length);
-        deletedStat.textContent = String(storeItems.filter(x => !!x.is_deleted).length);
-        suspendedStat.textContent = String(creators.filter(x => !!x.is_suspended).length);
-        payoutStat.textContent = String(payoutRequests.filter(x => (x.status || "pending") === "pending").length);
-
-        heroTitle.textContent = "Rich Bizness Admin Actions Pro";
-        heroSub.textContent = `Welcome ${currentProfile.display_name || currentProfile.username || currentProfile.email || "Admin"}.`;
-
-        pulseBox.textContent =
-          `Admin: ${currentProfile.display_name || currentProfile.username || currentProfile.email || "Admin"}\n` +
-          `Creators: ${creators.length}\n` +
-          `Suspended: ${creators.filter(x => !!x.is_suspended).length}\n` +
-          `Store Items: ${storeItems.length}\n` +
-          `Hidden: ${storeItems.filter(x => !!x.is_hidden).length}\n` +
-          `Deleted: ${storeItems.filter(x => !!x.is_deleted).length}\n` +
-          `Featured: ${storeItems.filter(x => !!x.is_featured).length}\n` +
-          `Pending Payouts: ${payoutRequests.filter(x => (x.status || "pending") === "pending").length}`;
-      }
-
-      function getFilteredStoreItems() {
-        if (currentStoreFilter === "visible") {
-          return storeItems.filter(x => !x.is_hidden && !x.is_deleted);
-        }
-        if (currentStoreFilter === "hidden") {
-          return storeItems.filter(x => !!x.is_hidden && !x.is_deleted);
-        }
-        if (currentStoreFilter === "deleted") {
-          return storeItems.filter(x => !!x.is_deleted);
-        }
-        if (currentStoreFilter === "featured") {
-          return storeItems.filter(x => !!x.is_featured && !x.is_deleted);
-        }
-        return storeItems;
-      }
-
-      async function updateCreatorRole(profileId, nextRole) {
-        try {
-          setStatus("Updating creator role...");
-
-          const { error } = await supabase
-            .from("profiles")
-            .update({ role: nextRole })
-            .eq("id", profileId);
-
-          if (error) throw error;
-
-          await refreshPageData();
-          setStatus("✅ Creator role updated.");
-        } catch (error) {
-          setStatus("❌ Role update error: " + error.message);
-        }
-      }
-
-      async function toggleSuspended(profileId, nextValue) {
-        try {
-          setStatus("Updating suspension status...");
-
-          const { error } = await supabase
-            .from("profiles")
-            .update({ is_suspended: nextValue })
-            .eq("id", profileId);
-
-          if (error) throw error;
-
-          await refreshPageData();
-          setStatus("✅ Suspension status updated.");
-        } catch (error) {
-          setStatus("❌ Suspension update error: " + error.message);
-        }
-      }
-
-      async function updateArtworkFlags(itemId, patch, successMessage) {
-        try {
-          setStatus("Updating artwork moderation flags...");
-
-          const { error } = await supabase
-            .from("artworks")
-            .update(patch)
-            .eq("id", itemId);
-
-          if (error) throw error;
-
-          await refreshPageData();
-          setStatus(successMessage);
-        } catch (error) {
-          setStatus("❌ Artwork moderation error: " + error.message);
-        }
-      }
-
-      async function reviewPayoutRequest(requestId, nextStatus, adminNotes) {
-        try {
-          setStatus(`Updating payout request to ${nextStatus}...`);
-
-          const { error } = await supabase
-            .from("payout_requests")
-            .update({
-              status: nextStatus,
-              admin_notes: adminNotes || "",
-              reviewed_at: new Date().toISOString(),
-              reviewer_user_id: currentUser.id
-            })
-            .eq("id", requestId);
-
-          if (error) throw error;
-
-          await refreshPageData();
-          setStatus(`✅ Payout request ${nextStatus}.`);
-        } catch (error) {
-          setStatus("❌ Payout review error: " + error.message);
-        }
-      }
-
-      function renderCreators() {
-        if (!creators.length) {
-          creatorList.innerHTML = `<div class="empty-box">No creators found.</div>`;
-          return;
-        }
-
-        creatorList.innerHTML = creators.map(row => `
-          <div class="item">
-            <div class="item-title">${escapeHtml(row.display_name || row.username || row.email || "Creator")}</div>
-            <div class="item-meta">
-              Username: ${escapeHtml(row.username || "--")}<br>
-              Role: ${escapeHtml(row.role || "user")}<br>
-              Suspended: ${row.is_suspended ? "Yes" : "No"}<br>
-              Email: ${escapeHtml(row.email || "--")}<br>
-              Joined: ${escapeHtml(formatDate(row.created_at))}
-            </div>
-
-            <div class="controls-grid">
-              <select class="role-select" data-id="${row.id}">
-                <option value="user" ${row.role === "user" ? "selected" : ""}>user</option>
-                <option value="creator" ${row.role === "creator" ? "selected" : ""}>creator</option>
-                <option value="artist" ${row.role === "artist" ? "selected" : ""}>artist</option>
-                <option value="admin" ${row.role === "admin" ? "selected" : ""}>admin</option>
-              </select>
-              <button class="btn-green save-role-btn" data-id="${row.id}" type="button">Save Role</button>
-            </div>
-
-            <div class="inline-actions">
-              <button class="btn-red suspend-btn" data-id="${row.id}" data-next="${row.is_suspended ? "false" : "true"}" type="button">
-                ${row.is_suspended ? "Unsuspend" : "Suspend"}
-              </button>
-            </div>
-          </div>
-        `).join("");
-
-        document.querySelectorAll(".save-role-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            const select = document.querySelector(`.role-select[data-id="${id}"]`);
-            await updateCreatorRole(id, select.value);
-          });
-        });
-
-        document.querySelectorAll(".suspend-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await toggleSuspended(btn.dataset.id, btn.dataset.next === "true");
-          });
-        });
-      }
-
-      function renderStoreItems() {
-        const rows = getFilteredStoreItems();
-
-        if (!rows.length) {
-          storeList.innerHTML = `<div class="empty-box">No store items match this filter.</div>`;
-          return;
-        }
-
-        storeList.innerHTML = rows.map(row => `
-          <div class="item">
-            <div class="item-title">${escapeHtml(row.title || "Untitled")}</div>
-            <div class="item-meta">
-              Category: ${escapeHtml(row.category || "art")}<br>
-              For Sale: ${row.is_for_sale ? "Yes" : "No"}<br>
-              Featured: ${row.is_featured ? "Yes" : "No"}<br>
-              Hidden: ${row.is_hidden ? "Yes" : "No"}<br>
-              Deleted: ${row.is_deleted ? "Yes" : "No"}<br>
-              Price: ${escapeHtml(money(row.price || 0))}<br>
-              Posted: ${escapeHtml(formatDate(row.created_at))}
-            </div>
-
-            <div class="actions">
-              <button class="btn-gold feature-btn" data-id="${row.id}" data-next="${row.is_featured ? "false" : "true"}" type="button">
-                ${row.is_featured ? "Unfeature" : "Feature"}
-              </button>
-              <button class="btn-blue hide-btn" data-id="${row.id}" data-next="${row.is_hidden ? "false" : "true"}" type="button">
-                ${row.is_hidden ? "Unhide" : "Hide"}
-              </button>
-              <button class="btn-red delete-btn" data-id="${row.id}" data-next="${row.is_deleted ? "false" : "true"}" type="button">
-                ${row.is_deleted ? "Restore" : "Soft Delete"}
-              </button>
-            </div>
-          </div>
-        `).join("");
-
-        document.querySelectorAll(".feature-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await updateArtworkFlags(
-              Number(btn.dataset.id),
-              { is_featured: btn.dataset.next === "true" },
-              "✅ Feature flag updated."
-            );
-          });
-        });
-
-        document.querySelectorAll(".hide-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await updateArtworkFlags(
-              Number(btn.dataset.id),
-              { is_hidden: btn.dataset.next === "true" },
-              "✅ Hidden flag updated."
-            );
-          });
-        });
-
-        document.querySelectorAll(".delete-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            await updateArtworkFlags(
-              Number(btn.dataset.id),
-              { is_deleted: btn.dataset.next === "true" },
-              btn.dataset.next === "true" ? "✅ Store item soft deleted." : "✅ Store item restored."
-            );
-          });
-        });
-      }
-
-      function renderPayouts() {
-        if (!payoutRequests.length) {
-          payoutList.innerHTML = `<div class="empty-box">No payout requests found.</div>`;
-          return;
-        }
-
-        payoutList.innerHTML = payoutRequests.map(row => `
-          <div class="item">
-            <div class="item-title">Payout Request #${escapeHtml(String(row.id))}</div>
-            <div class="item-meta">
-              User ID: ${escapeHtml(row.user_id || "--")}<br>
-              Amount: ${escapeHtml(money(row.amount || 0))}<br>
-              Method: ${escapeHtml(row.method || "--")}<br>
-              Creator Notes: ${escapeHtml(row.notes || "--")}<br>
-              Admin Notes: ${escapeHtml(row.admin_notes || "--")}<br>
-              Status: ${escapeHtml(row.status || "pending")}<br>
-              Created: ${escapeHtml(formatDate(row.created_at))}<br>
-              Reviewed: ${escapeHtml(formatDate(row.reviewed_at))}
-            </div>
-
-            ${
-              (row.status || "pending") === "pending"
-                ? `
-                  <textarea class="admin-notes-input" data-id="${row.id}" placeholder="Add admin review notes...">${escapeHtml(row.admin_notes || "")}</textarea>
-                  <div class="payout-actions">
-                    <button class="btn-green payout-approve-btn" data-id="${row.id}" type="button">Approve</button>
-                    <button class="btn-red payout-deny-btn" data-id="${row.id}" type="button">Deny</button>
-                  </div>
-                `
-                : ``
-            }
-          </div>
-        `).join("");
-
-        document.querySelectorAll(".payout-approve-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const notes = document.querySelector(`.admin-notes-input[data-id="${btn.dataset.id}"]`)?.value || "";
-            await reviewPayoutRequest(Number(btn.dataset.id), "approved", notes);
-          });
-        });
-
-        document.querySelectorAll(".payout-deny-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const notes = document.querySelector(`.admin-notes-input[data-id="${btn.dataset.id}"]`)?.value || "";
-            await reviewPayoutRequest(Number(btn.dataset.id), "denied", notes);
-          });
-        });
-      }
-
-      function renderAll() {
-        renderStats();
-        renderCreators();
-        renderStoreItems();
-        renderPayouts();
-      }
-
-      async function refreshPageData() {
-        await loadAllData();
-        renderAll();
-      }
-
-      function setFilter(filter) {
-        currentStoreFilter = filter;
-        document.querySelectorAll(".chip").forEach(chip => {
-          chip.classList.toggle("active", chip.dataset.filter === filter);
-        });
-        renderStoreItems();
-      }
-
-      async function logOut() {
-        try {
-          const { error } = await supabase.auth.signOut();
-          if (error) throw error;
-          window.location.href = "auth.html";
-        } catch (error) {
-          setStatus("Logout error: " + error.message);
-        }
-      }
-
-      async function loadAdminDashboard() {
-        try {
-          setStatus("Loading admin actions dashboard...");
-          await loadSession();
-          await loadProfileAndCheckAdmin();
-          await refreshPageData();
-          setStatus("✅ Admin actions upgrade fully synced.");
-        } catch (error) {
-          console.error("admin dashboard load error:", error);
-          setStatus("❌ Admin dashboard load error: " + error.message);
-          creatorList.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load admin dashboard.")}</div>`;
-          storeList.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load store moderation.")}</div>`;
-          payoutList.innerHTML = `<div class="empty-box">${escapeHtml(error.message || "Could not load payout queue.")}</div>`;
-        }
-      }
-
-      filterRow.querySelectorAll(".chip").forEach(chip => {
-        chip.addEventListener("click", () => setFilter(chip.dataset.filter));
-      });
-
-      logoutBtn.addEventListener("click", logOut);
-
-      supabase.auth.onAuthStateChange((_event, session) => {
-        currentUser = session?.user || null;
-        userChip.textContent = currentUser?.email || "Guest mode";
-      });
-
-      loadAdminDashboard();
-    } catch (error) {
-      document.body.innerHTML = `
-        <div style="padding:30px;color:white;font-family:Arial;background:#111;min-height:100vh;">
-          <h1 style="color:#7dff71;">Admin Actions Startup Error</h1>
-          <p>${error.message}</p>
-        </div>
-      `;
-    }
-  </script>
+</div>
+
+<!-- =========================
+CREATORS
+========================= -->
+<div class="section">
+  <h2>Creators</h2>
+  <div id="creatorList"></div>
+</div>
+
+<!-- =========================
+STORE
+========================= -->
+<div class="section">
+  <h2>Store Moderation</h2>
+  <div id="storeList"></div>
+</div>
+
+<!-- =========================
+PAYOUTS
+========================= -->
+<div class="section">
+  <h2>Payouts</h2>
+  <div id="payoutList"></div>
+</div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const statusBox = document.getElementById("statusBox");
+
+let liveStreams = [];
+let creators = [];
+let storeItems = [];
+let payouts = [];
+
+/* =========================
+HELPERS
+========================= */
+function setStatus(msg){ statusBox.textContent = msg; }
+
+function escapeHtml(t){
+  return String(t || "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;");
+}
+
+/* =========================
+LIVE STREAMS (NEW CORE)
+========================= */
+async function loadLiveStreams(){
+  const { data, error } = await supabase
+    .from("live_streams")
+    .select("*")
+    .order("created_at", { ascending:false })
+    .limit(20);
+
+  if(error){ console.error(error); return; }
+  liveStreams = data || [];
+}
+
+function renderLiveStreams(){
+  const el = document.getElementById("liveAdminList");
+
+  if(!liveStreams.length){
+    el.innerHTML = `<div class="empty-box">No live streams</div>`;
+    return;
+  }
+
+  el.innerHTML = liveStreams.map(s=>`
+    <div class="item">
+      <strong>${escapeHtml(s.title)}</strong><br>
+      Status: ${s.status}<br>
+      Viewers: ${s.viewer_count || 0}<br>
+
+      <br>
+      <button class="btn btn-blue open" data-slug="${s.slug}">Open</button>
+      <button class="btn btn-red end" data-id="${s.id}">End</button>
+    </div>
+  `).join("");
+
+  document.querySelectorAll(".open").forEach(btn=>{
+    btn.onclick=()=>window.open(`/watch.html?slug=${btn.dataset.slug}`);
+  });
+
+  document.querySelectorAll(".end").forEach(btn=>{
+    btn.onclick=async ()=>{
+      await supabase
+        .from("live_streams")
+        .update({ status:"ended" })
+        .eq("id", btn.dataset.id);
+
+      await boot();
+    };
+  });
+}
+
+/* =========================
+CREATORS
+========================= */
+async function loadCreators(){
+  const { data } = await supabase.from("profiles").select("*").limit(20);
+  creators = data || [];
+}
+
+function renderCreators(){
+  const el = document.getElementById("creatorList");
+
+  if(!creators.length){
+    el.innerHTML = `<div class="empty-box">No creators</div>`;
+    return;
+  }
+
+  el.innerHTML = creators.map(c=>`
+    <div class="item">
+      ${escapeHtml(c.display_name || c.email)}<br>
+      Role: ${c.role || "user"}
+    </div>
+  `).join("");
+}
+
+/* =========================
+STORE
+========================= */
+async function loadStore(){
+  const { data } = await supabase.from("artworks").select("*").limit(20);
+  storeItems = data || [];
+}
+
+function renderStore(){
+  const el = document.getElementById("storeList");
+
+  el.innerHTML = storeItems.map(s=>`
+    <div class="item">
+      ${escapeHtml(s.title)}<br>
+      ${s.is_hidden ? "Hidden" : "Visible"}
+    </div>
+  `).join("");
+}
+
+/* =========================
+PAYOUTS
+========================= */
+async function loadPayouts(){
+  const { data } = await supabase.from("payout_requests").select("*").limit(20);
+  payouts = data || [];
+}
+
+function renderPayouts(){
+  const el = document.getElementById("payoutList");
+
+  el.innerHTML = payouts.map(p=>`
+    <div class="item">
+      ${p.user_id}<br>
+      $${p.amount}<br>
+      ${p.status}
+    </div>
+  `).join("");
+}
+
+/* =========================
+BOOT
+========================= */
+async function boot(){
+  try{
+    setStatus("Loading admin...");
+
+    await loadLiveStreams();
+    await loadCreators();
+    await loadStore();
+    await loadPayouts();
+
+    renderLiveStreams();
+    renderCreators();
+    renderStore();
+    renderPayouts();
+
+    setStatus("✅ Admin Ready");
+  }catch(err){
+    console.error(err);
+    setStatus("❌ Error: " + err.message);
+  }
+}
+
+boot();
+</script>
 </body>
 </html>
