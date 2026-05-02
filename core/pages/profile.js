@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — GTA UPGRADED (FINAL FIXED)
+// RICH BIZNESS PROFILE — FINAL SYNCED (META + AVATAR CONNECTED)
 // /core/pages/profile.js
 // =========================
 
@@ -14,9 +14,11 @@ let currentProfile = null;
 
 const $ = (id) => document.getElementById(id);
 
-const els = {
-  nav: $("elite-platform-nav"),
+// =========================
+// ELEMENTS
+// =========================
 
+const els = {
   cover: $("profile-cover"),
   avatar: $("profile-avatar"),
   displayName: $("profile-display-name"),
@@ -52,6 +54,10 @@ const els = {
   editCoverUrl: $("edit-cover-url")
 };
 
+// =========================
+// NAV
+// =========================
+
 mountEliteNav({
   target: "#elite-platform-nav",
   collapsed: false
@@ -70,11 +76,41 @@ function money(cents = 0) {
 
 function setEditStatus(message, type = "normal") {
   if (!els.editStatus) return;
+
   els.editStatus.textContent = message;
   els.editStatus.classList.remove("is-success", "is-error");
 
   if (type === "success") els.editStatus.classList.add("is-success");
   if (type === "error") els.editStatus.classList.add("is-error");
+}
+
+// =========================
+// 🔥 META AVATAR CONNECT (NEW)
+// =========================
+
+function cacheAvatarForMetaverse(profile) {
+  try {
+    const metaData = {
+      id: currentUser.id,
+      name: profile.display_name || "Creator",
+      avatar: profile.avatar_url,
+      avatar_type: profile.avatar_type || "gta",
+      avatar_style: profile.avatar_style || "hybrid"
+    };
+
+    localStorage.setItem("rb_meta_avatar", JSON.stringify(metaData));
+  } catch (e) {
+    console.warn("Meta avatar cache failed", e);
+  }
+}
+
+function openMetaverse() {
+  if (!currentProfile) return;
+
+  cacheAvatarForMetaverse(currentProfile);
+
+  // 🔥 go to metaverse with context
+  window.location.href = "/metaverse.html";
 }
 
 // =========================
@@ -84,14 +120,12 @@ function setEditStatus(message, type = "normal") {
 function renderProfile(profile = {}) {
   const displayName =
     profile.display_name ||
-    profile.full_name ||
     profile.username ||
     currentUser?.email ||
     "Rich Bizness Creator";
 
   const username =
     profile.username ||
-    profile.handle ||
     "richbizness";
 
   const avatar =
@@ -102,7 +136,6 @@ function renderProfile(profile = {}) {
     profile.cover_url ||
     "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png";
 
-  // TEXT
   if (els.displayName) els.displayName.textContent = displayName;
   if (els.handle) els.handle.textContent = `@${username}`;
   if (els.bio) {
@@ -111,7 +144,7 @@ function renderProfile(profile = {}) {
       "Building my lane across Rich Bizness.";
   }
 
-  // GTA AVATAR SYSTEM
+  // 🔥 AVATAR SYSTEM
   if (els.avatar) {
     els.avatar.src = avatar;
 
@@ -134,7 +167,7 @@ function renderProfile(profile = {}) {
   // COVER
   if (els.cover) {
     els.cover.style.backgroundImage = `
-      linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.85)),
+      linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.85)),
       url("${cover}")
     `;
   }
@@ -145,6 +178,9 @@ function renderProfile(profile = {}) {
       ? `/messages.html?user=${encodeURIComponent(currentUser.id)}`
       : "/messages.html";
   }
+
+  // 🔥 ALWAYS CACHE META AVATAR
+  cacheAvatarForMetaverse(profile);
 }
 
 // =========================
@@ -160,7 +196,7 @@ async function ensureProfile() {
 
   if (data) return data;
 
-  const fallbackProfile = {
+  const fallback = {
     id: currentUser.id,
     email: currentUser.email,
     display_name: "Rich Bizness Creator",
@@ -176,7 +212,7 @@ async function ensureProfile() {
 
   const { data: inserted } = await supabase
     .from("profiles")
-    .insert(fallbackProfile)
+    .insert(fallback)
     .select("*")
     .single();
 
@@ -187,17 +223,17 @@ async function ensureProfile() {
 // SAVE PROFILE
 // =========================
 
-async function saveProfile(event) {
-  event.preventDefault();
+async function saveProfile(e) {
+  e.preventDefault();
 
   setEditStatus("Saving...");
 
   const payload = {
-    display_name: els.editDisplayName?.value?.trim(),
-    username: els.editUsername?.value?.trim(),
-    bio: els.editBio?.value?.trim(),
-    avatar_url: els.editAvatarUrl?.value?.trim(),
-    cover_url: els.editCoverUrl?.value?.trim(),
+    display_name: els.editDisplayName.value,
+    username: els.editUsername.value,
+    bio: els.editBio.value,
+    avatar_url: els.editAvatarUrl.value,
+    cover_url: els.editCoverUrl.value,
 
     avatar_type: "gta",
     avatar_style: "hybrid",
@@ -229,7 +265,7 @@ async function saveProfile(event) {
   setEditStatus("Saved", "success");
 
   setTimeout(() => {
-    els.modal?.close();
+    els.modal.close();
   }, 600);
 }
 
@@ -238,29 +274,35 @@ async function saveProfile(event) {
 // =========================
 
 function bindEvents() {
-  els.editBtn?.addEventListener("click", () => els.modal?.showModal());
-  els.closeModal?.addEventListener("click", () => els.modal?.close());
+  els.editBtn?.addEventListener("click", () => els.modal.showModal());
+  els.closeModal?.addEventListener("click", () => els.modal.close());
   els.editForm?.addEventListener("submit", saveProfile);
 
   els.logoutBtn?.addEventListener("click", async () => {
     await supabase.auth.signOut();
     window.location.href = "/index.html";
   });
+
+  // 🔥 META ENTRY (NEW)
+  document.querySelectorAll('a[href="/metaverse.html"]').forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      openMetaverse();
+    });
+  });
 }
 
 // =========================
-// BOOT (FIXED — NO BLANK SCREEN)
+// BOOT
 // =========================
 
 async function bootProfile() {
   try {
     bindEvents();
 
-    currentUser = getCurrentUserState();
-
     if (!currentUser?.id) {
       const { data } = await supabase.auth.getSession();
-      currentUser = data?.session?.user || null;
+      currentUser = data?.session?.user;
     }
 
     if (!currentUser?.id) {
@@ -270,16 +312,13 @@ async function bootProfile() {
 
     currentProfile = await ensureProfile();
 
-    // 👇 ALWAYS SHOW PAGE (CRITICAL FIX)
     document.body.classList.add("profile-loaded");
 
     renderProfile(currentProfile);
 
-    console.log("👤 Profile Ready (GTA Mode)");
+    console.log("👤 PROFILE + META READY");
   } catch (err) {
-    console.error("❌ Profile crash:", err);
-
-    // FAILSAFE
+    console.error("Profile crash:", err);
     document.body.classList.add("profile-loaded");
   }
 }
