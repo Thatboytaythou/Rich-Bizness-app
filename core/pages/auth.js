@@ -1,8 +1,6 @@
 // =========================
-// RICH BIZNESS AUTH — FINAL SYNCED
+// RICH BIZNESS AUTH — FINAL SYNCED + SYSTEM CONNECT
 // /core/pages/auth.js
-// Matches: /auth.html
-// Language locked: Tap In / Tap Out / Join The Bizness / Reset Access
 // =========================
 
 import { initApp, getSupabase } from "/core/app.js";
@@ -11,6 +9,10 @@ await initApp();
 
 const supabase = getSupabase();
 const $ = (id) => document.getElementById(id);
+
+// =========================
+// ELEMENTS
+// =========================
 
 const els = {
   status: $("auth-status"),
@@ -46,118 +48,97 @@ const els = {
   signoutBtn: $("signout-btn")
 };
 
+// =========================
+// HELPERS
+// =========================
+
 function setStatus(message, type = "normal") {
   if (!els.status) return;
   els.status.textContent = message;
-  els.status.className = `auth-status ${type}`.trim();
+  els.status.className = `auth-status ${type}`;
 }
 
-function setLoading(button, loading, loadingText = "Working...") {
+function setLoading(button, loading, text = "Working...") {
   if (!button) return;
 
   if (loading) {
-    button.dataset.originalText = button.textContent || "";
-    button.textContent = loadingText;
+    button.dataset.original = button.textContent;
+    button.textContent = text;
     button.disabled = true;
-    return;
+  } else {
+    button.textContent = button.dataset.original || button.textContent;
+    button.disabled = false;
   }
-
-  button.disabled = false;
-  button.textContent = button.dataset.originalText || button.textContent;
 }
 
 function slugify(value = "") {
-  return String(value)
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9_]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 40);
+  return value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-");
 }
 
 function getRedirect() {
-  const url = new URL(window.location.href);
-  return url.searchParams.get("next") || "/profile.html";
+  return new URL(window.location.href).searchParams.get("next") || "/profile.html";
 }
 
-function showForm(type = "signin") {
-  if (els.signinForm) els.signinForm.hidden = type !== "signin";
-  if (els.signupForm) els.signupForm.hidden = type !== "signup";
-  if (els.resetForm) els.resetForm.hidden = type !== "reset";
+// =========================
+// 🔥 SYSTEM SYNC (NEW)
+// =========================
 
-  els.tabSignin?.classList.toggle("active", type === "signin");
-  els.tabSignin?.classList.toggle("is-active", type === "signin");
+async function syncUserSystem(user) {
+  if (!user?.id) return;
 
-  els.tabSignup?.classList.toggle("active", type === "signup");
-  els.tabSignup?.classList.toggle("is-active", type === "signup");
-
-  els.tabReset?.classList.toggle("active", type === "reset");
-  els.tabReset?.classList.toggle("is-active", type === "reset");
-
-  if (type === "signin") {
-    if (els.panelTitle) els.panelTitle.textContent = "Welcome back";
-    if (els.panelCopy) els.panelCopy.textContent = "Tap in to continue building Rich Bizness.";
-    setStatus("Ready to tap in.");
-  }
-
-  if (type === "signup") {
-    if (els.panelTitle) els.panelTitle.textContent = "Join The Bizness";
-    if (els.panelCopy) els.panelCopy.textContent = "Create your account and start building your empire.";
-    setStatus("Ready to join.");
-  }
-
-  if (type === "reset") {
-    if (els.panelTitle) els.panelTitle.textContent = "Reset Access";
-    if (els.panelCopy) els.panelCopy.textContent = "Send yourself a reset access link.";
-    setStatus("Ready to reset access.");
-  }
-}
-
-async function upsertProfileForUser(user, { displayName = "", username = "" } = {}) {
-  if (!user?.id) return null;
-
-  const cleanUsername =
-    slugify(username) ||
-    slugify(displayName) ||
-    slugify(user.email?.split("@")[0] || "richbizness");
-
-  const payload = {
-    id: user.id,
-    email: user.email || null,
-    display_name: displayName || user.user_metadata?.display_name || null,
-    username: cleanUsername,
-    updated_at: new Date().toISOString()
-  };
-
-  const { data, error } = await supabase
+  // 🔥 ensure profile exists
+  const { data: profile } = await supabase
     .from("profiles")
-    .upsert(payload, { onConflict: "id" })
     .select("*")
+    .eq("id", user.id)
     .maybeSingle();
 
-  if (error) {
-    console.warn("[auth] profile sync failed:", error.message);
-    return null;
-  }
+  // 🔥 cache avatar for metaverse
+  const avatarData = {
+    id: user.id,
+    name: profile?.display_name || user.email,
+    avatar: profile?.avatar_url || "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png",
+    avatar_type: profile?.avatar_type || "gta",
+    avatar_style: profile?.avatar_style || "hybrid"
+  };
 
-  return data || null;
+  localStorage.setItem("rb_meta_avatar", JSON.stringify(avatarData));
+
+  // 🔥 global session cache (future use)
+  localStorage.setItem("rb_user", JSON.stringify({
+    id: user.id,
+    email: user.email
+  }));
 }
 
-async function handleTapIn(event) {
-  event.preventDefault();
+// =========================
+// FORM SWITCHING
+// =========================
 
-  const email = els.signinEmail?.value?.trim();
-  const password = els.signinPassword?.value || "";
+function showForm(type) {
+  els.signinForm.hidden = type !== "signin";
+  els.signupForm.hidden = type !== "signup";
+  els.resetForm.hidden = type !== "reset";
 
-  if (!email || !password) {
-    setStatus("Enter email and password to tap in.", "error");
-    return;
-  }
+  els.tabSignin.classList.toggle("active", type === "signin");
+  els.tabSignup.classList.toggle("active", type === "signup");
+  els.tabReset.classList.toggle("active", type === "reset");
+}
+
+// =========================
+// SIGN IN
+// =========================
+
+async function handleTapIn(e) {
+  e.preventDefault();
+
+  const email = els.signinEmail.value.trim();
+  const password = els.signinPassword.value;
 
   setLoading(els.signinSubmit, true, "Tapping In...");
-  setStatus("Tapping you in...");
+  setStatus("Connecting...");
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password
   });
@@ -165,43 +146,39 @@ async function handleTapIn(event) {
   setLoading(els.signinSubmit, false);
 
   if (error) {
-    setStatus(error.message || "Tap In failed.", "error");
+    setStatus(error.message, "error");
     return;
   }
 
-  setStatus("Tapped in successfully.", "success");
+  await syncUserSystem(data.user);
+
+  setStatus("Tapped In ✅", "success");
+
   window.location.href = getRedirect();
 }
 
-async function handleJoinBizness(event) {
-  event.preventDefault();
+// =========================
+// SIGN UP
+// =========================
 
-  const email = els.signupEmail?.value?.trim();
-  const password = els.signupPassword?.value || "";
-  const displayName = els.signupDisplayName?.value?.trim() || "";
-  const username = slugify(els.signupUsername?.value || displayName);
+async function handleJoin(e) {
+  e.preventDefault();
 
-  if (!email || !password) {
-    setStatus("Email and password required to Join The Bizness.", "error");
-    return;
-  }
-
-  if (password.length < 6) {
-    setStatus("Password needs at least 6 characters.", "error");
-    return;
-  }
+  const email = els.signupEmail.value.trim();
+  const password = els.signupPassword.value;
+  const displayName = els.signupDisplayName.value.trim();
+  const username = slugify(els.signupUsername.value || displayName);
 
   setLoading(els.signupSubmit, true, "Joining...");
-  setStatus("Creating your Rich Bizness account...");
+  setStatus("Creating account...");
 
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${window.location.origin}/auth.html?next=${encodeURIComponent("/profile.html")}`,
       data: {
-        display_name: displayName || null,
-        username: username || null
+        display_name: displayName,
+        username
       }
     }
   });
@@ -209,127 +186,107 @@ async function handleJoinBizness(event) {
   setLoading(els.signupSubmit, false);
 
   if (error) {
-    setStatus(error.message || "Join The Bizness failed.", "error");
+    setStatus(error.message, "error");
     return;
   }
 
-  if (data?.user?.id) {
-    await upsertProfileForUser(data.user, { displayName, username });
+  if (data?.user) {
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      email,
+      display_name: displayName,
+      username
+    });
+
+    await syncUserSystem(data.user);
   }
 
-  if (data?.session?.user) {
-    setStatus("You joined and tapped in. Taking you to profile...", "success");
-    window.location.href = getRedirect();
-    return;
-  }
+  setStatus("Account created ✅", "success");
 
-  setStatus("Account created. Check your email if confirmation is required.", "success");
-  showForm("signin");
+  window.location.href = getRedirect();
 }
 
-async function handleResetAccess(event) {
-  event.preventDefault();
+// =========================
+// RESET
+// =========================
 
-  const email = els.resetEmail?.value?.trim();
+async function handleReset(e) {
+  e.preventDefault();
 
-  if (!email) {
-    setStatus("Enter your email to reset access.", "error");
-    return;
-  }
+  const email = els.resetEmail.value.trim();
 
   setLoading(els.resetSubmit, true, "Sending...");
-  setStatus("Sending Reset Access link...");
+  setStatus("Sending reset...");
 
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth.html?type=recovery`
-  });
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
 
   setLoading(els.resetSubmit, false);
 
   if (error) {
-    setStatus(error.message || "Reset Access failed.", "error");
+    setStatus(error.message, "error");
     return;
   }
 
-  setStatus("Reset Access email sent.", "success");
+  setStatus("Reset email sent ✅", "success");
 }
 
-async function handleTapOut() {
-  if (els.signoutBtn) {
-    els.signoutBtn.disabled = true;
-    els.signoutBtn.textContent = "Tapping Out...";
-  }
+// =========================
+// SIGN OUT
+// =========================
 
+async function handleSignOut() {
   await supabase.auth.signOut();
 
-  setStatus("Tapped out.", "success");
-
-  if (els.sessionPanel) els.sessionPanel.hidden = true;
+  localStorage.removeItem("rb_meta_avatar");
+  localStorage.removeItem("rb_user");
 
   window.location.href = "/auth.html";
 }
 
+// =========================
+// SESSION CHECK
+// =========================
+
 async function checkSession() {
   const { data } = await supabase.auth.getSession();
-  const user = data?.session?.user || null;
+  const user = data?.session?.user;
 
   if (user) {
-    await upsertProfileForUser(user, {
-      displayName: user.user_metadata?.display_name || "",
-      username: user.user_metadata?.username || ""
-    });
+    await syncUserSystem(user);
 
-    if (els.sessionPanel) els.sessionPanel.hidden = false;
-    if (els.sessionTitle) els.sessionTitle.textContent = "Tapped In";
-    if (els.sessionEmail) els.sessionEmail.textContent = user.email || "—";
+    els.sessionPanel.hidden = false;
+    els.sessionEmail.textContent = user.email;
 
-    setStatus("You are tapped in.", "success");
-    return user;
-  }
-
-  if (els.sessionPanel) els.sessionPanel.hidden = true;
-  return null;
-}
-
-function bindAuth() {
-  els.tabSignin?.addEventListener("click", () => showForm("signin"));
-  els.tabSignup?.addEventListener("click", () => showForm("signup"));
-  els.tabReset?.addEventListener("click", () => showForm("reset"));
-
-  els.signinForm?.addEventListener("submit", handleTapIn);
-  els.signupForm?.addEventListener("submit", handleJoinBizness);
-  els.resetForm?.addEventListener("submit", handleResetAccess);
-
-  els.signoutBtn?.addEventListener("click", handleTapOut);
-
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (session?.user) {
-      await upsertProfileForUser(session.user, {
-        displayName: session.user.user_metadata?.display_name || "",
-        username: session.user.user_metadata?.username || ""
-      });
-    }
-
-    await checkSession();
-  });
-}
-
-async function bootAuth() {
-  bindAuth();
-
-  const type = new URLSearchParams(window.location.search).get("type");
-
-  if (type === "recovery") {
-    showForm("reset");
-    setStatus("Reset Access mode opened. Use your email flow to update password if enabled.", "success");
+    setStatus("Already tapped in.");
   } else {
-    showForm("signin");
+    els.sessionPanel.hidden = true;
   }
+}
 
+// =========================
+// EVENTS
+// =========================
+
+function bindEvents() {
+  els.tabSignin.onclick = () => showForm("signin");
+  els.tabSignup.onclick = () => showForm("signup");
+  els.tabReset.onclick = () => showForm("reset");
+
+  els.signinForm.onsubmit = handleTapIn;
+  els.signupForm.onsubmit = handleJoin;
+  els.resetForm.onsubmit = handleReset;
+
+  els.signoutBtn.onclick = handleSignOut;
+}
+
+// =========================
+// BOOT
+// =========================
+
+async function boot() {
+  bindEvents();
+  showForm("signin");
   await checkSession();
 }
 
-bootAuth().catch((error) => {
-  console.error("[auth] boot error:", error);
-  setStatus(error.message || "Auth failed to load.", "error");
-});
+boot();
