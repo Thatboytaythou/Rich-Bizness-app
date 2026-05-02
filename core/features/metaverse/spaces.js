@@ -1,9 +1,9 @@
 // =========================
-// RICH BIZNESS METAVERSE SPACE — FULL SYNCED
+// RICH BIZNESS META SPACE — FINAL SYNCED
 // /core/features/metaverse/space.js
 // =========================
 
-import { getSupabase, getCurrentUserState } from "/core/app.js";
+import { getSupabase } from "/core/app.js";
 
 const supabase = getSupabase();
 
@@ -11,243 +11,215 @@ const supabase = getSupabase();
    ELEMENTS
 ========================= */
 
-const $ = (id) => document.getElementById(id);
-
-const els = {
-  canvas: $("metaverse-canvas"),
-  status: $("metaverse-status"),
-
-  joinBtn: $("enter-meta-vision-btn"),
-  exitBtn: $("exit-meta-vision-btn"),
-
-  usersList: $("metaverse-users"),
-  chatList: $("metaverse-chat-list"),
-  chatInput: $("metaverse-chat-input"),
-  chatSendBtn: $("metaverse-chat-send-btn")
-};
+const canvas = document.getElementById("meta-canvas");
+const ctx = canvas?.getContext("2d");
 
 /* =========================
    STATE
 ========================= */
 
-let currentUser = getCurrentUserState();
-let spaceChannel = null;
-let presenceChannel = null;
-let chatChannel = null;
-
+let player = null;
 let players = {};
-let ctx = null;
-let running = false;
+let channel = null;
 
 /* =========================
-   HELPERS
+   CANVAS SETUP
 ========================= */
 
-function setStatus(msg) {
-  if (els.status) els.status.textContent = msg;
+function resizeCanvas() {
+  if (!canvas) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
 
-function randPos() {
-  return {
-    x: Math.floor(Math.random() * 500),
-    y: Math.floor(Math.random() * 300)
-  };
+window.addEventListener("resize", resizeCanvas);
+
+/* =========================
+   LOAD AVATAR (FROM AUTH)
+========================= */
+
+function loadAvatar() {
+  try {
+    const raw = localStorage.getItem("rb_meta_avatar");
+    if (!raw) return null;
+
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 /* =========================
-   CANVAS ENGINE
+   INIT PLAYER
+========================= */
+
+function createPlayer() {
+  const avatar = loadAvatar();
+
+  const id = avatar?.id || crypto.randomUUID();
+
+  player = {
+    id,
+    name: avatar?.name || "Rich Player",
+    avatar: avatar?.avatar || null,
+
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2,
+
+    vx: 0,
+    vy: 0,
+    speed: 4
+  };
+
+  players[id] = player;
+}
+
+/* =========================
+   DRAW PLAYER
+========================= */
+
+function drawPlayer(p) {
+  if (!ctx) return;
+
+  // body
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 22, 0, Math.PI * 2);
+  ctx.fillStyle = "#69ffb4";
+  ctx.fill();
+
+  // name
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "12px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText(p.name, p.x, p.y - 30);
+}
+
+/* =========================
+   DRAW LOOP
 ========================= */
 
 function draw() {
-  if (!ctx || !els.canvas) return;
+  if (!ctx) return;
 
-  ctx.clearRect(0, 0, els.canvas.width, els.canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  Object.values(players).forEach((p) => {
-    ctx.fillStyle = p.color || "#7dff71";
-    ctx.fillRect(p.x, p.y, 20, 20);
+  Object.values(players).forEach(drawPlayer);
 
-    ctx.fillStyle = "#fff";
-    ctx.font = "10px Arial";
-    ctx.fillText(p.name || "user", p.x, p.y - 5);
-  });
-}
-
-function loop() {
-  if (!running) return;
-  draw();
-  requestAnimationFrame(loop);
-}
-
-/* =========================
-   PRESENCE (PLAYERS)
-========================= */
-
-function subscribePresence() {
-  presenceChannel = supabase.channel("metaverse-presence");
-
-  presenceChannel.on("presence", { event: "sync" }, () => {
-    const state = presenceChannel.presenceState();
-
-    players = {};
-
-    Object.values(state).forEach((arr) => {
-      arr.forEach((p) => {
-        players[p.user_id] = p;
-      });
-    });
-
-    renderUsers();
-  });
-
-  presenceChannel.subscribe(async (status) => {
-    if (status === "SUBSCRIBED") {
-      const pos = randPos();
-
-      await presenceChannel.track({
-        user_id: currentUser?.id || crypto.randomUUID(),
-        name: currentUser?.email?.split("@")[0] || "guest",
-        x: pos.x,
-        y: pos.y,
-        color: "#7dff71"
-      });
-    }
-  });
-}
-
-/* =========================
-   CHAT
-========================= */
-
-function appendChat(msg) {
-  if (!els.chatList) return;
-
-  const el = document.createElement("div");
-  el.className = "meta-chat-msg";
-  el.innerHTML = `<strong>${msg.name}</strong>: ${msg.text}`;
-  els.chatList.appendChild(el);
-  els.chatList.scrollTop = els.chatList.scrollHeight;
-}
-
-function subscribeChat() {
-  chatChannel = supabase.channel("metaverse-chat");
-
-  chatChannel.on("broadcast", { event: "message" }, ({ payload }) => {
-    appendChat(payload);
-  });
-
-  chatChannel.subscribe();
-}
-
-async function sendChat() {
-  const text = els.chatInput?.value?.trim();
-  if (!text) return;
-
-  const msg = {
-    name: currentUser?.email?.split("@")[0] || "guest",
-    text
-  };
-
-  chatChannel.send({
-    type: "broadcast",
-    event: "message",
-    payload: msg
-  });
-
-  appendChat(msg);
-  els.chatInput.value = "";
-}
-
-/* =========================
-   USERS UI
-========================= */
-
-function renderUsers() {
-  if (!els.usersList) return;
-
-  els.usersList.innerHTML = Object.values(players)
-    .map((p) => `<div class="meta-user">${p.name}</div>`)
-    .join("");
+  requestAnimationFrame(draw);
 }
 
 /* =========================
    MOVEMENT
 ========================= */
 
-function bindMovement() {
-  document.addEventListener("keydown", (e) => {
-    const id = currentUser?.id;
-    if (!players[id]) return;
+const keys = {};
 
-    const speed = 5;
+window.addEventListener("keydown", (e) => {
+  keys[e.key.toLowerCase()] = true;
+});
 
-    if (e.key === "ArrowUp") players[id].y -= speed;
-    if (e.key === "ArrowDown") players[id].y += speed;
-    if (e.key === "ArrowLeft") players[id].x -= speed;
-    if (e.key === "ArrowRight") players[id].x += speed;
+window.addEventListener("keyup", (e) => {
+  keys[e.key.toLowerCase()] = false;
+});
 
-    presenceChannel.track(players[id]); // update position
+function updateMovement() {
+  if (!player) return;
+
+  player.vx = 0;
+  player.vy = 0;
+
+  if (keys["w"] || keys["arrowup"]) player.vy = -player.speed;
+  if (keys["s"] || keys["arrowdown"]) player.vy = player.speed;
+  if (keys["a"] || keys["arrowleft"]) player.vx = -player.speed;
+  if (keys["d"] || keys["arrowright"]) player.vx = player.speed;
+
+  player.x += player.vx;
+  player.y += player.vy;
+
+  broadcastPosition();
+
+  requestAnimationFrame(updateMovement);
+}
+
+/* =========================
+   REALTIME PRESENCE
+========================= */
+
+function initPresence() {
+  channel = supabase.channel("meta-space", {
+    config: { presence: { key: player.id } }
+  });
+
+  channel.on("presence", { event: "sync" }, () => {
+    const state = channel.presenceState();
+
+    players = {};
+
+    Object.values(state).forEach((entries) => {
+      entries.forEach((p) => {
+        players[p.id] = p;
+      });
+    });
+  });
+
+  channel.subscribe(async (status) => {
+    if (status === "SUBSCRIBED") {
+      await channel.track(player);
+    }
   });
 }
 
 /* =========================
-   SPACE CONTROL
+   BROADCAST POSITION
 ========================= */
 
-async function enterSpace() {
-  currentUser = getCurrentUserState();
+async function broadcastPosition() {
+  if (!channel) return;
 
-  if (!els.canvas) return;
-
-  ctx = els.canvas.getContext("2d");
-  running = true;
-
-  subscribePresence();
-  subscribeChat();
-  bindMovement();
-
-  loop();
-
-  setStatus("Entered Meta Vision 🌐");
-}
-
-async function exitSpace() {
-  running = false;
-
-  if (presenceChannel) {
-    await supabase.removeChannel(presenceChannel);
-    presenceChannel = null;
-  }
-
-  if (chatChannel) {
-    await supabase.removeChannel(chatChannel);
-    chatChannel = null;
-  }
-
-  players = {};
-
-  setStatus("Exited Meta Vision");
+  await channel.track({
+    id: player.id,
+    name: player.name,
+    x: player.x,
+    y: player.y
+  });
 }
 
 /* =========================
-   EVENTS
+   OPTIONAL: LIVE ROOM HOOK
 ========================= */
 
-function bindEvents() {
-  els.joinBtn?.addEventListener("click", enterSpace);
-  els.exitBtn?.addEventListener("click", exitSpace);
-  els.chatSendBtn?.addEventListener("click", sendChat);
+async function loadLiveRooms() {
+  // 🔥 this connects meta to live system later
+  const { data } = await supabase
+    .from("live_streams")
+    .select("id, title, livekit_room_name, status")
+    .eq("status", "live");
 
-  els.chatInput?.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendChat();
-  });
+  console.log("🌍 Live rooms in meta:", data);
 }
 
 /* =========================
    BOOT
 ========================= */
 
-export function bootMetaverseSpace() {
-  bindEvents();
-  setStatus("Meta Vision Ready");
+function bootSpace() {
+  if (!canvas) {
+    console.warn("Meta canvas not found");
+    return;
+  }
+
+  resizeCanvas();
+
+  createPlayer();
+
+  initPresence();
+
+  draw();
+  updateMovement();
+
+  loadLiveRooms();
+
+  console.log("🌍 Meta Space Active");
 }
+
+bootSpace();
