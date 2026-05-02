@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — COMMAND CENTER (FULL FINAL)
+// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL FIXED)
 // /core/pages/profile.js
 // =========================
 
@@ -87,7 +87,7 @@ function setEditStatus(message, type = "normal") {
 }
 
 // =========================
-// PROFILE RENDER
+// RENDER PROFILE
 // =========================
 
 function renderProfile(profile = {}) {
@@ -124,91 +124,112 @@ function renderProfile(profile = {}) {
   if (els.adminLink) {
     const isAdmin =
       profile.role === "admin" ||
-      profile.is_admin === true;
+      profile.is_admin === true ||
+      profile.account_role === "admin";
 
     els.adminLink.style.display = isAdmin ? "inline-flex" : "none";
   }
 }
 
 // =========================
-// DATA LOADERS (🔥 THIS WAS MISSING)
+// DATA LOADERS
 // =========================
 
 async function loadStats() {
-  const [
-    followersRes,
-    uploadsRes,
-    liveRes,
-    revenueRes
-  ] = await Promise.all([
-    supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", currentUser.id),
-    supabase.from("uploads").select("*", { count: "exact", head: true }).eq("user_id", currentUser.id),
-    supabase.from("live_streams").select("*", { count: "exact", head: true }).eq("creator_id", currentUser.id),
-    supabase.from("tips").select("amount_cents").eq("to_user_id", currentUser.id)
-  ]);
+  try {
+    const [
+      followersRes,
+      uploadsRes,
+      liveRes,
+      tipsRes
+    ] = await Promise.all([
+      supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", currentUser.id),
+      supabase.from("uploads").select("*", { count: "exact", head: true }).eq("user_id", currentUser.id),
+      supabase.from("live_streams").select("*", { count: "exact", head: true }).eq("creator_id", currentUser.id),
+      supabase.from("tips").select("amount_cents").eq("to_user_id", currentUser.id)
+    ]);
 
-  if (els.followers) els.followers.textContent = followersRes.count || 0;
-  if (els.uploads) els.uploads.textContent = uploadsRes.count || 0;
-  if (els.live) els.live.textContent = liveRes.count || 0;
+    if (els.followers) els.followers.textContent = followersRes.count || 0;
+    if (els.uploads) els.uploads.textContent = uploadsRes.count || 0;
+    if (els.live) els.live.textContent = liveRes.count || 0;
 
-  const totalRevenue =
-    (revenueRes.data || []).reduce((sum, t) => sum + (t.amount_cents || 0), 0);
+    const totalRevenue =
+      (tipsRes.data || []).reduce((sum, t) => sum + (t.amount_cents || 0), 0);
 
-  if (els.revenue) els.revenue.textContent = money(totalRevenue);
+    if (els.revenue) els.revenue.textContent = money(totalRevenue);
+
+  } catch (err) {
+    console.warn("Stats failed", err);
+  }
 }
 
 // =========================
 
 async function loadMoney() {
-  const { data } = await supabase
-    .from("creator_available_balances")
-    .select("*")
-    .eq("artist_user_id", currentUser.id)
-    .maybeSingle();
+  try {
+    const { data } = await supabase
+      .from("creator_available_balances")
+      .select("*")
+      .eq("artist_user_id", currentUser.id)
+      .maybeSingle();
 
-  if (!data) return;
+    if (!data) return;
 
-  if (els.moneyAvailable) els.moneyAvailable.textContent = money(data.available_cents);
-  if (els.moneyEarned) els.moneyEarned.textContent = money(data.earned_cents);
-  if (els.moneyPaidOut) els.moneyPaidOut.textContent = money(data.paid_out_cents);
+    if (els.moneyAvailable) els.moneyAvailable.textContent = money(data.available_cents);
+    if (els.moneyEarned) els.moneyEarned.textContent = money(data.earned_cents);
+    if (els.moneyPaidOut) els.moneyPaidOut.textContent = money(data.paid_out_cents);
+
+  } catch (err) {
+    console.warn("Money load failed", err);
+  }
 }
 
 // =========================
 
 async function loadUploads() {
-  const { data } = await supabase
-    .from("uploads")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .limit(6);
+  try {
+    const { data } = await supabase
+      .from("uploads")
+      .select("*")
+      .eq("user_id", currentUser.id)
+      .limit(6);
 
-  if (!data || !data.length) return;
+    if (!data?.length) return;
 
-  els.uploadList.innerHTML = data.map(item => `
-    <div class="profile-list-card">
-      <strong>${item.title || "Upload"}</strong>
-      <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</span>
-    </div>
-  `).join("");
+    els.uploadList.innerHTML = data.map(item => `
+      <div class="profile-list-card">
+        <strong>${item.title || "Upload"}</strong>
+        <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</span>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.warn("Uploads load failed", err);
+  }
 }
 
 // =========================
 
 async function loadLive() {
-  const { data } = await supabase
-    .from("live_streams")
-    .select("*")
-    .eq("creator_id", currentUser.id)
-    .limit(6);
+  try {
+    const { data } = await supabase
+      .from("live_streams")
+      .select("*")
+      .eq("creator_id", currentUser.id)
+      .limit(6);
 
-  if (!data || !data.length) return;
+    if (!data?.length) return;
 
-  els.liveList.innerHTML = data.map(stream => `
-    <div class="profile-list-card">
-      <strong>${stream.title || "Live Stream"}</strong>
-      <span>${stream.status || "offline"}</span>
-    </div>
-  `).join("");
+    els.liveList.innerHTML = data.map(stream => `
+      <div class="profile-list-card">
+        <strong>${stream.title || "Live Stream"}</strong>
+        <span>${stream.status || "offline"}</span>
+      </div>
+    `).join("");
+
+  } catch (err) {
+    console.warn("Live load failed", err);
+  }
 }
 
 // =========================
@@ -275,12 +296,26 @@ async function saveProfile(e) {
 }
 
 // =========================
-// EVENTS
+// EVENTS (🔥 FIXED MODAL)
 // =========================
 
 function bindEvents() {
-  els.editBtn?.addEventListener("click", () => els.modal.showModal());
+
+  // 🔥 OPEN MODAL WITH DATA (THIS WAS YOUR ISSUE)
+  els.editBtn?.addEventListener("click", () => {
+    if (currentProfile) {
+      els.editDisplayName.value = currentProfile.display_name || "";
+      els.editUsername.value = currentProfile.username || "";
+      els.editBio.value = currentProfile.bio || "";
+      els.editAvatarUrl.value = currentProfile.avatar_url || "";
+      els.editCoverUrl.value = currentProfile.cover_url || "";
+    }
+
+    els.modal.showModal();
+  });
+
   els.closeModal?.addEventListener("click", () => els.modal.close());
+
   els.editForm?.addEventListener("submit", saveProfile);
 
   els.logoutBtn?.addEventListener("click", async () => {
@@ -311,7 +346,6 @@ async function bootProfile() {
 
     renderProfile(currentProfile);
 
-    // 🔥 THIS IS WHAT MAKES IT FEEL REAL
     await Promise.all([
       loadStats(),
       loadMoney(),
@@ -322,6 +356,7 @@ async function bootProfile() {
     document.body.classList.add("profile-loaded");
 
     console.log("🔥 PROFILE FULLY LOADED");
+
   } catch (err) {
     console.error("Profile crash:", err);
     document.body.classList.add("profile-loaded");
