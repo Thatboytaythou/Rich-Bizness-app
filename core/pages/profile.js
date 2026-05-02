@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL FIXED + MODAL PATCH)
+// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL + MOTION SYSTEM)
 // /core/pages/profile.js
 // =========================
 
@@ -254,7 +254,7 @@ async function ensureProfile() {
 }
 
 // =========================
-// SAVE PROFILE (SAFE PATCH)
+// SAVE PROFILE
 // =========================
 
 async function saveProfile(e) {
@@ -271,7 +271,6 @@ async function saveProfile(e) {
     updated_at: new Date().toISOString()
   };
 
-  // 🔥 SAFE ADD (prevents crash if column missing)
   if (els.editCoverUrl.value) {
     payload.cover_url = els.editCoverUrl.value;
   }
@@ -292,18 +291,16 @@ async function saveProfile(e) {
 
   setEditStatus("Saved", "success");
 
-  // 🔥 FORCE CLOSE FIX
   els.modal.removeAttribute("open");
   document.body.classList.remove("modal-open");
 }
 
 // =========================
-// EVENTS (MODAL FIX ADDED)
+// EVENTS
 // =========================
 
 function bindEvents() {
 
-  // 🔥 SAFE OPEN
   els.editBtn?.addEventListener("click", () => {
     if (currentProfile) {
       els.editDisplayName.value = currentProfile.display_name || "";
@@ -317,7 +314,6 @@ function bindEvents() {
     document.body.classList.add("modal-open");
   });
 
-  // 🔥 SAFE CLOSE
   els.closeModal?.addEventListener("click", () => {
     els.modal.removeAttribute("open");
     document.body.classList.remove("modal-open");
@@ -329,6 +325,26 @@ function bindEvents() {
     await supabase.auth.signOut();
     window.location.href = "/auth.html";
   });
+}
+
+// =========================
+// 🔥 SCROLL ANIMATION SYSTEM (ADDED)
+// =========================
+
+function initScrollAnimations() {
+  const items = document.querySelectorAll(".profile-panel, .profile-lane, .money-grid article");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("in-view");
+      }
+    });
+  }, {
+    threshold: 0.15
+  });
+
+  items.forEach(el => observer.observe(el));
 }
 
 // =========================
@@ -363,6 +379,9 @@ async function bootProfile() {
     document.body.classList.add("profile-loaded");
 
     console.log("🔥 PROFILE FULLY LOADED");
+
+    // 🔥 ADD THIS
+    initScrollAnimations();
 
   } catch (err) {
     console.error("Profile crash:", err);
