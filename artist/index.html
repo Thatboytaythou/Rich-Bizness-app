@@ -2,178 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rich Bizness — Artist</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Artist Hub — Rich Bizness</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Inter, sans-serif;
-      color: #fff;
-      background:
-        linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.95)),
-        url('/images/brand/logo-music-label.png') center/cover no-repeat fixed;
-    }
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+  <link rel="stylesheet" href="/styles/artist.css" />
 
-    .container {
-      max-width: 1300px;
-      margin: auto;
-      padding: 20px;
-    }
-
-    .nav {
-      display: flex;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .nav a, .btn {
-      padding: 10px 14px;
-      border-radius: 10px;
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.1);
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    .btn {
-      background: gold;
-      color: black;
-    }
-
-    .hero {
-      padding: 30px;
-      border-radius: 20px;
-      background: rgba(0,0,0,0.6);
-      margin-bottom: 20px;
-    }
-
-    .hero h1 {
-      font-size: 42px;
-      margin: 0;
-    }
-
-    .section {
-      background: rgba(0,0,0,0.6);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-
-    .section h2 {
-      margin-top: 0;
-    }
-
-    .actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 15px;
-    }
-
-    .actions button {
-      padding: 10px 14px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    .live {
-      background: red;
-      color: white;
-    }
-
-    .watch {
-      background: green;
-      color: black;
-    }
-
-    .notice {
-      display: none;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .error { background: #ff3b5c; }
-    .success { background: #28d17c; }
-
-    .live-card {
-      margin-top: 15px;
-      padding: 15px;
-      border-radius: 15px;
-      background: rgba(255,255,255,0.05);
-    }
-
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-  <div class="container">
+  <div class="app">
 
     <!-- NAV -->
-    <div class="nav">
-      <div>
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge">
+          <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" />
+        </div>
+        <div>
+          <div class="brand-title">Rich Bizness Artist Hub</div>
+          <div class="brand-sub">Music. Brand. Live. Monetization.</div>
+        </div>
+      </div>
+
+      <nav class="nav">
         <a href="/index.html">Home</a>
         <a href="/music.html">Music</a>
-        <a href="/playlist.html">Playlists</a>
-      </div>
-
-      <div>
-        <a href="/live.html" class="btn">WE LIT 🔥</a>
-        <div id="global-session-nav"></div>
-      </div>
-    </div>
-
-    <!-- ALERTS -->
-    <div id="artist-error" class="notice error"></div>
-    <div id="artist-success" class="notice success"></div>
+        <a href="/artist/index.html" class="active">Artist</a>
+      </nav>
+    </header>
 
     <!-- HERO -->
-    <div class="hero">
-      <h1 id="artist-name">Artist Profile</h1>
-      <p id="artist-bio">Build your music, go live, and grow your fanbase.</p>
+    <section class="hero">
+      <div class="hero-card">
+        <div class="hero-content">
+          <h1>Build Your Sound. Run Your Brand.</h1>
 
-      <div class="actions">
-        <button id="artist-go-live-btn" class="live">Go Live</button>
-        <button id="artist-watch-live-btn" class="watch" style="display:none;">Watch Live</button>
-        <a href="/playlist.html" class="btn">Playlists</a>
-      </div>
-    </div>
-
-    <!-- LIVE SECTION -->
-    <div class="section">
-      <h2>Live Status</h2>
-
-      <div class="live-card">
-        <p><strong>Status:</strong> <span id="artist-live-state">OFFLINE</span></p>
-        <p><strong>Title:</strong> <span id="artist-live-title">—</span></p>
-        <p><strong>Description:</strong> <span id="artist-live-description">—</span></p>
-        <p><strong>Slug:</strong> <span id="artist-live-slug">—</span></p>
-        <p><strong>Access:</strong> <span id="artist-live-access">—</span></p>
+          <div class="hero-actions">
+            <button id="uploadBtn" class="btn btn-primary">Upload Music</button>
+            <button id="liveBtn" class="btn btn-gold">Go Live</button>
+          </div>
+        </div>
       </div>
 
-      <p>Total Lives: <span id="artist-lives-count">0</span></p>
-    </div>
+      <div class="side-stack">
+        <div class="side-card">
+          <div class="profile-head">
+            <div class="avatar" id="artistAvatar"></div>
+            <div>
+              <div id="artistName">Loading...</div>
+              <div id="artistMeta"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- MUSIC / CONTENT PLACEHOLDER -->
-    <div class="section">
-      <h2>Artist Content</h2>
-      <p>Tracks, albums, playlists, and uploads will appear here next.</p>
-    </div>
+    <!-- STATS -->
+    <section class="stats-grid">
+      <div class="stat-card">
+        <div>Total Tracks</div>
+        <div id="statTracks">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div>Followers</div>
+        <div id="statFollowers">0</div>
+      </div>
+
+      <div class="stat-card">
+        <div>Live Sessions</div>
+        <div id="statLives">0</div>
+      </div>
+    </section>
+
+    <!-- TRACKS -->
+    <section class="panel">
+      <h2>Recent Tracks</h2>
+      <div id="trackList"></div>
+    </section>
 
   </div>
 
-  <!-- ARTIST LIVE SYSTEM -->
-  <script type="module" src="/src/artist/artist-live.js"></script>
-
-  <!-- NAV SESSION -->
-  <script type="module" src="/src/shared/navbar-session.js"></script>
-
+  <script type="module" src="/core/pages/artist.js"></script>
 </body>
 </html>
