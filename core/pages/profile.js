@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL + MOTION SYSTEM)
+// RICH BIZNESS PROFILE — COMMAND CENTER (ULTRA MAXED)
 // /core/pages/profile.js
 // =========================
 
@@ -53,7 +53,13 @@ const els = {
   editAvatarUrl: $("edit-avatar-url"),
   editCoverUrl: $("edit-cover-url"),
 
-  adminLink: $("admin-dashboard-link")
+  adminLink: $("admin-dashboard-link"),
+
+  // 🔥 NEW (COMMAND BAR SYNC)
+  cmdLive: $("cmd-live-count"),
+  cmdUploads: $("cmd-upload-count"),
+  cmdFollowers: $("cmd-follower-count"),
+  cmdMoney: $("cmd-money")
 };
 
 // =========================
@@ -84,6 +90,27 @@ function setEditStatus(message, type = "normal") {
 
   if (type === "success") els.editStatus.classList.add("is-success");
   if (type === "error") els.editStatus.classList.add("is-error");
+}
+
+// =========================
+// 🔥 MOTION HELPERS (NEW)
+// =========================
+
+function animateValue(el, end) {
+  if (!el) return;
+
+  let start = 0;
+  const duration = 600;
+  const startTime = performance.now();
+
+  function update(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const value = Math.floor(progress * end);
+    el.textContent = value;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+
+  requestAnimationFrame(update);
 }
 
 // =========================
@@ -148,14 +175,24 @@ async function loadStats() {
       supabase.from("tips").select("amount_cents").eq("to_user_id", currentUser.id)
     ]);
 
-    if (els.followers) els.followers.textContent = followersRes.count || 0;
-    if (els.uploads) els.uploads.textContent = uploadsRes.count || 0;
-    if (els.live) els.live.textContent = liveRes.count || 0;
+    const followers = followersRes.count || 0;
+    const uploads = uploadsRes.count || 0;
+    const live = liveRes.count || 0;
+
+    if (els.followers) animateValue(els.followers, followers);
+    if (els.uploads) animateValue(els.uploads, uploads);
+    if (els.live) animateValue(els.live, live);
+
+    // 🔥 COMMAND BAR SYNC
+    if (els.cmdFollowers) animateValue(els.cmdFollowers, followers);
+    if (els.cmdUploads) animateValue(els.cmdUploads, uploads);
+    if (els.cmdLive) animateValue(els.cmdLive, live);
 
     const totalRevenue =
       (tipsRes.data || []).reduce((sum, t) => sum + (t.amount_cents || 0), 0);
 
     if (els.revenue) els.revenue.textContent = money(totalRevenue);
+    if (els.cmdMoney) els.cmdMoney.textContent = money(totalRevenue);
 
   } catch (err) {
     console.warn("Stats failed", err);
@@ -178,50 +215,6 @@ async function loadMoney() {
 
   } catch (err) {
     console.warn("Money load failed", err);
-  }
-}
-
-async function loadUploads() {
-  try {
-    const { data } = await supabase
-      .from("uploads")
-      .select("*")
-      .eq("user_id", currentUser.id)
-      .limit(6);
-
-    if (!data?.length) return;
-
-    els.uploadList.innerHTML = data.map(item => `
-      <div class="profile-list-card">
-        <strong>${item.title || "Upload"}</strong>
-        <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</span>
-      </div>
-    `).join("");
-
-  } catch (err) {
-    console.warn("Uploads load failed", err);
-  }
-}
-
-async function loadLive() {
-  try {
-    const { data } = await supabase
-      .from("live_streams")
-      .select("*")
-      .eq("creator_id", currentUser.id)
-      .limit(6);
-
-    if (!data?.length) return;
-
-    els.liveList.innerHTML = data.map(stream => `
-      <div class="profile-list-card">
-        <strong>${stream.title || "Live Stream"}</strong>
-        <span>${stream.status || "offline"}</span>
-      </div>
-    `).join("");
-
-  } catch (err) {
-    console.warn("Live load failed", err);
   }
 }
 
@@ -328,7 +321,7 @@ function bindEvents() {
 }
 
 // =========================
-// 🔥 SCROLL ANIMATION SYSTEM (ADDED)
+// 🔥 SCROLL + RE-ANIMATION
 // =========================
 
 function initScrollAnimations() {
@@ -340,11 +333,20 @@ function initScrollAnimations() {
         entry.target.classList.add("in-view");
       }
     });
-  }, {
-    threshold: 0.15
-  });
+  }, { threshold: 0.15 });
 
   items.forEach(el => observer.observe(el));
+}
+
+// 🔥 FORCE RE-ANIMATION AFTER LOAD
+function triggerReAnimation() {
+  setTimeout(() => {
+    document.querySelectorAll(".profile-panel").forEach(el => {
+      el.style.animation = "none";
+      el.offsetHeight;
+      el.style.animation = "";
+    });
+  }, 300);
 }
 
 // =========================
@@ -371,17 +373,15 @@ async function bootProfile() {
 
     await Promise.all([
       loadStats(),
-      loadMoney(),
-      loadUploads(),
-      loadLive()
+      loadMoney()
     ]);
 
     document.body.classList.add("profile-loaded");
 
-    console.log("🔥 PROFILE FULLY LOADED");
-
-    // 🔥 ADD THIS
     initScrollAnimations();
+    triggerReAnimation();
+
+    console.log("🔥 PROFILE MAXED");
 
   } catch (err) {
     console.error("Profile crash:", err);
