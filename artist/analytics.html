@@ -1,137 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Artist Analytics — Rich Bizness</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Artist Analytics — Rich Bizness</title>
 
-  <!-- GLOBAL STYLES (your real system) -->
-  <link rel="stylesheet" href="/styles/main.css" />
-  <link rel="stylesheet" href="/styles/mobile.css" />
-  <link rel="stylesheet" href="/styles/artist.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <!-- SUPABASE -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --green:#43f59b;
+  --gold:#ffd86b;
+}
+
+body{
+  margin:0;
+  font-family:Inter, sans-serif;
+  color:#fff;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.95)),
+    url('/images/brand/A4F9E199-6D52-4DD4-BFAB-3430A9C13074.png') center/cover no-repeat fixed;
+}
+
+/* GLASS SYSTEM */
+.glass{
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(18px);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:20px;
+}
+
+/* HERO */
+.hero{
+  padding:25px;
+  margin:15px;
+  position:relative;
+  overflow:hidden;
+}
+
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background: radial-gradient(circle, rgba(67,245,155,0.2), transparent 60%);
+  opacity:.3;
+}
+
+.hero h1{
+  font-size:32px;
+  margin:0;
+}
+
+.hero p{
+  color:#ccc;
+}
+
+/* BUTTONS */
+.btn{
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:bold;
+  border:none;
+  cursor:pointer;
+}
+
+.primary{ background:var(--green); color:#000; }
+.gold{ background:var(--gold); color:#000; }
+.ghost{ background:rgba(255,255,255,0.1); color:#fff; }
+
+/* METRICS */
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  padding:15px;
+}
+
+.metric{
+  padding:15px;
+}
+
+.metric h2{
+  margin:0;
+  font-size:20px;
+}
+
+.metric span{
+  font-size:28px;
+  font-weight:bold;
+}
+
+/* LIVE LIST */
+.section{
+  margin:15px;
+  padding:15px;
+}
+
+.live-card{
+  margin-top:10px;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+}
+
+/* ANIMATION */
+.metric, .live-card{
+  transition:.2s;
+}
+
+.metric:hover, .live-card:hover{
+  transform:translateY(-3px);
+}
+</style>
 </head>
 
 <body>
-  <div class="app">
 
-    <!-- NAV (keep consistent with your system) -->
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-badge">
-          <img src="/images/brand/B1D243AF-EFA5-4DA5-ADC5-D6D31FF7D3CF.png" />
-        </div>
-        <div>
-          <div class="brand-title">Rich Bizness Artist Analytics</div>
-          <div class="brand-sub">Performance • Growth • Revenue</div>
-        </div>
-      </div>
+<!-- HERO -->
+<div class="hero glass">
+  <h1>Artist Analytics Dashboard</h1>
+  <p>Track your motion, fan growth, live energy, and earnings.</p>
 
-      <nav class="nav">
-        <a href="/index.html">Home</a>
-        <a href="/music.html">Music</a>
-        <a href="/playlist.html">Playlist</a>
-        <a href="/live.html">Live</a>
-        <a href="/artist/index.html">Artist</a>
-        <a href="/artist/upload.html">Upload</a>
-        <a href="/artist/analytics.html" class="active">Analytics</a>
-      </nav>
-    </header>
-
-    <!-- HERO -->
-    <section class="hero">
-      <div class="hero-card">
-        <div class="hero-content">
-          <h1>Artist Analytics Dashboard</h1>
-          <p>Track your music, fans, live sessions, and earnings.</p>
-
-          <div class="hero-actions">
-            <button class="btn btn-primary" onclick="goTo('/artist/upload.html')">Upload</button>
-            <button class="btn btn-secondary" onclick="goTo('/artist/index.html')">Artist Hub</button>
-            <button class="btn btn-gold" onclick="refreshAnalytics()">Refresh</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="side-card">
-        <div id="artistName">Loading...</div>
-      </div>
-    </section>
-
-    <!-- METRICS -->
-    <section class="metrics-grid">
-      <div class="metric-card">
-        <div>Total Tracks</div>
-        <div id="metricTracks">0</div>
-      </div>
-
-      <div class="metric-card">
-        <div>Followers</div>
-        <div id="metricFollowers">0</div>
-      </div>
-
-      <div class="metric-card">
-        <div>Live Sessions</div>
-        <div id="metricLives">0</div>
-      </div>
-
-      <div class="metric-card">
-        <div>Unlocks</div>
-        <div id="metricUnlocks">0</div>
-      </div>
-
-      <div class="metric-card">
-        <div>Earnings</div>
-        <div id="metricEarnings">$0</div>
-      </div>
-    </section>
-
-    <!-- LIVE LIST -->
-    <section class="panel">
-      <h2>Live Sessions</h2>
-      <div id="liveList"></div>
-    </section>
-
+  <div style="margin-top:10px;">
+    <button class="btn primary" onclick="goTo('/artist/upload.html')">Upload</button>
+    <button class="btn ghost" onclick="goTo('/artist/index.html')">Artist Hub</button>
+    <button class="btn gold" onclick="refresh()">Refresh</button>
   </div>
 
+  <div id="artistName" style="margin-top:10px;">Loading...</div>
+</div>
+
+<!-- METRICS -->
+<div class="metrics">
+  <div class="metric glass"><h2>Tracks</h2><span id="tracks">0</span></div>
+  <div class="metric glass"><h2>Followers</h2><span id="followers">0</span></div>
+  <div class="metric glass"><h2>Live</h2><span id="lives">0</span></div>
+  <div class="metric glass"><h2>Unlocks</h2><span id="unlocks">0</span></div>
+  <div class="metric glass"><h2>Earnings</h2><span id="earnings">$0</span></div>
+</div>
+
+<!-- LIVE -->
+<div class="section glass">
+  <h2>Live Sessions</h2>
+  <div id="liveList">Loading...</div>
+</div>
+
 <script>
-const SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-const SUPABASE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+const supabase = window.supabase.createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+);
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let user = null;
 
-let currentUser = null;
-
-function goTo(path){
-  window.location.href = path;
-}
-
-function formatNumber(v){
-  return new Intl.NumberFormat().format(v || 0);
-}
+function goTo(path){ window.location.href = path; }
 
 function formatMoney(cents){
-  return "$" + ((cents || 0) / 100).toFixed(2);
+  return "$" + ((cents||0)/100).toFixed(2);
 }
 
 async function loadUser(){
   const { data } = await supabase.auth.getUser();
-  currentUser = data?.user;
+  user = data.user;
 
-  if(currentUser){
-    document.getElementById("artistName").textContent =
-      currentUser.email.split("@")[0];
+  if(user){
+    document.getElementById("artistName").innerText =
+      user.email.split("@")[0];
   }
 }
 
-async function loadMetrics(){
-  if(!currentUser) return;
+async function loadData(){
+  if(!user) return;
 
-  const uid = currentUser.id;
+  const uid = user.id;
 
-  // TRACKS (correct column)
+  // TRACKS
   const { count: tracks } = await supabase
     .from("tracks")
     .select("*",{count:"exact",head:true})
@@ -144,12 +187,10 @@ async function loadMetrics(){
     .eq("following_id", uid);
 
   // LIVE
-  const { data: livesData } = await supabase
+  const { data: live } = await supabase
     .from("live_streams")
     .select("*")
     .eq("creator_id", uid);
-
-  const lives = livesData?.length || 0;
 
   // UNLOCKS
   const { count: unlocks } = await supabase
@@ -158,52 +199,45 @@ async function loadMetrics(){
     .eq("user_id", uid);
 
   // EARNINGS (REAL FIX)
-  let earnings = 0;
   const { data: balance } = await supabase
     .from("creator_available_balances")
     .select("*")
     .eq("artist_user_id", uid)
     .maybeSingle();
 
-  if(balance){
-    earnings = balance.available_cents;
-  }
+  document.getElementById("tracks").innerText = tracks || 0;
+  document.getElementById("followers").innerText = followers || 0;
+  document.getElementById("lives").innerText = live?.length || 0;
+  document.getElementById("unlocks").innerText = unlocks || 0;
+  document.getElementById("earnings").innerText =
+    formatMoney(balance?.available_cents);
 
-  return { tracks, followers, lives, unlocks, earnings, livesData };
+  renderLive(live);
 }
 
-function renderMetrics(m){
-  document.getElementById("metricTracks").textContent = formatNumber(m.tracks);
-  document.getElementById("metricFollowers").textContent = formatNumber(m.followers);
-  document.getElementById("metricLives").textContent = formatNumber(m.lives);
-  document.getElementById("metricUnlocks").textContent = formatNumber(m.unlocks);
-  document.getElementById("metricEarnings").textContent = formatMoney(m.earnings);
-}
-
-function renderLives(lives){
+function renderLive(list){
   const box = document.getElementById("liveList");
 
-  if(!lives.length){
+  if(!list.length){
     box.innerHTML = "No live sessions yet";
     return;
   }
 
-  box.innerHTML = lives.map(l => `
-    <div class="session-card">
-      <div>${l.title || "Live"}</div>
-      <div>👁 ${l.viewer_count || 0}</div>
+  box.innerHTML = list.map(l => `
+    <div class="live-card">
+      <strong>${l.title || "Live Session"}</strong><br>
+      👁 ${l.viewer_count || 0} viewers<br>
+      💰 $${(l.total_revenue_cents||0)/100}
     </div>
   `).join("");
 }
 
-async function refreshAnalytics(){
+async function refresh(){
   await loadUser();
-  const metrics = await loadMetrics();
-  renderMetrics(metrics);
-  renderLives(metrics.livesData);
+  await loadData();
 }
 
-refreshAnalytics();
+refresh();
 </script>
 
 </body>
