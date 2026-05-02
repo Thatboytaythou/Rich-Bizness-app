@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL GOD MODE)
+// RICH BIZNESS PROFILE — COMMAND CENTER (FULL FINAL)
 // /core/pages/profile.js
 // =========================
 
@@ -53,12 +53,7 @@ const els = {
   editAvatarUrl: $("edit-avatar-url"),
   editCoverUrl: $("edit-cover-url"),
 
-  // 🔥 COMMAND CENTER
-  cmdLive: $("cmd-live-count"),
-  cmdUploads: $("cmd-upload-count"),
-  cmdFollowers: $("cmd-follower-count"),
-  cmdMoney: $("cmd-money"),
-  enterMetaBtn: $("enter-metaverse-btn")
+  adminLink: $("admin-dashboard-link")
 };
 
 // =========================
@@ -92,34 +87,7 @@ function setEditStatus(message, type = "normal") {
 }
 
 // =========================
-// 🔥 META AVATAR SYSTEM
-// =========================
-
-function cacheAvatarForMetaverse(profile) {
-  try {
-    const metaData = {
-      id: currentUser.id,
-      name: profile.display_name || "Creator",
-      avatar: profile.avatar_url,
-      avatar_type: profile.avatar_type || "gta",
-      avatar_style: profile.avatar_style || "hybrid"
-    };
-
-    localStorage.setItem("rb_meta_avatar", JSON.stringify(metaData));
-  } catch (e) {
-    console.warn("Meta avatar cache failed", e);
-  }
-}
-
-function openMetaverse() {
-  if (!currentProfile) return;
-
-  cacheAvatarForMetaverse(currentProfile);
-  window.location.href = "/metaverse.html";
-}
-
-// =========================
-// RENDER PROFILE
+// PROFILE RENDER
 // =========================
 
 function renderProfile(profile = {}) {
@@ -141,33 +109,10 @@ function renderProfile(profile = {}) {
 
   if (els.displayName) els.displayName.textContent = displayName;
   if (els.handle) els.handle.textContent = `@${username}`;
+  if (els.bio) els.bio.textContent = profile.bio || "Building your Rich Bizness lane.";
 
-  if (els.bio) {
-    els.bio.textContent =
-      profile.bio || "Building my lane across Rich Bizness.";
-  }
+  if (els.avatar) els.avatar.src = avatar;
 
-  // 🔥 AVATAR SYSTEM
-  if (els.avatar) {
-    els.avatar.src = avatar;
-
-    els.avatar.classList.remove(
-      "gta-avatar",
-      "avatar-hybrid",
-      "avatar-anime",
-      "avatar-real"
-    );
-
-    if (profile.avatar_type === "gta") {
-      els.avatar.classList.add("gta-avatar");
-    }
-
-    if (profile.avatar_style) {
-      els.avatar.classList.add(`avatar-${profile.avatar_style}`);
-    }
-  }
-
-  // COVER
   if (els.cover) {
     els.cover.style.backgroundImage = `
       linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.85)),
@@ -175,53 +120,95 @@ function renderProfile(profile = {}) {
     `;
   }
 
-  // MESSAGE LINK
-  if (els.messageLink) {
-    els.messageLink.href = currentUser?.id
-      ? `/messages.html?user=${encodeURIComponent(currentUser.id)}`
-      : "/messages.html";
-  }
-
-  // 🔥 ADMIN BUTTON CONTROL (if exists)
-  const adminLink = document.getElementById("admin-dashboard-link");
-  if (adminLink) {
+  // ADMIN BUTTON
+  if (els.adminLink) {
     const isAdmin =
       profile.role === "admin" ||
-      profile.is_admin === true ||
-      profile.account_role === "admin";
+      profile.is_admin === true;
 
-    adminLink.style.display = isAdmin ? "inline-flex" : "none";
+    els.adminLink.style.display = isAdmin ? "inline-flex" : "none";
   }
-
-  cacheAvatarForMetaverse(profile);
 }
 
 // =========================
-// COMMAND CENTER DATA
+// DATA LOADERS (🔥 THIS WAS MISSING)
 // =========================
 
-async function loadCommandCenter() {
-  if (!currentUser?.id) return;
+async function loadStats() {
+  const [
+    followersRes,
+    uploadsRes,
+    liveRes,
+    revenueRes
+  ] = await Promise.all([
+    supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", currentUser.id),
+    supabase.from("uploads").select("*", { count: "exact", head: true }).eq("user_id", currentUser.id),
+    supabase.from("live_streams").select("*", { count: "exact", head: true }).eq("creator_id", currentUser.id),
+    supabase.from("tips").select("amount_cents").eq("to_user_id", currentUser.id)
+  ]);
 
-  try {
-    const [liveRes, uploadRes, followerRes, balanceRes] = await Promise.all([
-      supabase.from("live_streams").select("*", { count: "exact", head: true }).eq("host_id", currentUser.id),
-      supabase.from("uploads").select("*", { count: "exact", head: true }).eq("user_id", currentUser.id),
-      supabase.from("followers").select("*", { count: "exact", head: true }).eq("following_id", currentUser.id),
-      supabase.from("creator_available_balances").select("*").eq("artist_user_id", currentUser.id).maybeSingle()
-    ]);
+  if (els.followers) els.followers.textContent = followersRes.count || 0;
+  if (els.uploads) els.uploads.textContent = uploadsRes.count || 0;
+  if (els.live) els.live.textContent = liveRes.count || 0;
 
-    if (els.cmdLive) els.cmdLive.textContent = liveRes.count || 0;
-    if (els.cmdUploads) els.cmdUploads.textContent = uploadRes.count || 0;
-    if (els.cmdFollowers) els.cmdFollowers.textContent = followerRes.count || 0;
+  const totalRevenue =
+    (revenueRes.data || []).reduce((sum, t) => sum + (t.amount_cents || 0), 0);
 
-    if (els.cmdMoney) {
-      els.cmdMoney.textContent = money(balanceRes?.data?.available_cents || 0);
-    }
+  if (els.revenue) els.revenue.textContent = money(totalRevenue);
+}
 
-  } catch (err) {
-    console.warn("Command center load failed", err);
-  }
+// =========================
+
+async function loadMoney() {
+  const { data } = await supabase
+    .from("creator_available_balances")
+    .select("*")
+    .eq("artist_user_id", currentUser.id)
+    .maybeSingle();
+
+  if (!data) return;
+
+  if (els.moneyAvailable) els.moneyAvailable.textContent = money(data.available_cents);
+  if (els.moneyEarned) els.moneyEarned.textContent = money(data.earned_cents);
+  if (els.moneyPaidOut) els.moneyPaidOut.textContent = money(data.paid_out_cents);
+}
+
+// =========================
+
+async function loadUploads() {
+  const { data } = await supabase
+    .from("uploads")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .limit(6);
+
+  if (!data || !data.length) return;
+
+  els.uploadList.innerHTML = data.map(item => `
+    <div class="profile-list-card">
+      <strong>${item.title || "Upload"}</strong>
+      <span>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ""}</span>
+    </div>
+  `).join("");
+}
+
+// =========================
+
+async function loadLive() {
+  const { data } = await supabase
+    .from("live_streams")
+    .select("*")
+    .eq("creator_id", currentUser.id)
+    .limit(6);
+
+  if (!data || !data.length) return;
+
+  els.liveList.innerHTML = data.map(stream => `
+    <div class="profile-list-card">
+      <strong>${stream.title || "Live Stream"}</strong>
+      <span>${stream.status || "offline"}</span>
+    </div>
+  `).join("");
 }
 
 // =========================
@@ -237,23 +224,15 @@ async function ensureProfile() {
 
   if (data) return data;
 
-  const fallback = {
-    id: currentUser.id,
-    email: currentUser.email,
-    display_name: "Rich Bizness Creator",
-    username: currentUser.email?.split("@")[0],
-    avatar_url: "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png",
-    cover_url: "/images/brand/29F1046D-D88C-4252-8546-25B262FDA7CC.png",
-    bio: "Building my Rich Bizness lane.",
-    avatar_type: "gta",
-    avatar_style: "hybrid",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  };
-
   const { data: inserted } = await supabase
     .from("profiles")
-    .insert(fallback)
+    .insert({
+      id: currentUser.id,
+      email: currentUser.email,
+      display_name: "Rich Bizness Creator",
+      username: currentUser.email?.split("@")[0],
+      created_at: new Date().toISOString()
+    })
     .select("*")
     .single();
 
@@ -269,27 +248,17 @@ async function saveProfile(e) {
 
   setEditStatus("Saving...");
 
-  const payload = {
-    display_name: els.editDisplayName.value,
-    username: els.editUsername.value,
-    bio: els.editBio.value,
-    avatar_url: els.editAvatarUrl.value,
-    cover_url: els.editCoverUrl.value,
-    avatar_type: "gta",
-    avatar_style: "hybrid",
-    updated_at: new Date().toISOString()
-  };
-
   const { data, error } = await supabase
     .from("profiles")
-    .upsert(
-      {
-        id: currentUser.id,
-        email: currentUser.email,
-        ...payload
-      },
-      { onConflict: "id" }
-    )
+    .upsert({
+      id: currentUser.id,
+      display_name: els.editDisplayName.value,
+      username: els.editUsername.value,
+      bio: els.editBio.value,
+      avatar_url: els.editAvatarUrl.value,
+      cover_url: els.editCoverUrl.value,
+      updated_at: new Date().toISOString()
+    })
     .select("*")
     .single();
 
@@ -299,13 +268,10 @@ async function saveProfile(e) {
   }
 
   currentProfile = data;
-  renderProfile(currentProfile);
+  renderProfile(data);
 
   setEditStatus("Saved", "success");
-
-  setTimeout(() => {
-    els.modal.close();
-  }, 600);
+  setTimeout(() => els.modal.close(), 500);
 }
 
 // =========================
@@ -319,10 +285,8 @@ function bindEvents() {
 
   els.logoutBtn?.addEventListener("click", async () => {
     await supabase.auth.signOut();
-    window.location.href = "/index.html";
+    window.location.href = "/auth.html";
   });
-
-  els.enterMetaBtn?.addEventListener("click", openMetaverse);
 }
 
 // =========================
@@ -345,14 +309,19 @@ async function bootProfile() {
 
     currentProfile = await ensureProfile();
 
-    document.body.classList.add("profile-loaded");
-
     renderProfile(currentProfile);
 
-    // 🔥 COMMAND CENTER LOAD
-    await loadCommandCenter();
+    // 🔥 THIS IS WHAT MAKES IT FEEL REAL
+    await Promise.all([
+      loadStats(),
+      loadMoney(),
+      loadUploads(),
+      loadLive()
+    ]);
 
-    console.log("👤 PROFILE COMMAND CENTER READY");
+    document.body.classList.add("profile-loaded");
+
+    console.log("🔥 PROFILE FULLY LOADED");
   } catch (err) {
     console.error("Profile crash:", err);
     document.body.classList.add("profile-loaded");
