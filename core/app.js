@@ -341,3 +341,25 @@ export function setHtml(selectorOrEl, value = "") {
 
   if (el) el.innerHTML = value;
 }
+
+// =========================
+// 🔥 GLOBAL UI SYNC BOOST (ADD ONLY)
+// =========================
+
+document.addEventListener("rb:auth-changed", (e) => {
+  const { user, profile } = e.detail || {};
+
+  // force nav + UI refresh everywhere
+  document.body.classList.toggle("is-signed-in", !!user);
+  document.body.classList.toggle("is-signed-out", !user);
+
+  console.log("🔥 AUTH SYNC", user?.id);
+});
+
+document.addEventListener("rb:profile-updated", (e) => {
+  const { profile } = e.detail || {};
+
+  console.log("🔥 PROFILE SYNC", profile?.id);
+
+  // future hook for live UI updates (avatar, nav, etc)
+});
