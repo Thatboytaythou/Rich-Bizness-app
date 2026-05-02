@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL FIXED)
+// RICH BIZNESS PROFILE — COMMAND CENTER (FINAL FIXED + MODAL PATCH)
 // /core/pages/profile.js
 // =========================
 
@@ -120,7 +120,6 @@ function renderProfile(profile = {}) {
     `;
   }
 
-  // ADMIN BUTTON
   if (els.adminLink) {
     const isAdmin =
       profile.role === "admin" ||
@@ -163,8 +162,6 @@ async function loadStats() {
   }
 }
 
-// =========================
-
 async function loadMoney() {
   try {
     const { data } = await supabase
@@ -183,8 +180,6 @@ async function loadMoney() {
     console.warn("Money load failed", err);
   }
 }
-
-// =========================
 
 async function loadUploads() {
   try {
@@ -207,8 +202,6 @@ async function loadUploads() {
     console.warn("Uploads load failed", err);
   }
 }
-
-// =========================
 
 async function loadLive() {
   try {
@@ -261,7 +254,7 @@ async function ensureProfile() {
 }
 
 // =========================
-// SAVE PROFILE
+// SAVE PROFILE (SAFE PATCH)
 // =========================
 
 async function saveProfile(e) {
@@ -269,17 +262,23 @@ async function saveProfile(e) {
 
   setEditStatus("Saving...");
 
+  const payload = {
+    id: currentUser.id,
+    display_name: els.editDisplayName.value,
+    username: els.editUsername.value,
+    bio: els.editBio.value,
+    avatar_url: els.editAvatarUrl.value,
+    updated_at: new Date().toISOString()
+  };
+
+  // 🔥 SAFE ADD (prevents crash if column missing)
+  if (els.editCoverUrl.value) {
+    payload.cover_url = els.editCoverUrl.value;
+  }
+
   const { data, error } = await supabase
     .from("profiles")
-    .upsert({
-      id: currentUser.id,
-      display_name: els.editDisplayName.value,
-      username: els.editUsername.value,
-      bio: els.editBio.value,
-      avatar_url: els.editAvatarUrl.value,
-      cover_url: els.editCoverUrl.value,
-      updated_at: new Date().toISOString()
-    })
+    .upsert(payload)
     .select("*")
     .single();
 
@@ -292,16 +291,19 @@ async function saveProfile(e) {
   renderProfile(data);
 
   setEditStatus("Saved", "success");
-  setTimeout(() => els.modal.close(), 500);
+
+  // 🔥 FORCE CLOSE FIX
+  els.modal.removeAttribute("open");
+  document.body.classList.remove("modal-open");
 }
 
 // =========================
-// EVENTS (🔥 FIXED MODAL)
+// EVENTS (MODAL FIX ADDED)
 // =========================
 
 function bindEvents() {
 
-  // 🔥 OPEN MODAL WITH DATA (THIS WAS YOUR ISSUE)
+  // 🔥 SAFE OPEN
   els.editBtn?.addEventListener("click", () => {
     if (currentProfile) {
       els.editDisplayName.value = currentProfile.display_name || "";
@@ -311,10 +313,15 @@ function bindEvents() {
       els.editCoverUrl.value = currentProfile.cover_url || "";
     }
 
-    els.modal.showModal();
+    els.modal.setAttribute("open", "true");
+    document.body.classList.add("modal-open");
   });
 
-  els.closeModal?.addEventListener("click", () => els.modal.close());
+  // 🔥 SAFE CLOSE
+  els.closeModal?.addEventListener("click", () => {
+    els.modal.removeAttribute("open");
+    document.body.classList.remove("modal-open");
+  });
 
   els.editForm?.addEventListener("submit", saveProfile);
 
