@@ -1,21 +1,22 @@
 // =========================
-// RICH BIZNESS HOME CONTROLLER — FINAL PATCHED
+// RICH BIZNESS HOME — FINAL LOCKED (NO DOWNGRADE)
 // /core/pages/home.js
 // =========================
 
-import { initApp, getSupabase } from "/core/app.js";
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 import { bootLiveRail } from "/core/features/live/live-rail.js";
 
 // =========================
-// INIT APP
+// INIT (LOCKED)
 // =========================
 await initApp();
 
 const supabase = getSupabase();
+let currentUser = getCurrentUserState();
 
 // =========================
-// NAVBAR
+// NAV (MATCH INDEX)
 // =========================
 mountEliteNav({
   target: "#elite-platform-nav",
@@ -23,35 +24,35 @@ mountEliteNav({
 });
 
 // =========================
-// LIVE RAIL
+// LIVE RAIL (REAL SYSTEM)
 // =========================
 await bootLiveRail({
   railElementId: "homepage-live-rail",
   limit: 6,
   autoRefresh: true,
-  intervalMs: 15000,
+  intervalMs: 12000,
   channelKey: "homepage"
 });
 
 // =========================
-// TOPBAR SESSION NAV
+// SESSION UI (TOP NAV)
 // =========================
 async function hydrateTopSessionNav() {
-  const container = document.getElementById("global-session-nav");
-  if (!container) return;
+  const el = document.getElementById("global-session-nav");
+  if (!el) return;
 
   const { data } = await supabase.auth.getSession();
-  const session = data?.session;
+  currentUser = data?.session?.user || null;
 
-  if (session?.user) {
-    container.innerHTML = `
+  if (currentUser) {
+    el.innerHTML = `
       <a href="/profile.html">Profile</a>
       <a href="/messages.html">Messages</a>
       <a href="/notifications.html">Alerts</a>
-      <button id="home-topbar-logout-btn" type="button">Tap Out 🚪</button>
+      <button id="rb-logout-top">Tap Out 🚪</button>
     `;
 
-    document.getElementById("home-topbar-logout-btn")?.addEventListener("click", async () => {
+    document.getElementById("rb-logout-top")?.addEventListener("click", async () => {
       await supabase.auth.signOut();
       window.location.reload();
     });
@@ -59,29 +60,29 @@ async function hydrateTopSessionNav() {
     return;
   }
 
-  container.innerHTML = `
+  el.innerHTML = `
     <a href="/auth.html">Tap In 🔓</a>
     <a href="/auth.html">Join The Bizness</a>
   `;
 }
 
 // =========================
-// AUTH BAR (BOTTOM)
+// AUTH BAR (BOTTOM MATCH)
 // =========================
 async function hydrateAuthBar() {
-  const container = document.getElementById("auth-bar-actions");
-  if (!container) return;
+  const el = document.getElementById("auth-bar-actions");
+  if (!el) return;
 
   const { data } = await supabase.auth.getSession();
-  const session = data?.session;
+  currentUser = data?.session?.user || null;
 
-  if (session?.user) {
-    container.innerHTML = `
+  if (currentUser) {
+    el.innerHTML = `
       <a href="/profile.html" class="btn">My Profile 👤</a>
-      <button id="logout-btn" class="btn-ghost" type="button">Tap Out 🚪</button>
+      <button id="rb-logout-bottom" class="btn-ghost">Tap Out 🚪</button>
     `;
 
-    document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    document.getElementById("rb-logout-bottom")?.addEventListener("click", async () => {
       await supabase.auth.signOut();
       window.location.reload();
     });
@@ -89,96 +90,85 @@ async function hydrateAuthBar() {
     return;
   }
 
-  container.innerHTML = `
+  el.innerHTML = `
     <a href="/auth.html" class="btn btn-gold">Tap In 🔓</a>
     <a href="/auth.html" class="btn-ghost">Join The Bizness</a>
   `;
 }
 
-await hydrateTopSessionNav();
-await hydrateAuthBar();
-
 // =========================
-// KEEP HOME SESSION SYNCED
+// SESSION SYNC (REAL FIX)
 // =========================
-supabase.auth.onAuthStateChange(async () => {
+async function syncSessionUI() {
   await hydrateTopSessionNav();
   await hydrateAuthBar();
+}
+
+await syncSessionUI();
+
+supabase.auth.onAuthStateChange(async () => {
+  await syncSessionUI();
 });
 
 // =========================
-// HERO MOTION SYSTEM
+// HERO PARTICLES (MATCH DESIGN)
 // =========================
-function spawnParticles() {
-  const container = document.querySelector(".hero-particles");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  for (let i = 0; i < 18; i++) {
-    const dot = document.createElement("span");
-
-    const size = Math.random() * 6 + 4;
-    const left = Math.random() * 100;
-    const delay = Math.random() * 10;
-    const duration = 12 + Math.random() * 10;
-
-    dot.style.position = "absolute";
-    dot.style.width = `${size}px`;
-    dot.style.height = `${size}px`;
-    dot.style.borderRadius = "50%";
-    dot.style.background = "rgba(105,255,180,0.25)";
-    dot.style.left = `${left}%`;
-    dot.style.bottom = "-20px";
-    dot.style.animation = `floatUp ${duration}s linear infinite`;
-    dot.style.animationDelay = `${delay}s`;
-
-    container.appendChild(dot);
-  }
-}
-
 function injectParticleStyles() {
   if (document.getElementById("rb-particles-style")) return;
 
   const style = document.createElement("style");
   style.id = "rb-particles-style";
+
   style.innerHTML = `
     @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 0;
-      }
-
-      10% {
-        opacity: 1;
-      }
-
-      100% {
-        transform: translateY(-120vh) scale(1.4);
-        opacity: 0;
-      }
+      0% { transform: translateY(0) scale(1); opacity: 0; }
+      10% { opacity: 1; }
+      100% { transform: translateY(-120vh) scale(1.4); opacity: 0; }
     }
   `;
 
   document.head.appendChild(style);
 }
 
+function spawnParticles() {
+  const container = document.querySelector(".hero-particles");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  for (let i = 0; i < 20; i++) {
+    const dot = document.createElement("span");
+
+    dot.style.position = "absolute";
+    dot.style.width = `${Math.random() * 6 + 4}px`;
+    dot.style.height = dot.style.width;
+    dot.style.borderRadius = "50%";
+    dot.style.background = "rgba(105,255,180,0.25)";
+    dot.style.left = `${Math.random() * 100}%`;
+    dot.style.bottom = "-20px";
+    dot.style.animation = `floatUp ${12 + Math.random() * 10}s linear infinite`;
+    dot.style.animationDelay = `${Math.random() * 10}s`;
+
+    container.appendChild(dot);
+  }
+}
+
 injectParticleStyles();
 spawnParticles();
 
 // =========================
-// HERO VIDEO (OPTIONAL READY)
+// HERO VIDEO (SAFE + ELITE)
 // =========================
 function initHeroVideo() {
   const video = document.querySelector(".hero-video-layer");
   if (!video) return;
 
-  const VIDEO_SRC = "/videos/rich-bizness-hero.mp4";
+  const SRC = "/videos/rich-bizness-hero.mp4";
 
-  fetch(VIDEO_SRC, { method: "HEAD" })
+  fetch(SRC, { method: "HEAD" })
     .then((res) => {
       if (res.ok) {
-        video.src = VIDEO_SRC;
+        video.src = SRC;
         video.style.opacity = "0.35";
       } else {
         video.style.display = "none";
@@ -192,19 +182,19 @@ function initHeroVideo() {
 initHeroVideo();
 
 // =========================
-// SMOOTH SCROLL
+// SMOOTH SCROLL (KEEP)
 // =========================
-document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-  anchor.addEventListener("click", function (event) {
-    const target = document.querySelector(this.getAttribute("href"));
+document.querySelectorAll('a[href^="#"]').forEach((a) => {
+  a.addEventListener("click", (e) => {
+    const target = document.querySelector(a.getAttribute("href"));
     if (!target) return;
 
-    event.preventDefault();
+    e.preventDefault();
     target.scrollIntoView({ behavior: "smooth" });
   });
 });
 
 // =========================
-// DEBUG SAFE LOG
+// FINAL CONFIRM
 // =========================
-console.log("🏠 Rich Bizness Home Loaded — FULL SYSTEM ACTIVE");
+console.log("🔥 HOME LOCKED — INDEX SYNCED — NO DOWNGRADE");
