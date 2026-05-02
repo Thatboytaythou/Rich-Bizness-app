@@ -3,53 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Upload Music</title>
+
+<title>Rich Bizness — Upload Music</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
+/* =========================
+   ELITE UI
+========================= */
+
 body{
   margin:0;
-  font-family:Arial;
-  background:#000;
+  font-family:Inter,Arial;
+  background: radial-gradient(circle at top,#0a1f16,#000);
   color:white;
+  overflow-x:hidden;
 }
 
-.page{padding:20px;max-width:900px;margin:auto}
+.page{
+  max-width:1000px;
+  margin:auto;
+  padding:20px;
+}
 
+/* ===== HERO ===== */
+.hero{
+  margin-bottom:20px;
+  padding:20px;
+  border-radius:20px;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(12px);
+  box-shadow:0 0 40px rgba(0,255,163,.15);
+}
+
+.hero h1{
+  margin:0;
+  font-size:32px;
+}
+
+/* ===== FORM ===== */
 input,select{
   width:100%;
-  padding:12px;
+  padding:14px;
   margin-top:10px;
-  border-radius:10px;
-  border:none;
-  background:#111;
+  border-radius:12px;
+  border:1px solid rgba(0,255,163,.2);
+  background:#0d0d0d;
   color:white;
 }
 
 button{
   margin-top:15px;
-  padding:12px;
+  padding:14px;
   border:none;
-  border-radius:10px;
-  background:#7dff71;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00ffa3,#69ffb4);
+  color:black;
   font-weight:900;
   cursor:pointer;
+  transition:.2s;
 }
 
+button:hover{
+  transform:scale(1.05);
+}
+
+/* ===== STATUS ===== */
 .status{
   margin-top:15px;
-  padding:10px;
+  padding:12px;
+  border-radius:12px;
   background:#111;
-  border-radius:10px;
 }
+
+/* ===== PREVIEW ===== */
+.preview{
+  margin-top:20px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.preview img{
+  width:100%;
+  border-radius:12px;
+}
+
+.preview audio{
+  width:100%;
+}
+
+/* ===== MOTION ===== */
+@keyframes glow{
+  0%{box-shadow:0 0 0 rgba(0,255,163,0)}
+  50%{box-shadow:0 0 40px rgba(0,255,163,.3)}
+  100%{box-shadow:0 0 0 rgba(0,255,163,0)}
+}
+
+.hero{
+  animation:glow 6s infinite;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="page">
-<h1>Upload Music</h1>
+
+<div class="hero">
+<h1>Upload Music — Rich Bizness</h1>
+<p>Push to music, artist, radio, podcast & ecosystem instantly.</p>
+</div>
 
 <input id="title" placeholder="Track Title">
 <input id="artist" placeholder="Artist Name">
@@ -57,20 +124,31 @@ button{
 <input id="genre" placeholder="Genre">
 
 <select id="locked">
-  <option value="false">Free Track</option>
-  <option value="true">Locked (Paid)</option>
+  <option value="false">Free</option>
+  <option value="true">Paid</option>
 </select>
 
-<input id="price" type="number" placeholder="Price in cents (e.g. 299)">
+<input id="price" type="number" placeholder="Price (cents)">
 <input id="audio" type="file" accept="audio/*">
 <input id="cover" type="file" accept="image/*">
 
 <button id="uploadBtn">Upload Track</button>
 
-<div id="status" class="status"></div>
+<div id="status" class="status">Ready</div>
+
+<div class="preview">
+  <audio id="audioPreview" controls></audio>
+  <img id="coverPreview" />
+</div>
+
 </div>
 
 <script>
+
+// =========================
+// SUPABASE
+// =========================
+
 const supabase = window.supabase.createClient(
   "https://ksvdequymkceevocgpdj.supabase.co",
   "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
@@ -78,92 +156,179 @@ const supabase = window.supabase.createClient(
 
 const statusBox = document.getElementById("status")
 
-function status(msg){statusBox.textContent=msg}
+function status(msg){
+  statusBox.textContent = msg
+}
+
+// =========================
+// PREVIEW
+// =========================
+
+audio.onchange = () => {
+  const file = audio.files[0]
+  if(file){
+    audioPreview.src = URL.createObjectURL(file)
+  }
+}
+
+cover.onchange = () => {
+  const file = cover.files[0]
+  if(file){
+    coverPreview.src = URL.createObjectURL(file)
+  }
+}
+
+// =========================
+// HELPERS
+// =========================
 
 function slugify(text){
   return text.toLowerCase().replace(/[^a-z0-9]+/g,"-")
 }
 
+// =========================
+// UPLOAD
+// =========================
+
 async function upload(){
 
-  try{
-    status("Uploading...")
+try{
 
-    const {data} = await supabase.auth.getSession()
-    const user = data.session?.user
+status("Uploading...")
 
-    if(!user) throw new Error("Login required")
+const {data} = await supabase.auth.getSession()
+const user = data.session?.user
 
-    const title = document.getElementById("title").value
-    const artist = document.getElementById("artist").value
-    const album = document.getElementById("album").value
-    const genre = document.getElementById("genre").value
-    const locked = document.getElementById("locked").value === "true"
-    const price = Number(document.getElementById("price").value || 0)
+if(!user) throw new Error("Login required")
 
-    const audioFile = document.getElementById("audio").files[0]
-    const coverFile = document.getElementById("cover").files[0]
+const title = titleInput.value
+const artist = artistInput.value
+const album = albumInput.value
+const genre = genreInput.value
+const locked = lockedInput.value === "true"
+const price = Number(priceInput.value || 0)
 
-    if(!title || !audioFile) throw new Error("Missing title or audio")
+const audioFile = audio.files[0]
+const coverFile = cover.files[0]
 
-    const slug = slugify(title + "-" + Date.now())
+if(!title || !audioFile) throw new Error("Missing title/audio")
 
-    // upload audio
-    const audioPath = `${user.id}/${slug}.mp3`
+const slug = slugify(title + Date.now())
 
-    const {error:audioErr} = await supabase.storage
-      .from("music-files")
-      .upload(audioPath, audioFile)
+// =========================
+// STORAGE
+// =========================
 
-    if(audioErr) throw audioErr
+const ext = audioFile.name.split(".").pop()
+const audioPath = `${user.id}/${slug}.${ext}`
 
-    const {data:audioUrlData} = supabase.storage
-      .from("music-files")
-      .getPublicUrl(audioPath)
+const {error:audioErr} = await supabase.storage
+  .from("music-files")
+  .upload(audioPath, audioFile)
 
-    let coverUrl = ""
+if(audioErr) throw audioErr
 
-    if(coverFile){
-      const coverPath = `${user.id}/${slug}.jpg`
+const {data:audioUrlData} = supabase.storage
+  .from("music-files")
+  .getPublicUrl(audioPath)
 
-      await supabase.storage
-        .from("music-covers")
-        .upload(coverPath, coverFile)
+let coverUrl = ""
 
-      const {data:coverUrlData} = supabase.storage
-        .from("music-covers")
-        .getPublicUrl(coverPath)
+if(coverFile){
+  const coverPath = `${user.id}/${slug}.jpg`
 
-      coverUrl = coverUrlData.publicUrl
-    }
+  const {error:coverErr} = await supabase.storage
+    .from("music-covers")
+    .upload(coverPath, coverFile)
 
-    // save to database
-    const {error:dbErr} = await supabase
-      .from("music_uploads")
-      .insert([{
-        user_id:user.id,
-        title,
-        artist_name:artist,
-        album_name:album,
-        genre,
-        file_url:audioUrlData.publicUrl,
-        cover_url:coverUrl,
-        slug,
-        album_slug: slugify(album || ""),
-        price_cents:price,
-        is_locked:locked
-      }])
+  if(coverErr) throw coverErr
 
-    if(dbErr) throw dbErr
+  const {data:coverData} = supabase.storage
+    .from("music-covers")
+    .getPublicUrl(coverPath)
 
-    status("SUCCESS uploaded")
-
-  }catch(err){
-    status("ERROR: "+err.message)
-  }
+  coverUrl = coverData.publicUrl
 }
 
-document.getElementById("uploadBtn").onclick = upload
+// =========================
+// MAIN INSERT (MUSIC)
+// =========================
+
+const {data:track,error:dbErr} = await supabase
+.from("music_uploads")
+.insert([{
+  user_id:user.id,
+  title,
+  artist_name:artist,
+  album_name:album,
+  genre,
+  file_url:audioUrlData.publicUrl,
+  cover_url:coverUrl,
+  slug,
+  price_cents:price,
+  is_locked:locked
+}])
+.select()
+.single()
+
+if(dbErr) throw dbErr
+
+// =========================
+// ARTIST CHANNEL AUTO LINK
+// =========================
+
+await supabase.from("artist_channels").upsert({
+  user_id:user.id,
+  channel_name:artist,
+  updated_at:new Date().toISOString()
+})
+
+// =========================
+// PLAYLIST AUTO ADD
+// =========================
+
+await supabase.from("playlists").insert({
+  creator_id:user.id,
+  title:album || "Default Playlist"
+})
+
+// =========================
+// RADIO SYNC
+// =========================
+
+await supabase.from("radio_stations").upsert({
+  creator_id:user.id,
+  title:artist + " Radio"
+})
+
+// =========================
+// PODCAST SYNC
+// =========================
+
+await supabase.from("podcast_shows").upsert({
+  creator_id:user.id,
+  title:artist + " Show"
+})
+
+// =========================
+// DONE
+// =========================
+
+status("🔥 SUCCESS — FULL ECOSYSTEM SYNCED")
+
+}catch(err){
+  console.error(err)
+  status("ERROR: " + err.message)
+}
+
+}
+
+// =========================
+// EVENTS
+// =========================
+
+uploadBtn.onclick = upload
+
 </script>
 
 </body>
