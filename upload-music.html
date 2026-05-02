@@ -25,7 +25,6 @@
 
     .topbar{
       display:flex;
-      justify-content:space-between;
       flex-wrap:wrap;
       gap:10px;
       margin-bottom:20px;
@@ -181,7 +180,6 @@ const supabase = window.supabase.createClient(
 
 let user = null;
 
-/* AUTH /
 async function initUser(){
   const { data } = await supabase.auth.getUser();
   user = data.user;
@@ -193,7 +191,6 @@ async function initUser(){
   }
 }
 
-/ PREVIEW /
 document.getElementById("audioFile").onchange = e=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -204,7 +201,7 @@ document.getElementById("coverFile").onchange = e=>{
   const file = e.target.files[0];
   if(!file) return;
   document.getElementById("coverPreview").innerHTML =
-    <img src="${URL.createObjectURL(file)}" style="width:100%;border-radius:10px;margin-top:10px;">;
+    `<img src="${URL.createObjectURL(file)}" style="width:100%;border-radius:10px;margin-top:10px;">`;
 };
 
 document.getElementById("title").oninput = e=>{
@@ -215,7 +212,6 @@ document.getElementById("artist").oninput = e=>{
   document.getElementById("previewArtist").innerText = e.target.value;
 };
 
-/ UPLOAD */
 document.getElementById("uploadForm").onsubmit = async e=>{
   e.preventDefault();
 
@@ -229,7 +225,7 @@ document.getElementById("uploadForm").onsubmit = async e=>{
 
     if(!audio) throw "Audio required";
 
-    const audioPath = ${user.id}/${Date.now()}-${audio.name};
+    const audioPath = `${user.id}/${Date.now()}-${audio.name}`;
 
     await supabase.storage.from("music-files").upload(audioPath, audio);
 
@@ -239,7 +235,7 @@ document.getElementById("uploadForm").onsubmit = async e=>{
     let coverUrl = null;
 
     if(cover){
-      const coverPath = ${user.id}/${Date.now()}-${cover.name};
+      const coverPath = `${user.id}/${Date.now()}-${cover.name}`;
 
       await supabase.storage.from("music-covers").upload(coverPath, cover);
 
