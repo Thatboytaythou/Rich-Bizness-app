@@ -1,13 +1,14 @@
 // =========================
-// RICH BIZNESS — MUSIC PAGE
+// RICH BIZNESS — MUSIC PAGE (TURNED UP)
 // =========================
 
-import { initApp, getSupabase } from "/core/app.js";
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 
 await initApp();
 
 const supabase = getSupabase();
+const user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
@@ -17,6 +18,8 @@ const playerAudio = document.getElementById("player-audio");
 const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerCover = document.getElementById("player-cover");
+
+let currentTrack = null;
 
 // =========================
 // LOAD TRACKS
@@ -38,7 +41,7 @@ async function loadTracks() {
 }
 
 // =========================
-// RENDER TRACKS
+// RENDER
 // =========================
 
 function renderTracks(tracks) {
@@ -50,15 +53,42 @@ function renderTracks(tracks) {
 
     card.innerHTML = `
       <img src="${track.cover_url || '/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png'}" />
-      <div>
+      
+      <div class="music-info">
         <h3>${track.title}</h3>
         <p>${track.artist_name}</p>
+
+        <div class="music-actions">
+          <button class="play-btn">▶️</button>
+          <button class="like-btn">❤️ ${track.like_count || 0}</button>
+          <button class="repost-btn">🔁</button>
+          <span>🎧 ${track.play_count || 0}</span>
+        </div>
       </div>
     `;
 
-    card.addEventListener("click", () => {
+    // PLAY
+    card.querySelector(".play-btn").onclick = () => {
       playTrack(track);
-    });
+    };
+
+    // LIKE
+    card.querySelector(".like-btn").onclick = async (e) => {
+      e.stopPropagation();
+
+      await supabase
+        .from("tracks")
+        .update({ like_count: (track.like_count || 0) + 1 })
+        .eq("id", track.id);
+
+      loadTracks();
+    };
+
+    // REPOST (simple for now)
+    card.querySelector(".repost-btn").onclick = (e) => {
+      e.stopPropagation();
+      alert("🔁 Reposted (we’ll upgrade this next)");
+    };
 
     feed.appendChild(card);
   });
@@ -68,13 +98,23 @@ function renderTracks(tracks) {
 // PLAY TRACK
 // =========================
 
-function playTrack(track) {
+async function playTrack(track) {
+  currentTrack = track;
+
   playerAudio.src = track.audio_url;
   playerTitle.innerText = track.title;
   playerArtist.innerText = track.artist_name;
   playerCover.src = track.cover_url || "";
 
   playerAudio.play();
+
+  // INCREASE PLAY COUNT
+  await supabase
+    .from("tracks")
+    .update({ play_count: (track.play_count || 0) + 1 })
+    .eq("id", track.id);
+
+  loadTracks();
 }
 
 // =========================
