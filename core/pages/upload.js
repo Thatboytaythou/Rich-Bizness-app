@@ -107,7 +107,7 @@ form.addEventListener("submit", async (e) => {
     player.play();
 
   } catch (err) {
-    console.error("ERROR:" err);
+    console.error("ERROR:", err);
     statusEl.innerText = "❌ " + err.message;
   }
 });
