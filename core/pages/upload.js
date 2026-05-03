@@ -107,7 +107,7 @@ form.addEventListener("submit", async (e) => {
     player.play();
 
   } catch (err) {
-    console.error(err);
-    statusEl.innerText = "❌ Upload failed";
+    console.error("ERROR:" err);
+    statusEl.innerText = "❌ " + err.message;
   }
 });
