@@ -1,11 +1,13 @@
 // =========================
-// RICH BIZNESS — FULL MUSIC ENGINE
+// RICH BIZNESS — FULL MUSIC ENGINE (ELITE)
 // =========================
 
 import { initApp, getSupabase } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
+import { hasAccess, initUnlock } from "/core/features/music/unlock.js";
 
 await initApp();
+await initUnlock();
 
 const supabase = getSupabase();
 
@@ -29,7 +31,7 @@ let tracks = [];
 let currentIndex = 0;
 
 // =========================
-// LOAD
+// LOAD TRACKS
 // =========================
 
 async function loadTracks() {
@@ -46,29 +48,57 @@ async function loadTracks() {
 // RENDER
 // =========================
 
-function render() {
+async function render() {
   feed.innerHTML = "";
 
-  tracks.forEach((t, i) => {
+  for (let i = 0; i < tracks.length; i++) {
+    const t = tracks[i];
+
+    const allowed = await hasAccess(t.id);
+
     const el = document.createElement("div");
     el.className = "music-card";
 
     el.innerHTML = `
       <img src="${t.cover_url || ''}" />
-      <div>
+
+      <div class="music-info">
         <h3>${t.title}</h3>
         <p>${t.artist_name}</p>
 
         <div class="music-actions">
-          <button class="play">▶️</button>
+          ${
+            allowed
+              ? `<button class="play">▶️</button>`
+              : `<button class="unlock">🔒 Unlock</button>`
+          }
+
           <button class="like">❤️ ${t.like_count || 0}</button>
           <span>🎧 ${t.play_count || 0}</span>
         </div>
       </div>
+
+      ${
+        !allowed
+          ? `<div class="lock-overlay">🔒 LOCKED</div>`
+          : ""
+      }
     `;
 
-    el.onclick = () => play(i);
+    // PLAY OR UNLOCK
+    if (allowed) {
+      el.querySelector(".play").onclick = (e) => {
+        e.stopPropagation();
+        play(i);
+      };
+    } else {
+      el.querySelector(".unlock").onclick = (e) => {
+        e.stopPropagation();
+        window.unlockTrack(t.id);
+      };
+    }
 
+    // LIKE BUTTON
     el.querySelector(".like").onclick = async (e) => {
       e.stopPropagation();
 
@@ -83,15 +113,16 @@ function render() {
     };
 
     feed.appendChild(el);
-  });
+  }
 }
 
 // =========================
-// PLAY
+// PLAY SYSTEM
 // =========================
 
 async function play(i) {
   const t = tracks[i];
+
   currentIndex = i;
 
   playerBar.style.display = "flex";
@@ -112,7 +143,7 @@ async function play(i) {
 }
 
 // =========================
-// CONTROLS
+// PLAYER CONTROLS
 // =========================
 
 playBtn.onclick = () => {
@@ -135,16 +166,14 @@ prevBtn.onclick = () => {
   play(currentIndex);
 };
 
-// AUTO NEXT
 playerAudio.onended = () => nextBtn.click();
 
-// PROGRESS UPDATE
+// PROGRESS BAR
 playerAudio.ontimeupdate = () => {
   progress.value =
     (playerAudio.currentTime / playerAudio.duration) * 100 || 0;
 };
 
-// SEEK
 progress.oninput = () => {
   playerAudio.currentTime =
     (progress.value / 100) * playerAudio.duration;
