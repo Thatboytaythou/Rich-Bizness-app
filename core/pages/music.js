@@ -1,165 +1,155 @@
 // =========================
-// RICH BIZNESS — MUSIC PAGE (ELITE PLAYER)
+// RICH BIZNESS — FULL MUSIC ENGINE
 // =========================
 
-import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
+import { initApp, getSupabase } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 
 await initApp();
 
 const supabase = getSupabase();
-const user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
 const feed = document.getElementById("music-feed");
 
-// PLAYER UI
+// PLAYER
 const playerBar = document.getElementById("player-bar");
 const playerAudio = document.getElementById("player-audio");
 const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerCover = document.getElementById("player-cover");
 
-const playPauseBtn = document.getElementById("player-play");
+const playBtn = document.getElementById("player-play");
 const nextBtn = document.getElementById("player-next");
 const prevBtn = document.getElementById("player-prev");
+const progress = document.getElementById("player-progress");
 
 let tracks = [];
 let currentIndex = 0;
 
 // =========================
-// LOAD TRACKS
+// LOAD
 // =========================
 
 async function loadTracks() {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("tracks")
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error(error);
-    feed.innerHTML = "Failed to load music";
-    return;
-  }
-
-  tracks = data;
-  renderTracks();
+  tracks = data || [];
+  render();
 }
 
 // =========================
-// RENDER TRACKS
+// RENDER
 // =========================
 
-function renderTracks() {
+function render() {
   feed.innerHTML = "";
 
-  tracks.forEach((track, index) => {
-    const card = document.createElement("div");
-    card.className = "music-card";
+  tracks.forEach((t, i) => {
+    const el = document.createElement("div");
+    el.className = "music-card";
 
-    card.innerHTML = `
-      <img src="${track.cover_url || '/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png'}" />
-      
-      <div class="music-info">
-        <h3>${track.title}</h3>
-        <p>${track.artist_name}</p>
+    el.innerHTML = `
+      <img src="${t.cover_url || ''}" />
+      <div>
+        <h3>${t.title}</h3>
+        <p>${t.artist_name}</p>
 
         <div class="music-actions">
-          <button class="play-btn">▶️</button>
-          <button class="like-btn">❤️ ${track.like_count || 0}</button>
-          <span>🎧 ${track.play_count || 0}</span>
+          <button class="play">▶️</button>
+          <button class="like">❤️ ${t.like_count || 0}</button>
+          <span>🎧 ${t.play_count || 0}</span>
         </div>
       </div>
     `;
 
-    // PLAY BUTTON
-    card.querySelector(".play-btn").onclick = (e) => {
-      e.stopPropagation();
-      playTrack(index);
-    };
+    el.onclick = () => play(i);
 
-    // CLICK WHOLE CARD
-    card.onclick = () => playTrack(index);
-
-    // LIKE BUTTON (NO RELOAD)
-    card.querySelector(".like-btn").onclick = async (e) => {
+    el.querySelector(".like").onclick = async (e) => {
       e.stopPropagation();
 
-      const newLikes = (track.like_count || 0) + 1;
+      const newLikes = (t.like_count || 0) + 1;
 
       await supabase
         .from("tracks")
         .update({ like_count: newLikes })
-        .eq("id", track.id);
+        .eq("id", t.id);
 
       e.target.innerText = `❤️ ${newLikes}`;
     };
 
-    feed.appendChild(card);
+    feed.appendChild(el);
   });
 }
 
 // =========================
-// PLAY TRACK
+// PLAY
 // =========================
 
-async function playTrack(index) {
-  const track = tracks[index];
-  currentIndex = index;
+async function play(i) {
+  const t = tracks[i];
+  currentIndex = i;
 
   playerBar.style.display = "flex";
 
-  playerAudio.src = track.audio_url;
-  playerTitle.innerText = track.title;
-  playerArtist.innerText = track.artist_name;
-  playerCover.src = track.cover_url || "";
+  playerAudio.src = t.audio_url;
+  playerTitle.innerText = t.title;
+  playerArtist.innerText = t.artist_name;
+  playerCover.src = t.cover_url || "";
 
   playerAudio.play();
 
-  // UPDATE PLAY COUNT (no reload)
+  playBtn.innerText = "⏸";
+
   await supabase
     .from("tracks")
-    .update({ play_count: (track.play_count || 0) + 1 })
-    .eq("id", track.id);
+    .update({ play_count: (t.play_count || 0) + 1 })
+    .eq("id", t.id);
 }
 
 // =========================
-// PLAYER CONTROLS
+// CONTROLS
 // =========================
 
-// PLAY / PAUSE
-playPauseBtn.onclick = () => {
+playBtn.onclick = () => {
   if (playerAudio.paused) {
     playerAudio.play();
-    playPauseBtn.innerText = "⏸";
+    playBtn.innerText = "⏸";
   } else {
     playerAudio.pause();
-    playPauseBtn.innerText = "▶️";
+    playBtn.innerText = "▶️";
   }
 };
 
-// NEXT
 nextBtn.onclick = () => {
   currentIndex = (currentIndex + 1) % tracks.length;
-  playTrack(currentIndex);
+  play(currentIndex);
 };
 
-// PREV
 prevBtn.onclick = () => {
-  currentIndex =
-    (currentIndex - 1 + tracks.length) % tracks.length;
-  playTrack(currentIndex);
+  currentIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+  play(currentIndex);
 };
 
-// AUTO NEXT SONG
-playerAudio.onended = () => {
-  nextBtn.click();
+// AUTO NEXT
+playerAudio.onended = () => nextBtn.click();
+
+// PROGRESS UPDATE
+playerAudio.ontimeupdate = () => {
+  progress.value =
+    (playerAudio.currentTime / playerAudio.duration) * 100 || 0;
 };
 
-// =========================
-// INIT
+// SEEK
+progress.oninput = () => {
+  playerAudio.currentTime =
+    (progress.value / 100) * playerAudio.duration;
+};
+
 // =========================
 
 loadTracks();
