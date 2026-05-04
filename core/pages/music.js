@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS — ELITE MUSIC ENGINE (FINAL)
+// RICH BIZNESS — ELITE MUSIC ENGINE (FINAL FINAL)
 // /core/pages/music.js
 // =========================
 
@@ -9,7 +9,7 @@ import { mountEliteNav } from "/core/nav.js";
 await initApp();
 
 const supabase = getSupabase();
-const user = getCurrentUserState();
+let user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
@@ -30,9 +30,19 @@ let unlockedMap = {};
 // =========================
 
 async function loadAll() {
+  await refreshUser();
   await loadTracks();
   await loadUnlocks();
   render();
+}
+
+// =========================
+// ALWAYS REFRESH USER
+// =========================
+
+async function refreshUser() {
+  const { data } = await supabase.auth.getUser();
+  user = data?.user || null;
 }
 
 // =========================
@@ -40,35 +50,48 @@ async function loadAll() {
 // =========================
 
 async function loadTracks() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("tracks")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("TRACK LOAD ERROR:", error);
+    tracks = [];
+    return;
+  }
 
   tracks = data || [];
 }
 
 // =========================
-// LOAD UNLOCKS
+// LOAD UNLOCKS (FIXED)
 // =========================
 
 async function loadUnlocks() {
+  unlockedMap = {};
+
   if (!user) return;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("user_product_unlocks")
     .select("*")
     .eq("user_id", user.id);
 
-  unlockedMap = {};
+  if (error) {
+    console.error("UNLOCK LOAD ERROR:", error);
+    return;
+  }
 
   (data || []).forEach(u => {
-    unlockedMap[u.product_id] = true;
+    if (u.product_id) {
+      unlockedMap[u.product_id] = true;
+    }
   });
 }
 
 // =========================
-// RENDER
+// RENDER (UPGRADED UI)
 // =========================
 
 function render() {
@@ -78,35 +101,51 @@ function render() {
     const unlocked = unlockedMap[t.product_id];
 
     const el = document.createElement("div");
-    el.className = "music-card";
+    el.className = "rb-track-card";
 
     el.innerHTML = `
-      <img src="${t.cover_url || ''}" class="cover"/>
+      <div class="rb-cover-wrap">
+        <img src="${t.cover_url || ''}" class="rb-cover"/>
 
-      <div class="music-info">
+        ${
+          !unlocked
+            ? `
+          <div class="rb-lock-overlay">
+            🔒
+            <span>$${((t.price_cents || 199) / 100).toFixed(2)}</span>
+          </div>
+        `
+            : ""
+        }
+      </div>
+
+      <div class="rb-track-info">
         <h3>${t.title}</h3>
         <p>${t.artist_name}</p>
 
-        ${
-          unlocked
-            ? `<button class="play-btn">▶️ Play</button>`
-            : `
-              <button class="unlock-btn">
-                🔒 Unlock $${((t.price_cents || 199)/100).toFixed(2)}
-              </button>
-            `
-        }
+        <div class="rb-actions">
+          ${
+            unlocked
+              ? `<button class="rb-play">▶ Play</button>`
+              : `<button class="rb-unlock">Unlock</button>`
+          }
+
+          <div class="rb-stats">
+            ❤️ ${t.like_count || 0}
+            🎧 ${t.play_count || 0}
+          </div>
+        </div>
       </div>
     `;
 
     // PLAY
     if (unlocked) {
-      el.querySelector(".play-btn").onclick = () => play(i);
+      el.querySelector(".rb-play").onclick = () => play(i);
     }
 
     // UNLOCK
     if (!unlocked) {
-      el.querySelector(".unlock-btn").onclick = () =>
+      el.querySelector(".rb-unlock").onclick = () =>
         startCheckout(t);
     }
 
@@ -129,10 +168,16 @@ async function play(i) {
   playerCover.src = t.cover_url || "";
 
   playerAudio.play();
+
+  // increment play count (safe)
+  await supabase
+    .from("tracks")
+    .update({ play_count: (t.play_count || 0) + 1 })
+    .eq("id", t.id);
 }
 
 // =========================
-// STRIPE CHECKOUT
+// STRIPE CHECKOUT (FIXED)
 // =========================
 
 async function startCheckout(track) {
@@ -141,8 +186,13 @@ async function startCheckout(track) {
     return;
   }
 
-  const session = await supabase.auth.getSession();
-  const token = session.data.session.access_token;
+  const { data } = await supabase.auth.getSession();
+  const token = data?.session?.access_token;
+
+  if (!token) {
+    alert("Session expired");
+    return;
+  }
 
   const res = await fetch("/api/create-checkout-session", {
     method: "POST",
@@ -153,30 +203,44 @@ async function startCheckout(track) {
     body: JSON.stringify({
       mode: "music_unlock",
       productId: track.product_id,
-      trackId: track.id
+      trackId: track.id,
+      linkedRecordId: track.id
     })
   });
 
-  const data = await res.json();
+  const result = await res.json();
 
-  if (!data.checkoutUrl) {
+  if (!result.checkoutUrl) {
+    console.error(result);
     alert("Checkout failed");
     return;
   }
 
-  window.location.href = data.checkoutUrl;
+  window.location.href = result.checkoutUrl;
 }
 
 // =========================
-// AUTO REFRESH AFTER PAYMENT
+// PAYMENT RETURN HANDLER (FIXED)
 // =========================
 
-if (window.location.search.includes("session_id")) {
-  setTimeout(() => {
-    loadAll();
-  }, 1500);
+async function handleReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const sessionId = params.get("session_id");
+
+  if (!sessionId) return;
+
+  console.log("Payment return detected");
+
+  // give webhook time to write unlock
+  setTimeout(async () => {
+    await loadUnlocks();
+    render();
+  }, 2000);
 }
 
 // =========================
+// INIT
+// =========================
 
-loadAll();
+await loadAll();
+handleReturn();
