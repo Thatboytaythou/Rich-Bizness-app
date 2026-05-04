@@ -1,6 +1,5 @@
 /* =========================
-   RICH BIZNESS — MUSIC STYLE
-   styles/music.css
+   RICH BIZNESS — MUSIC STYLE (ELITE UPGRADE)
 ========================= */
 
 :root {
@@ -9,8 +8,8 @@
   --gold2: #ffd57d;
   --text: #f5fff8;
   --muted: #9db9a7;
-  --glass: rgba(10, 14, 12, 0.78);
-  --border: rgba(243, 179, 62, 0.18);
+  --glass: rgba(10, 14, 12, 0.75);
+  --border: rgba(243, 179, 62, 0.2);
 }
 
 /* =========================
@@ -22,10 +21,11 @@ html, body {
   background: var(--bg-dark);
   color: var(--text);
   font-family: Inter, system-ui, sans-serif;
+  overflow-x: hidden;
 }
 
 /* =========================
-   BACKGROUND ENGINE (YOUR IMAGE)
+   BACKGROUND ENGINE (ALIVE)
 ========================= */
 .music-bg {
   position: fixed;
@@ -33,190 +33,237 @@ html, body {
   z-index: -1;
 
   background:
-    radial-gradient(circle at 50% 20%, rgba(243,179,62,0.12), transparent 60%),
+    radial-gradient(circle at 30% 20%, rgba(243,179,62,0.15), transparent 60%),
+    radial-gradient(circle at 80% 70%, rgba(0,255,150,0.08), transparent 60%),
     linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.92)),
     url("/images/brand/logo-music-label.png") center/contain no-repeat;
 
-  animation: bgPulse 12s ease-in-out infinite;
-  filter: brightness(0.95) contrast(1.05);
+  animation: bgFloat 18s ease-in-out infinite;
 }
 
-/* subtle breathing glow */
-@keyframes bgPulse {
-  0%   { transform: scale(1); filter: brightness(0.9); }
-  50%  { transform: scale(1.04); filter: brightness(1.1); }
-  100% { transform: scale(1); filter: brightness(0.9); }
+/* floating + breathing */
+@keyframes bgFloat {
+  0%   { transform: scale(1) translateY(0px); }
+  50%  { transform: scale(1.05) translateY(-10px); }
+  100% { transform: scale(1) translateY(0px); }
 }
 
 /* =========================
-   PAGE SHELL
+   PAGE
 ========================= */
 .music-page {
-  position: relative;
-  z-index: 1;
   padding: 20px;
   backdrop-filter: blur(10px);
 }
 
 /* =========================
-   HEADER / HERO
+   HERO
 ========================= */
-.music-hero {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
 .music-hero h1 {
-  font-size: 38px;
+  font-size: 42px;
   background: linear-gradient(90deg, var(--gold), var(--gold2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  animation: glowText 3s ease-in-out infinite alternate;
 }
 
-.music-hero p {
-  color: var(--muted);
+@keyframes glowText {
+  from { text-shadow: 0 0 10px rgba(243,179,62,0.2); }
+  to   { text-shadow: 0 0 25px rgba(243,179,62,0.6); }
 }
 
 /* =========================
-   CARDS
+   TRACK CARDS (UPGRADED)
 ========================= */
-.track-card,
-.artist-card,
-.playlist-card,
-.radio-card,
-.podcast-card {
+.rb-track-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 18px;
   background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 14px;
-  transition: all 0.25s ease;
+
   backdrop-filter: blur(14px);
+
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.track-card:hover,
-.artist-card:hover,
-.playlist-card:hover,
-.radio-card:hover,
-.podcast-card:hover {
+/* glow sweep effect */
+.rb-track-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(243,179,62,0.2),
+    transparent
+  );
+  opacity: 0;
+  transition: 0.4s;
+}
+
+.rb-track-card:hover::before {
+  opacity: 1;
+  transform: translateX(100%);
+}
+
+.rb-track-card:hover {
   transform: translateY(-6px) scale(1.02);
-  border-color: rgba(243,179,62,0.4);
-  box-shadow: 0 10px 30px rgba(243,179,62,0.15);
+  border-color: var(--gold);
+  box-shadow: 0 15px 40px rgba(243,179,62,0.2);
 }
 
 /* =========================
-   TRACK GRID
+   COVER
 ========================= */
-.music-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
+.rb-cover-wrap {
+  position: relative;
 }
 
-/* =========================
-   IMAGES
-========================= */
-.track-card img {
-  width: 100%;
+.rb-cover {
+  width: 70px;
+  height: 70px;
   border-radius: 12px;
-  margin-bottom: 10px;
+  object-fit: cover;
 }
 
-/* =========================
-   META TEXT
-========================= */
-.music-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--muted);
-  margin: 6px 0;
-}
-
-/* =========================
-   BUTTONS
-========================= */
-.btn {
-  border: none;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-.btn-gold {
-  background: linear-gradient(90deg, var(--gold), var(--gold2));
-  color: black;
-}
-
-.btn-dark {
-  background: #111;
-  color: white;
-  border: 1px solid var(--border);
-}
-
-/* =========================
-   PLAYER
-========================= */
-.music-player {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-
-  background: rgba(0,0,0,0.9);
-  border-top: 1px solid var(--border);
-
-  padding: 12px;
+/* lock glow */
+.rb-lock-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  align-items: center;
+
+  color: var(--gold);
+  font-weight: bold;
+  border-radius: 12px;
+
+  animation: lockPulse 2s infinite;
 }
 
-.music-player h3 {
+@keyframes lockPulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
+
+/* =========================
+   INFO
+========================= */
+.rb-track-info h3 {
   margin: 0;
   font-size: 16px;
 }
 
-.music-player p {
-  margin: 0;
+.rb-track-info p {
+  margin: 2px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* =========================
+   ACTIONS
+========================= */
+.rb-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* PLAY BUTTON */
+.rb-play {
+  background: linear-gradient(90deg, #00ff99, #00ccff);
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.rb-play:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(0,255,150,0.6);
+}
+
+/* UNLOCK BUTTON */
+.rb-unlock {
+  background: linear-gradient(90deg, var(--gold), var(--gold2));
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.rb-unlock:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(243,179,62,0.6);
+}
+
+/* =========================
+   STATS
+========================= */
+.rb-stats {
   font-size: 12px;
   color: var(--muted);
 }
 
 /* =========================
-   STATUS BOX
+   PLAYER (TURNED UP)
 ========================= */
-.status-box {
-  padding: 20px;
-  text-align: center;
-  color: var(--muted);
-}
-
 #player-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 70px;
-  background: #000;
+
+  height: 80px;
   display: flex;
   align-items: center;
   gap: 12px;
+
   padding: 10px;
-  border-top: 1px solid #333;
-  z-index: 9999;
+
+  background: rgba(0,0,0,0.95);
+  border-top: 1px solid var(--border);
+
+  backdrop-filter: blur(10px);
+
+  animation: slideUp 0.4s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 #player-bar img {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
+  width: 55px;
+  height: 55px;
+  border-radius: 8px;
 }
 
 #player-bar button {
   background: none;
   border: none;
   color: white;
-  font-size: 18px;
+  font-size: 20px;
   cursor: pointer;
+
+  transition: 0.2s;
+}
+
+#player-bar button:hover {
+  transform: scale(1.2);
+  color: var(--gold);
 }
