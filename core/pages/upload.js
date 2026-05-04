@@ -1,5 +1,5 @@
 /* =========================
-   RICH BIZNESS — UPLOAD CAPITAL ENGINE (ELITE)
+   RICH BIZNESS — UPLOAD CAPITAL ENGINE (FIXED)
    /core/pages/upload.js
 ========================= */
 
@@ -32,7 +32,7 @@ const mainFileInput = document.getElementById("main-file");
 const coverFileInput = document.getElementById("cover-file");
 
 // =========================
-// SET TYPE (HUB SWITCH)
+// SET TYPE
 // =========================
 window.setType = (type) => {
   uploadType = type;
@@ -43,28 +43,30 @@ window.setType = (type) => {
 // STORAGE UPLOAD
 // =========================
 async function uploadToStorage(file, folder = "uploads") {
+  if (!file) return null;
+
   const fileName = ${Date.now()}_${file.name};
+  const filePath = ${folder}/${fileName};
 
   const { error } = await supabase.storage
     .from("uploads")
-    .upload(${folder}/${fileName}, file);
+    .upload(filePath, file);
 
   if (error) throw error;
 
   const { data } = supabase.storage
     .from("uploads")
-    .getPublicUrl(${folder}/${fileName});
+    .getPublicUrl(filePath);
 
   return data.publicUrl;
 }
 
 // =========================
-// CREATE MONETIZATION
+// MONETIZATION
 // =========================
 async function createMonetization({ title, creatorId, priceCents, contentId }) {
 
-  // 1. PRODUCT
-  const { data: product } = await supabase
+  const { data: product, error } = await supabase
     .from("products")
     .insert([{
       name: title,
@@ -75,51 +77,50 @@ async function createMonetization({ title, creatorId, priceCents, contentId }) {
     .select()
     .single();
 
-  // 2. PREMIUM CONTENT
+  if (error) {
+    console.error("Product error:", error);
+    return;
+  }
+
   await supabase.from("premium_content").insert([{
     creator_id: creatorId,
     content_type: uploadType,
     content_id: contentId,
     title,
     price_cents: priceCents,
-    is_active: true
+    is_active: true,
+    created_at: new Date().toISOString()
   }]);
 
   return product;
 }
 
 // =========================
-// ROUTE INSERTS
+// INSERT ROUTER
 // =========================
 async function insertByType(payload) {
 
-  if (uploadType === "music") {
-    return await supabase.from("tracks").insert([payload]).select().single();
-  }
+  let table = null;
 
-  if (uploadType === "podcast") {
-    return await supabase.from("podcast_episodes").insert([payload]).select().single();
-  }
+  if (uploadType === "music") table = "tracks";
+  if (uploadType === "podcast") table = "podcast_episodes";
+  if (uploadType === "gaming") table = "gaming_uploads";
+  if (uploadType === "sports") table = "sports_uploads";
+  if (uploadType === "art") table = "artworks";
+  if (uploadType === "metaverse") table = "uploads";
+  if (uploadType === "receipt") table = "payments";
 
-  if (uploadType === "gaming") {
-    return await supabase.from("gaming_uploads").insert([payload]).select().single();
-  }
+  if (!table) throw new Error("Invalid upload type");
 
-  if (uploadType === "sports") {
-    return await supabase.from("sports_uploads").insert([payload]).select().single();
-  }
+  const { data, error } = await supabase
+    .from(table)
+    .insert([payload])
+    .select()
+    .single();
 
-  if (uploadType === "art") {
-    return await supabase.from("artworks").insert([payload]).select().single();
-  }
+  if (error) throw error;
 
-  if (uploadType === "metaverse") {
-    return await supabase.from("uploads").insert([payload]).select().single();
-  }
-
-  if (uploadType === "receipt") {
-    return await supabase.from("payments").insert([payload]).select().single();
-  }
+  return data;
 }
 
 // =========================
@@ -136,40 +137,38 @@ form.onsubmit = async (e) => {
 
     statusBox.innerText = "Uploading...";
 
-    const title = titleInput.value;
-    const subtitle = subtitleInput.value;
-    const category = categoryInput.value;
+    const title = titleInput.value.trim();
+    const subtitle = subtitleInput.value.trim();
+    const category = categoryInput.value.trim();
 
     const mainFile = mainFileInput.files[0];
     const coverFile = coverFileInput.files[0];
+
+    if (!mainFile) {
+      alert("Main file required");
+      return;
+    }
 
     // =========================
     // UPLOAD FILES
     // =========================
     const fileUrl = await uploadToStorage(mainFile, uploadType);
-
-    let coverUrl = null;
-    if (coverFile) {
-      coverUrl = await uploadToStorage(coverFile, ${uploadType}/covers);
-    }
+    const coverUrl = await uploadToStorage(coverFile, ${uploadType}/covers);
 
     // =========================
     // BASE PAYLOAD
     // =========================
-    const basePayload = {
+    const base = {
       title,
       creator_id: user.id,
       created_at: new Date().toISOString()
     };
 
-    // =========================
-    // TYPE CUSTOMIZATION
-    // =========================
     let payload = {};
 
     if (uploadType === "music") {
       payload = {
-        ...basePayload,
+        ...base,
         artist_name: subtitle,
         genre: category,
         audio_url: fileUrl,
@@ -181,7 +180,7 @@ form.onsubmit = async (e) => {
 
     if (uploadType === "sports") {
       payload = {
-        ...basePayload,
+        ...base,
         caption: subtitle,
         sport_name: category,
         file_url: fileUrl,
@@ -191,7 +190,7 @@ form.onsubmit = async (e) => {
 
     if (uploadType === "gaming") {
       payload = {
-        ...basePayload,
+        ...base,
         game: category,
         file_url: fileUrl
       };
@@ -199,7 +198,7 @@ form.onsubmit = async (e) => {
 
     if (uploadType === "podcast") {
       payload = {
-        ...basePayload,
+        ...base,
         description: subtitle,
         audio_url: fileUrl,
         cover_url: coverUrl
@@ -208,7 +207,7 @@ form.onsubmit = async (e) => {
 
     if (uploadType === "art") {
       payload = {
-        ...basePayload,
+        ...base,
         image_url: fileUrl,
         description: subtitle
       };
@@ -216,7 +215,7 @@ form.onsubmit = async (e) => {
 
     if (uploadType === "metaverse") {
       payload = {
-        ...basePayload,
+        ...base,
         file_url: fileUrl,
         type: category
       };
@@ -228,37 +227,34 @@ form.onsubmit = async (e) => {
         amount: 0,
         type: "receipt",
         status: "uploaded",
-        metadata: {
-          file_url: fileUrl
-        }
+        metadata: { file_url: fileUrl },
+        created_at: new Date().toISOString()
       };
     }
 
     // =========================
     // INSERT
     // =========================
-    const { data, error } = await insertByType(payload);
-
-    if (error) throw error;
+    const data = await insertByType(payload);
 
     // =========================
-    // AUTO MONETIZATION 💰
+    // MONETIZATION
     // =========================
-    const priceCents = 199; // default $1.99
-
     await createMonetization({
       title,
       creatorId: user.id,
-      priceCents,
+      priceCents: 199,
       contentId: data.id
     });
 
-    statusBox.innerText = "🔥 Upload Complete + Monetized";
+    console.log("UPLOAD SUCCESS:", data);
+
+    statusBox.innerText = "🔥 Upload Complete";
 
     form.reset();
 
   } catch (err) {
-    console.error(err);
+    console.error("UPLOAD ERROR:", err);
     statusBox.innerText = "❌ Upload failed";
   }
 };
