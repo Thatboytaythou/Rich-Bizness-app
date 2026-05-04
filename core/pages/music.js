@@ -1,15 +1,15 @@
 // =========================
-// RICH BIZNESS — FULL MUSIC ENGINE (ELITE)
+// RICH BIZNESS — ELITE MUSIC ENGINE (FINAL)
+// /core/pages/music.js
 // =========================
 
-import { initApp, getSupabase } from "/core/app.js";
+import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
-import { hasAccess, initUnlock } from "/core/features/music/unlock.js";
 
 await initApp();
-await initUnlock();
 
 const supabase = getSupabase();
+const user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
@@ -22,13 +22,18 @@ const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerCover = document.getElementById("player-cover");
 
-const playBtn = document.getElementById("player-play");
-const nextBtn = document.getElementById("player-next");
-const prevBtn = document.getElementById("player-prev");
-const progress = document.getElementById("player-progress");
-
 let tracks = [];
-let currentIndex = 0;
+let unlockedMap = {};
+
+// =========================
+// LOAD EVERYTHING
+// =========================
+
+async function loadAll() {
+  await loadTracks();
+  await loadUnlocks();
+  render();
+}
 
 // =========================
 // LOAD TRACKS
@@ -41,89 +46,80 @@ async function loadTracks() {
     .order("created_at", { ascending: false });
 
   tracks = data || [];
-  render();
+}
+
+// =========================
+// LOAD UNLOCKS
+// =========================
+
+async function loadUnlocks() {
+  if (!user) return;
+
+  const { data } = await supabase
+    .from("user_product_unlocks")
+    .select("*")
+    .eq("user_id", user.id);
+
+  unlockedMap = {};
+
+  (data || []).forEach(u => {
+    unlockedMap[u.product_id] = true;
+  });
 }
 
 // =========================
 // RENDER
 // =========================
 
-async function render() {
+function render() {
   feed.innerHTML = "";
 
-  for (let i = 0; i < tracks.length; i++) {
-    const t = tracks[i];
-
-    const allowed = await hasAccess(t.id);
+  tracks.forEach((t, i) => {
+    const unlocked = unlockedMap[t.product_id];
 
     const el = document.createElement("div");
     el.className = "music-card";
 
     el.innerHTML = `
-      <img src="${t.cover_url || ''}" />
+      <img src="${t.cover_url || ''}" class="cover"/>
 
       <div class="music-info">
         <h3>${t.title}</h3>
         <p>${t.artist_name}</p>
 
-        <div class="music-actions">
-          ${
-            allowed
-              ? `<button class="play">▶️</button>`
-              : `<button class="unlock">🔒 Unlock</button>`
-          }
-
-          <button class="like">❤️ ${t.like_count || 0}</button>
-          <span>🎧 ${t.play_count || 0}</span>
-        </div>
+        ${
+          unlocked
+            ? `<button class="play-btn">▶️ Play</button>`
+            : `
+              <button class="unlock-btn">
+                🔒 Unlock $${((t.price_cents || 199)/100).toFixed(2)}
+              </button>
+            `
+        }
       </div>
-
-      ${
-        !allowed
-          ? `<div class="lock-overlay">🔒 LOCKED</div>`
-          : ""
-      }
     `;
 
-    // PLAY OR UNLOCK
-    if (allowed) {
-      el.querySelector(".play").onclick = (e) => {
-        e.stopPropagation();
-        play(i);
-      };
-    } else {
-      el.querySelector(".unlock").onclick = (e) => {
-        e.stopPropagation();
-        window.unlockTrack(t.id);
-      };
+    // PLAY
+    if (unlocked) {
+      el.querySelector(".play-btn").onclick = () => play(i);
     }
 
-    // LIKE BUTTON
-    el.querySelector(".like").onclick = async (e) => {
-      e.stopPropagation();
-
-      const newLikes = (t.like_count || 0) + 1;
-
-      await supabase
-        .from("tracks")
-        .update({ like_count: newLikes })
-        .eq("id", t.id);
-
-      e.target.innerText = `❤️ ${newLikes}`;
-    };
+    // UNLOCK
+    if (!unlocked) {
+      el.querySelector(".unlock-btn").onclick = () =>
+        startCheckout(t);
+    }
 
     feed.appendChild(el);
-  }
+  });
 }
 
 // =========================
-// PLAY SYSTEM
+// PLAY
 // =========================
 
 async function play(i) {
   const t = tracks[i];
-
-  currentIndex = i;
 
   playerBar.style.display = "flex";
 
@@ -133,52 +129,54 @@ async function play(i) {
   playerCover.src = t.cover_url || "";
 
   playerAudio.play();
-
-  playBtn.innerText = "⏸";
-
-  await supabase
-    .from("tracks")
-    .update({ play_count: (t.play_count || 0) + 1 })
-    .eq("id", t.id);
 }
 
 // =========================
-// PLAYER CONTROLS
+// STRIPE CHECKOUT
 // =========================
 
-playBtn.onclick = () => {
-  if (playerAudio.paused) {
-    playerAudio.play();
-    playBtn.innerText = "⏸";
-  } else {
-    playerAudio.pause();
-    playBtn.innerText = "▶️";
+async function startCheckout(track) {
+  if (!user) {
+    alert("Sign in first");
+    return;
   }
-};
 
-nextBtn.onclick = () => {
-  currentIndex = (currentIndex + 1) % tracks.length;
-  play(currentIndex);
-};
+  const session = await supabase.auth.getSession();
+  const token = session.data.session.access_token;
 
-prevBtn.onclick = () => {
-  currentIndex = (currentIndex - 1 + tracks.length) % tracks.length;
-  play(currentIndex);
-};
+  const res = await fetch("/api/create-checkout-session", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      mode: "music_unlock",
+      productId: track.product_id,
+      trackId: track.id
+    })
+  });
 
-playerAudio.onended = () => nextBtn.click();
+  const data = await res.json();
 
-// PROGRESS BAR
-playerAudio.ontimeupdate = () => {
-  progress.value =
-    (playerAudio.currentTime / playerAudio.duration) * 100 || 0;
-};
+  if (!data.checkoutUrl) {
+    alert("Checkout failed");
+    return;
+  }
 
-progress.oninput = () => {
-  playerAudio.currentTime =
-    (progress.value / 100) * playerAudio.duration;
-};
+  window.location.href = data.checkoutUrl;
+}
+
+// =========================
+// AUTO REFRESH AFTER PAYMENT
+// =========================
+
+if (window.location.search.includes("session_id")) {
+  setTimeout(() => {
+    loadAll();
+  }, 1500);
+}
 
 // =========================
 
-loadTracks();
+loadAll();
