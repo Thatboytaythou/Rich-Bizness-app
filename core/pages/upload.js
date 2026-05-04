@@ -14,15 +14,104 @@ const statusEl = document.getElementById("upload-status");
 let currentType = "music";
 
 // =========================
+// CATEGORY SYSTEM (FULL HUB)
+// =========================
+const TYPE_MAP = {
+  music: {
+    table: "tracks",
+    fileBucket: "uploads",
+    build: (data) => ({
+      creator_id: data.user,
+      title: data.title,
+      artist_name: data.subtitle,
+      genre: data.category,
+      audio_url: data.file,
+      cover_url: data.cover
+    })
+  },
+
+  podcast: {
+    table: "podcast_episodes",
+    fileBucket: "uploads",
+    build: (data) => ({
+      creator_id: data.user,
+      title: data.title,
+      description: data.category,
+      audio_url: data.file,
+      cover_url: data.cover
+    })
+  },
+
+  gaming: {
+    table: "gaming_uploads",
+    fileBucket: "uploads",
+    build: (data) => ({
+      user_id: data.user,
+      title: data.title,
+      file_url: data.file,
+      thumbnail_url: data.cover
+    })
+  },
+
+  sports: {
+    table: "sports_uploads",
+    fileBucket: "uploads",
+    build: (data) => ({
+      user_id: data.user,
+      title: data.title,
+      caption: data.category,
+      file_url: data.file,
+      thumbnail_url: data.cover
+    })
+  },
+
+  art: {
+    table: "artworks",
+    fileBucket: "uploads",
+    build: (data) => ({
+      user_id: data.user,
+      title: data.title,
+      image_url: data.file,
+      description: data.category
+    })
+  },
+
+  metaverse: {
+    table: "metaverse_assets",
+    fileBucket: "uploads",
+    build: (data) => ({
+      user_id: data.user,
+      title: data.title,
+      asset_url: data.file,
+      type: data.category
+    })
+  },
+
+  receipt: {
+    table: "payments",
+    fileBucket: "uploads",
+    build: (data) => ({
+      user_id: data.user,
+      type: "receipt_upload",
+      status: "pending",
+      metadata: {
+        file_url: data.file,
+        note: data.title
+      }
+    })
+  }
+};
+
+// =========================
 // TYPE SWITCH
 // =========================
 window.setType = (type) => {
   currentType = type;
-  statusEl.innerText = "Selected: " + type.toUpperCase();
+  statusEl.innerText = "Mode: " + type.toUpperCase();
 };
 
 // =========================
-// UPLOAD HANDLER
+// UPLOAD FLOW
 // =========================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -42,42 +131,44 @@ form.addEventListener("submit", async (e) => {
     const file = document.getElementById("main-file").files[0];
     const cover = document.getElementById("cover-file").files[0];
 
-    const basePath = ${currentType}/${user.id}/${Date.now()};
+    const config = TYPE_MAP[currentType];
+
+    if (!config) throw new Error("Invalid upload type");
 
     // =========================
-    // UPLOAD MAIN FILE
+    // FILE UPLOAD
     // =========================
-    const filePath = ${basePath}-${file.name};
+    const path = ${currentType}/${user.id}/${Date.now()}-${file.name};
 
-    const { error: fileError } = await supabase.storage
-      .from("uploads")
-      .upload(filePath, file);
+    const { error: uploadError } = await supabase.storage
+      .from(config.fileBucket)
+      .upload(path, file);
 
-    if (fileError) throw fileError;
+    if (uploadError) throw uploadError;
 
     const fileUrl = supabase.storage
-      .from("uploads")
-      .getPublicUrl(filePath).data.publicUrl;
+      .from(config.fileBucket)
+      .getPublicUrl(path).data.publicUrl;
 
     // =========================
-    // UPLOAD COVER
+    // COVER
     // =========================
     let coverUrl = null;
 
     if (cover) {
-      const coverPath = ${basePath}-cover-${cover.name};
+      const coverPath = ${currentType}/${user.id}/cover-${Date.now()}-${cover.name};
 
       await supabase.storage
-        .from("uploads")
+        .from(config.fileBucket)
         .upload(coverPath, cover);
 
       coverUrl = supabase.storage
-        .from("uploads")
+        .from(config.fileBucket)
         .getPublicUrl(coverPath).data.publicUrl;
     }
 
     // =========================
-    // SAVE BASE RECORD
+    // UNIVERSAL LOG
     // =========================
     await supabase.from("uploads").insert({
       user_id: user.id,
@@ -90,46 +181,20 @@ form.addEventListener("submit", async (e) => {
     });
 
     // =========================
-    // TYPE-SPECIFIC TABLES
+    // FEATURE TABLE INSERT
     // =========================
+    const payload = config.build({
+      user: user.id,
+      title,
+      subtitle,
+      category,
+      file: fileUrl,
+      cover: coverUrl
+    });
 
-    if (currentType === "music") {
-      await supabase.from("tracks").insert({
-        creator_id: user.id,
-        title,
-        artist_name: subtitle,
-        genre: category,
-        audio_url: fileUrl,
-        cover_url: coverUrl
-      });
-    }
+    await supabase.from(config.table).insert(payload);
 
-    if (currentType === "gaming") {
-      await supabase.from("gaming_uploads").insert({
-        user_id: user.id,
-        title,
-        file_url: fileUrl
-      });
-    }
-
-    if (currentType === "sports") {
-      await supabase.from("sports_uploads").insert({
-        user_id: user.id,
-        title,
-        file_url: fileUrl
-      });
-    }
-
-    if (currentType === "receipt") {
-      await supabase.from("payments").insert({
-        user_id: user.id,
-        type: "manual_receipt",
-        status: "pending",
-        metadata: { file_url: fileUrl }
-      });
-    }
-
-    statusEl.innerText = "🔥 Uploaded Successfully";
+    statusEl.innerText = "🔥 Uploaded to " + currentType.toUpperCase();
 
   } catch (err) {
     console.error(err);
