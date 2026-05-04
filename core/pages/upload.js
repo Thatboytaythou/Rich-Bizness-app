@@ -1,8 +1,3 @@
-// =========================
-// RICH BIZNESS — MUSIC UPLOAD SYSTEM
-// /core/pages/upload.js
-// =========================
-
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 
@@ -15,13 +10,25 @@ mountEliteNav({ target: "#elite-platform-nav" });
 
 const form = document.getElementById("upload-form");
 const statusEl = document.getElementById("upload-status");
-const player = document.getElementById("preview-player");
 
+let currentType = "music";
+
+// =========================
+// TYPE SWITCH
+// =========================
+window.setType = (type) => {
+  currentType = type;
+  statusEl.innerText = "Selected: " + type.toUpperCase();
+};
+
+// =========================
+// UPLOAD HANDLER
+// =========================
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   if (!user) {
-    alert("You must be signed in");
+    alert("Sign in first");
     return;
   }
 
@@ -29,85 +36,103 @@ form.addEventListener("submit", async (e) => {
 
   try {
     const title = document.getElementById("title").value;
-    const artist = document.getElementById("artist").value;
-    const genre = document.getElementById("genre").value;
+    const subtitle = document.getElementById("subtitle").value;
+    const category = document.getElementById("category").value;
 
-    const audioFile = document.getElementById("audio").files[0];
-    const coverFile = document.getElementById("cover").files[0];
+    const file = document.getElementById("main-file").files[0];
+    const cover = document.getElementById("cover-file").files[0];
 
-    // =========================
-    // 1. Upload AUDIO
-    // =========================
-
-    const audioPath = `${user.id}/${Date.now()}-${audioFile.name}`;
-
-    const { error: audioError } = await supabase.storage
-      .from("music-files")
-      .upload(audioPath, audioFile);
-
-    if (audioError) throw audioError;
-
-    const { data: audioUrlData } = supabase.storage
-      .from("music-files")
-      .getPublicUrl(audioPath);
-
-    const audioUrl = audioUrlData.publicUrl;
+    const basePath = ${currentType}/${user.id}/${Date.now()};
 
     // =========================
-    // 2. Upload COVER (optional)
+    // UPLOAD MAIN FILE
     // =========================
+    const filePath = ${basePath}-${file.name};
 
+    const { error: fileError } = await supabase.storage
+      .from("uploads")
+      .upload(filePath, file);
+
+    if (fileError) throw fileError;
+
+    const fileUrl = supabase.storage
+      .from("uploads")
+      .getPublicUrl(filePath).data.publicUrl;
+
+    // =========================
+    // UPLOAD COVER
+    // =========================
     let coverUrl = null;
 
-    if (coverFile) {
-      const coverPath = `${user.id}/${Date.now()}-${coverFile.name}`;
+    if (cover) {
+      const coverPath = ${basePath}-cover-${cover.name};
 
-      const { error: coverError } = await supabase.storage
-        .from("music-covers")
-        .upload(coverPath, coverFile);
+      await supabase.storage
+        .from("uploads")
+        .upload(coverPath, cover);
 
-      if (coverError) throw coverError;
-
-      const { data: coverUrlData } = supabase.storage
-        .from("music-covers")
-        .getPublicUrl(coverPath);
-
-      coverUrl = coverUrlData.publicUrl;
+      coverUrl = supabase.storage
+        .from("uploads")
+        .getPublicUrl(coverPath).data.publicUrl;
     }
 
     // =========================
-    // 3. INSERT INTO DATABASE
+    // SAVE BASE RECORD
+    // =========================
+    await supabase.from("uploads").insert({
+      user_id: user.id,
+      type: currentType,
+      title,
+      subtitle,
+      category,
+      file_url: fileUrl,
+      cover_url: coverUrl
+    });
+
+    // =========================
+    // TYPE-SPECIFIC TABLES
     // =========================
 
-    const { error: dbError } = await supabase
-      .from("tracks")
-      .insert({
+    if (currentType === "music") {
+      await supabase.from("tracks").insert({
         creator_id: user.id,
         title,
-        artist_name: artist,
-        genre,
-        audio_url: audioUrl,
-        cover_url: coverUrl,
-        is_explicit: false,
-        is_featured: false,
-        play_count: 0,
-        like_count: 0
+        artist_name: subtitle,
+        genre: category,
+        audio_url: fileUrl,
+        cover_url: coverUrl
       });
+    }
 
-    if (dbError) throw dbError;
+    if (currentType === "gaming") {
+      await supabase.from("gaming_uploads").insert({
+        user_id: user.id,
+        title,
+        file_url: fileUrl
+      });
+    }
 
-    // =========================
-    // 4. SUCCESS
-    // =========================
+    if (currentType === "sports") {
+      await supabase.from("sports_uploads").insert({
+        user_id: user.id,
+        title,
+        file_url: fileUrl
+      });
+    }
 
-    statusEl.innerText = "🔥 Uploaded successfully";
+    if (currentType === "receipt") {
+      await supabase.from("payments").insert({
+        user_id: user.id,
+        type: "manual_receipt",
+        status: "pending",
+        metadata: { file_url: fileUrl }
+      });
+    }
 
-    player.src = audioUrl;
-    player.style.display = "block";
-    player.play();
+    statusEl.innerText = "🔥 Uploaded Successfully";
 
   } catch (err) {
-    console.error("ERROR:", err);
+    console.error(err);
     statusEl.innerText = "❌ " + err.message;
   }
 });
