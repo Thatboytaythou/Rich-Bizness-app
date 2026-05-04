@@ -62,7 +62,7 @@ function renderTracks(tracks) {
           <button class="play-btn">▶️</button>
           <button class="like-btn">❤️ ${track.like_count || 0}</button>
           <button class="repost-btn">🔁</button>
-          <span class="stat"🎧 ${track.play_count || 0}</span>
+          <span class="stat">🎧 ${track.play_count || 0}</span>
         </div>
       </div>
     `;
