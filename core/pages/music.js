@@ -1,5 +1,5 @@
 // =========================
-// RICH BIZNESS — MUSIC PAGE (TURNED UP)
+// RICH BIZNESS — MUSIC PAGE (ELITE PLAYER)
 // =========================
 
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
@@ -14,12 +14,19 @@ mountEliteNav({ target: "#elite-platform-nav" });
 
 const feed = document.getElementById("music-feed");
 
+// PLAYER UI
+const playerBar = document.getElementById("player-bar");
 const playerAudio = document.getElementById("player-audio");
 const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerCover = document.getElementById("player-cover");
 
-let currentTrack = null;
+const playPauseBtn = document.getElementById("player-play");
+const nextBtn = document.getElementById("player-next");
+const prevBtn = document.getElementById("player-prev");
+
+let tracks = [];
+let currentIndex = 0;
 
 // =========================
 // LOAD TRACKS
@@ -37,17 +44,18 @@ async function loadTracks() {
     return;
   }
 
-  renderTracks(data);
+  tracks = data;
+  renderTracks();
 }
 
 // =========================
-// RENDER
+// RENDER TRACKS
 // =========================
 
-function renderTracks(tracks) {
+function renderTracks() {
   feed.innerHTML = "";
 
-  tracks.forEach(track => {
+  tracks.forEach((track, index) => {
     const card = document.createElement("div");
     card.className = "music-card";
 
@@ -61,33 +69,32 @@ function renderTracks(tracks) {
         <div class="music-actions">
           <button class="play-btn">▶️</button>
           <button class="like-btn">❤️ ${track.like_count || 0}</button>
-          <button class="repost-btn">🔁</button>
-          <span class="stat">🎧 ${track.play_count || 0}</span>
+          <span>🎧 ${track.play_count || 0}</span>
         </div>
       </div>
     `;
 
-    // PLAY
-    card.querySelector(".play-btn").onclick = () => {
-      playTrack(track);
+    // PLAY BUTTON
+    card.querySelector(".play-btn").onclick = (e) => {
+      e.stopPropagation();
+      playTrack(index);
     };
 
-    // LIKE
+    // CLICK WHOLE CARD
+    card.onclick = () => playTrack(index);
+
+    // LIKE BUTTON (NO RELOAD)
     card.querySelector(".like-btn").onclick = async (e) => {
       e.stopPropagation();
 
+      const newLikes = (track.like_count || 0) + 1;
+
       await supabase
         .from("tracks")
-        .update({ like_count: (track.like_count || 0) + 1 })
+        .update({ like_count: newLikes })
         .eq("id", track.id);
 
-      loadTracks();
-    };
-
-    // REPOST (simple for now)
-    card.querySelector(".repost-btn").onclick = (e) => {
-      e.stopPropagation();
-      alert("🔁 Reposted (we’ll upgrade this next)");
+      e.target.innerText = `❤️ ${newLikes}`;
     };
 
     feed.appendChild(card);
@@ -98,8 +105,11 @@ function renderTracks(tracks) {
 // PLAY TRACK
 // =========================
 
-async function playTrack(track) {
-  currentTrack = track;
+async function playTrack(index) {
+  const track = tracks[index];
+  currentIndex = index;
+
+  playerBar.style.display = "flex";
 
   playerAudio.src = track.audio_url;
   playerTitle.innerText = track.title;
@@ -108,14 +118,45 @@ async function playTrack(track) {
 
   playerAudio.play();
 
-  // INCREASE PLAY COUNT
+  // UPDATE PLAY COUNT (no reload)
   await supabase
     .from("tracks")
     .update({ play_count: (track.play_count || 0) + 1 })
     .eq("id", track.id);
-
-  loadTracks();
 }
+
+// =========================
+// PLAYER CONTROLS
+// =========================
+
+// PLAY / PAUSE
+playPauseBtn.onclick = () => {
+  if (playerAudio.paused) {
+    playerAudio.play();
+    playPauseBtn.innerText = "⏸";
+  } else {
+    playerAudio.pause();
+    playPauseBtn.innerText = "▶️";
+  }
+};
+
+// NEXT
+nextBtn.onclick = () => {
+  currentIndex = (currentIndex + 1) % tracks.length;
+  playTrack(currentIndex);
+};
+
+// PREV
+prevBtn.onclick = () => {
+  currentIndex =
+    (currentIndex - 1 + tracks.length) % tracks.length;
+  playTrack(currentIndex);
+};
+
+// AUTO NEXT SONG
+playerAudio.onended = () => {
+  nextBtn.click();
+};
 
 // =========================
 // INIT
