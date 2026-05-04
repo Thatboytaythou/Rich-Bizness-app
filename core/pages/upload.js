@@ -1,3 +1,8 @@
+/* =========================
+   RICH BIZNESS — UPLOAD CAPITAL ENGINE (ELITE)
+   /core/pages/upload.js
+========================= */
+
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
 
@@ -8,196 +13,252 @@ const user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
+// =========================
+// STATE
+// =========================
+let uploadType = "music";
+
+// =========================
+// ELEMENTS
+// =========================
 const form = document.getElementById("upload-form");
-const statusEl = document.getElementById("upload-status");
+const statusBox = document.getElementById("upload-status");
 
-let currentType = "music";
+const titleInput = document.getElementById("title");
+const subtitleInput = document.getElementById("subtitle");
+const categoryInput = document.getElementById("category");
 
-// =========================
-// CATEGORY SYSTEM (FULL HUB)
-// =========================
-const TYPE_MAP = {
-  music: {
-    table: "tracks",
-    fileBucket: "uploads",
-    build: (data) => ({
-      creator_id: data.user,
-      title: data.title,
-      artist_name: data.subtitle,
-      genre: data.category,
-      audio_url: data.file,
-      cover_url: data.cover
-    })
-  },
-
-  podcast: {
-    table: "podcast_episodes",
-    fileBucket: "uploads",
-    build: (data) => ({
-      creator_id: data.user,
-      title: data.title,
-      description: data.category,
-      audio_url: data.file,
-      cover_url: data.cover
-    })
-  },
-
-  gaming: {
-    table: "gaming_uploads",
-    fileBucket: "uploads",
-    build: (data) => ({
-      user_id: data.user,
-      title: data.title,
-      file_url: data.file,
-      thumbnail_url: data.cover
-    })
-  },
-
-  sports: {
-    table: "sports_uploads",
-    fileBucket: "uploads",
-    build: (data) => ({
-      user_id: data.user,
-      title: data.title,
-      caption: data.category,
-      file_url: data.file,
-      thumbnail_url: data.cover
-    })
-  },
-
-  art: {
-    table: "artworks",
-    fileBucket: "uploads",
-    build: (data) => ({
-      user_id: data.user,
-      title: data.title,
-      image_url: data.file,
-      description: data.category
-    })
-  },
-
-  metaverse: {
-    table: "metaverse_assets",
-    fileBucket: "uploads",
-    build: (data) => ({
-      user_id: data.user,
-      title: data.title,
-      asset_url: data.file,
-      type: data.category
-    })
-  },
-
-  receipt: {
-    table: "payments",
-    fileBucket: "uploads",
-    build: (data) => ({
-      user_id: data.user,
-      type: "receipt_upload",
-      status: "pending",
-      metadata: {
-        file_url: data.file,
-        note: data.title
-      }
-    })
-  }
-};
+const mainFileInput = document.getElementById("main-file");
+const coverFileInput = document.getElementById("cover-file");
 
 // =========================
-// TYPE SWITCH
+// SET TYPE (HUB SWITCH)
 // =========================
 window.setType = (type) => {
-  currentType = type;
-  statusEl.innerText = "Mode: " + type.toUpperCase();
+  uploadType = type;
+  statusBox.innerText = Selected: ${type.toUpperCase()};
 };
 
 // =========================
-// UPLOAD FLOW
+// STORAGE UPLOAD
 // =========================
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+async function uploadToStorage(file, folder = "uploads") {
+  const fileName = ${Date.now()}_${file.name};
 
-  if (!user) {
-    alert("Sign in first");
-    return;
+  const { error } = await supabase.storage
+    .from("uploads")
+    .upload(${folder}/${fileName}, file);
+
+  if (error) throw error;
+
+  const { data } = supabase.storage
+    .from("uploads")
+    .getPublicUrl(${folder}/${fileName});
+
+  return data.publicUrl;
+}
+
+// =========================
+// CREATE MONETIZATION
+// =========================
+async function createMonetization({ title, creatorId, priceCents, contentId }) {
+
+  // 1. PRODUCT
+  const { data: product } = await supabase
+    .from("products")
+    .insert([{
+      name: title,
+      price_cents: priceCents,
+      creator_id: creatorId,
+      created_at: new Date().toISOString()
+    }])
+    .select()
+    .single();
+
+  // 2. PREMIUM CONTENT
+  await supabase.from("premium_content").insert([{
+    creator_id: creatorId,
+    content_type: uploadType,
+    content_id: contentId,
+    title,
+    price_cents: priceCents,
+    is_active: true
+  }]);
+
+  return product;
+}
+
+// =========================
+// ROUTE INSERTS
+// =========================
+async function insertByType(payload) {
+
+  if (uploadType === "music") {
+    return await supabase.from("tracks").insert([payload]).select().single();
   }
 
-  statusEl.innerText = "Uploading...";
+  if (uploadType === "podcast") {
+    return await supabase.from("podcast_episodes").insert([payload]).select().single();
+  }
+
+  if (uploadType === "gaming") {
+    return await supabase.from("gaming_uploads").insert([payload]).select().single();
+  }
+
+  if (uploadType === "sports") {
+    return await supabase.from("sports_uploads").insert([payload]).select().single();
+  }
+
+  if (uploadType === "art") {
+    return await supabase.from("artworks").insert([payload]).select().single();
+  }
+
+  if (uploadType === "metaverse") {
+    return await supabase.from("uploads").insert([payload]).select().single();
+  }
+
+  if (uploadType === "receipt") {
+    return await supabase.from("payments").insert([payload]).select().single();
+  }
+}
+
+// =========================
+// MAIN SUBMIT
+// =========================
+form.onsubmit = async (e) => {
+  e.preventDefault();
 
   try {
-    const title = document.getElementById("title").value;
-    const subtitle = document.getElementById("subtitle").value;
-    const category = document.getElementById("category").value;
+    if (!user) {
+      alert("You must be signed in");
+      return;
+    }
 
-    const file = document.getElementById("main-file").files[0];
-    const cover = document.getElementById("cover-file").files[0];
+    statusBox.innerText = "Uploading...";
 
-    const config = TYPE_MAP[currentType];
+    const title = titleInput.value;
+    const subtitle = subtitleInput.value;
+    const category = categoryInput.value;
 
-    if (!config) throw new Error("Invalid upload type");
-
-    // =========================
-    // FILE UPLOAD
-    // =========================
-    const path = ${currentType}/${user.id}/${Date.now()}-${file.name};
-
-    const { error: uploadError } = await supabase.storage
-      .from(config.fileBucket)
-      .upload(path, file);
-
-    if (uploadError) throw uploadError;
-
-    const fileUrl = supabase.storage
-      .from(config.fileBucket)
-      .getPublicUrl(path).data.publicUrl;
+    const mainFile = mainFileInput.files[0];
+    const coverFile = coverFileInput.files[0];
 
     // =========================
-    // COVER
+    // UPLOAD FILES
     // =========================
+    const fileUrl = await uploadToStorage(mainFile, uploadType);
+
     let coverUrl = null;
-
-    if (cover) {
-      const coverPath = ${currentType}/${user.id}/cover-${Date.now()}-${cover.name};
-
-      await supabase.storage
-        .from(config.fileBucket)
-        .upload(coverPath, cover);
-
-      coverUrl = supabase.storage
-        .from(config.fileBucket)
-        .getPublicUrl(coverPath).data.publicUrl;
+    if (coverFile) {
+      coverUrl = await uploadToStorage(coverFile, ${uploadType}/covers);
     }
 
     // =========================
-    // UNIVERSAL LOG
+    // BASE PAYLOAD
     // =========================
-    await supabase.from("uploads").insert({
-      user_id: user.id,
-      type: currentType,
+    const basePayload = {
       title,
-      subtitle,
-      category,
-      file_url: fileUrl,
-      cover_url: coverUrl
+      creator_id: user.id,
+      created_at: new Date().toISOString()
+    };
+
+    // =========================
+    // TYPE CUSTOMIZATION
+    // =========================
+    let payload = {};
+
+    if (uploadType === "music") {
+      payload = {
+        ...basePayload,
+        artist_name: subtitle,
+        genre: category,
+        audio_url: fileUrl,
+        cover_url: coverUrl,
+        play_count: 0,
+        like_count: 0
+      };
+    }
+
+    if (uploadType === "sports") {
+      payload = {
+        ...basePayload,
+        caption: subtitle,
+        sport_name: category,
+        file_url: fileUrl,
+        thumbnail_url: coverUrl
+      };
+    }
+
+    if (uploadType === "gaming") {
+      payload = {
+        ...basePayload,
+        game: category,
+        file_url: fileUrl
+      };
+    }
+
+    if (uploadType === "podcast") {
+      payload = {
+        ...basePayload,
+        description: subtitle,
+        audio_url: fileUrl,
+        cover_url: coverUrl
+      };
+    }
+
+    if (uploadType === "art") {
+      payload = {
+        ...basePayload,
+        image_url: fileUrl,
+        description: subtitle
+      };
+    }
+
+    if (uploadType === "metaverse") {
+      payload = {
+        ...basePayload,
+        file_url: fileUrl,
+        type: category
+      };
+    }
+
+    if (uploadType === "receipt") {
+      payload = {
+        user_id: user.id,
+        amount: 0,
+        type: "receipt",
+        status: "uploaded",
+        metadata: {
+          file_url: fileUrl
+        }
+      };
+    }
+
+    // =========================
+    // INSERT
+    // =========================
+    const { data, error } = await insertByType(payload);
+
+    if (error) throw error;
+
+    // =========================
+    // AUTO MONETIZATION 💰
+    // =========================
+    const priceCents = 199; // default $1.99
+
+    await createMonetization({
+      title,
+      creatorId: user.id,
+      priceCents,
+      contentId: data.id
     });
 
-    // =========================
-    // FEATURE TABLE INSERT
-    // =========================
-    const payload = config.build({
-      user: user.id,
-      title,
-      subtitle,
-      category,
-      file: fileUrl,
-      cover: coverUrl
-    });
+    statusBox.innerText = "🔥 Upload Complete + Monetized";
 
-    await supabase.from(config.table).insert(payload);
-
-    statusEl.innerText = "🔥 Uploaded to " + currentType.toUpperCase();
+    form.reset();
 
   } catch (err) {
     console.error(err);
-    statusEl.innerText = "❌ " + err.message;
+    statusBox.innerText = "❌ Upload failed";
   }
-});
+};
