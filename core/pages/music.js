@@ -1,7 +1,7 @@
-// =========================
-// RICH BIZNESS — ELITE MUSIC ENGINE (FINAL FINAL)
-// /core/pages/music.js
-// =========================
+/* =========================
+   RICH BIZNESS — ELITE MUSIC ENGINE (MAX POWER)
+   /core/pages/music.js
+========================= /
 
 import { initApp, getSupabase, getCurrentUserState } from "/core/app.js";
 import { mountEliteNav } from "/core/nav.js";
@@ -13,23 +13,27 @@ let user = getCurrentUserState();
 
 mountEliteNav({ target: "#elite-platform-nav" });
 
+// =========================
+// ELEMENTS
+// =========================
 const feed = document.getElementById("music-feed");
 
-// PLAYER
 const playerBar = document.getElementById("player-bar");
 const playerAudio = document.getElementById("player-audio");
 const playerTitle = document.getElementById("player-title");
 const playerArtist = document.getElementById("player-artist");
 const playerCover = document.getElementById("player-cover");
 
+// =========================
+// STATE
+// =========================
 let tracks = [];
 let unlockedMap = {};
 
 // =========================
-// LOAD EVERYTHING
+// INIT LOAD
 // =========================
-
-async function loadAll() {
+async function boot() {
   await refreshUser();
   await loadTracks();
   await loadUnlocks();
@@ -37,22 +41,20 @@ async function loadAll() {
 }
 
 // =========================
-// ALWAYS REFRESH USER
+// USER
 // =========================
-
 async function refreshUser() {
   const { data } = await supabase.auth.getUser();
   user = data?.user || null;
 }
 
 // =========================
-// LOAD TRACKS
+// TRACK LOAD (FIXED JOIN)
 // =========================
-
 async function loadTracks() {
   const { data, error } = await supabase
     .from("tracks")
-    .select("*")
+    .select(      *,       products (         id,         price_cents       )    )
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -61,13 +63,16 @@ async function loadTracks() {
     return;
   }
 
-  tracks = data || [];
+  tracks = (data || []).map(t => ({
+    ...t,
+    product_id: t.product_id || t.products?.id || null,
+    price_cents: t.price_cents || t.products?.price_cents || 199
+  }));
 }
 
 // =========================
-// LOAD UNLOCKS (FIXED)
+// UNLOCK LOAD
 // =========================
-
 async function loadUnlocks() {
   unlockedMap = {};
 
@@ -75,25 +80,22 @@ async function loadUnlocks() {
 
   const { data, error } = await supabase
     .from("user_product_unlocks")
-    .select("*")
+    .select("product_id")
     .eq("user_id", user.id);
 
   if (error) {
-    console.error("UNLOCK LOAD ERROR:", error);
+    console.error("UNLOCK ERROR:", error);
     return;
   }
 
   (data || []).forEach(u => {
-    if (u.product_id) {
-      unlockedMap[u.product_id] = true;
-    }
+    unlockedMap[u.product_id] = true;
   });
 }
 
 // =========================
-// RENDER (UPGRADED UI)
+// RENDER (ELITE)
 // =========================
-
 function render() {
   feed.innerHTML = "";
 
@@ -103,50 +105,23 @@ function render() {
     const el = document.createElement("div");
     el.className = "rb-track-card";
 
-    el.innerHTML = `
-      <div class="rb-cover-wrap">
-        <img src="${t.cover_url || ''}" class="rb-cover"/>
-
-        ${
-          !unlocked
-            ? `
+    el.innerHTML =       <div class="rb-cover-wrap">         <img src="${t.cover_url || "/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png"}" class="rb-cover"/>          ${           !unlocked             ?
           <div class="rb-lock-overlay">
             🔒
-            <span>$${((t.price_cents || 199) / 100).toFixed(2)}</span>
+            <span>$${(t.price_cents / 100).toFixed(2)}</span>
           </div>
-        `
-            : ""
-        }
-      </div>
+                    :<div class="rb-play-overlay">▶</div>        }       </div>        <div class="rb-track-info">         <h3>${t.title}</h3>         <p>${t.artist_name || "Unknown Artist"}</p>          <div class="rb-actions">           ${             unlocked               ?<button class="rb-play">▶ Play</button>              :<button class="rb-unlock">Unlock</button>          }            <div class="rb-stats">             ❤️ ${t.like_count || 0}             🎧 ${t.play_count || 0}           </div>         </div>       </div>    ;
 
-      <div class="rb-track-info">
-        <h3>${t.title}</h3>
-        <p>${t.artist_name}</p>
-
-        <div class="rb-actions">
-          ${
-            unlocked
-              ? `<button class="rb-play">▶ Play</button>`
-              : `<button class="rb-unlock">Unlock</button>`
-          }
-
-          <div class="rb-stats">
-            ❤️ ${t.like_count || 0}
-            🎧 ${t.play_count || 0}
-          </div>
-        </div>
-      </div>
-    `;
-
-    // PLAY
+    // =========================
+    // EVENTS
+    // =========================
     if (unlocked) {
       el.querySelector(".rb-play").onclick = () => play(i);
+      el.querySelector(".rb-cover-wrap").onclick = () => play(i);
     }
 
-    // UNLOCK
     if (!unlocked) {
-      el.querySelector(".rb-unlock").onclick = () =>
-        startCheckout(t);
+      el.querySelector(".rb-unlock").onclick = () => startCheckout(t);
     }
 
     feed.appendChild(el);
@@ -154,35 +129,51 @@ function render() {
 }
 
 // =========================
-// PLAY
+// PLAY (FIXED HARD)
 // =========================
-
 async function play(i) {
   const t = tracks[i];
 
+  if (!t.audio_url) {
+    alert("No audio file");
+    return;
+  }
+
   playerBar.style.display = "flex";
 
+  playerAudio.pause();
   playerAudio.src = t.audio_url;
+  playerAudio.load();
+
   playerTitle.innerText = t.title;
   playerArtist.innerText = t.artist_name;
   playerCover.src = t.cover_url || "";
 
-  playerAudio.play();
+  try {
+    await playerAudio.play();
+  } catch (err) {
+    console.error("PLAY ERROR:", err);
+  }
 
-  // increment play count (safe)
-  await supabase
+  // increment play count safely
+  supabase
     .from("tracks")
     .update({ play_count: (t.play_count || 0) + 1 })
-    .eq("id", t.id);
+    .eq("id", t.id)
+    .then(() => {});
 }
 
 // =========================
-// STRIPE CHECKOUT (FIXED)
+// CHECKOUT (LOCK FIX)
 // =========================
-
 async function startCheckout(track) {
   if (!user) {
     alert("Sign in first");
+    return;
+  }
+
+  if (!track.product_id) {
+    alert("Track not linked to product");
     return;
   }
 
@@ -198,7 +189,7 @@ async function startCheckout(track) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+      Authorization: Bearer ${token}
     },
     body: JSON.stringify({
       mode: "music_unlock",
@@ -220,18 +211,14 @@ async function startCheckout(track) {
 }
 
 // =========================
-// PAYMENT RETURN HANDLER (FIXED)
+// PAYMENT RETURN
 // =========================
-
 async function handleReturn() {
   const params = new URLSearchParams(window.location.search);
   const sessionId = params.get("session_id");
 
   if (!sessionId) return;
 
-  console.log("Payment return detected");
-
-  // give webhook time to write unlock
   setTimeout(async () => {
     await loadUnlocks();
     render();
@@ -239,8 +226,17 @@ async function handleReturn() {
 }
 
 // =========================
-// INIT
+// REALTIME SYNC (NEW)
 // =========================
+supabase
+  .channel("music-live")
+  .on("postgres_changes", { event: "", schema: "public", table: "tracks" }, () => {
+    loadTracks().then(render);
+  })
+  .subscribe();
 
-await loadAll();
+// =========================
+// START
+// =========================
+await boot();
 handleReturn();
