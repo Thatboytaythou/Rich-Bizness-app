@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix</title>
+<title>Rich Bizness Omnitrix — Cinematic</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -19,7 +19,7 @@ html,body{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.25), transparent 60%),
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.3), transparent 60%),
     #000;
 }
 
@@ -50,8 +50,8 @@ html,body{
   border-radius:50%;
   background:#001;
   box-shadow:
-    0 0 60px #00ffcc,
-    inset 0 0 30px #00ffcc;
+    0 0 80px #00ffcc,
+    inset 0 0 40px #00ffcc;
   pointer-events:none;
 }
 
@@ -59,7 +59,6 @@ html,body{
 .wheel{
   position:absolute;
   inset:20%;
-  transition:transform 0.05s linear;
 }
 
 /* 🧿 ICONS */
@@ -70,13 +69,12 @@ html,body{
   transform-origin:0 0;
   font-size:28px;
   cursor:pointer;
-  z-index:5;
-  transition:0.2s;
+  transition:.2s;
 }
 
 .seg.active{
-  transform:scale(1.7);
-  filter:drop-shadow(0 0 20px #00ffcc);
+  transform:scale(1.8);
+  filter:drop-shadow(0 0 25px #00ffcc);
 }
 
 /* 🧑 CORE */
@@ -89,11 +87,11 @@ html,body{
   align-items:center;
   justify-content:center;
   box-shadow:
-    0 0 50px #00ffcc,
-    inset 0 0 30px #00ffcc;
+    0 0 60px #00ffcc,
+    inset 0 0 40px #00ffcc;
   overflow:hidden;
   pointer-events:none;
-  transition:0.2s;
+  transition:.2s;
 }
 
 .avatar{
@@ -109,7 +107,7 @@ html,body{
   width:100%;
   text-align:center;
   color:#00ffcc;
-  font-size:18px;
+  font-size:20px;
 }
 
 /* 🌌 PORTAL */
@@ -124,8 +122,35 @@ html,body{
 }
 
 .portal.open{
-  transform:scale(3);
+  transform:scale(4);
   border-radius:0;
+}
+
+/* ⚡ FLASH */
+.flash{
+  position:fixed;
+  inset:0;
+  background:#00ffcc;
+  opacity:0;
+  z-index:998;
+}
+
+.flash.active{
+  animation:flashAnim .3s;
+}
+
+@keyframes flashAnim{
+  0%{opacity:0}
+  50%{opacity:0.5}
+  100%{opacity:0}
+}
+
+/* 🧿 CORE BURST */
+.core.burst{
+  transform:scale(1.4);
+  box-shadow:
+    0 0 120px #00ffcc,
+    inset 0 0 60px #00ffcc;
 }
 </style>
 </head>
@@ -133,6 +158,7 @@ html,body{
 <body>
 
 <div class="bg"></div>
+<div class="flash" id="flash"></div>
 
 <div class="stage">
   <div class="omni">
@@ -171,10 +197,11 @@ const WORLDS=[
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
 const core=document.getElementById("core");
+const flash=document.getElementById("flash");
 
 const step=(Math.PI*2)/WORLDS.length;
 
-/* 🔧 BUILD */
+/* BUILD */
 WORLDS.forEach((w,i)=>{
   const el=document.createElement("div");
   el.className="seg";
@@ -185,53 +212,46 @@ WORLDS.forEach((w,i)=>{
 
   el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
 
-  el.onclick=()=>{
-    triggerPortal(w.u);
-  };
+  el.onclick=()=>triggerPortal(w);
 
   wheel.appendChild(el);
 });
 
-/* 🌀 REAL PHYSICS */
-let rot=0;
-let vel=0;
-let drag=false;
-let lastX=0;
+/* REAL SPIN */
+let rot=0,vel=0,drag=false,lastX=0;
 
 function loop(){
   if(!drag){
-    rot += vel;
-    vel *= 0.94;
+    rot+=vel;
+    vel*=0.94;
 
     if(Math.abs(vel)<0.002){
-      let snap = Math.round(rot/step)*step;
-      rot += (snap - rot)*0.12;
+      let snap=Math.round(rot/step)*step;
+      rot+=(snap-rot)*0.12;
     }
   }
 
   wheel.style.transform=`rotate(${rot}rad)`;
-
   updateActive();
   requestAnimationFrame(loop);
 }
 loop();
 
-/* 🧲 ACTIVE SLOT */
+/* ACTIVE */
 function updateActive(){
   let i=Math.round(rot/step)%WORLDS.length;
   if(i<0)i+=WORLDS.length;
 
   document.querySelectorAll(".seg").forEach((s,idx)=>{
-    s.classList.toggle("active", idx===i);
+    s.classList.toggle("active",idx===i);
   });
 
   label.innerText=WORLDS[i].n;
 
-  /* CORE ENERGY PULSE */
-  core.style.transform = `scale(${1 + Math.sin(Date.now()/200)*0.03})`;
+  core.style.transform=`scale(${1 + Math.sin(Date.now()/200)*0.04})`;
 }
 
-/* 🖐 DRAG CONTROL */
+/* DRAG */
 document.addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
@@ -239,22 +259,21 @@ document.addEventListener("pointerdown",e=>{
 
 document.addEventListener("pointermove",e=>{
   if(!drag)return;
-
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-
-  let force = dx/180;
-
-  rot += force;
-  vel = force;
+  let f=dx/180;
+  rot+=f;
+  vel=f;
 });
 
-document.addEventListener("pointerup",()=>{
-  drag=false;
-});
+document.addEventListener("pointerup",()=>drag=false);
 
-/* 🚀 PORTAL */
-function triggerPortal(url){
+/* PORTAL */
+function triggerPortal(w){
+
+  core.classList.add("burst");
+  flash.classList.add("active");
+
   const portal=document.createElement("div");
   portal.className="portal";
   document.body.appendChild(portal);
@@ -262,18 +281,17 @@ function triggerPortal(url){
   requestAnimationFrame(()=>portal.classList.add("open"));
 
   setTimeout(()=>{
-    location.href=url;
+    location.href=w.u;
   },600);
 }
 
-/* 🧿 LOAD AVATAR */
+/* AVATAR */
 (async()=>{
-  const avatar = await getAvatar();
+  const avatar=await getAvatar();
   if(avatar){
-    document.getElementById("avatar-img").src = avatar;
+    document.getElementById("avatar-img").src=avatar;
   }
 })();
-
 </script>
 
 </body>
