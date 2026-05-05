@@ -1,37 +1,26 @@
 // =========================
-// RICH BIZNESS UPLOAD UI — FULL (FIXED + SAFE MOUNT)
+// RICH BIZNESS UPLOAD — GOD MODE (PORTAL SYSTEM)
 // =========================
 
 import { runUploadFlow } from "./upload-state.js";
 
-export function mountUploadUI(targetId = "upload-root") {
-  // 🔥 SAFE ROOT (NO MORE BLANK SCREEN)
-  let root = document.getElementById(targetId);
-  if (!root) {
-    console.warn("UPLOAD ROOT NOT FOUND — USING BODY");
-    root = document.body;
-  }
+export function mountUploadUI(targetId = "upload-stage") {
+  const root = document.getElementById(targetId);
+  if (!root) return;
 
   root.innerHTML = `
-    <div class="upload-shell" style="
-      min-height:100vh;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:20px;
-      padding:20px;
-    ">
+    <div class="upload-god">
 
-      <h1 class="upload-title">RUN IT UP 🚀</h1>
+      <h1 class="god-title">RUN IT UP 🚀</h1>
 
       <input type="file" id="upload-input" hidden />
 
-      <button id="upload-trigger" class="upload-btn">
-        Tap to Load
-      </button>
+      <!-- 🔥 PORTAL -->
+      <div class="portal" id="portal">
+        <div class="portal-core"></div>
+      </div>
 
-      <select id="upload-type">
+      <select id="upload-type" class="god-select">
         <option value="general">General</option>
         <option value="music">Music</option>
         <option value="gaming">Gaming</option>
@@ -39,84 +28,83 @@ export function mountUploadUI(targetId = "upload-root") {
         <option value="gallery">Gallery</option>
       </select>
 
-      <div id="upload-preview"></div>
+      <div id="upload-preview" class="preview-zone"></div>
 
-      <button id="run-upload" class="upload-btn">
-        RUN IT UP 📈
+      <button id="ignite" class="ignite-btn">
+        IGNITE 🚀
       </button>
 
-      <div id="upload-status">Ready to load</div>
+      <div id="upload-status">System ready</div>
 
     </div>
   `;
 
-  bindUploadUI();
+  bindGodMode();
 }
 
 // =========================
 // INTERACTION
 // =========================
 
-function bindUploadUI() {
+function bindGodMode() {
   const input = document.getElementById("upload-input");
-  const trigger = document.getElementById("upload-trigger");
+  const portal = document.getElementById("portal");
   const preview = document.getElementById("upload-preview");
-  const runBtn = document.getElementById("run-upload");
-  const typeSelect = document.getElementById("upload-type");
+  const ignite = document.getElementById("ignite");
+  const type = document.getElementById("upload-type");
+  const status = document.getElementById("upload-status");
 
   let file = null;
 
-  // OPEN FILE PICKER
-  trigger.addEventListener("click", () => input.click());
+  // 🔥 OPEN PORTAL
+  portal.addEventListener("click", () => {
+    portal.classList.add("open");
+    document.body.classList.add("energy");
+    input.click();
+  });
 
-  // FILE SELECT
+  // 🔥 FILE SELECT
   input.addEventListener("change", () => {
     file = input.files[0];
     if (!file) return;
 
     preview.innerHTML = "";
+    preview.classList.add("active");
 
     if (file.type.startsWith("image")) {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
-      img.style.maxWidth = "250px";
-      img.style.borderRadius = "12px";
       preview.appendChild(img);
     }
 
     if (file.type.startsWith("video")) {
-      const video = document.createElement("video");
-      video.src = URL.createObjectURL(file);
-      video.controls = true;
-      video.style.maxWidth = "250px";
-      video.style.borderRadius = "12px";
-      preview.appendChild(video);
+      const vid = document.createElement("video");
+      vid.src = URL.createObjectURL(file);
+      vid.controls = true;
+      preview.appendChild(vid);
     }
+
+    status.innerText = "Energy loaded ⚡";
   });
 
-  // RUN UPLOAD
-  runBtn.addEventListener("click", async () => {
+  // 🔥 IGNITE
+  ignite.addEventListener("click", async () => {
     if (!file) {
-      document.getElementById("upload-status").innerText = "Select a file first";
+      status.innerText = "No file";
       return;
     }
 
+    document.body.classList.add("warp");
+
     await runUploadFlow({
       file,
-      type: typeSelect.value,
+      type: type.value,
       previewEl: preview,
-      statusEl: document.getElementById("upload-status"),
-      orbEl: null
+      statusEl: status,
+      orbEl: portal
     });
-  });
-}
 
-// =========================
-// AUTO MOUNT (NO TIMING BUGS)
-// =========================
-
-if (typeof window !== "undefined") {
-  window.addEventListener("DOMContentLoaded", () => {
-    mountUploadUI();
+    document.body.classList.remove("warp");
+    status.innerText = "Upload complete 🔥";
   });
 }
