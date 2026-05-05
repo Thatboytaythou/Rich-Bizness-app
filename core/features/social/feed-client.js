@@ -1,13 +1,14 @@
 // =========================
-// RICH BIZNESS FEED CLIENT — FILTERED (BOOK SYSTEM)
+// RICH BIZNESS FEED CLIENT — PERSONALIZED + FALLBACK
 // =========================
 
 import { supabase } from "/core/supabase.js";
 
+// 🔥 MAIN FEED LOADER
 export async function loadFeed({
   targetId = "feed-root",
-  type = null,
   userId = null,
+  type = null,
   limit = 20
 } = {}) {
   const container = document.getElementById(targetId);
@@ -15,36 +16,74 @@ export async function loadFeed({
 
   container.innerHTML = "Loading...";
 
-  let query = supabase
-    .from("posts")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  try {
+    let posts = [];
 
-  // 🔥 FILTER BY TYPE (music, gaming, etc)
-  if (type) {
-    query = query.eq("content_type", type);
-  }
+    // =========================
+    // 🔥 PERSONALIZED FEED (FOLLOWING)
+    // =========================
+    if (userId) {
+      const { data: following } = await supabase
+        .from("followers")
+        .select("following_id")
+        .eq("follower_id", userId);
 
-  // 🔥 FILTER BY USER (profile page)
-  if (userId) {
-    query = query.eq("user_id", userId);
-  }
+      const followingIds = following?.map(f => f.following_id) || [];
 
-  const { data, error } = await query;
+      if (followingIds.length > 0) {
+        let query = supabase
+          .from("posts")
+          .select("*")
+          .in("user_id", followingIds)
+          .order("created_at", { ascending: false })
+          .limit(limit);
 
-  if (error) {
+        if (type) {
+          query = query.eq("content_type", type);
+        }
+
+        const { data } = await query;
+        posts = data || [];
+      }
+    }
+
+    // =========================
+    // 🔥 FALLBACK (GLOBAL)
+    // =========================
+    if (!posts.length) {
+      let fallbackQuery = supabase
+        .from("posts")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (type) {
+        fallbackQuery = fallbackQuery.eq("content_type", type);
+      }
+
+      const { data } = await fallbackQuery;
+      posts = data || [];
+    }
+
+    // =========================
+    // 🔥 RENDER
+    // =========================
+    if (!posts.length) {
+      container.innerHTML = "No content yet";
+      return;
+    }
+
+    container.innerHTML = posts.map(renderPost).join("");
+
+  } catch (err) {
+    console.error("feed error:", err);
     container.innerHTML = "Error loading feed";
-    return;
   }
-
-  if (!data.length) {
-    container.innerHTML = "Nothing here yet";
-    return;
-  }
-
-  container.innerHTML = data.map(renderPost).join("");
 }
+
+// =========================
+// 🔥 POST UI
+// =========================
 
 function renderPost(post) {
   return `
@@ -66,7 +105,7 @@ function renderPost(post) {
 function renderMedia(url) {
   if (!url) return "";
 
-  if (url.includes(".mp4")) {
+  if (url.endsWith(".mp4")) {
     return `<video src="${url}" controls></video>`;
   }
 
