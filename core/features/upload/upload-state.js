@@ -1,10 +1,12 @@
 // =========================
-// RICH BIZNESS UPLOAD STATE — RUN IT UP FLOW
+// RICH BIZNESS UPLOAD STATE — FINAL LOCKED
 // /core/features/upload/upload-state.js
 // =========================
 
+import { supabase } from "/core/supabase.js";
 import { playUploadEffects } from "./upload-effects.js";
 import { sendUploadToServer } from "./upload-api.js";
+import { distributeContent } from "/core/features/social/content-distributor.js";
 
 // =========================
 // MAIN FLOW
@@ -20,28 +22,50 @@ export async function runUploadFlow({
 
   try {
     // =========================
-    // STEP 1 — PREP UI
+    // STEP 1 — PREP
     // =========================
     setStatus(statusEl, "Charging up... ⚡");
 
     // =========================
-    // STEP 2 — VISUAL EFFECT (SMOKE + ORB)
+    // STEP 2 — EFFECTS
     // =========================
     await playUploadEffects(orbEl);
 
     // =========================
-    // STEP 3 — UPLOAD
+    // STEP 3 — AUTH CHECK
     // =========================
-    setStatus(statusEl, "Running it up... 📈");
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
 
-    const result = await sendUploadToServer(file);
-
-    if (!result.success) {
-      throw new Error(result.error || "Upload failed");
+    if (!user) {
+      throw new Error("You must be logged in");
     }
 
     // =========================
-    // STEP 4 — SUCCESS
+    // STEP 4 — UPLOAD FILE
+    // =========================
+    setStatus(statusEl, "Running it up... 📈");
+
+    const uploadResult = await sendUploadToServer(file);
+
+    if (!uploadResult.success) {
+      throw new Error(uploadResult.error || "Upload failed");
+    }
+
+    // =========================
+    // STEP 5 — DISTRIBUTE CONTENT (CORE SYSTEM)
+    // =========================
+    await distributeContent({
+      type: "general", // we upgrade later (music/gaming/etc)
+      userId: user.id,
+      title: file.name,
+      description: "",
+      fileUrl: uploadResult.url
+    });
+
+    // =========================
+    // STEP 6 — SUCCESS
     // =========================
     setStatus(statusEl, "🔥 LIVE IN THE BIZNESS");
 
@@ -49,7 +73,7 @@ export async function runUploadFlow({
 
   } catch (err) {
     console.error(err);
-    setStatus(statusEl, "❌ Something went wrong");
+    setStatus(statusEl, "❌ Upload failed");
   }
 }
 
