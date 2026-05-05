@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Portal Core</title>
+<title>Rich Bizness — Avatar Entry</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,116 +11,97 @@ html,body{
   font-family:system-ui;
 }
 
-/* 🌌 BACKGROUND */
+/* BACKGROUND */
 .bg{
   position:fixed;inset:0;
   background:
     radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
-  filter:brightness(.9);
 }
 
-/* 🎯 STAGE */
+/* STAGE */
 .stage{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
   perspective:1400px;
 }
 
-/* 🧿 DEVICE */
 .omni{
   width:92vw;max-width:460px;aspect-ratio:1;
   position:relative;
-  transform-style:preserve-3d;
-  transition:.2s;
 }
 
-/* 🔩 OUTER */
+/* RING */
 .outer{
   position:absolute;inset:0;border-radius:50%;
   background:#001;
   box-shadow:0 0 120px #00ffcc;
 }
 
-/* ⚙️ WHEEL */
 .wheel{
   position:absolute;inset:0;
 }
 
-/* 🧿 SEGMENTS */
 .seg{
   position:absolute;
   left:50%;top:50%;
   translate:-50% -50%;
   font-size:30px;
-  transition:.2s;
   opacity:.6;
+  transition:.2s;
 }
 
 .seg.active{
-  scale:1.9;
+  scale:1.8;
   opacity:1;
   filter:drop-shadow(0 0 20px #00ffcc);
 }
 
-/* 🧿 CORE */
+.seg.meta.active{
+  scale:2.5;
+  filter:drop-shadow(0 0 50px #00ffff);
+}
+
+/* CORE */
 .core{
   position:absolute;inset:30%;
   border-radius:50%;
   background:#000;
+  box-shadow:0 0 60px #00ffcc;
   display:flex;align-items:center;justify-content:center;
-  box-shadow:
-    0 0 60px #00ffcc,
-    inset 0 0 30px #00ffcc;
+  overflow:hidden;
   cursor:pointer;
-  transition:.2s;
 }
 
-.core:active{
-  scale:.9;
+.avatar{
+  width:100%;height:100%;object-fit:cover;
+  transition:.6s ease;
 }
 
-/* 🏷 LABEL */
-.label{
-  position:absolute;
-  bottom:-60px;
-  width:100%;
-  text-align:center;
-  color:#00ffcc;
-  font-size:20px;
+/* FLOAT AVATAR */
+.avatar.fly{
+  position:fixed;
+  z-index:1000;
+  width:80px;height:80px;
+  border-radius:50%;
+  transition:1s ease;
 }
 
-/* 🌌 PORTAL EXPANSION */
+/* PORTAL */
 .portal{
   position:fixed;
-  inset:0;
-  background:radial-gradient(circle,#00ffcc,#000);
-  transform:scale(0);
+  width:20px;height:20px;
   border-radius:50%;
+  background:radial-gradient(circle,#00ffff,#000);
+  transform:scale(0);
   z-index:999;
   transition:.7s ease;
 }
 
-/* 🚀 WORLD ENTRY */
-.portal.enter{
-  transform:scale(8);
+.portal.expand{
+  transform:scale(80);
   border-radius:0;
-  filter:blur(20px);
-}
-
-/* 🔥 LIGHT BURST */
-.flash{
-  position:fixed;
-  inset:0;
-  background:#00ffcc;
-  opacity:0;
-  z-index:998;
-  transition:.2s;
-}
-
-.flash.show{
-  opacity:.8;
 }
 </style>
 </head>
@@ -130,20 +111,17 @@ html,body{
 <div class="bg"></div>
 
 <div class="stage">
-  <div class="omni" id="omni">
+  <div class="omni">
 
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <div class="core" id="core"></div>
-
-    <div class="label" id="label">LIVE</div>
+    <div class="core" id="core">
+      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+    </div>
 
   </div>
 </div>
-
-<div class="portal" id="portal"></div>
-<div class="flash" id="flash"></div>
 
 <script>
 
@@ -162,25 +140,26 @@ const WORLDS=[
 ];
 
 const wheel=document.getElementById("wheel");
-const core=document.getElementById("core");
-const label=document.getElementById("label");
-const omni=document.getElementById("omni");
-const portal=document.getElementById("portal");
-const flash=document.getElementById("flash");
+const avatar=document.getElementById("avatar");
+
+let metaEl=null;
 
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
-/* 🔧 BUILD */
+/* BUILD */
 function build(){
-  wheel.innerHTML="";
-  const size=Math.min(innerWidth,innerHeight);
-  const r=size*0.33;
+  const r=Math.min(innerWidth,innerHeight)*0.33;
 
   WORLDS.forEach((w,i)=>{
     const el=document.createElement("div");
     el.className="seg";
     el.innerText=w.e;
+
+    if(w.n==="META"){
+      el.classList.add("meta");
+      metaEl=el;
+    }
 
     const a=i*step-Math.PI/2;
     const x=Math.cos(a)*r;
@@ -194,7 +173,7 @@ function build(){
 }
 build();
 
-/* 🔁 UPDATE */
+/* UPDATE */
 function update(){
   wheel.style.transform=`rotate(${rot}rad)`;
 
@@ -202,28 +181,18 @@ function update(){
   if(i<0)i+=WORLDS.length;
 
   document.querySelectorAll(".seg").forEach((s,idx)=>{
-    if(idx===i){
-      s.classList.add("active");
-      s.style.transform=`${s.dataset.base} scale(1.9)`;
-    }else{
-      s.classList.remove("active");
-      s.style.transform=s.dataset.base;
-    }
+    s.classList.toggle("active",idx===i);
   });
-
-  label.innerText=WORLDS[i].n;
-  core.dataset.url=WORLDS[i].u;
 }
 
-/* 🔄 LOOP */
+/* LOOP */
 function loop(){
   if(!drag){
     rot+=vel;
     vel*=0.92;
 
     if(Math.abs(vel)<0.001){
-      let snap=Math.round(rot/step)*step;
-      rot=snap;
+      rot=Math.round(rot/step)*step;
       vel=0;
     }
   }
@@ -232,7 +201,7 @@ function loop(){
 }
 loop();
 
-/* 🖐 DRAG */
+/* DRAG */
 addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
@@ -240,33 +209,55 @@ addEventListener("pointerdown",e=>{
 
 addEventListener("pointermove",e=>{
   if(!drag)return;
-
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-
   let d=dx/300;
   rot+=d;
   vel=d;
-
-  omni.style.transform=`rotateY(${dx/14}deg) rotateX(${dx/-20}deg)`;
 });
 
-addEventListener("pointerup",()=>{
-  drag=false;
-  omni.style.transform="rotateY(0) rotateX(0)";
-});
+addEventListener("pointerup",()=>drag=false);
 
-/* 🚀 PORTAL ENTRY */
-core.onclick=()=>{
-  flash.classList.add("show");
+/* 🎬 AVATAR ENTRY */
+document.getElementById("core").onclick=()=>{
 
-  setTimeout(()=>{
-    portal.classList.add("enter");
-  },150);
+  let index=Math.round(-rot/step)%WORLDS.length;
+  if(index<0)index+=WORLDS.length;
 
-  setTimeout(()=>{
-    location.href=core.dataset.url;
-  },700);
+  if(WORLDS[index].n==="META"){
+
+    const rect=metaEl.getBoundingClientRect();
+    const aRect=avatar.getBoundingClientRect();
+
+    avatar.classList.add("fly");
+
+    avatar.style.left=aRect.left+"px";
+    avatar.style.top=aRect.top+"px";
+
+    requestAnimationFrame(()=>{
+      avatar.style.left=rect.left+"px";
+      avatar.style.top=rect.top+"px";
+      avatar.style.transform="scale(.3)";
+    });
+
+    const portal=document.createElement("div");
+    portal.className="portal";
+
+    portal.style.left=rect.left+"px";
+    portal.style.top=rect.top+"px";
+
+    document.body.appendChild(portal);
+
+    setTimeout(()=>{
+      portal.classList.add("expand");
+    },300);
+
+    setTimeout(()=>{
+      location.href="/metaverse.html";
+    },900);
+
+  }
+
 };
 
 </script>
