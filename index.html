@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix — FINAL STABLE</title>
+<title>Rich Bizness Omnitrix — WORKING</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,16 +14,12 @@ html,body{
   font-family:sans-serif;
 }
 
-/* BACKGROUND */
 .bg{
   position:fixed;
   inset:0;
-  background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.2), transparent 60%),
-    #000;
+  background:radial-gradient(circle at center, rgba(0,255,200,0.2), transparent 60%), #000;
 }
 
-/* STAGE */
 .stage{
   position:fixed;
   inset:0;
@@ -32,16 +28,14 @@ html,body{
   justify-content:center;
 }
 
-/* DEVICE */
 .omni{
   width:92vw;
   max-width:420px;
   aspect-ratio:1;
-  border-radius:50%;
   position:relative;
 }
 
-/* OUTER */
+/* OUTER GLOW */
 .outer{
   position:absolute;
   inset:0;
@@ -51,34 +45,38 @@ html,body{
     0 0 30px #00ffcc,
     inset 0 0 15px #00ffcc;
   z-index:1;
+  pointer-events:none;
 }
 
 /* WHEEL */
 .wheel{
   position:absolute;
-  inset:20%;
-  z-index:5;
+  inset:0;
+  z-index:10;
 }
 
-/* ICONS */
+/* ICONS — NO CENTER COLLAPSE */
 .seg{
   position:absolute;
-  font-size:28px;
+  font-size:34px;
   cursor:pointer;
-  z-index:10;
-  transition:.2s;
+  z-index:20;
 }
 
-/* ACTIVE ICON */
+/* ACTIVE */
 .seg.active{
-  scale:1.5;
-  filter:drop-shadow(0 0 15px #00ffcc);
+  transform:scale(1.4);
+  filter:drop-shadow(0 0 20px #00ffcc);
 }
 
 /* CORE */
 .core{
   position:absolute;
-  inset:32%;
+  width:45%;
+  height:45%;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
   border-radius:50%;
   background:#000;
   display:flex;
@@ -87,17 +85,16 @@ html,body{
   box-shadow:
     0 0 40px #00ffcc,
     inset 0 0 25px #00ffcc;
-  overflow:hidden;
-  z-index:6;
+  z-index:15;
 }
 
 .avatar{
   width:100%;
   height:100%;
   object-fit:cover;
+  border-radius:50%;
 }
 
-/* LABEL */
 .label{
   position:absolute;
   bottom:-60px;
@@ -107,20 +104,17 @@ html,body{
   font-size:20px;
 }
 
-/* PORTAL */
 .portal{
   position:fixed;
   inset:0;
   background:radial-gradient(circle,#00ffcc,#000);
   transform:scale(0);
-  border-radius:50%;
+  transition:.5s;
   z-index:999;
-  transition:0.5s;
 }
 
 .portal.open{
   transform:scale(4);
-  border-radius:0;
 }
 </style>
 </head>
@@ -131,7 +125,6 @@ html,body{
 
 <div class="stage">
   <div class="omni">
-
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
@@ -140,7 +133,6 @@ html,body{
     </div>
 
     <div class="label" id="label">LIVE</div>
-
   </div>
 </div>
 
@@ -165,40 +157,41 @@ const WORLDS=[
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
 
-const step=(Math.PI*2)/WORLDS.length;
+/* BUILD (CENTER-BASED — FIXED) */
+function build(){
+  const size = wheel.offsetWidth;
+  const center = size / 2;
+  const radius = size * 0.35;
 
-/* BUILD ICONS */
-WORLDS.forEach((w,i)=>{
-  const el=document.createElement("div");
-  el.className="seg";
-  el.innerText=w.e;
+  WORLDS.forEach((w,i)=>{
+    const el=document.createElement("div");
+    el.className="seg";
+    el.innerText=w.e;
 
-  const angle=i*step-Math.PI/2;
-  const r=120;
+    const angle = (i/WORLDS.length)*Math.PI*2 - Math.PI/2;
 
-  const x=Math.cos(angle)*r;
-  const y=Math.sin(angle)*r;
+    const x = center + Math.cos(angle)*radius;
+    const y = center + Math.sin(angle)*radius;
 
-  el.style.left=`calc(50% + ${x}px)`;
-  el.style.top=`calc(50% + ${y}px)`;
+    el.style.left = x + "px";
+    el.style.top = y + "px";
 
-  el.onclick=()=>go(w);
+    el.onclick=()=>go(w);
 
-  wheel.appendChild(el);
-});
+    wheel.appendChild(el);
+  });
+}
 
-/* SPIN SYSTEM */
+/* WAIT FOR LAYOUT */
+requestAnimationFrame(build);
+
+/* SPIN */
 let rot=0,vel=0,drag=false,lastX=0;
 
 function loop(){
   if(!drag){
     rot+=vel;
     vel*=0.93;
-
-    if(Math.abs(vel)<0.002){
-      let snap=Math.round(rot/step)*step;
-      rot+=(snap-rot)*0.15;
-    }
   }
 
   wheel.style.transform=`rotate(${rot}rad)`;
@@ -208,9 +201,9 @@ function loop(){
 }
 loop();
 
-/* UPDATE ACTIVE */
+/* ACTIVE */
 function update(){
-  let i=Math.round(rot/step)%WORLDS.length;
+  let i=Math.round(rot/(Math.PI*2/WORLDS.length))%WORLDS.length;
   if(i<0)i+=WORLDS.length;
 
   document.querySelectorAll(".seg").forEach((s,idx)=>{
@@ -228,13 +221,11 @@ document.addEventListener("pointerdown",e=>{
 
 document.addEventListener("pointermove",e=>{
   if(!drag)return;
-
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-
-  let force=dx/180;
-  rot+=force;
-  vel=force;
+  let f=dx/200;
+  rot+=f;
+  vel=f;
 });
 
 document.addEventListener("pointerup",()=>drag=false);
@@ -252,7 +243,7 @@ function go(w){
   },500);
 }
 
-/* AVATAR LOAD */
+/* AVATAR */
 (async()=>{
   const avatar=await getAvatar();
   if(avatar){
