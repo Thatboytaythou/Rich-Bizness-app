@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix — Cinematic</title>
+<title>Rich Bizness Omnitrix — Cinematic FIXED</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,70 +14,69 @@ html,body{
   font-family:sans-serif;
 }
 
-/* 🌌 BACKGROUND */
+/* BACKGROUND */
 .bg{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.3), transparent 60%),
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.25), transparent 60%),
     #000;
 }
 
-/* 🎯 STAGE */
+/* STAGE */
 .stage{
   position:fixed;
   inset:0;
   display:flex;
   align-items:center;
   justify-content:center;
-  perspective:1400px;
 }
 
-/* 🧿 DEVICE */
+/* DEVICE */
 .omni{
   width:92vw;
   max-width:420px;
   aspect-ratio:1;
   border-radius:50%;
   position:relative;
-  transform-style:preserve-3d;
 }
 
-/* 🔩 OUTER */
+/* OUTER */
 .outer{
   position:absolute;
   inset:0;
   border-radius:50%;
   background:#001;
   box-shadow:
-    0 0 80px #00ffcc,
-    inset 0 0 40px #00ffcc;
-  pointer-events:none;
+    0 0 40px #00ffcc,
+    inset 0 0 20px #00ffcc;
+  z-index:1;
 }
 
-/* ⚙️ WHEEL */
+/* WHEEL */
 .wheel{
   position:absolute;
   inset:20%;
+  z-index:5;
 }
 
-/* 🧿 ICONS */
+/* ICONS (FIXED SYSTEM) */
 .seg{
   position:absolute;
-  left:50%;
-  top:50%;
-  transform-origin:0 0;
   font-size:28px;
   cursor:pointer;
+  z-index:10;
+  transform:translate(-50%, -50%);
   transition:.2s;
 }
 
+/* SAFE SCALE (NO POSITION BREAK) */
 .seg.active{
-  transform:scale(1.8);
-  filter:drop-shadow(0 0 25px #00ffcc);
+  scale:1.6;
+  filter:drop-shadow(0 0 20px #00ffcc);
 }
 
-/* 🧑 CORE */
+/* CORE */
 .core{
   position:absolute;
   inset:32%;
@@ -87,11 +86,10 @@ html,body{
   align-items:center;
   justify-content:center;
   box-shadow:
-    0 0 60px #00ffcc,
-    inset 0 0 40px #00ffcc;
+    0 0 50px #00ffcc,
+    inset 0 0 30px #00ffcc;
   overflow:hidden;
-  pointer-events:none;
-  transition:.2s;
+  z-index:6;
 }
 
 .avatar{
@@ -100,7 +98,7 @@ html,body{
   object-fit:cover;
 }
 
-/* 🏷 LABEL */
+/* LABEL */
 .label{
   position:absolute;
   bottom:-60px;
@@ -110,7 +108,7 @@ html,body{
   font-size:20px;
 }
 
-/* 🌌 PORTAL */
+/* PORTAL */
 .portal{
   position:fixed;
   inset:0;
@@ -125,40 +123,12 @@ html,body{
   transform:scale(4);
   border-radius:0;
 }
-
-/* ⚡ FLASH */
-.flash{
-  position:fixed;
-  inset:0;
-  background:#00ffcc;
-  opacity:0;
-  z-index:998;
-}
-
-.flash.active{
-  animation:flashAnim .3s;
-}
-
-@keyframes flashAnim{
-  0%{opacity:0}
-  50%{opacity:0.5}
-  100%{opacity:0}
-}
-
-/* 🧿 CORE BURST */
-.core.burst{
-  transform:scale(1.4);
-  box-shadow:
-    0 0 120px #00ffcc,
-    inset 0 0 60px #00ffcc;
-}
 </style>
 </head>
 
 <body>
 
 <div class="bg"></div>
-<div class="flash" id="flash"></div>
 
 <div class="stage">
   <div class="omni">
@@ -179,7 +149,6 @@ html,body{
 
 import { getAvatar } from "/core/features/avatar/avatar-state.js";
 
-/* 🌍 ROUTES */
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -196,28 +165,30 @@ const WORLDS=[
 
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
-const core=document.getElementById("core");
-const flash=document.getElementById("flash");
 
 const step=(Math.PI*2)/WORLDS.length;
 
-/* BUILD */
+/* BUILD (FIXED POSITION) */
 WORLDS.forEach((w,i)=>{
   const el=document.createElement("div");
   el.className="seg";
   el.innerText=w.e;
 
-  const a=i*step-Math.PI/2;
+  const angle=i*step-Math.PI/2;
   const r=120;
 
-  el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
+  const x=Math.cos(angle)*r;
+  const y=Math.sin(angle)*r;
 
-  el.onclick=()=>triggerPortal(w);
+  el.style.left=`calc(50% + ${x}px)`;
+  el.style.top=`calc(50% + ${y}px)`;
+
+  el.onclick=()=>go(w);
 
   wheel.appendChild(el);
 });
 
-/* REAL SPIN */
+/* SPIN */
 let rot=0,vel=0,drag=false,lastX=0;
 
 function loop(){
@@ -232,13 +203,14 @@ function loop(){
   }
 
   wheel.style.transform=`rotate(${rot}rad)`;
-  updateActive();
+
+  update();
   requestAnimationFrame(loop);
 }
 loop();
 
 /* ACTIVE */
-function updateActive(){
+function update(){
   let i=Math.round(rot/step)%WORLDS.length;
   if(i<0)i+=WORLDS.length;
 
@@ -247,8 +219,6 @@ function updateActive(){
   });
 
   label.innerText=WORLDS[i].n;
-
-  core.style.transform=`scale(${1 + Math.sin(Date.now()/200)*0.04})`;
 }
 
 /* DRAG */
@@ -259,8 +229,10 @@ document.addEventListener("pointerdown",e=>{
 
 document.addEventListener("pointermove",e=>{
   if(!drag)return;
+
   let dx=e.clientX-lastX;
   lastX=e.clientX;
+
   let f=dx/180;
   rot+=f;
   vel=f;
@@ -268,12 +240,8 @@ document.addEventListener("pointermove",e=>{
 
 document.addEventListener("pointerup",()=>drag=false);
 
-/* PORTAL */
-function triggerPortal(w){
-
-  core.classList.add("burst");
-  flash.classList.add("active");
-
+/* NAV */
+function go(w){
   const portal=document.createElement("div");
   portal.className="portal";
   document.body.appendChild(portal);
@@ -282,7 +250,7 @@ function triggerPortal(w){
 
   setTimeout(()=>{
     location.href=w.u;
-  },600);
+  },500);
 }
 
 /* AVATAR */
