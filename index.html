@@ -2,105 +2,125 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Avatar Entry</title>
+<title>Rich Bizness Omnitrix</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 html,body{
-  margin:0;height:100%;background:#000;overflow:hidden;
-  font-family:system-ui;
+  margin:0;
+  height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family:sans-serif;
 }
 
-/* BACKGROUND */
+/* 🌌 BACKGROUND */
 .bg{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
-    url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
-    center/cover no-repeat;
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.2), transparent 60%),
+    #000;
 }
 
-/* STAGE */
+/* 🎯 STAGE */
 .stage{
-  position:fixed;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  perspective:1400px;
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  perspective:1200px;
 }
 
+/* 🧿 DEVICE */
 .omni{
-  width:92vw;max-width:460px;aspect-ratio:1;
+  width:92vw;
+  max-width:420px;
+  aspect-ratio:1;
+  border-radius:50%;
   position:relative;
+  transform-style:preserve-3d;
 }
 
-/* RING */
+/* 🔩 OUTER */
 .outer{
-  position:absolute;inset:0;border-radius:50%;
+  position:absolute;
+  inset:0;
+  border-radius:50%;
   background:#001;
-  box-shadow:0 0 120px #00ffcc;
+  box-shadow:0 0 80px #00ffcc;
+  pointer-events:none;
 }
 
+/* ⚙️ WHEEL */
 .wheel{
-  position:absolute;inset:0;
+  position:absolute;
+  inset:20%;
 }
 
+/* 🧿 ICONS */
 .seg{
   position:absolute;
-  left:50%;top:50%;
-  translate:-50% -50%;
-  font-size:30px;
-  opacity:.6;
+  left:50%;
+  top:50%;
+  transform-origin:0 0;
+  font-size:28px;
+  cursor:pointer;
+  z-index:5;
   transition:.2s;
 }
 
-.seg.active{
-  scale:1.8;
-  opacity:1;
-  filter:drop-shadow(0 0 20px #00ffcc);
+.seg:hover{
+  transform:scale(1.5);
+  filter:drop-shadow(0 0 15px #00ffcc);
 }
 
-.seg.meta.active{
-  scale:2.5;
-  filter:drop-shadow(0 0 50px #00ffff);
-}
-
-/* CORE */
+/* 🧑 CORE */
 .core{
-  position:absolute;inset:30%;
+  position:absolute;
+  inset:32%;
   border-radius:50%;
   background:#000;
-  box-shadow:0 0 60px #00ffcc;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:
+    0 0 40px #00ffcc,
+    inset 0 0 20px #00ffcc;
   overflow:hidden;
-  cursor:pointer;
+  pointer-events:none;
 }
 
 .avatar{
-  width:100%;height:100%;object-fit:cover;
-  transition:.6s ease;
+  width:100%;
+  height:100%;
+  object-fit:cover;
 }
 
-/* FLOAT AVATAR */
-.avatar.fly{
-  position:fixed;
-  z-index:1000;
-  width:80px;height:80px;
-  border-radius:50%;
-  transition:1s ease;
+/* 🏷 LABEL */
+.label{
+  position:absolute;
+  bottom:-60px;
+  width:100%;
+  text-align:center;
+  color:#00ffcc;
+  font-size:18px;
 }
 
-/* PORTAL */
+/* 🌌 PORTAL */
 .portal{
   position:fixed;
-  width:20px;height:20px;
-  border-radius:50%;
-  background:radial-gradient(circle,#00ffff,#000);
+  inset:0;
+  background:radial-gradient(circle,#00ffcc,#000);
   transform:scale(0);
+  border-radius:50%;
   z-index:999;
-  transition:.7s ease;
+  transition:0.6s;
 }
 
-.portal.expand{
-  transform:scale(80);
+.portal.open{
+  transform:scale(3);
   border-radius:0;
 }
 </style>
@@ -116,15 +136,21 @@ html,body{
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <div class="core" id="core">
-      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+    <div class="core">
+      <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
+
+    <div class="label" id="label">LIVE</div>
 
   </div>
 </div>
 
-<script>
+<script type="module">
 
+/* 🔥 IMPORT AVATAR */
+import { getAvatar } from "/core/features/avatar/avatar-state.js";
+
+/* 🌍 ALL ROUTES CONNECTED */
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -135,130 +161,77 @@ const WORLDS=[
 {e:"⬆️",n:"UPLOAD",u:"/upload.html"},
 {e:"👤",n:"PROFILE",u:"/profile.html"},
 {e:"💬",n:"MESSAGES",u:"/messages.html"},
-{e:"🔔",n:"ALERTS",u:"/notifications.html"},
+{e:"🔔",n:"NOTIFY",u:"/notifications.html"},
 {e:"🌐",n:"META",u:"/metaverse.html"}
 ];
 
 const wheel=document.getElementById("wheel");
-const avatar=document.getElementById("avatar");
+const label=document.getElementById("label");
 
-let metaEl=null;
-
-let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
-/* BUILD */
-function build(){
-  const r=Math.min(innerWidth,innerHeight)*0.33;
+/* 🔧 BUILD — ALL CLICKABLE */
+WORLDS.forEach((w,i)=>{
+  const el=document.createElement("div");
+  el.className="seg";
+  el.innerText=w.e;
 
-  WORLDS.forEach((w,i)=>{
-    const el=document.createElement("div");
-    el.className="seg";
-    el.innerText=w.e;
+  const a=i*step-Math.PI/2;
+  const r=120;
 
-    if(w.n==="META"){
-      el.classList.add("meta");
-      metaEl=el;
-    }
+  el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
 
-    const a=i*step-Math.PI/2;
-    const x=Math.cos(a)*r;
-    const y=Math.sin(a)*r;
+  /* 🔥 CLICK EVERY ICON */
+  el.onclick = (e)=>{
+    e.stopPropagation();
 
-    el.dataset.base=`translate(${x}px,${y}px)`;
-    el.style.transform=el.dataset.base;
+    label.innerText = w.n;
 
-    wheel.appendChild(el);
-  });
-}
-build();
+    const portal=document.createElement("div");
+    portal.className="portal";
+    document.body.appendChild(portal);
 
-/* UPDATE */
-function update(){
-  wheel.style.transform=`rotate(${rot}rad)`;
+    requestAnimationFrame(()=>portal.classList.add("open"));
 
-  let i=Math.round(-rot/step)%WORLDS.length;
-  if(i<0)i+=WORLDS.length;
+    setTimeout(()=>{
+      location.href = w.u;
+    },600);
+  };
 
-  document.querySelectorAll(".seg").forEach((s,idx)=>{
-    s.classList.toggle("active",idx===i);
-  });
-}
+  wheel.appendChild(el);
+});
 
-/* LOOP */
-function loop(){
-  if(!drag){
-    rot+=vel;
-    vel*=0.92;
+/* 🔄 ROTATION (OPTIONAL FEEL) */
+let rot=0;
+let drag=false,lastX=0;
 
-    if(Math.abs(vel)<0.001){
-      rot=Math.round(rot/step)*step;
-      vel=0;
-    }
-  }
-  update();
-  requestAnimationFrame(loop);
-}
-loop();
-
-/* DRAG */
-addEventListener("pointerdown",e=>{
+document.addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
 });
 
-addEventListener("pointermove",e=>{
+document.addEventListener("pointermove",e=>{
   if(!drag)return;
+
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-  let d=dx/300;
-  rot+=d;
-  vel=d;
+
+  rot+=dx/240;
+
+  wheel.style.transform=`rotate(${rot}rad)`;
 });
 
-addEventListener("pointerup",()=>drag=false);
+document.addEventListener("pointerup",()=>{
+  drag=false;
+});
 
-/* 🎬 AVATAR ENTRY */
-document.getElementById("core").onclick=()=>{
-
-  let index=Math.round(-rot/step)%WORLDS.length;
-  if(index<0)index+=WORLDS.length;
-
-  if(WORLDS[index].n==="META"){
-
-    const rect=metaEl.getBoundingClientRect();
-    const aRect=avatar.getBoundingClientRect();
-
-    avatar.classList.add("fly");
-
-    avatar.style.left=aRect.left+"px";
-    avatar.style.top=aRect.top+"px";
-
-    requestAnimationFrame(()=>{
-      avatar.style.left=rect.left+"px";
-      avatar.style.top=rect.top+"px";
-      avatar.style.transform="scale(.3)";
-    });
-
-    const portal=document.createElement("div");
-    portal.className="portal";
-
-    portal.style.left=rect.left+"px";
-    portal.style.top=rect.top+"px";
-
-    document.body.appendChild(portal);
-
-    setTimeout(()=>{
-      portal.classList.add("expand");
-    },300);
-
-    setTimeout(()=>{
-      location.href="/metaverse.html";
-    },900);
-
+/* 🧿 LOAD REAL AVATAR */
+(async () => {
+  const avatar = await getAvatar();
+  if (avatar) {
+    document.getElementById("avatar-img").src = avatar;
   }
-
-};
+})();
 
 </script>
 
