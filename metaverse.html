@@ -2,13 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Avatar Engine</title>
+<title>Rich Bizness — Avatar Core</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 html,body{
   margin:0;height:100%;background:#000;overflow:hidden;
-  font-family:system-ui;
 }
 
 /* WORLD */
@@ -28,61 +27,46 @@ html,body{
   transform:translate(-50%,-50%);
   z-index:20;
 
-  box-shadow:
-    0 0 25px #00ffcc,
-    0 0 60px rgba(0,255,200,.4);
-
-  transition:transform .15s ease;
+  box-shadow:0 0 30px #00ffcc;
+  transition:.15s;
 }
 
-/* IMAGE */
 .avatar img{
-  width:100%;height:100%;
-  object-fit:cover;
+  width:100%;height:100%;object-fit:cover;
 }
 
-/* IDLE (BREATHING) */
-.idle{
-  animation:idleBreath 3s ease-in-out infinite;
+/* VOICE BUBBLE */
+.voice{
+  position:fixed;
+  bottom:160px;
+  left:50%;
+  transform:translateX(-50%);
+  padding:12px 18px;
+  border-radius:14px;
+  background:rgba(0,0,0,.7);
+  color:#00ffcc;
+  font-size:14px;
+  opacity:0;
+  transition:.3s;
 }
 
-@keyframes idleBreath{
-  0%{transform:translate(-50%,-50%) scale(1);}
-  50%{transform:translate(-50%,-50%) scale(1.05);}
-  100%{transform:translate(-50%,-50%) scale(1);}
-}
-
-/* WALK */
-.walk{
-  animation:walkBounce .35s infinite alternate;
-}
-
-@keyframes walkBounce{
-  from{transform:translate(-50%,-50%) translateY(0px);}
-  to{transform:translate(-50%,-50%) translateY(-10px);}
-}
+.voice.show{opacity:1}
 
 /* NODES */
 .node{
   position:absolute;
   width:150px;height:150px;
-  border-radius:24px;
-
+  border-radius:20px;
   display:flex;
   align-items:center;
   justify-content:center;
-
-  background:rgba(0,255,200,.08);
+  background:rgba(0,255,200,.1);
   color:#00ffcc;
-  font-weight:bold;
-
-  backdrop-filter:blur(12px);
 }
 
-/* POSITION */
-.music{ left:50%; top:25%; transform:translate(-50%,-50%); }
-.gaming{ left:30%; top:65%; transform:translate(-50%,-50%); }
-.live{ left:70%; top:60%; transform:translate(-50%,-50%); }
+.music{left:50%;top:25%;transform:translate(-50%,-50%)}
+.gaming{left:30%;top:65%;transform:translate(-50%,-50%)}
+.live{left:70%;top:60%;transform:translate(-50%,-50%)}
 
 /* JOYSTICK */
 .joystick{
@@ -114,27 +98,78 @@ html,body{
   <div class="node live">LIVE</div>
 </div>
 
-<div class="avatar idle" id="avatar">
-  <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+<div class="avatar" id="avatar">
+  <img id="avatar-img" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 </div>
+
+<div class="voice" id="voice"></div>
 
 <div class="joystick" id="joy">
   <div class="stick" id="stick"></div>
 </div>
 
-<script>
+<script type="module">
+
+/* 🔥 SUPABASE AVATAR */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const supabase = createClient(
+  "https://ksvdequymkceevocgpdj.supabase.co",
+  "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
+);
+
+async function loadAvatar(){
+  const { data: { user } } = await supabase.auth.getUser();
+  if(!user) return;
+
+  const { data } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user.id)
+    .single();
+
+  if(data?.avatar_url){
+    document.getElementById("avatar-img").src = data.avatar_url;
+  }
+}
+loadAvatar();
+
+/* 🧠 AVATAR BRAIN */
+let currentZone="";
+
+function getZone(){
+  let x = posX;
+  let y = posY;
+
+  if(y < -200) return "MUSIC";
+  if(x < -200) return "GAMING";
+  if(x > 200) return "LIVE";
+
+  return "";
+}
+
+/* 🗣 VOICE */
+const voice = document.getElementById("voice");
+
+function speak(text){
+  voice.innerText = text;
+  voice.classList.add("show");
+
+  setTimeout(()=>{
+    voice.classList.remove("show");
+  },2000);
+}
+
+/* 🎮 MOVEMENT */
 let vx=0,vy=0;
 let posX=0,posY=0;
 
 const world=document.getElementById("world");
-const avatar=document.getElementById("avatar");
 const joy=document.getElementById("joy");
 const stick=document.getElementById("stick");
 
 let dragging=false;
-let currentAngle=0;
 
-/* JOYSTICK */
 joy.addEventListener("pointerdown",()=>dragging=true);
 
 document.addEventListener("pointermove",e=>{
@@ -162,7 +197,7 @@ document.addEventListener("pointerup",()=>{
   vx=0;vy=0;
 });
 
-/* LOOP */
+/* 🔁 LOOP */
 function loop(){
 
   posX+=vx;
@@ -170,33 +205,26 @@ function loop(){
 
   world.style.transform=`translate(${posX}px,${posY}px)`;
 
-  /* MOVEMENT DETECTION */
-  if(vx!==0 || vy!==0){
+  const zone = getZone();
 
-    let targetAngle=Math.atan2(vy,vx)*180/Math.PI;
+  if(zone !== currentZone){
+    currentZone = zone;
 
-    /* SMOOTH ROTATION */
-    currentAngle += (targetAngle - currentAngle) * 0.2;
-
-    avatar.style.transform=
-      `translate(-50%,-50%) rotate(${currentAngle}deg)`;
-
-    avatar.classList.remove("idle");
-    avatar.classList.add("walk");
-
-  }else{
-
-    avatar.style.transform=
-      `translate(-50%,-50%) rotate(${currentAngle}deg)`;
-
-    avatar.classList.remove("walk");
-    avatar.classList.add("idle");
+    if(zone === "MUSIC") speak("🎵 You entered MUSIC");
+    if(zone === "GAMING") speak("🎮 Let’s play");
+    if(zone === "LIVE") speak("📡 WE LIT 🔥");
   }
 
   requestAnimationFrame(loop);
 }
 
 loop();
+
+/* 👆 TAP AVATAR = TALK */
+document.getElementById("avatar").onclick = ()=>{
+  speak("I am you inside the world.");
+};
+
 </script>
 
 </body>
