@@ -43,6 +43,7 @@ html,body{
   border-radius:50%;
   position:relative;
   transform-style:preserve-3d;
+  transition:0.1s;
 }
 
 /* 🔩 OUTER */
@@ -53,7 +54,7 @@ html,body{
   background:#001;
   box-shadow:
     0 0 80px #00ffcc,
-    inset 0 0 40px rgba(0,255,200,0.2);
+    inset 0 0 40px rgba(0,255,200,0.25);
 }
 
 /* ⚙️ WHEEL */
@@ -68,16 +69,16 @@ html,body{
   left:50%;
   top:50%;
   transform-origin:0 0;
-  font-size:28px;
+  font-size:30px;
   transition:0.2s;
 }
 
 .seg.active{
   transform:scale(1.6);
-  filter:drop-shadow(0 0 12px #00ffcc);
+  filter:drop-shadow(0 0 14px #00ffcc);
 }
 
-/* 🧑 AVATAR CORE */
+/* 🧑 CORE */
 .core{
   position:absolute;
   inset:32%;
@@ -146,16 +147,9 @@ html,body{
   </div>
 </div>
 
-<script type="module">
+<script>
 
-// 🔥 SAFE AVATAR LOAD (NO BREAK IF MISSING)
-let getAvatar=null;
-try{
-  const mod=await import("/core/features/avatar/avatar-state.js");
-  getAvatar=mod.getAvatar;
-}catch(e){}
-
-/* 🌍 WORLDS */
+// 🌍 WORLDS (FULL SYSTEM)
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -176,13 +170,12 @@ const label=document.getElementById("label");
 const omni=document.getElementById("omni");
 
 let rot=0,vel=0,drag=false,lastX=0;
-
 const step=(Math.PI*2)/WORLDS.length;
 
 /* 🔧 BUILD */
 function build(){
   wheel.innerHTML="";
-  const r=Math.min(window.innerWidth,window.innerHeight)*0.28;
+  const r=Math.min(window.innerWidth,window.innerHeight)*0.30;
 
   WORLDS.forEach((w,i)=>{
     const el=document.createElement("div");
@@ -191,12 +184,7 @@ function build(){
 
     const a=i*step-Math.PI/2;
 
-    el.style.transform=`
-      translate(
-        ${Math.cos(a)*r}px,
-        ${Math.sin(a)*r}px
-      )
-    `;
+    el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
 
     wheel.appendChild(el);
   });
@@ -247,12 +235,12 @@ document.addEventListener("pointermove",e=>{
   rot+=d;
   vel=d;
 
-  omni.style.transform=`rotateY(${dx/6}deg) rotateX(${dx/-10}deg)`;
+  omni.style.transform=`rotateY(${dx/6}deg) rotateX(${dx/-10}deg) scale(1.02)`;
 });
 
 document.addEventListener("pointerup",()=>{
   drag=false;
-  omni.style.transform="rotateY(0) rotateX(0)";
+  omni.style.transform="rotateY(0) rotateX(0) scale(1)";
 });
 
 /* 🚀 ENTER */
@@ -267,15 +255,6 @@ core.onclick=()=>{
     location.href=core.dataset.url;
   },700);
 };
-
-/* 🧑 AVATAR */
-(async()=>{
-  if(!getAvatar) return;
-  const avatar=await getAvatar();
-  if(avatar){
-    document.getElementById("avatar-img").src=avatar;
-  }
-})();
 
 </script>
 
