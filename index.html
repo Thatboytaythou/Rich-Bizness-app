@@ -2,265 +2,201 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Rich Bizness — GOD MODE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Rich Bizness</title>
 
 <style>
-html,body{
-  margin:0;
-  height:100%;
-  overflow:hidden;
-  background:#000;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: black;
+  font-family: serif;
 }
 
 /* BACKGROUND */
-.rb-bg{
-  position:absolute;
-  inset:0;
-  background:url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat;
-  filter:brightness(.55);
+.bg {
+  position: fixed;
+  inset: 0;
+  background: url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
+  filter: brightness(0.55) contrast(1.2);
 }
 
-/* WRAP */
-.rb-wrap{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) perspective(900px) rotateX(15deg);
-  width:340px;
-  height:340px;
+/* SMOKE / ENERGY */
+.energy-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at center, rgba(0,255,170,0.2), rgba(0,0,0,0.95)),
+    url("https://www.transparenttextures.com/patterns/smoke.png");
+  animation: smokeMove 20s linear infinite;
+  mix-blend-mode: screen;
 }
 
-/* RINGS */
-.rb-ring{position:absolute;border-radius:50%}
-.outer{
-  inset:-12px;
-  border:8px solid #00ff99;
-  box-shadow:0 0 40px #00ff99, inset 0 0 20px #00ff99;
-}
-.inner{
-  inset:20px;
-  border:2px solid rgba(0,255,150,.4);
+@keyframes smokeMove {
+  from { background-position: 0 0; }
+  to { background-position: 500px 500px; }
 }
 
-/* WHEEL */
-.rb-wheel{
-  position:absolute;
-  inset:0;
-  transition:.5s ease;
+/* CENTER */
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 450px;
+  aspect-ratio: 1/1;
+  animation: float 6s ease-in-out infinite;
 }
 
-/* SEGMENTS */
-.seg{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform-origin:center -140px;
-  color:#00ff99;
-  font-weight:900;
-  text-shadow:0 0 12px #00ff99;
-  cursor:pointer;
+@keyframes float {
+  0% { transform: translate(-50%, -50%) translateY(0); }
+  50% { transform: translate(-50%, -50%) translateY(-8px); }
+  100% { transform: translate(-50%, -50%) translateY(0); }
 }
 
-/* POSITIONS */
-.seg[data-i="0"]{transform:rotate(0deg) translate(-50%,-50%)}
-.seg[data-i="1"]{transform:rotate(45deg) translate(-50%,-50%)}
-.seg[data-i="2"]{transform:rotate(90deg) translate(-50%,-50%)}
-.seg[data-i="3"]{transform:rotate(135deg) translate(-50%,-50%)}
-.seg[data-i="4"]{transform:rotate(180deg) translate(-50%,-50%)}
-.seg[data-i="5"]{transform:rotate(225deg) translate(-50%,-50%)}
-.seg[data-i="6"]{transform:rotate(270deg) translate(-50%,-50%)}
-.seg[data-i="7"]{transform:rotate(315deg) translate(-50%,-50%)}
-
-/* CORE */
-.rb-core{
-  position:absolute;
-  top:50%;
-  left:50%;
-  width:110px;
-  height:110px;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:#00ff99;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 0 40px #00ff99;
-  transition:.2s;
+/* OUTER RING */
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 5px solid rgba(0,255,170,0.9);
+  box-shadow:
+    0 0 40px rgba(0,255,170,1),
+    inset 0 0 40px rgba(0,255,170,0.4);
+  animation: rotate 15s linear infinite;
 }
 
-/* CHARGE */
-.charge{
-  animation:charge 0.6s infinite alternate;
-}
-@keyframes charge{
-  from{box-shadow:0 0 20px #00ff99}
-  to{box-shadow:0 0 80px #00ff99}
-}
-
-/* EFFECT LAYERS */
-.energy,.flash,.smoke,.portal{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
+/* INNER RING */
+.ring2 {
+  position: absolute;
+  inset: 10%;
+  border-radius: 50%;
+  border: 2px solid rgba(0,255,170,0.5);
+  animation: rotateReverse 12s linear infinite;
 }
 
-.energy{
-  top:50%;
-  left:50%;
-  width:20px;
-  height:20px;
-  border-radius:50%;
-  background:#00ff99;
-  transform:translate(-50%,-50%);
-  opacity:0;
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-.flash{
-  background:#00ff99;
-  opacity:0;
+@keyframes rotateReverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
 }
 
-.smoke{
-  background:radial-gradient(circle,rgba(0,255,150,.4),transparent 70%);
-  opacity:0;
+/* CORE BUTTON */
+.core {
+  position: absolute;
+  inset: 28%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #00ffaa, #00c48c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: black;
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+  box-shadow:
+    0 0 50px rgba(0,255,170,1),
+    inset 0 0 20px rgba(0,0,0,0.4);
+  transition: all 0.2s ease;
 }
 
-.portal{
-  background:radial-gradient(circle,#00ff99,transparent 70%);
-  opacity:0;
-  transform:scale(0);
+.core:active {
+  transform: scale(0.85);
 }
 
-/* GOD MODE ANIMATIONS */
-.explode .energy{
-  animation:boom .5s forwards;
+/* BURST EFFECT */
+.burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
 }
 
-.explode .flash{
-  animation:flash .3s;
+.burst.active {
+  animation: burst 0.4s ease;
 }
 
-.explode .smoke{
-  animation:smoke .7s forwards;
+@keyframes burst {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.5); opacity: 0; }
 }
 
-.explode .portal{
-  animation:portal .8s forwards;
+/* LABELS */
+.label {
+  position: absolute;
+  color: #00ffaa;
+  font-size: 12px;
+  text-shadow: 0 0 10px #00ffaa;
 }
 
-@keyframes boom{
-  0%{opacity:1;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;transform:translate(-50%,-50%) scale(50)}
-}
+/* LABEL POSITIONS */
+.music { top: 18%; left: 20%; transform: rotate(-30deg); }
+.gaming { left: 6%; top: 45%; transform: rotate(-90deg); }
+.sports { top: 18%; right: 20%; transform: rotate(30deg); }
+.gallery { top: 5%; left: 50%; transform: translateX(-50%); }
+.store { top: 35%; right: 5%; transform: rotate(90deg); }
+.meta { right: 12%; bottom: 25%; transform: rotate(120deg); }
+.upload { bottom: 12%; right: 30%; transform: rotate(160deg); }
 
-@keyframes flash{
-  0%{opacity:0}
-  50%{opacity:1}
-  100%{opacity:0}
-}
-
-@keyframes smoke{
-  0%{opacity:0}
-  100%{opacity:1}
-}
-
-@keyframes portal{
-  0%{opacity:0;transform:scale(0)}
-  100%{opacity:1;transform:scale(6)}
-}
 </style>
 </head>
 
 <body>
 
-<div class="rb-bg"></div>
+<div class="bg"></div>
+<div class="energy-overlay"></div>
 
-<div class="rb-wrap" id="wrap">
+<div class="center">
 
-  <div class="rb-ring outer"></div>
-  <div class="rb-ring inner"></div>
+  <div class="ring"></div>
+  <div class="ring2"></div>
 
-  <div class="rb-wheel" id="wheel">
-    <div class="seg" data-i="0">LIVE</div>
-    <div class="seg" data-i="1">MUSIC</div>
-    <div class="seg" data-i="2">GAMING</div>
-    <div class="seg" data-i="3">SPORTS</div>
-    <div class="seg" data-i="4">GALLERY</div>
-    <div class="seg" data-i="5">STORE</div>
-    <div class="seg" data-i="6">META</div>
-    <div class="seg" data-i="7">UPLOAD</div>
-  </div>
+  <div class="label music">MUSIC</div>
+  <div class="label gaming">GAMING</div>
+  <div class="label sports">SPORTS</div>
+  <div class="label gallery">GALLERY</div>
+  <div class="label store">STORE</div>
+  <div class="label meta">META</div>
+  <div class="label upload">UPLOAD</div>
 
-  <div class="rb-core" id="core">SELECT</div>
+  <div class="burst" id="burst"></div>
 
-  <div class="energy"></div>
-  <div class="flash"></div>
-  <div class="smoke"></div>
-  <div class="portal"></div>
+  <div class="core" id="coreBtn">RUN IT UP 🚀</div>
 
 </div>
 
 <script>
-const wheel=document.getElementById("wheel");
-const core=document.getElementById("core");
-const wrap=document.getElementById("wrap");
+const core = document.getElementById("coreBtn");
+const burst = document.getElementById("burst");
 
-let index=0;
-let locked=false;
+core.addEventListener("click", () => {
 
-const routes=[
-"/live",
-"/music",
-"/gaming",
-"/sports",
-"/gallery",
-"/store",
-"/metaverse",
-"/upload"
-];
+  burst.classList.remove("active");
+  void burst.offsetWidth;
+  burst.classList.add("active");
 
-function rotate(i){
-  index=i;
-  wheel.style.transform=`rotate(${i*-45}deg)`;
-}
+  core.innerText = "ACTIVATING...";
+  core.style.background = "black";
+  core.style.color = "#00ffaa";
 
-/* SEG CLICK */
-document.querySelectorAll(".seg").forEach(seg=>{
-  seg.onclick=()=>{
-    if(locked)return;
-    rotate(Number(seg.dataset.i));
-  }
+  setTimeout(() => {
+    core.innerText = "ENTER";
+  }, 400);
+
 });
-
-/* CORE */
-core.onclick=()=>{
-  if(!locked){
-    locked=true;
-    core.classList.add("charge");
-    core.innerText="RUN IT UP 🚀";
-
-    if(navigator.vibrate){
-      navigator.vibrate(50);
-    }
-
-  }else{
-    // 🔊 SOUND (OPTIONAL — add file later)
-    // new Audio("/sounds/omni-blast.mp3").play();
-
-    if(navigator.vibrate){
-      navigator.vibrate([100,50,200]);
-    }
-
-    wrap.classList.add("explode");
-
-    setTimeout(()=>{
-      window.location.href=routes[index];
-    },800);
-  }
-};
 </script>
 
 </body>
