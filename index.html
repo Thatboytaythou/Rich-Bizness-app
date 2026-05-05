@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Rich Bizness Omnitrix</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <style>
 html,body{
@@ -20,7 +20,9 @@ html,body{
   inset:0;
   background:
     radial-gradient(circle at 50% 60%, rgba(0,255,200,0.2), transparent 60%),
-    #000;
+    url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
+    center/cover no-repeat;
+  filter:brightness(0.7);
 }
 
 /* 🎯 STAGE */
@@ -41,7 +43,6 @@ html,body{
   border-radius:50%;
   position:relative;
   transform-style:preserve-3d;
-  transition:0.1s;
 }
 
 /* 🔩 OUTER */
@@ -50,13 +51,15 @@ html,body{
   inset:0;
   border-radius:50%;
   background:#001;
-  box-shadow:0 0 80px #00ffcc;
+  box-shadow:
+    0 0 80px #00ffcc,
+    inset 0 0 40px rgba(0,255,200,0.2);
 }
 
 /* ⚙️ WHEEL */
 .wheel{
   position:absolute;
-  inset:20%;
+  inset:0;
 }
 
 /* 🧿 SEGMENTS */
@@ -66,10 +69,11 @@ html,body{
   top:50%;
   transform-origin:0 0;
   font-size:28px;
+  transition:0.2s;
 }
 
 .seg.active{
-  transform:scale(1.7);
+  transform:scale(1.6);
   filter:drop-shadow(0 0 12px #00ffcc);
 }
 
@@ -102,6 +106,7 @@ html,body{
   width:100%;
   text-align:center;
   color:#00ffcc;
+  font-size:18px;
 }
 
 /* 🌌 PORTAL */
@@ -132,7 +137,6 @@ html,body{
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <!-- 🔥 AVATAR CORE -->
     <div class="core" id="core">
       <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
@@ -144,10 +148,14 @@ html,body{
 
 <script type="module">
 
-// 🔥 IMPORT AVATAR
-import { getAvatar } from "/core/features/avatar/avatar-state.js";
+// 🔥 SAFE AVATAR LOAD (NO BREAK IF MISSING)
+let getAvatar=null;
+try{
+  const mod=await import("/core/features/avatar/avatar-state.js");
+  getAvatar=mod.getAvatar;
+}catch(e){}
 
-// 🌍 WORLDS
+/* 🌍 WORLDS */
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -168,23 +176,36 @@ const label=document.getElementById("label");
 const omni=document.getElementById("omni");
 
 let rot=0,vel=0,drag=false,lastX=0;
+
 const step=(Math.PI*2)/WORLDS.length;
 
-// 🔧 BUILD
-WORLDS.forEach((w,i)=>{
-  const el=document.createElement("div");
-  el.className="seg";
-  el.innerText=w.e;
+/* 🔧 BUILD */
+function build(){
+  wheel.innerHTML="";
+  const r=Math.min(window.innerWidth,window.innerHeight)*0.28;
 
-  const a=i*step-Math.PI/2;
-  const r=120;
+  WORLDS.forEach((w,i)=>{
+    const el=document.createElement("div");
+    el.className="seg";
+    el.innerText=w.e;
 
-  el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
+    const a=i*step-Math.PI/2;
 
-  wheel.appendChild(el);
-});
+    el.style.transform=`
+      translate(
+        ${Math.cos(a)*r}px,
+        ${Math.sin(a)*r}px
+      )
+    `;
 
-// 🔁 UPDATE
+    wheel.appendChild(el);
+  });
+}
+
+build();
+window.addEventListener("resize",build);
+
+/* 🔁 UPDATE */
 function update(){
   wheel.style.transform=`rotate(${rot}rad)`;
 
@@ -199,11 +220,11 @@ function update(){
   core.dataset.url=WORLDS[i].u;
 }
 
-// 🔄 LOOP
+/* 🔄 LOOP */
 function loop(){
   if(!drag){
     rot+=vel;
-    vel*=0.93;
+    vel*=0.88;
     if(Math.abs(vel)<0.0002) vel=0;
   }
   update();
@@ -211,7 +232,7 @@ function loop(){
 }
 loop();
 
-// 🖐 DRAG
+/* 🖐 DRAG */
 document.addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
@@ -222,11 +243,11 @@ document.addEventListener("pointermove",e=>{
   let dx=e.clientX-lastX;
   lastX=e.clientX;
 
-  let d=dx/240;
+  let d=dx/260;
   rot+=d;
   vel=d;
 
-  omni.style.transform=`rotateY(${dx/5}deg) rotateX(${dx/-8}deg)`;
+  omni.style.transform=`rotateY(${dx/6}deg) rotateX(${dx/-10}deg)`;
 });
 
 document.addEventListener("pointerup",()=>{
@@ -234,7 +255,7 @@ document.addEventListener("pointerup",()=>{
   omni.style.transform="rotateY(0) rotateX(0)";
 });
 
-// 🚀 ENTER
+/* 🚀 ENTER */
 core.onclick=()=>{
   const portal=document.createElement("div");
   portal.className="portal";
@@ -247,11 +268,12 @@ core.onclick=()=>{
   },700);
 };
 
-// 🔥 LOAD USER AVATAR
-(async () => {
-  const avatar = await getAvatar();
-  if (avatar) {
-    document.getElementById("avatar-img").src = avatar;
+/* 🧑 AVATAR */
+(async()=>{
+  if(!getAvatar) return;
+  const avatar=await getAvatar();
+  if(avatar){
+    document.getElementById("avatar-img").src=avatar;
   }
 })();
 
