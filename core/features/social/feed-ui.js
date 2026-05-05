@@ -1,14 +1,18 @@
 // =========================
-// RICH BIZNESS FEED UI — FINAL
+// RICH BIZNESS FEED UI — SMART (BOOK FLOW)
 // =========================
 
 import { loadFeed } from "./feed-client.js";
 
-export function mountFeed(targetId = "feed-root") {
-  loadFeed(targetId);
+export function mountFeed({
+  targetId = "feed-root",
+  type = null,
+  userId = null
+} = {}) {
+  loadFeed({ targetId, type, userId });
 
-  // 🔥 AUTO REFRESH (REAL-TIME FEEL)
+  // 🔥 AUTO REFRESH
   setInterval(() => {
-    loadFeed(targetId);
+    loadFeed({ targetId, type, userId });
   }, 10000);
 }
