@@ -6,158 +6,137 @@
 <title>Rich Bizness</title>
 
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  background: black;
-  font-family: serif;
+  height:100%;
+  width:100%;
+  overflow:hidden;
+  background:black;
 }
 
 /* BACKGROUND */
 .bg {
-  position: fixed;
-  inset: 0;
-  background: url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
-  filter: brightness(0.55) contrast(1.2);
+  position:fixed;
+  inset:0;
+  background:url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
+  transition: transform 0.6s ease, filter 0.6s ease;
 }
 
-/* SMOKE / ENERGY */
-.energy-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at center, rgba(0,255,170,0.2), rgba(0,0,0,0.95)),
-    url("https://www.transparenttextures.com/patterns/smoke.png");
-  animation: smokeMove 20s linear infinite;
-  mix-blend-mode: screen;
-}
-
-@keyframes smokeMove {
-  from { background-position: 0 0; }
-  to { background-position: 500px 500px; }
+/* DARK ENERGY */
+.overlay {
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle, rgba(0,255,170,0.25), rgba(0,0,0,0.9));
 }
 
 /* CENTER */
 .center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90vw;
-  max-width: 450px;
-  aspect-ratio: 1/1;
-  animation: float 6s ease-in-out infinite;
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width:85vw;
+  max-width:420px;
+  aspect-ratio:1/1;
 }
 
-@keyframes float {
-  0% { transform: translate(-50%, -50%) translateY(0); }
-  50% { transform: translate(-50%, -50%) translateY(-8px); }
-  100% { transform: translate(-50%, -50%) translateY(0); }
+/* FORCE GPU SPIN */
+.ring, .ring2 {
+  will-change: transform;
 }
 
 /* OUTER RING */
 .ring {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  border: 5px solid rgba(0,255,170,0.9);
-  box-shadow:
-    0 0 40px rgba(0,255,170,1),
-    inset 0 0 40px rgba(0,255,170,0.4);
-  animation: rotate 15s linear infinite;
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  border:6px solid #00ffaa;
+  box-shadow:0 0 40px #00ffaa;
+  animation:spin 10s linear infinite;
 }
 
 /* INNER RING */
 .ring2 {
-  position: absolute;
-  inset: 10%;
-  border-radius: 50%;
-  border: 2px solid rgba(0,255,170,0.5);
-  animation: rotateReverse 12s linear infinite;
+  position:absolute;
+  inset:12%;
+  border-radius:50%;
+  border:2px solid rgba(0,255,170,0.5);
+  animation:spinReverse 8s linear infinite;
 }
 
-@keyframes rotate {
+@keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-@keyframes rotateReverse {
+@keyframes spinReverse {
   from { transform: rotate(360deg); }
   to { transform: rotate(0deg); }
 }
 
-/* CORE BUTTON */
+/* CORE */
 .core {
-  position: absolute;
-  inset: 28%;
-  border-radius: 50%;
-  background: radial-gradient(circle, #00ffaa, #00c48c);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: black;
-  font-weight: bold;
-  font-size: 18px;
-  text-align: center;
-  box-shadow:
-    0 0 50px rgba(0,255,170,1),
-    inset 0 0 20px rgba(0,0,0,0.4);
-  transition: all 0.2s ease;
+  position:absolute;
+  inset:30%;
+  border-radius:50%;
+  background:#00ffaa;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  color:black;
+  box-shadow:0 0 50px #00ffaa;
+  transition:0.2s;
 }
 
+/* TOUCH FEEDBACK */
 .core:active {
-  transform: scale(0.85);
+  transform:scale(0.85);
 }
 
-/* BURST EFFECT */
-.burst {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
+/* ENERGY BLAST */
+.flash {
+  position:fixed;
+  inset:0;
+  background:#00ffaa;
+  opacity:0;
+  pointer-events:none;
 }
 
-.burst.active {
-  animation: burst 0.4s ease;
+.flash.active {
+  animation:flashAnim 0.3s ease;
 }
 
-@keyframes burst {
-  0% { transform: scale(1); opacity: 0.8; }
-  100% { transform: scale(2.5); opacity: 0; }
+@keyframes flashAnim {
+  0% { opacity:0.8; }
+  100% { opacity:0; }
 }
 
 /* LABELS */
 .label {
-  position: absolute;
-  color: #00ffaa;
-  font-size: 12px;
-  text-shadow: 0 0 10px #00ffaa;
+  position:absolute;
+  color:#00ffaa;
+  font-size:12px;
+  text-shadow:0 0 10px #00ffaa;
 }
 
-/* LABEL POSITIONS */
-.music { top: 18%; left: 20%; transform: rotate(-30deg); }
-.gaming { left: 6%; top: 45%; transform: rotate(-90deg); }
-.sports { top: 18%; right: 20%; transform: rotate(30deg); }
-.gallery { top: 5%; left: 50%; transform: translateX(-50%); }
-.store { top: 35%; right: 5%; transform: rotate(90deg); }
-.meta { right: 12%; bottom: 25%; transform: rotate(120deg); }
-.upload { bottom: 12%; right: 30%; transform: rotate(160deg); }
+/* POSITION */
+.music { top:18%; left:20%; transform:rotate(-30deg); }
+.gaming { left:5%; top:45%; transform:rotate(-90deg); }
+.sports { top:18%; right:20%; transform:rotate(30deg); }
+.gallery { top:5%; left:50%; transform:translateX(-50%); }
+.store { top:35%; right:5%; transform:rotate(90deg); }
+.meta { right:10%; bottom:25%; transform:rotate(120deg); }
+.upload { bottom:10%; right:30%; transform:rotate(160deg); }
 
 </style>
 </head>
 
 <body>
 
-<div class="bg"></div>
-<div class="energy-overlay"></div>
+<div class="bg" id="bg"></div>
+<div class="overlay"></div>
 
 <div class="center">
 
@@ -172,31 +151,44 @@ html, body {
   <div class="label meta">META</div>
   <div class="label upload">UPLOAD</div>
 
-  <div class="burst" id="burst"></div>
-
   <div class="core" id="coreBtn">RUN IT UP 🚀</div>
 
 </div>
 
+<div class="flash" id="flash"></div>
+
 <script>
 const core = document.getElementById("coreBtn");
-const burst = document.getElementById("burst");
+const flash = document.getElementById("flash");
+const bg = document.getElementById("bg");
 
-core.addEventListener("click", () => {
+function activate() {
 
-  burst.classList.remove("active");
-  void burst.offsetWidth;
-  burst.classList.add("active");
+  // ENERGY FLASH
+  flash.classList.remove("active");
+  void flash.offsetWidth;
+  flash.classList.add("active");
 
-  core.innerText = "ACTIVATING...";
+  // BACKGROUND ZOOM
+  bg.style.transform = "scale(1.2)";
+  bg.style.filter = "brightness(1.2)";
+
+  // BUTTON CHANGE
+  core.innerText = "ENTERING...";
   core.style.background = "black";
   core.style.color = "#00ffaa";
 
+  // DELAY INTO NEXT PHASE
   setTimeout(() => {
-    core.innerText = "ENTER";
-  }, 400);
+    // THIS WILL BE REAL ROUTING NEXT
+    alert("WELCOME TO RICH BIZNESS 🌎");
+  }, 600);
+}
 
-});
+// iPhone TOUCH FIX
+core.addEventListener("click", activate);
+core.addEventListener("touchstart", activate);
+
 </script>
 
 </body>
