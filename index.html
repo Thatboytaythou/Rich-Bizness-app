@@ -13,6 +13,7 @@ html, body {
   width:100%;
   overflow:hidden;
   background:black;
+  font-family:sans-serif;
 }
 
 /* BACKGROUND */
@@ -20,10 +21,10 @@ html, body {
   position:fixed;
   inset:0;
   background:url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
-  transition: transform 0.6s ease, filter 0.6s ease;
+  transition: transform 0.7s ease, filter 0.7s ease;
 }
 
-/* DARK ENERGY */
+/* OVERLAY */
 .overlay {
   position:absolute;
   inset:0;
@@ -41,26 +42,22 @@ html, body {
   aspect-ratio:1/1;
 }
 
-/* FORCE GPU SPIN */
+/* RINGS */
 .ring, .ring2 {
-  will-change: transform;
-}
-
-/* OUTER RING */
-.ring {
   position:absolute;
   inset:0;
   border-radius:50%;
+  will-change:transform;
+}
+
+.ring {
   border:6px solid #00ffaa;
   box-shadow:0 0 40px #00ffaa;
   animation:spin 10s linear infinite;
 }
 
-/* INNER RING */
 .ring2 {
-  position:absolute;
   inset:12%;
-  border-radius:50%;
   border:2px solid rgba(0,255,170,0.5);
   animation:spinReverse 8s linear infinite;
 }
@@ -90,12 +87,11 @@ html, body {
   transition:0.2s;
 }
 
-/* TOUCH FEEDBACK */
 .core:active {
   transform:scale(0.85);
 }
 
-/* ENERGY BLAST */
+/* FLASH */
 .flash {
   position:fixed;
   inset:0;
@@ -121,7 +117,6 @@ html, body {
   text-shadow:0 0 10px #00ffaa;
 }
 
-/* POSITION */
 .music { top:18%; left:20%; transform:rotate(-30deg); }
 .gaming { left:5%; top:45%; transform:rotate(-90deg); }
 .sports { top:18%; right:20%; transform:rotate(30deg); }
@@ -140,8 +135,8 @@ html, body {
 
 <div class="center">
 
-  <div class="ring"></div>
-  <div class="ring2"></div>
+  <div class="ring" id="ring"></div>
+  <div class="ring2" id="ring2"></div>
 
   <div class="label music">MUSIC</div>
   <div class="label gaming">GAMING</div>
@@ -161,31 +156,55 @@ html, body {
 const core = document.getElementById("coreBtn");
 const flash = document.getElementById("flash");
 const bg = document.getElementById("bg");
+const ring = document.getElementById("ring");
+const ring2 = document.getElementById("ring2");
 
+const sections = [
+  { name: "music", route: "/music.html" },
+  { name: "gaming", route: "/gaming.html" },
+  { name: "sports", route: "/sports.html" },
+  { name: "gallery", route: "/gallery.html" },
+  { name: "store", route: "/store.html" },
+  { name: "meta", route: "/metaverse.html" },
+  { name: "upload", route: "/upload.html" }
+];
+
+let currentIndex = 0;
+
+/* ROTATION SIMULATION */
+setInterval(() => {
+  currentIndex = (currentIndex + 1) % sections.length;
+}, 1500);
+
+/* ACTIVATE */
 function activate() {
 
-  // ENERGY FLASH
+  const selected = sections[currentIndex];
+
+  // FLASH
   flash.classList.remove("active");
   void flash.offsetWidth;
   flash.classList.add("active");
 
-  // BACKGROUND ZOOM
-  bg.style.transform = "scale(1.2)";
-  bg.style.filter = "brightness(1.2)";
-
-  // BUTTON CHANGE
-  core.innerText = "ENTERING...";
+  // LOCK TEXT
+  core.innerText = selected.name.toUpperCase();
   core.style.background = "black";
   core.style.color = "#00ffaa";
 
-  // DELAY INTO NEXT PHASE
+  // STOP SPIN
+  ring.style.animation = "none";
+  ring2.style.animation = "none";
+
+  // ZOOM
+  bg.style.transform = "scale(1.4)";
+  bg.style.filter = "brightness(1.3)";
+
+  // ENTER
   setTimeout(() => {
-    // THIS WILL BE REAL ROUTING NEXT
-    alert("WELCOME TO RICH BIZNESS 🌎");
-  }, 600);
+    window.location.href = selected.route;
+  }, 800);
 }
 
-// iPhone TOUCH FIX
 core.addEventListener("click", activate);
 core.addEventListener("touchstart", activate);
 
