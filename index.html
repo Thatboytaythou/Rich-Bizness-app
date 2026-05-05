@@ -1,220 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rich Bizness — Omnitrix</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rich Bizness — Omnitrix</title>
 
-  <!-- EXISTING GLOBAL STYLES (keep if you already use them) -->
-  <link rel="stylesheet" href="/styles/main.css" />
-  <link rel="stylesheet" href="/styles/mobile.css" />
-  <link rel="stylesheet" href="/styles/motion.css" />
+<style>
+html, body {
+  margin:0;
+  padding:0;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+}
 
-  <style>
-    /* =========================
-       OMNITRIX — FULL PAGE LOCK
-    ========================= */
+/* BACKGROUND */
+.rb-bg {
+  position:absolute;
+  inset:0;
+  background:url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") center/cover no-repeat;
+  filter:brightness(0.6);
+}
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    }
+/* OMNITRIX WRAP */
+.rb-wrap {
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) perspective(900px) rotateX(15deg);
+  width:340px;
+  height:340px;
+}
 
-    .rb-scene {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-    }
+/* RINGS */
+.rb-ring {
+  position:absolute;
+  border-radius:50%;
+}
 
-    /* 🔥 BACKGROUND (your image) */
-    .rb-bg {
-      position: absolute;
-      inset: 0;
-      background: url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png") no-repeat center center;
-      background-size: cover;
-      filter: brightness(0.6) saturate(1.05);
-    }
+.outer {
+  inset:-12px;
+  border:8px solid #00ff99;
+  box-shadow:0 0 40px #00ff99, inset 0 0 20px #00ff99;
+}
 
-    /* CENTER DEVICE WRAP */
-    .rb-omnitrx {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: min(85vw, 380px);
-      height: min(85vw, 380px);
-      transform: translate(-50%, -50%) perspective(900px) rotateX(15deg);
-      border-radius: 50%;
-    }
+.inner {
+  inset:20px;
+  border:2px solid rgba(0,255,150,0.4);
+}
 
-    /* RINGS */
-    .rb-ring {
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-    }
+/* WHEEL */
+.rb-wheel {
+  position:absolute;
+  inset:0;
+  transition:transform 0.5s ease;
+}
 
-    .rb-ring.outer {
-      inset: -12px;
-      border: 8px solid rgba(0,255,150,0.5);
-      box-shadow:
-        0 0 40px rgba(0,255,150,0.8),
-        inset 0 0 20px rgba(0,255,150,0.3);
-    }
+/* SEGMENTS */
+.seg {
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform-origin:center -140px;
+  color:#00ff99;
+  font-weight:800;
+  font-size:12px;
+  text-shadow:0 0 10px #00ff99;
+  cursor:pointer;
+}
 
-    .rb-ring.inner {
-      inset: 20px;
-      border: 2px solid rgba(0,255,150,0.3);
-      box-shadow: inset 0 0 20px rgba(0,255,150,0.2);
-    }
+/* POSITIONS */
+.seg[data-i="0"] { transform:rotate(0deg) translate(-50%,-50%); }
+.seg[data-i="1"] { transform:rotate(45deg) translate(-50%,-50%); }
+.seg[data-i="2"] { transform:rotate(90deg) translate(-50%,-50%); }
+.seg[data-i="3"] { transform:rotate(135deg) translate(-50%,-50%); }
+.seg[data-i="4"] { transform:rotate(180deg) translate(-50%,-50%); }
+.seg[data-i="5"] { transform:rotate(225deg) translate(-50%,-50%); }
+.seg[data-i="6"] { transform:rotate(270deg) translate(-50%,-50%); }
+.seg[data-i="7"] { transform:rotate(315deg) translate(-50%,-50%); }
 
-    /* WHEEL */
-    .rb-wheel {
-      position: absolute;
-      inset: 0;
-      animation: rb-spin 18s linear infinite;
-    }
+/* CORE BUTTON */
+.rb-core {
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:110px;
+  height:110px;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#00ff99;
+  color:#000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  text-align:center;
+  cursor:pointer;
+  box-shadow:0 0 40px #00ff99;
+  transition:0.2s;
+}
 
-    .seg {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform-origin: center -140px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: #69ffb4;
-      text-shadow:
-        0 0 6px #69ffb4,
-        0 0 12px rgba(0,255,150,0.7);
-      user-select: none;
-      pointer-events: none;
-    }
+.rb-core:active {
+  transform:translate(-50%,-50%) scale(0.9);
+}
 
-    /* 8 segments around circle */
-    .seg1 { transform: rotate(0deg) translate(-50%, -50%); }
-    .seg2 { transform: rotate(45deg) translate(-50%, -50%); }
-    .seg3 { transform: rotate(90deg) translate(-50%, -50%); }
-    .seg4 { transform: rotate(135deg) translate(-50%, -50%); }
-    .seg5 { transform: rotate(180deg) translate(-50%, -50%); }
-    .seg6 { transform: rotate(225deg) translate(-50%, -50%); }
-    .seg7 { transform: rotate(270deg) translate(-50%, -50%); }
-    .seg8 { transform: rotate(315deg) translate(-50%, -50%); }
+/* LOCKED STATE */
+.locked {
+  animation:pulse 1s infinite;
+}
 
-    /* CORE */
-    .rb-core {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 110px;
-      height: 110px;
-      transform: translate(-50%, -50%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 800;
-      line-height: 1.1;
-      background: radial-gradient(circle at 50% 50%, #00ff99 0%, #003a2a 60%, #001a12 100%);
-      box-shadow:
-        0 0 40px #00ff99,
-        0 0 100px rgba(0,255,150,0.8);
-      animation: rb-pulse 2.5s infinite ease-in-out;
-      z-index: 2;
-    }
-
-    /* ACTION BUTTON */
-    .rb-action {
-      position: absolute;
-      bottom: 36px;
-      left: 50%;
-      transform: translateX(-50%);
-      padding: 14px 28px;
-      border-radius: 12px;
-      background: rgba(0,255,150,0.18);
-      color: #69ffb4;
-      font-weight: 800;
-      letter-spacing: 1px;
-      box-shadow: 0 0 20px rgba(0,255,150,0.6);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      user-select: none;
-    }
-
-    /* SIMPLE NAV MOUNT (kept) */
-    #elite-platform-nav {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 20;
-    }
-
-    /* ANIMS */
-    @keyframes rb-spin {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-
-    @keyframes rb-pulse {
-      0%,100% { transform: translate(-50%, -50%) scale(1); }
-      50%     { transform: translate(-50%, -50%) scale(1.15); }
-    }
-  </style>
+@keyframes pulse {
+  0%{box-shadow:0 0 20px #00ff99;}
+  50%{box-shadow:0 0 60px #00ff99;}
+  100%{box-shadow:0 0 20px #00ff99;}
+}
+</style>
 </head>
 
 <body>
 
-<div class="rb-scene">
+<div class="rb-bg"></div>
 
-  <!-- NAV (your existing system) -->
-  <div id="elite-platform-nav"></div>
+<div class="rb-wrap">
+  <div class="rb-ring outer"></div>
+  <div class="rb-ring inner"></div>
 
-  <!-- BACKGROUND -->
-  <div class="rb-bg"></div>
-
-  <!-- OMNITRIX -->
-  <div class="rb-omnitrx">
-
-    <div class="rb-ring outer"></div>
-    <div class="rb-ring inner"></div>
-
-    <div class="rb-wheel">
-      <div class="seg seg1">LIVE</div>
-      <div class="seg seg2">MUSIC</div>
-      <div class="seg seg3">GAMING</div>
-      <div class="seg seg4">SPORTS</div>
-      <div class="seg seg5">GALLERY</div>
-      <div class="seg seg6">STORE</div>
-      <div class="seg seg7">META</div>
-      <div class="seg seg8">UPLOAD</div>
-    </div>
-
-    <div class="rb-core">
-      RICH<br/>BIZNESS
-    </div>
-
+  <div class="rb-wheel" id="wheel">
+    <div class="seg" data-i="0">LIVE</div>
+    <div class="seg" data-i="1">MUSIC</div>
+    <div class="seg" data-i="2">GAMING</div>
+    <div class="seg" data-i="3">SPORTS</div>
+    <div class="seg" data-i="4">GALLERY</div>
+    <div class="seg" data-i="5">STORE</div>
+    <div class="seg" data-i="6">META</div>
+    <div class="seg" data-i="7">UPLOAD</div>
   </div>
 
-  <!-- BUTTON -->
-  <div class="rb-action">RUN IT UP 🚀</div>
-
+  <div class="rb-core" id="core">SELECT</div>
 </div>
 
-<!-- YOUR GLOBALS -->
 <script>
-window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
-window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
-</script>
+const wheel = document.getElementById("wheel");
+const core = document.getElementById("core");
 
-<!-- YOUR HOME SCRIPT (kept) -->
-<script type="module" src="/core/pages/home.js"></script>
+let currentIndex = 0;
+let locked = false;
+
+/* ROUTES */
+const routes = [
+  "/live",
+  "/music",
+  "/gaming",
+  "/sports",
+  "/gallery",
+  "/store",
+  "/metaverse",
+  "/upload"
+];
+
+/* ROTATE FUNCTION */
+function rotateTo(index){
+  currentIndex = index;
+  const angle = index * -45;
+  wheel.style.transform = `rotate(${angle}deg)`;
+}
+
+/* CLICK SEGMENT */
+document.querySelectorAll(".seg").forEach(seg=>{
+  seg.addEventListener("click",()=>{
+    if(locked) return;
+    const i = Number(seg.dataset.i);
+    rotateTo(i);
+  });
+});
+
+/* CORE BUTTON */
+core.addEventListener("click",()=>{
+
+  if(!locked){
+    // FIRST CLICK = LOCK
+    locked = true;
+    core.classList.add("locked");
+    core.innerText = "RUN IT UP 🚀";
+  } else {
+    // SECOND CLICK = ENTER
+    window.location.href = routes[currentIndex];
+  }
+
+});
+
+/* SWIPE / DRAG (mobile feel) */
+let startX = 0;
+
+window.addEventListener("touchstart",e=>{
+  startX = e.touches[0].clientX;
+});
+
+window.addEventListener("touchend",e=>{
+  let diff = e.changedTouches[0].clientX - startX;
+
+  if(Math.abs(diff) > 40){
+    if(diff > 0){
+      rotateTo((currentIndex - 1 + 8) % 8);
+    } else {
+      rotateTo((currentIndex + 1) % 8);
+    }
+  }
+});
+</script>
 
 </body>
 </html>
