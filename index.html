@@ -1,292 +1,204 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Rich Bizness Omnitrix — FINAL LOCKED</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload — Rich Bizness</title>
 
-<style>
-html,body{
-  margin:0;
-  height:100%;
-  background:#000;
-  overflow:hidden;
-  font-family:sans-serif;
-}
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-/* BACKGROUND */
-.bg{
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(circle at center, rgba(0,255,200,0.2), transparent 60%),
-    #000;
-}
+  <link rel="stylesheet" href="/styles/main.css" />
+  <link rel="stylesheet" href="/styles/mobile.css" />
+  <link rel="stylesheet" href="/styles/motion.css" />
+  <link rel="stylesheet" href="/styles/upload.css" />
 
-/* STAGE */
-.stage{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+  <style>
+    html, body {
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:black;
+    }
 
-/* DEVICE */
-.omni{
-  width:92vw;
-  max-width:420px;
-  aspect-ratio:1;
-  position:relative;
-}
+    #upload-root{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
 
-/* OUTER */
-.outer{
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  background:#001;
-  box-shadow:
-    0 0 30px #00ffcc,
-    inset 0 0 15px #00ffcc;
-  pointer-events:none;
-}
+    .upload-stage{
+      width:95vw;
+      max-width:520px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      position:relative;
+      z-index:5;
+    }
 
-/* WHEEL */
-.wheel{
-  position:absolute;
-  inset:0;
-  z-index:10;
-}
+    .upload-shell{
+      width:100%;
+    }
 
-/* ICONS — FORCE OVERRIDE GLOBAL CSS */
-.omni .seg{
-  position:absolute !important;
-  font-size:34px !important;
-  cursor:pointer !important;
-  left:auto !important;
-  top:auto !important;
-  transform:none !important;
-  transform-origin:center !important;
-  z-index:20 !important;
-}
+    /* 🧿 AVATAR */
+    .upload-avatar{
+      position:fixed;
+      top:120px;
+      left:50%;
+      transform:translateX(-50%);
+      width:90px;
+      height:90px;
+      border-radius:50%;
+      overflow:hidden;
+      z-index:10;
+      box-shadow:0 0 25px #00ffcc;
+      transition:.4s;
+    }
 
-/* ACTIVE */
-.seg.active{
-  transform:scale(1.4);
-  filter:drop-shadow(0 0 20px #00ffcc);
-}
+    .upload-avatar img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
 
-/* CORE */
-.core{
-  position:absolute;
-  width:45%;
-  height:45%;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:
-    0 0 40px #00ffcc,
-    inset 0 0 25px #00ffcc;
-  z-index:15;
-}
+    /* 🎯 TARGET (PREVIEW AREA) */
+    #upload-preview{
+      position:relative;
+      min-height:120px;
+    }
 
-.avatar{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  border-radius:50%;
-}
+    #upload-preview img,
+    #upload-preview video{
+      max-width:100%;
+      border-radius:12px;
+      transition:.4s;
+    }
 
-/* LABEL */
-.label{
-  position:absolute;
-  bottom:-60px;
-  width:100%;
-  text-align:center;
-  color:#00ffcc;
-  font-size:20px;
-}
+    /* 🚀 ABSORB ANIMATION */
+    .absorb{
+      position:fixed !important;
+      z-index:20;
+      animation:absorbToAvatar .8s forwards;
+    }
 
-/* PORTAL */
-.portal{
-  position:fixed;
-  inset:0;
-  background:radial-gradient(circle,#00ffcc,#000);
-  transform:scale(0);
-  transition:.5s;
-  z-index:999;
-}
+    @keyframes absorbToAvatar{
+      0%{
+        transform:scale(1) translate(0,0);
+        opacity:1;
+      }
+      100%{
+        transform:scale(.1) translate(0,-300px);
+        opacity:0;
+      }
+    }
 
-.portal.open{
-  transform:scale(4);
-}
+    /* 🌌 PORTAL FLASH */
+    .avatar-pulse{
+      animation:avatarPulse .5s;
+    }
 
-/* SMOKE MOTION */
-.smoke{
-  position:absolute;
-  width:300px;
-  height:300px;
-  border-radius:50%;
-  background:radial-gradient(circle, rgba(0,255,156,0.2), transparent);
-  filter:blur(60px);
-  animation:smokeMove 18s linear infinite;
-}
+    @keyframes avatarPulse{
+      0%{box-shadow:0 0 20px #00ffcc}
+      50%{box-shadow:0 0 80px #00ffcc}
+      100%{box-shadow:0 0 20px #00ffcc}
+    }
 
-@keyframes smokeMove{
-  0%{transform:translateY(40px);opacity:0}
-  20%{opacity:.4}
-  50%{transform:translateY(-120px);opacity:.2}
-  100%{transform:translateY(-260px);opacity:0}
-}
-</style>
+  </style>
 </head>
 
 <body>
 
-<div class="bg"></div>
-<div class="smoke"></div>
+  <div class="upload-bg"></div>
+  <div class="smoke-layer"></div>
+  <div class="particles" id="particles"></div>
 
-<div class="stage">
-  <div class="omni">
-
-    <div class="outer"></div>
-    <div class="wheel" id="wheel"></div>
-
-    <div class="core">
-      <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-    </div>
-
-    <div class="label" id="label">LIVE</div>
-
+  <!-- 🧿 AVATAR -->
+  <div class="upload-avatar" id="avatar">
+    <img id="avatar-img" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   </div>
-</div>
 
-<script type="module">
+  <div id="upload-root">
+    <div class="upload-stage" id="upload-stage"></div>
+  </div>
 
-import { getAvatar } from "/core/features/avatar/avatar-state.js";
+  <script>
+    window.NEXT_PUBLIC_SUPABASE_URL = "https://ksvdequymkceevocgpdj.supabase.co";
+    window.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos";
+  </script>
 
-const WORLDS=[
-{e:"📡",n:"LIVE",u:"/live.html"},
-{e:"🎵",n:"MUSIC",u:"/music.html"},
-{e:"🎮",n:"GAMING",u:"/gaming.html"},
-{e:"🏆",n:"SPORTS",u:"/sports.html"},
-{e:"🖼️",n:"GALLERY",u:"/gallery.html"},
-{e:"🛒",n:"STORE",u:"/store.html"},
-{e:"⬆️",n:"UPLOAD",u:"/upload.html"},
-{e:"👤",n:"PROFILE",u:"/profile.html"},
-{e:"💬",n:"MESSAGES",u:"/messages.html"},
-{e:"🔔",n:"NOTIFY",u:"/notifications.html"},
-{e:"🌐",n:"META",u:"/metaverse.html"}
-];
+  <script type="module">
 
-const wheel=document.getElementById("wheel");
-const label=document.getElementById("label");
+    import { mountUploadUI } from "/core/features/upload/upload-ui.js";
+    import { getAvatar } from "/core/features/avatar/avatar-state.js";
 
-/* BUILD */
-function build(){
-  const rect = wheel.getBoundingClientRect();
-  const size = rect.width;
+    const stage = document.getElementById("upload-stage");
+    mountUploadUI(stage);
 
-  if(size===0){
-    requestAnimationFrame(build);
-    return;
-  }
+    /* 🔥 LOAD REAL AVATAR */
+    (async () => {
+      const avatar = await getAvatar();
+      if (avatar) {
+        document.getElementById("avatar-img").src = avatar;
+      }
+    })();
 
-  const center=size/2;
-  const radius=size*0.35;
+    const avatarEl = document.getElementById("avatar");
 
-  wheel.innerHTML="";
+    /* ✨ PARTICLES */
+    const container = document.getElementById("particles");
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement("span");
+      p.style.left = Math.random() * 100 + "%";
+      p.style.animationDuration = (8 + Math.random() * 6) + "s";
+      container.appendChild(p);
+    }
 
-  WORLDS.forEach((w,i)=>{
-    const el=document.createElement("div");
-    el.className="seg";
-    el.innerText=w.e;
+    /* 🎯 TRACK PREVIEW ELEMENT */
+    let currentPreview = null;
 
-    const angle=(i/WORLDS.length)*Math.PI*2 - Math.PI/2;
+    document.addEventListener("change",(e)=>{
+      if(e.target.id === "upload-input"){
+        setTimeout(()=>{
+          const preview = document.querySelector("#upload-preview img, #upload-preview video");
+          if(preview){
+            currentPreview = preview;
+          }
+        },100);
+      }
+    });
 
-    el.style.left=(center + Math.cos(angle)*radius)+"px";
-    el.style.top=(center + Math.sin(angle)*radius)+"px";
+    /* 🚀 RUN IT UP → PHYSICAL ABSORB */
+    document.addEventListener("click",(e)=>{
+      if(e.target.id === "run-upload" && currentPreview){
 
-    el.onclick=()=>go(w);
+        const rect = currentPreview.getBoundingClientRect();
 
-    wheel.appendChild(el);
-  });
-}
+        const clone = currentPreview.cloneNode(true);
+        clone.style.position = "fixed";
+        clone.style.left = rect.left + "px";
+        clone.style.top = rect.top + "px";
+        clone.style.width = rect.width + "px";
+        clone.style.height = rect.height + "px";
 
-window.addEventListener("load", build);
+        document.body.appendChild(clone);
 
-/* SPIN */
-let rot=0,vel=0,drag=false,lastX=0;
+        requestAnimationFrame(()=>{
+          clone.classList.add("absorb");
+          avatarEl.classList.add("avatar-pulse");
+        });
 
-function loop(){
-  if(!drag){
-    rot+=vel;
-    vel*=0.93;
-  }
+        setTimeout(()=>{
+          clone.remove();
+          avatarEl.classList.remove("avatar-pulse");
+        },800);
+      }
+    });
 
-  wheel.style.transform=`rotate(${rot}rad)`;
-  update();
-
-  requestAnimationFrame(loop);
-}
-loop();
-
-/* ACTIVE */
-function update(){
-  let i=Math.round(rot/(Math.PI*2/WORLDS.length))%WORLDS.length;
-  if(i<0)i+=WORLDS.length;
-
-  document.querySelectorAll(".seg").forEach((s,idx)=>{
-    s.classList.toggle("active",idx===i);
-  });
-
-  label.innerText=WORLDS[i].n;
-}
-
-/* DRAG */
-document.addEventListener("pointerdown",e=>{
-  drag=true;
-  lastX=e.clientX;
-});
-
-document.addEventListener("pointermove",e=>{
-  if(!drag)return;
-  let dx=e.clientX-lastX;
-  lastX=e.clientX;
-  let f=dx/200;
-  rot+=f;
-  vel=f;
-});
-
-document.addEventListener("pointerup",()=>drag=false);
-
-/* NAV */
-function go(w){
-  const portal=document.createElement("div");
-  portal.className="portal";
-  document.body.appendChild(portal);
-
-  requestAnimationFrame(()=>portal.classList.add("open"));
-
-  setTimeout(()=>{
-    location.href=w.u;
-  },500);
-}
-
-/* AVATAR */
-(async()=>{
-  const avatar=await getAvatar();
-  if(avatar){
-    document.getElementById("avatar-img").src=avatar;
-  }
-})();
-</script>
+  </script>
 
 </body>
 </html>
