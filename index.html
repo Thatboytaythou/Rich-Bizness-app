@@ -19,7 +19,7 @@ html,body{
   position:fixed;
   inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.2), transparent 60%),
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.25), transparent 60%),
     #000;
 }
 
@@ -30,7 +30,7 @@ html,body{
   display:flex;
   align-items:center;
   justify-content:center;
-  perspective:1200px;
+  perspective:1400px;
 }
 
 /* 🧿 DEVICE */
@@ -49,7 +49,9 @@ html,body{
   inset:0;
   border-radius:50%;
   background:#001;
-  box-shadow:0 0 80px #00ffcc;
+  box-shadow:
+    0 0 60px #00ffcc,
+    inset 0 0 30px #00ffcc;
   pointer-events:none;
 }
 
@@ -57,6 +59,7 @@ html,body{
 .wheel{
   position:absolute;
   inset:20%;
+  transition:transform 0.05s linear;
 }
 
 /* 🧿 ICONS */
@@ -68,12 +71,12 @@ html,body{
   font-size:28px;
   cursor:pointer;
   z-index:5;
-  transition:.2s;
+  transition:0.2s;
 }
 
-.seg:hover{
-  transform:scale(1.5);
-  filter:drop-shadow(0 0 15px #00ffcc);
+.seg.active{
+  transform:scale(1.7);
+  filter:drop-shadow(0 0 20px #00ffcc);
 }
 
 /* 🧑 CORE */
@@ -86,10 +89,11 @@ html,body{
   align-items:center;
   justify-content:center;
   box-shadow:
-    0 0 40px #00ffcc,
-    inset 0 0 20px #00ffcc;
+    0 0 50px #00ffcc,
+    inset 0 0 30px #00ffcc;
   overflow:hidden;
   pointer-events:none;
+  transition:0.2s;
 }
 
 .avatar{
@@ -136,7 +140,7 @@ html,body{
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <div class="core">
+    <div class="core" id="core">
       <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
 
@@ -147,10 +151,9 @@ html,body{
 
 <script type="module">
 
-/* 🔥 IMPORT AVATAR */
 import { getAvatar } from "/core/features/avatar/avatar-state.js";
 
-/* 🌍 ALL ROUTES CONNECTED */
+/* 🌍 ROUTES */
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -167,10 +170,11 @@ const WORLDS=[
 
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
+const core=document.getElementById("core");
 
 const step=(Math.PI*2)/WORLDS.length;
 
-/* 🔧 BUILD — ALL CLICKABLE */
+/* 🔧 BUILD */
 WORLDS.forEach((w,i)=>{
   const el=document.createElement("div");
   el.className="seg";
@@ -181,30 +185,53 @@ WORLDS.forEach((w,i)=>{
 
   el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
 
-  /* 🔥 CLICK EVERY ICON */
-  el.onclick = (e)=>{
-    e.stopPropagation();
-
-    label.innerText = w.n;
-
-    const portal=document.createElement("div");
-    portal.className="portal";
-    document.body.appendChild(portal);
-
-    requestAnimationFrame(()=>portal.classList.add("open"));
-
-    setTimeout(()=>{
-      location.href = w.u;
-    },600);
+  el.onclick=()=>{
+    triggerPortal(w.u);
   };
 
   wheel.appendChild(el);
 });
 
-/* 🔄 ROTATION (OPTIONAL FEEL) */
+/* 🌀 REAL PHYSICS */
 let rot=0;
-let drag=false,lastX=0;
+let vel=0;
+let drag=false;
+let lastX=0;
 
+function loop(){
+  if(!drag){
+    rot += vel;
+    vel *= 0.94;
+
+    if(Math.abs(vel)<0.002){
+      let snap = Math.round(rot/step)*step;
+      rot += (snap - rot)*0.12;
+    }
+  }
+
+  wheel.style.transform=`rotate(${rot}rad)`;
+
+  updateActive();
+  requestAnimationFrame(loop);
+}
+loop();
+
+/* 🧲 ACTIVE SLOT */
+function updateActive(){
+  let i=Math.round(rot/step)%WORLDS.length;
+  if(i<0)i+=WORLDS.length;
+
+  document.querySelectorAll(".seg").forEach((s,idx)=>{
+    s.classList.toggle("active", idx===i);
+  });
+
+  label.innerText=WORLDS[i].n;
+
+  /* CORE ENERGY PULSE */
+  core.style.transform = `scale(${1 + Math.sin(Date.now()/200)*0.03})`;
+}
+
+/* 🖐 DRAG CONTROL */
 document.addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
@@ -216,19 +243,33 @@ document.addEventListener("pointermove",e=>{
   let dx=e.clientX-lastX;
   lastX=e.clientX;
 
-  rot+=dx/240;
+  let force = dx/180;
 
-  wheel.style.transform=`rotate(${rot}rad)`;
+  rot += force;
+  vel = force;
 });
 
 document.addEventListener("pointerup",()=>{
   drag=false;
 });
 
-/* 🧿 LOAD REAL AVATAR */
-(async () => {
+/* 🚀 PORTAL */
+function triggerPortal(url){
+  const portal=document.createElement("div");
+  portal.className="portal";
+  document.body.appendChild(portal);
+
+  requestAnimationFrame(()=>portal.classList.add("open"));
+
+  setTimeout(()=>{
+    location.href=url;
+  },600);
+}
+
+/* 🧿 LOAD AVATAR */
+(async()=>{
   const avatar = await getAvatar();
-  if (avatar) {
+  if(avatar){
     document.getElementById("avatar-img").src = avatar;
   }
 })();
