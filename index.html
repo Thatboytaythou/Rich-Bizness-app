@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — FINAL FORM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Rich Bizness — Portal Core</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 html,body{
@@ -18,20 +18,14 @@ html,body{
     radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
-  animation:bgPulse 8s ease-in-out infinite;
-}
-
-@keyframes bgPulse{
-  0%{filter:brightness(.8)}
-  50%{filter:brightness(1.05)}
-  100%{filter:brightness(.8)}
+  filter:brightness(.9);
 }
 
 /* 🎯 STAGE */
 .stage{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
-  perspective:1200px;
+  perspective:1400px;
 }
 
 /* 🧿 DEVICE */
@@ -39,6 +33,7 @@ html,body{
   width:92vw;max-width:460px;aspect-ratio:1;
   position:relative;
   transform-style:preserve-3d;
+  transition:.2s;
 }
 
 /* 🔩 OUTER */
@@ -46,13 +41,6 @@ html,body{
   position:absolute;inset:0;border-radius:50%;
   background:#001;
   box-shadow:0 0 120px #00ffcc;
-  animation:ringPulse 4s ease-in-out infinite;
-}
-
-@keyframes ringPulse{
-  0%{box-shadow:0 0 60px #00ffcc}
-  50%{box-shadow:0 0 140px #00ffcc}
-  100%{box-shadow:0 0 60px #00ffcc}
 }
 
 /* ⚙️ WHEEL */
@@ -67,28 +55,13 @@ html,body{
   translate:-50% -50%;
   font-size:30px;
   transition:.2s;
-  opacity:.7;
-}
-
-/* FLOATING LIFE */
-.seg::after{
-  content:"";
-  position:absolute;
-  inset:-6px;
-  border-radius:50%;
-  background:rgba(0,255,200,.15);
-  opacity:0;
-  transition:.2s;
+  opacity:.6;
 }
 
 .seg.active{
   scale:1.9;
   opacity:1;
-  filter:drop-shadow(0 0 18px #00ffcc);
-}
-
-.seg.active::after{
-  opacity:1;
+  filter:drop-shadow(0 0 20px #00ffcc);
 }
 
 /* 🧿 CORE */
@@ -101,17 +74,11 @@ html,body{
     0 0 60px #00ffcc,
     inset 0 0 30px #00ffcc;
   cursor:pointer;
-  animation:coreBreath 3s ease-in-out infinite;
+  transition:.2s;
 }
 
-@keyframes coreBreath{
-  0%{transform:scale(1)}
-  50%{transform:scale(1.05)}
-  100%{transform:scale(1)}
-}
-
-.avatar{
-  width:100%;height:100%;object-fit:cover;
+.core:active{
+  scale:.9;
 }
 
 /* 🏷 LABEL */
@@ -124,18 +91,36 @@ html,body{
   font-size:20px;
 }
 
-/* 🌌 PORTAL */
+/* 🌌 PORTAL EXPANSION */
 .portal{
-  position:fixed;inset:0;
+  position:fixed;
+  inset:0;
   background:radial-gradient(circle,#00ffcc,#000);
   transform:scale(0);
   border-radius:50%;
   z-index:999;
-  transition:.6s;
+  transition:.7s ease;
 }
-.portal.open{
-  transform:scale(3);
+
+/* 🚀 WORLD ENTRY */
+.portal.enter{
+  transform:scale(8);
   border-radius:0;
+  filter:blur(20px);
+}
+
+/* 🔥 LIGHT BURST */
+.flash{
+  position:fixed;
+  inset:0;
+  background:#00ffcc;
+  opacity:0;
+  z-index:998;
+  transition:.2s;
+}
+
+.flash.show{
+  opacity:.8;
 }
 </style>
 </head>
@@ -150,14 +135,15 @@ html,body{
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <div class="core" id="core">
-      <img class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
-    </div>
+    <div class="core" id="core"></div>
 
     <div class="label" id="label">LIVE</div>
 
   </div>
 </div>
+
+<div class="portal" id="portal"></div>
+<div class="flash" id="flash"></div>
 
 <script>
 
@@ -179,6 +165,8 @@ const wheel=document.getElementById("wheel");
 const core=document.getElementById("core");
 const label=document.getElementById("label");
 const omni=document.getElementById("omni");
+const portal=document.getElementById("portal");
+const flash=document.getElementById("flash");
 
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
@@ -205,7 +193,6 @@ function build(){
   });
 }
 build();
-addEventListener("resize",build);
 
 /* 🔁 UPDATE */
 function update(){
@@ -217,10 +204,10 @@ function update(){
   document.querySelectorAll(".seg").forEach((s,idx)=>{
     if(idx===i){
       s.classList.add("active");
-      s.style.transform=`${s.dataset.base} scale(1.9) translateY(-4px)`;
+      s.style.transform=`${s.dataset.base} scale(1.9)`;
     }else{
       s.classList.remove("active");
-      s.style.transform=`${s.dataset.base} scale(1)`;
+      s.style.transform=s.dataset.base;
     }
   });
 
@@ -228,7 +215,7 @@ function update(){
   core.dataset.url=WORLDS[i].u;
 }
 
-/* 🔄 LOOP (FINAL FIX — NO LOOP FIGHT) */
+/* 🔄 LOOP */
 function loop(){
   if(!drag){
     rot+=vel;
@@ -240,7 +227,6 @@ function loop(){
       vel=0;
     }
   }
-
   update();
   requestAnimationFrame(loop);
 }
@@ -270,15 +256,17 @@ addEventListener("pointerup",()=>{
   omni.style.transform="rotateY(0) rotateX(0)";
 });
 
-/* 🚀 ENTER */
+/* 🚀 PORTAL ENTRY */
 core.onclick=()=>{
-  const p=document.createElement("div");
-  p.className="portal";
-  document.body.appendChild(p);
+  flash.classList.add("show");
 
-  requestAnimationFrame(()=>p.classList.add("open"));
+  setTimeout(()=>{
+    portal.classList.add("enter");
+  },150);
 
-  setTimeout(()=>location.href=core.dataset.url,600);
+  setTimeout(()=>{
+    location.href=core.dataset.url;
+  },700);
 };
 
 </script>
