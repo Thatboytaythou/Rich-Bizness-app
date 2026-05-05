@@ -2,129 +2,139 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix</title>
+<title>Rich Bizness — Omnitrix L10</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <style>
 html,body{
-  margin:0;
-  height:100%;
-  background:#000;
-  overflow:hidden;
-  font-family:sans-serif;
+  margin:0;height:100%;background:#000;overflow:hidden;
+  font-family:system-ui,-apple-system,Inter,sans-serif;
 }
 
 /* 🌌 BACKGROUND */
 .bg{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.2), transparent 60%),
+    radial-gradient(1200px 800px at 50% 65%, rgba(0,255,200,.18), transparent 60%),
+    radial-gradient(600px 600px at 20% 20%, rgba(0,255,200,.08), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
-  filter:brightness(0.7);
+  filter:brightness(.7) saturate(1.05);
 }
+
+/* ✨ PARTICLES */
+.particles{position:fixed;inset:0;pointer-events:none}
+.particles span{
+  position:absolute;width:3px;height:3px;border-radius:50%;
+  background:#00ffc8;opacity:.45;
+  animation:floatUp linear infinite;
+}
+@keyframes floatUp{from{transform:translateY(110vh)}to{transform:translateY(-10vh)}}
 
 /* 🎯 STAGE */
 .stage{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
   perspective:1200px;
 }
 
 /* 🧿 DEVICE */
 .omni{
-  width:92vw;
-  max-width:420px;
-  aspect-ratio:1;
-  border-radius:50%;
-  position:relative;
-  transform-style:preserve-3d;
-  transition:0.1s;
+  width:94vw;max-width:460px;aspect-ratio:1;border-radius:50%;
+  position:relative;transform-style:preserve-3d;
+  transition:transform .12s ease;
 }
 
-/* 🔩 OUTER */
+/* 🔩 OUTER METAL */
 .outer{
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  background:#001;
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, #022 0%, #000 65%);
   box-shadow:
-    0 0 80px #00ffcc,
-    inset 0 0 40px rgba(0,255,200,0.25);
+    0 0 90px rgba(0,255,200,.9),
+    inset 0 0 60px rgba(0,255,200,.25),
+    inset 0 0 120px rgba(0,0,0,.6);
 }
 
-/* ⚙️ WHEEL */
-.wheel{
-  position:absolute;
-  inset:0;
+/* 🔦 SWEEP LIGHT */
+.sweep{
+  position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(120deg, transparent 30%, rgba(255,255,255,.18), transparent 70%);
+  mix-blend-mode:overlay;
+  animation:sweep 5s linear infinite;
 }
+@keyframes sweep{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+/* ⚙️ RINGS */
+.ring{
+  position:absolute;inset:0;border-radius:50%;
+  will-change:transform;
+}
+.ring.outer-ring{inset:8%;}
+.ring.mid-ring{inset:16%;}
+.ring.inner-ring{inset:24%;}
 
 /* 🧿 SEGMENTS */
 .seg{
-  position:absolute;
-  left:50%;
-  top:50%;
+  position:absolute;left:50%;top:50%;
   transform-origin:0 0;
-  font-size:30px;
-  transition:0.2s;
+  font-size:30px;line-height:1;
+  transition:transform .12s ease, filter .12s ease, opacity .12s ease;
+  opacity:.9;
 }
-
 .seg.active{
-  transform:scale(1.6);
-  filter:drop-shadow(0 0 14px #00ffcc);
+  transform:scale(1.75);
+  filter:drop-shadow(0 0 18px #00ffc8);
+  opacity:1;
 }
 
-/* 🧑 CORE */
+/* 💠 CORE */
 .core{
-  position:absolute;
-  inset:32%;
-  border-radius:50%;
-  background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:absolute;inset:32%;
+  border-radius:50%;background:#000;
+  display:flex;align-items:center;justify-content:center;
   box-shadow:
-    0 0 40px #00ffcc,
-    inset 0 0 20px #00ffcc;
-  overflow:hidden;
-  cursor:pointer;
+    0 0 60px rgba(0,255,200,.9),
+    inset 0 0 28px rgba(0,255,200,.9);
+  overflow:hidden;cursor:pointer;
+  transition:transform .08s ease, box-shadow .12s ease;
 }
-
-.avatar{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+.core:active{
+  transform:scale(.88);
+  box-shadow:
+    0 0 25px rgba(0,255,200,.9),
+    inset 0 0 12px rgba(0,255,200,.9);
 }
+.avatar{width:100%;height:100%;object-fit:cover}
 
 /* 🏷 LABEL */
 .label{
-  position:absolute;
-  bottom:-60px;
-  width:100%;
-  text-align:center;
-  color:#00ffcc;
-  font-size:18px;
+  position:absolute;bottom:-64px;width:100%;text-align:center;
+  color:#00ffc8;font-size:18px;letter-spacing:1px;
+  text-shadow:0 0 14px rgba(0,255,200,.8);
+}
+
+/* ⚡ ENERGY PULSE */
+.pulse{
+  position:absolute;inset:28%;
+  border-radius:50%;
+  border:2px solid rgba(0,255,200,.5);
+  opacity:0;pointer-events:none;
+}
+.pulse.run{
+  animation:pulse .5s ease-out;
+}
+@keyframes pulse{
+  0%{transform:scale(.6);opacity:.9}
+  100%{transform:scale(1.6);opacity:0}
 }
 
 /* 🌌 PORTAL */
 .portal{
-  position:fixed;
-  inset:0;
-  background:radial-gradient(circle,#00ffcc,#000);
-  transform:scale(0);
-  border-radius:50%;
-  z-index:999;
-  transition:0.7s;
+  position:fixed;inset:0;z-index:999;
+  background:radial-gradient(circle,#00ffc8,#000);
+  transform:scale(0);border-radius:50%;
+  transition:.6s ease;
 }
-
-.portal.open{
-  transform:scale(3);
-  border-radius:0;
-}
+.portal.open{transform:scale(3);border-radius:0}
 </style>
 </head>
 
@@ -132,24 +142,28 @@ html,body{
 
 <div class="bg"></div>
 
+<div class="particles" id="particles"></div>
+
 <div class="stage">
   <div class="omni" id="omni">
-
     <div class="outer"></div>
-    <div class="wheel" id="wheel"></div>
+    <div class="sweep"></div>
+
+    <div class="ring outer-ring" id="ringOuter"></div>
+    <div class="ring mid-ring" id="ringMid"></div>
+    <div class="ring inner-ring" id="ringInner"></div>
 
     <div class="core" id="core">
-      <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+      <img class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
 
+    <div class="pulse" id="pulse"></div>
     <div class="label" id="label">LIVE</div>
-
   </div>
 </div>
 
 <script>
-
-// 🌍 WORLDS (FULL SYSTEM)
+// 🌍 WORLDS
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -164,78 +178,110 @@ const WORLDS=[
 {e:"🌐",n:"META",u:"/metaverse.html"}
 ];
 
-const wheel=document.getElementById("wheel");
+const omni=document.getElementById("omni");
 const core=document.getElementById("core");
 const label=document.getElementById("label");
-const omni=document.getElementById("omni");
+const pulse=document.getElementById("pulse");
+
+const ringOuter=document.getElementById("ringOuter");
+const ringMid=document.getElementById("ringMid");
+const ringInner=document.getElementById("ringInner");
 
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
-/* 🔧 BUILD */
-function build(){
-  wheel.innerHTML="";
-  const r=Math.min(window.innerWidth,window.innerHeight)*0.30;
-
-  WORLDS.forEach((w,i)=>{
-    const el=document.createElement("div");
-    el.className="seg";
-    el.innerText=w.e;
-
-    const a=i*step-Math.PI/2;
-
-    el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
-
-    wheel.appendChild(el);
-  });
+// ✨ PARTICLES
+const pWrap=document.getElementById("particles");
+for(let i=0;i<45;i++){
+  const s=document.createElement("span");
+  s.style.left=Math.random()*100+"%";
+  s.style.animationDuration=(6+Math.random()*6)+"s";
+  pWrap.appendChild(s);
 }
 
+// 🔧 BUILD RINGS (3 layers)
+function build(){
+  [ringOuter, ringMid, ringInner].forEach(r=>r.innerHTML="");
+
+  const baseR=Math.min(window.innerWidth,window.innerHeight)*0.34;
+
+  WORLDS.forEach((w,i)=>{
+    const a=i*step - Math.PI/2;
+
+    // outer (icons)
+    const o=document.createElement("div");
+    o.className="seg";
+    o.textContent=w.e;
+    o.style.transform=`translate(${Math.cos(a)*baseR}px,${Math.sin(a)*baseR}px)`;
+    ringOuter.appendChild(o);
+
+    // mid (dots)
+    const m=document.createElement("div");
+    m.className="seg";
+    m.textContent="•";
+    m.style.opacity=.5;
+    m.style.transform=`translate(${Math.cos(a)*(baseR*.78)}px,${Math.sin(a)*(baseR*.78)}px)`;
+    ringMid.appendChild(m);
+
+    // inner (ticks)
+    const inn=document.createElement("div");
+    inn.className="seg";
+    inn.textContent="—";
+    inn.style.opacity=.35;
+    inn.style.transform=`translate(${Math.cos(a)*(baseR*.58)}px,${Math.sin(a)*(baseR*.58)}px)`;
+    ringInner.appendChild(inn);
+  });
+}
 build();
 window.addEventListener("resize",build);
 
-/* 🔁 UPDATE */
+// 🔁 UPDATE
 function update(){
-  wheel.style.transform=`rotate(${rot}rad)`;
+  ringOuter.style.transform=`rotate(${rot}rad)`;
+  ringMid.style.transform=`rotate(${rot*0.85}rad)`;
+  ringInner.style.transform=`rotate(${rot*0.65}rad)`;
 
   let i=Math.round(-rot/step)%WORLDS.length;
   if(i<0)i+=WORLDS.length;
 
-  document.querySelectorAll(".seg").forEach((s,idx)=>{
-    s.classList.toggle("active",idx===i);
-  });
+  const segs=ringOuter.querySelectorAll(".seg");
+  segs.forEach((s,idx)=>s.classList.toggle("active", idx===i));
 
-  label.innerText=WORLDS[i].n;
+  label.textContent=WORLDS[i].n;
   core.dataset.url=WORLDS[i].u;
 }
 
-/* 🔄 LOOP */
+// 🔄 LOOP (resistance + snap)
 function loop(){
   if(!drag){
     rot+=vel;
-    vel*=0.88;
-    if(Math.abs(vel)<0.0002) vel=0;
+    vel*=0.86;
+
+    if(Math.abs(vel)<0.002){
+      const target=Math.round(rot/step)*step;
+      rot += (target-rot)*0.18; // snap lock
+    }
   }
   update();
   requestAnimationFrame(loop);
 }
 loop();
 
-/* 🖐 DRAG */
+// 🖐 DRAG + TILT
 document.addEventListener("pointerdown",e=>{
-  drag=true;
-  lastX=e.clientX;
+  drag=true; lastX=e.clientX;
 });
 
 document.addEventListener("pointermove",e=>{
-  if(!drag)return;
-  let dx=e.clientX-lastX;
-  lastX=e.clientX;
+  if(!drag) return;
+  const dx=e.clientX-lastX; lastX=e.clientX;
 
-  let d=dx/260;
-  rot+=d;
-  vel=d;
+  const d=dx/280;
+  rot+=d; vel=d;
 
-  omni.style.transform=`rotateY(${dx/6}deg) rotateX(${dx/-10}deg) scale(1.02)`;
+  omni.style.transform=`rotateY(${dx/7}deg) rotateX(${dx/-12}deg) scale(1.02)`;
+
+  if(navigator.vibrate) navigator.vibrate(5);
 });
 
 document.addEventListener("pointerup",()=>{
@@ -243,19 +289,37 @@ document.addEventListener("pointerup",()=>{
   omni.style.transform="rotateY(0) rotateX(0) scale(1)";
 });
 
-/* 🚀 ENTER */
+// ⚡ PULSE ON SELECTION
+let lastIndex=-1;
+function pulseNow(){
+  pulse.classList.remove("run");
+  void pulse.offsetWidth;
+  pulse.classList.add("run");
+  if(navigator.vibrate) navigator.vibrate([10]);
+}
+
+// watch index change for pulse
+setInterval(()=>{
+  let i=Math.round(-rot/step)%WORLDS.length;
+  if(i<0)i+=WORLDS.length;
+  if(i!==lastIndex){
+    lastIndex=i;
+    pulseNow();
+  }
+},120);
+
+// 🚀 ENTER
 core.onclick=()=>{
+  if(navigator.vibrate) navigator.vibrate([20,10,20]);
+
   const portal=document.createElement("div");
   portal.className="portal";
   document.body.appendChild(portal);
 
   requestAnimationFrame(()=>portal.classList.add("open"));
 
-  setTimeout(()=>{
-    location.href=core.dataset.url;
-  },700);
+  setTimeout(()=>{ location.href=core.dataset.url; }, 600);
 };
-
 </script>
 
 </body>
