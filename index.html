@@ -20,7 +20,8 @@ html,body{
   position:fixed;
   inset:0;
   background:url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
-  transition:transform .3s ease, filter .5s ease;
+  transition:transform .4s ease, filter .6s ease;
+  will-change:transform;
 }
 
 /* OVERLAY */
@@ -43,10 +44,10 @@ html,body{
 }
 
 .portal.active{
-  animation:portal 1s forwards;
+  animation:portalOpen 1s forwards;
 }
 
-@keyframes portal{
+@keyframes portalOpen{
   0%{width:0;height:0;opacity:1;}
   100%{width:200vw;height:200vw;opacity:1;}
 }
@@ -66,17 +67,33 @@ html,body{
   position:absolute;
   inset:0;
   border-radius:50%;
-  transition:transform .1s linear;
+  will-change:transform;
 }
 
 .ring{
   border:6px solid #00ffaa;
-  box-shadow:0 0 50px #00ffaa;
+  box-shadow:0 0 40px #00ffaa;
 }
 
 .ring2{
   inset:12%;
   border:2px solid rgba(0,255,170,.4);
+}
+
+/* ENERGY PULSE */
+.pulse{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  box-shadow:0 0 120px #00ffaa;
+  opacity:.2;
+  animation:pulse 2s infinite;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.1);}
+  100%{transform:scale(1);}
 }
 
 /* CORE */
@@ -96,22 +113,6 @@ html,body{
 
 .core:active{
   transform:scale(.8);
-}
-
-/* ENERGY */
-.pulse{
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  box-shadow:0 0 120px #00ffaa;
-  opacity:.2;
-  animation:pulse 2s infinite;
-}
-
-@keyframes pulse{
-  0%{transform:scale(1);}
-  50%{transform:scale(1.1);}
-  100%{transform:scale(1);}
 }
 
 /* LABELS */
@@ -148,7 +149,6 @@ html,body{
 <div class="portal" id="portal"></div>
 
 <div class="center">
-
   <div class="pulse"></div>
 
   <div class="ring" id="ring"></div>
@@ -163,7 +163,6 @@ html,body{
   <div class="label upload">UPLOAD</div>
 
   <div class="core" id="coreBtn">SELECT</div>
-
 </div>
 
 <script>
@@ -175,50 +174,69 @@ const ring2=document.getElementById("ring2");
 const labels=document.querySelectorAll(".label");
 
 const sections=[
-{ name:"music",route:"/music.html"},
-{ name:"gaming",route:"/gaming.html"},
-{ name:"sports",route:"/sports.html"},
-{ name:"gallery",route:"/gallery.html"},
-{ name:"store",route:"/store.html"},
-{ name:"meta",route:"/metaverse.html"},
-{ name:"upload",route:"/upload.html"}
+{name:"music",route:"/music.html"},
+{name:"gaming",route:"/gaming.html"},
+{name:"sports",route:"/sports.html"},
+{name:"gallery",route:"/gallery.html"},
+{name:"store",route:"/store.html"},
+{name:"meta",route:"/metaverse.html"},
+{name:"upload",route:"/upload.html"}
 ];
 
 let angle=0;
 let velocity=0;
 let dragging=false;
 let startX=0;
+let lastIndex=-1;
 
-/* ROTATE */
-function update(){
-  ring.style.transform=`rotate(${angle}deg)`;
-  ring2.style.transform=`rotate(${-angle}deg)`;
+/* ROTATION */
+function updateRotation(){
+  ring.style.transform=`translateZ(0) rotate(${angle}deg)`;
+  ring2.style.transform=`translateZ(0) rotate(${-angle}deg)`;
 }
 
 /* INDEX */
-function index(){
+function getIndex(){
   let step=360/sections.length;
   let i=Math.round(angle/step)%sections.length;
   if(i<0)i+=sections.length;
   return i;
 }
 
-/* UPDATE UI */
-function ui(){
-  let i=index();
+/* UI */
+function updateUI(){
+  let i=getIndex();
+  if(i===lastIndex)return;
+
+  lastIndex=i;
+
   labels.forEach(l=>l.classList.remove("activeLabel"));
   labels[i].classList.add("activeLabel");
+
   core.innerText=sections[i].name.toUpperCase();
+
+  core.style.transform="scale(1.2)";
+  setTimeout(()=>core.style.transform="scale(1)",120);
+}
+
+/* ENERGY */
+function updateEnergy(){
+  let speed=Math.abs(velocity);
+
+  ring.style.boxShadow=`0 0 ${20+speed*200}px #00ffaa`;
+  bg.style.transform=`scale(${1+speed*0.05})`;
 }
 
 /* SNAP */
 function snap(){
   let step=360/sections.length;
-  let i=index();
+  let i=getIndex();
+
   angle=i*step;
   velocity=0;
-  update();
-  ui();
+
+  updateRotation();
+  updateUI();
 }
 
 /* LOOP */
@@ -227,9 +245,13 @@ function loop(){
     angle+=velocity;
     velocity*=0.92;
     if(Math.abs(velocity)<0.01)velocity=0;
-    update();
-    ui();
+
+    updateRotation();
+    updateUI();
   }
+
+  updateEnergy();
+
   requestAnimationFrame(loop);
 }
 loop();
@@ -238,7 +260,6 @@ loop();
 document.addEventListener("touchstart",e=>{
   dragging=true;
   startX=e.touches[0].clientX;
-  velocity=0;
 });
 
 document.addEventListener("touchmove",e=>{
@@ -252,27 +273,23 @@ document.addEventListener("touchmove",e=>{
 
   startX=x;
 
-  update();
-  ui();
-
-  /* PARALLAX 🔥 */
-  bg.style.transform=`scale(1.05) translate(${delta/10}px,0)`;
+  updateRotation();
 });
 
 document.addEventListener("touchend",()=>{
   dragging=false;
-  bg.style.transform="scale(1)";
   setTimeout(snap,80);
 });
 
 /* ENTER */
 core.addEventListener("click",()=>{
-  let s=sections[index()];
+  let s=sections[getIndex()];
 
   bg.style.transform="scale(1.4)";
   bg.style.filter="blur(5px) brightness(1.3)";
 
   portal.classList.add("active");
+
   core.innerText="ENTERING";
 
   setTimeout(()=>{window.location.href=s.route;},900);
