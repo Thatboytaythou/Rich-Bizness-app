@@ -132,9 +132,9 @@ html,body{
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <!-- 🧑 AVATAR CORE -->
+    <!-- 🔥 AVATAR CORE -->
     <div class="core" id="core">
-      <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png" class="avatar">
+      <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
 
     <div class="label" id="label">LIVE</div>
@@ -142,7 +142,11 @@ html,body{
   </div>
 </div>
 
-<script>
+<script type="module">
+
+// 🔥 IMPORT AVATAR
+import { getAvatar } from "/core/features/avatar/avatar-state.js";
+
 // 🌍 WORLDS
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
@@ -166,7 +170,7 @@ const omni=document.getElementById("omni");
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
-// BUILD
+// 🔧 BUILD
 WORLDS.forEach((w,i)=>{
   const el=document.createElement("div");
   el.className="seg";
@@ -180,7 +184,7 @@ WORLDS.forEach((w,i)=>{
   wheel.appendChild(el);
 });
 
-// UPDATE
+// 🔁 UPDATE
 function update(){
   wheel.style.transform=`rotate(${rot}rad)`;
 
@@ -195,7 +199,7 @@ function update(){
   core.dataset.url=WORLDS[i].u;
 }
 
-// LOOP
+// 🔄 LOOP
 function loop(){
   if(!drag){
     rot+=vel;
@@ -207,7 +211,7 @@ function loop(){
 }
 loop();
 
-// DRAG + 3D
+// 🖐 DRAG
 document.addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
@@ -230,7 +234,7 @@ document.addEventListener("pointerup",()=>{
   omni.style.transform="rotateY(0) rotateX(0)";
 });
 
-// ENTER WORLD
+// 🚀 ENTER
 core.onclick=()=>{
   const portal=document.createElement("div");
   portal.className="portal";
@@ -242,6 +246,15 @@ core.onclick=()=>{
     location.href=core.dataset.url;
   },700);
 };
+
+// 🔥 LOAD USER AVATAR
+(async () => {
+  const avatar = await getAvatar();
+  if (avatar) {
+    document.getElementById("avatar-img").src = avatar;
+  }
+})();
+
 </script>
 
 </body>
