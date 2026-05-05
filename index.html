@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix — WORKING</title>
+<title>Rich Bizness Omnitrix — REAL FIX</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,12 +14,16 @@ html,body{
   font-family:sans-serif;
 }
 
+/* BACKGROUND */
 .bg{
   position:fixed;
   inset:0;
-  background:radial-gradient(circle at center, rgba(0,255,200,0.2), transparent 60%), #000;
+  background:
+    radial-gradient(circle at center, rgba(0,255,200,0.2), transparent 60%),
+    #000;
 }
 
+/* STAGE */
 .stage{
   position:fixed;
   inset:0;
@@ -28,6 +32,7 @@ html,body{
   justify-content:center;
 }
 
+/* DEVICE */
 .omni{
   width:92vw;
   max-width:420px;
@@ -35,17 +40,16 @@ html,body{
   position:relative;
 }
 
-/* OUTER GLOW */
+/* OUTER */
 .outer{
   position:absolute;
   inset:0;
   border-radius:50%;
   background:#001;
   box-shadow:
-    0 0 30px #00ffcc,
-    inset 0 0 15px #00ffcc;
+    0 0 25px #00ffcc,
+    inset 0 0 12px #00ffcc;
   z-index:1;
-  pointer-events:none;
 }
 
 /* WHEEL */
@@ -55,12 +59,13 @@ html,body{
   z-index:10;
 }
 
-/* ICONS — NO CENTER COLLAPSE */
+/* ICONS (FIXED — NO CENTER COLLAPSE) */
 .seg{
   position:absolute;
   font-size:34px;
   cursor:pointer;
   z-index:20;
+  /* IMPORTANT: NO TRANSLATE HERE */
 }
 
 /* ACTIVE */
@@ -104,6 +109,7 @@ html,body{
   font-size:20px;
 }
 
+/* PORTAL */
 .portal{
   position:fixed;
   inset:0;
@@ -125,6 +131,7 @@ html,body{
 
 <div class="stage">
   <div class="omni">
+
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
@@ -133,6 +140,7 @@ html,body{
     </div>
 
     <div class="label" id="label">LIVE</div>
+
   </div>
 </div>
 
@@ -157,7 +165,7 @@ const WORLDS=[
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
 
-/* BUILD (CENTER-BASED — FIXED) */
+/* BUILD (CENTERED CORRECTLY) */
 function build(){
   const size = wheel.offsetWidth;
   const center = size / 2;
@@ -168,7 +176,7 @@ function build(){
     el.className="seg";
     el.innerText=w.e;
 
-    const angle = (i/WORLDS.length)*Math.PI*2 - Math.PI/2;
+    const angle=(i/WORLDS.length)*Math.PI*2 - Math.PI/2;
 
     const x = center + Math.cos(angle)*radius;
     const y = center + Math.sin(angle)*radius;
@@ -182,8 +190,8 @@ function build(){
   });
 }
 
-/* WAIT FOR LAYOUT */
-requestAnimationFrame(build);
+/* wait for layout */
+setTimeout(build, 50);
 
 /* SPIN */
 let rot=0,vel=0,drag=false,lastX=0;
