@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Character Movement</title>
+<title>Rich Bizness — Avatar Engine</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,20 +11,11 @@ html,body{
   font-family:system-ui;
 }
 
-/* CAMERA */
-.camera{
-  position:fixed;
-  inset:0;
-  perspective:1200px;
-}
-
 /* WORLD */
 .world{
   position:absolute;
-  width:200vw;
-  height:200vh;
-  left:-50vw;
-  top:-50vh;
+  width:200vw;height:200vh;
+  left:-50vw;top:-50vh;
 }
 
 /* AVATAR */
@@ -41,21 +32,34 @@ html,body{
     0 0 25px #00ffcc,
     0 0 60px rgba(0,255,200,.4);
 
-  transition:transform .1s;
+  transition:transform .15s ease;
 }
 
+/* IMAGE */
 .avatar img{
-  width:100%;height:100%;object-fit:cover;
+  width:100%;height:100%;
+  object-fit:cover;
 }
 
-/* WALK ANIMATION */
+/* IDLE (BREATHING) */
+.idle{
+  animation:idleBreath 3s ease-in-out infinite;
+}
+
+@keyframes idleBreath{
+  0%{transform:translate(-50%,-50%) scale(1);}
+  50%{transform:translate(-50%,-50%) scale(1.05);}
+  100%{transform:translate(-50%,-50%) scale(1);}
+}
+
+/* WALK */
 .walk{
-  animation:walkBounce .4s infinite alternate;
+  animation:walkBounce .35s infinite alternate;
 }
 
 @keyframes walkBounce{
   from{transform:translate(-50%,-50%) translateY(0px);}
-  to{transform:translate(-50%,-50%) translateY(-8px);}
+  to{transform:translate(-50%,-50%) translateY(-10px);}
 }
 
 /* NODES */
@@ -63,27 +67,22 @@ html,body{
   position:absolute;
   width:150px;height:150px;
   border-radius:24px;
+
   display:flex;
   align-items:center;
   justify-content:center;
 
   background:rgba(0,255,200,.08);
   color:#00ffcc;
-  font-weight:700;
+  font-weight:bold;
 
   backdrop-filter:blur(12px);
-  transition:.3s;
 }
 
-/* POSITION FIX */
-.node.music{ left:50%; top:25%; transform:translate(-50%,-50%); }
-.node.gaming{ left:30%; top:65%; transform:translate(-50%,-50%); }
-.node.live{ left:70%; top:60%; transform:translate(-50%,-50%); }
-
-.node.active{
-  transform:translate(-50%,-50%) scale(1.25);
-  box-shadow:0 0 50px #00ffcc;
-}
+/* POSITION */
+.music{ left:50%; top:25%; transform:translate(-50%,-50%); }
+.gaming{ left:30%; top:65%; transform:translate(-50%,-50%); }
+.live{ left:70%; top:60%; transform:translate(-50%,-50%); }
 
 /* JOYSTICK */
 .joystick{
@@ -109,37 +108,31 @@ html,body{
 
 <body>
 
-<div class="camera">
-  <div class="world" id="world">
-
-    <div class="node music" data-url="/music.html">MUSIC</div>
-    <div class="node gaming" data-url="/gaming.html">GAMING</div>
-    <div class="node live" data-url="/live.html">LIVE</div>
-
-  </div>
+<div class="world" id="world">
+  <div class="node music">MUSIC</div>
+  <div class="node gaming">GAMING</div>
+  <div class="node live">LIVE</div>
 </div>
 
-<!-- 🧿 AVATAR -->
-<div class="avatar" id="avatar">
+<div class="avatar idle" id="avatar">
   <img src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
 </div>
 
-<!-- 🎮 JOYSTICK -->
 <div class="joystick" id="joy">
   <div class="stick" id="stick"></div>
 </div>
 
 <script>
-
 let vx=0,vy=0;
 let posX=0,posY=0;
 
 const world=document.getElementById("world");
-const stick=document.getElementById("stick");
-const joy=document.getElementById("joy");
 const avatar=document.getElementById("avatar");
+const joy=document.getElementById("joy");
+const stick=document.getElementById("stick");
 
 let dragging=false;
+let currentAngle=0;
 
 /* JOYSTICK */
 joy.addEventListener("pointerdown",()=>dragging=true);
@@ -177,45 +170,33 @@ function loop(){
 
   world.style.transform=`translate(${posX}px,${posY}px)`;
 
-  /* 🎮 CHARACTER ROTATION */
+  /* MOVEMENT DETECTION */
   if(vx!==0 || vy!==0){
-    let angle=Math.atan2(vy,vx)*180/Math.PI;
-    avatar.style.transform=`translate(-50%,-50%) rotate(${angle}deg)`;
 
+    let targetAngle=Math.atan2(vy,vx)*180/Math.PI;
+
+    /* SMOOTH ROTATION */
+    currentAngle += (targetAngle - currentAngle) * 0.2;
+
+    avatar.style.transform=
+      `translate(-50%,-50%) rotate(${currentAngle}deg)`;
+
+    avatar.classList.remove("idle");
     avatar.classList.add("walk");
+
   }else{
-    avatar.style.transform=`translate(-50%,-50%) rotate(0deg)`;
+
+    avatar.style.transform=
+      `translate(-50%,-50%) rotate(${currentAngle}deg)`;
+
     avatar.classList.remove("walk");
+    avatar.classList.add("idle");
   }
-
-  /* NODE INTERACTION */
-  document.querySelectorAll(".node").forEach(node=>{
-    let rect=node.getBoundingClientRect();
-    let cx=window.innerWidth/2;
-    let cy=window.innerHeight/2;
-
-    let dx=rect.left+75-cx;
-    let dy=rect.top+75-cy;
-
-    let dist=Math.sqrt(dx*dx+dy*dy);
-
-    if(dist<170){
-      node.classList.add("active");
-
-      if(dist<70){
-        location.href=node.dataset.url;
-      }
-
-    }else{
-      node.classList.remove("active");
-    }
-  });
 
   requestAnimationFrame(loop);
 }
 
 loop();
-
 </script>
 
 </body>
