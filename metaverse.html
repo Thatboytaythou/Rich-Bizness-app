@@ -35,7 +35,7 @@ html,body{
   width:100%;height:100%;object-fit:cover;
 }
 
-/* VOICE BUBBLE */
+/* VOICE */
 .voice{
   position:fixed;
   bottom:160px;
@@ -64,9 +64,11 @@ html,body{
   color:#00ffcc;
 }
 
-.music{left:50%;top:25%;transform:translate(-50%,-50%)}
-.gaming{left:30%;top:65%;transform:translate(-50%,-50%)}
-.live{left:70%;top:60%;transform:translate(-50%,-50%)}
+/* POSITIONS */
+.music{ left:50%; top:25%; transform:translate(-50%,-50%) }
+.gaming{ left:30%; top:65%; transform:translate(-50%,-50%) }
+.live{ left:70%; top:60%; transform:translate(-50%,-50%) }
+.sports{ left:75%; top:25%; transform:translate(-50%,-50%) }
 
 /* JOYSTICK */
 .joystick{
@@ -93,9 +95,10 @@ html,body{
 <body>
 
 <div class="world" id="world">
-  <div class="node music">MUSIC</div>
-  <div class="node gaming">GAMING</div>
-  <div class="node live">LIVE</div>
+  <div class="node music">🎵 MUSIC</div>
+  <div class="node gaming">🎮 GAMING</div>
+  <div class="node live">📡 LIVE</div>
+  <div class="node sports">🏆 SPORTS</div>
 </div>
 
 <div class="avatar" id="avatar">
@@ -110,7 +113,7 @@ html,body{
 
 <script type="module">
 
-/* 🔥 SUPABASE AVATAR */
+/* SUPABASE */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const supabase = createClient(
@@ -118,6 +121,7 @@ const supabase = createClient(
   "sb_publishable_bRhd0yC-gBTWTPC26IZHlw_sda85zos"
 );
 
+/* LOAD REAL AVATAR */
 async function loadAvatar(){
   const { data: { user } } = await supabase.auth.getUser();
   if(!user) return;
@@ -134,33 +138,26 @@ async function loadAvatar(){
 }
 loadAvatar();
 
-/* 🧠 AVATAR BRAIN */
-let currentZone="";
-
-function getZone(){
-  let x = posX;
-  let y = posY;
-
-  if(y < -200) return "MUSIC";
-  if(x < -200) return "GAMING";
-  if(x > 200) return "LIVE";
-
-  return "";
-}
-
-/* 🗣 VOICE */
+/* VOICE SYSTEM */
 const voice = document.getElementById("voice");
 
 function speak(text){
   voice.innerText = text;
   voice.classList.add("show");
 
+  /* 🔊 REAL VOICE */
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.rate = 1;
+  speech.pitch = 1.1;
+  speech.volume = 1;
+  speechSynthesis.speak(speech);
+
   setTimeout(()=>{
     voice.classList.remove("show");
   },2000);
 }
 
-/* 🎮 MOVEMENT */
+/* MOVEMENT */
 let vx=0,vy=0;
 let posX=0,posY=0;
 
@@ -197,7 +194,22 @@ document.addEventListener("pointerup",()=>{
   vx=0;vy=0;
 });
 
-/* 🔁 LOOP */
+/* AI ZONE BRAIN */
+let currentZone="";
+
+function getZone(){
+  let x = posX;
+  let y = posY;
+
+  if(y < -200 && Math.abs(x) < 200) return "MUSIC";
+  if(x < -200) return "GAMING";
+  if(x > 200 && y > 0) return "LIVE";
+  if(x > 200 && y < -150) return "SPORTS";
+
+  return "";
+}
+
+/* LOOP */
 function loop(){
 
   posX+=vx;
@@ -210,9 +222,10 @@ function loop(){
   if(zone !== currentZone){
     currentZone = zone;
 
-    if(zone === "MUSIC") speak("🎵 You entered MUSIC");
-    if(zone === "GAMING") speak("🎮 Let’s play");
+    if(zone === "MUSIC") speak("🎵 You entered the music world");
+    if(zone === "GAMING") speak("🎮 Game time. Let’s run it.");
     if(zone === "LIVE") speak("📡 WE LIT 🔥");
+    if(zone === "SPORTS") speak("🏆 Welcome to Sports Center. Let’s make some plays.");
   }
 
   requestAnimationFrame(loop);
@@ -220,7 +233,7 @@ function loop(){
 
 loop();
 
-/* 👆 TAP AVATAR = TALK */
+/* TAP AVATAR */
 document.getElementById("avatar").onclick = ()=>{
   speak("I am you inside the world.");
 };
