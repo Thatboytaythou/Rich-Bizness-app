@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Rich Bizness</title>
+<title>Rich Bizness Portal</title>
 
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 
 html, body {
   height:100%;
-  width:100%;
   overflow:hidden;
   background:black;
   font-family:sans-serif;
@@ -21,17 +20,40 @@ html, body {
   position:fixed;
   inset:0;
   background:url('/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png') center/cover no-repeat;
-  transition: transform 0.6s ease, filter 0.6s ease;
+  transition: transform 1s ease, filter 1s ease;
 }
 
-/* DEPTH OVERLAY */
+/* OVERLAY */
 .overlay {
   position:absolute;
   inset:0;
-  background:radial-gradient(circle, rgba(0,255,170,0.25), rgba(0,0,0,0.9));
+  background:radial-gradient(circle, rgba(0,255,170,0.25), rgba(0,0,0,0.95));
 }
 
-/* CENTER SYSTEM */
+/* PORTAL */
+.portal {
+  position:fixed;
+  top:50%;
+  left:50%;
+  width:0;
+  height:0;
+  border-radius:50%;
+  transform:translate(-50%, -50%);
+  background:radial-gradient(circle, #00ffaa, black);
+  opacity:0;
+  z-index:10;
+}
+
+.portal.active {
+  animation:portalOpen 1s forwards;
+}
+
+@keyframes portalOpen {
+  0% { width:0; height:0; opacity:1; }
+  100% { width:200vw; height:200vw; opacity:1; }
+}
+
+/* CENTER */
 .center {
   position:absolute;
   top:50%;
@@ -47,33 +69,17 @@ html, body {
   position:absolute;
   inset:0;
   border-radius:50%;
-  transition: transform 0.2s ease-out;
+  transition: transform 0.15s ease-out;
 }
 
 .ring {
   border:6px solid #00ffaa;
-  box-shadow:0 0 40px #00ffaa;
+  box-shadow:0 0 50px #00ffaa;
 }
 
 .ring2 {
   inset:12%;
   border:2px solid rgba(0,255,170,0.4);
-}
-
-/* ACTIVE PULSE */
-.pulse {
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  box-shadow:0 0 80px #00ffaa;
-  opacity:0.2;
-  animation:pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform:scale(1); opacity:0.2; }
-  50% { transform:scale(1.1); opacity:0.4; }
-  100% { transform:scale(1); opacity:0.2; }
 }
 
 /* CORE */
@@ -93,6 +99,22 @@ html, body {
 
 .core:active {
   transform:scale(0.8);
+}
+
+/* ENERGY PULSE */
+.pulse {
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  box-shadow:0 0 120px #00ffaa;
+  opacity:0.2;
+  animation:pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform:scale(1); }
+  50% { transform:scale(1.1); }
+  100% { transform:scale(1); }
 }
 
 /* LABELS */
@@ -125,6 +147,7 @@ html, body {
 
 <div class="bg" id="bg"></div>
 <div class="overlay"></div>
+<div class="portal" id="portal"></div>
 
 <div class="center">
 
@@ -148,6 +171,7 @@ html, body {
 <script>
 const core = document.getElementById("coreBtn");
 const bg = document.getElementById("bg");
+const portal = document.getElementById("portal");
 const ring = document.getElementById("ring");
 const ring2 = document.getElementById("ring2");
 const labels = document.querySelectorAll(".label");
@@ -167,6 +191,12 @@ let velocity = 0;
 let isDragging = false;
 let startX = 0;
 
+/* LOAD LAST SELECTED */
+const saved = localStorage.getItem("rb-last");
+if (saved !== null) {
+  angle = parseFloat(saved);
+}
+
 /* ROTATION */
 function updateRotation() {
   ring.style.transform = `rotate(${angle}deg)`;
@@ -185,9 +215,9 @@ function getIndex() {
 function snap() {
   let step = 360 / sections.length;
   let index = getIndex();
-
   angle = index * step;
-  velocity = 0;
+
+  localStorage.setItem("rb-last", angle);
 
   updateRotation();
 
@@ -202,7 +232,6 @@ function animate() {
   if (!isDragging) {
     angle += velocity;
     velocity *= 0.95;
-
     if (Math.abs(velocity) < 0.01) velocity = 0;
     updateRotation();
   }
@@ -219,36 +248,36 @@ document.addEventListener("touchstart", (e) => {
 
 document.addEventListener("touchmove", (e) => {
   if (!isDragging) return;
-
   let moveX = e.touches[0].clientX;
   let delta = moveX - startX;
-
   velocity = delta * 0.1;
   angle += velocity;
-
   startX = moveX;
   updateRotation();
 });
 
 document.addEventListener("touchend", () => {
   isDragging = false;
-  setTimeout(snap, 150);
+  setTimeout(snap, 120);
 });
 
-/* ENTER */
+/* ENTER PORTAL */
 core.addEventListener("click", () => {
-  let selected = sections[getIndex()];
+  const selected = sections[getIndex()];
 
-  bg.style.transform = "scale(1.5)";
-  bg.style.filter = "brightness(1.4)";
+  bg.style.transform = "scale(1.4)";
+  bg.style.filter = "blur(4px) brightness(1.3)";
+
+  portal.classList.add("active");
 
   core.innerText = "ENTERING";
 
   setTimeout(() => {
     window.location.href = selected.route;
-  }, 700);
+  }, 900);
 });
 
+/* INIT */
 snap();
 </script>
 
