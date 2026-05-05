@@ -1,6 +1,5 @@
 // =========================
-// RICH BIZNESS UPLOAD UI — CLOUD CHAMBER
-// /core/features/upload/upload-ui.js
+// RICH BIZNESS UPLOAD UI — FINAL (WITH ROUTING)
 // =========================
 
 import { runUploadFlow } from "./upload-state.js";
@@ -10,46 +9,31 @@ export function mountUploadUI(targetId = "upload-root") {
   if (!root) return;
 
   root.innerHTML = `
-    <section class="upload-chamber">
+    <div class="upload-shell">
 
-      <div class="upload-bg"></div>
+      <input type="file" id="upload-input" hidden />
 
-      <div class="upload-smoke-layer">
-        <span class="smoke"></span>
-        <span class="smoke alt"></span>
-        <span class="smoke deep"></span>
+      <div>
+        <button id="upload-trigger">Tap to Load</button>
       </div>
 
-      <div class="upload-orb-wrap">
-
-        <div class="upload-orb" id="upload-orb">
-
-          <div class="orb-core">
-            <input type="file" id="upload-input" hidden />
-            <button id="upload-trigger" class="orb-trigger">
-              TAP TO LOAD
-            </button>
-
-            <div id="upload-preview" class="upload-preview"></div>
-          </div>
-
-        </div>
-
+      <div>
+        <select id="upload-type">
+          <option value="general">General</option>
+          <option value="music">Music</option>
+          <option value="gaming">Gaming</option>
+          <option value="sports">Sports</option>
+          <option value="gallery">Gallery</option>
+        </select>
       </div>
 
-      <div class="upload-actions">
+      <div id="upload-preview"></div>
 
-        <button id="run-upload" class="btn btn-gold">
-          RUN IT UP 📈
-        </button>
+      <button id="run-upload">RUN IT UP 📈</button>
 
-        <div id="upload-status" class="upload-status">
-          Ready to load
-        </div>
+      <div id="upload-status">Ready to load</div>
 
-      </div>
-
-    </section>
+    </div>
   `;
 
   bindUploadUI();
@@ -64,6 +48,7 @@ function bindUploadUI() {
   const trigger = document.getElementById("upload-trigger");
   const preview = document.getElementById("upload-preview");
   const runBtn = document.getElementById("run-upload");
+  const typeSelect = document.getElementById("upload-type");
 
   let file = null;
 
@@ -78,6 +63,7 @@ function bindUploadUI() {
     if (file.type.startsWith("image")) {
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
+      img.style.maxWidth = "200px";
       preview.appendChild(img);
     }
 
@@ -85,10 +71,9 @@ function bindUploadUI() {
       const video = document.createElement("video");
       video.src = URL.createObjectURL(file);
       video.controls = true;
+      video.style.maxWidth = "200px";
       preview.appendChild(video);
     }
-
-    preview.classList.add("active");
   });
 
   runBtn.addEventListener("click", async () => {
@@ -96,9 +81,10 @@ function bindUploadUI() {
 
     await runUploadFlow({
       file,
+      type: typeSelect.value,
       previewEl: preview,
       statusEl: document.getElementById("upload-status"),
-      orbEl: document.getElementById("upload-orb")
+      orbEl: document.getElementById("upload-orb") || null
     });
   });
 }
