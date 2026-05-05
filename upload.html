@@ -20,7 +20,6 @@
       background:black;
     }
 
-    /* 🎬 ROOT */
     #upload-root{
       position:fixed;
       inset:0;
@@ -29,7 +28,6 @@
       justify-content:center;
     }
 
-    /* 🎬 STAGE */
     .upload-stage{
       width:95vw;
       max-width:520px;
@@ -44,7 +42,6 @@
 
     .upload-shell{
       width:100%;
-      max-width:520px;
     }
 
     /* 🧿 AVATAR */
@@ -58,13 +55,8 @@
       border-radius:50%;
       overflow:hidden;
       z-index:10;
-
-      box-shadow:
-        0 0 25px #00ffcc,
-        0 0 60px rgba(0,255,200,.5);
-
-      animation:avatarFloat 4s ease-in-out infinite;
-      transition:.3s;
+      box-shadow:0 0 25px #00ffcc;
+      transition:.4s;
     }
 
     .upload-avatar img{
@@ -73,42 +65,46 @@
       object-fit:cover;
     }
 
-    @keyframes avatarFloat{
-      0%{transform:translate(-50%,0)}
-      50%{transform:translate(-50%,-10px)}
-      100%{transform:translate(-50%,0)}
+    /* 🎯 TARGET (PREVIEW AREA) */
+    #upload-preview{
+      position:relative;
+      min-height:120px;
     }
 
-    /* ⚡ AVATAR REACTIONS */
-    .upload-avatar.active{
-      transform:translate(-50%,-10px) scale(1.1);
-      box-shadow:
-        0 0 40px #00ffcc,
-        0 0 100px rgba(0,255,200,.8);
-    }
-
-    /* 🔊 VOICE TEXT */
-    .upload-voice{
-      position:fixed;
-      top:230px;
-      left:50%;
-      transform:translateX(-50%);
-      color:#00ffcc;
-      font-size:14px;
-      opacity:0;
-      transition:.3s;
-      z-index:10;
-    }
-
-    .upload-voice.show{
-      opacity:1;
-    }
-
-    /* 🔥 PREVIEW FIX */
     #upload-preview img,
     #upload-preview video{
       max-width:100%;
       border-radius:12px;
+      transition:.4s;
+    }
+
+    /* 🚀 ABSORB ANIMATION */
+    .absorb{
+      position:fixed !important;
+      z-index:20;
+      animation:absorbToAvatar .8s forwards;
+    }
+
+    @keyframes absorbToAvatar{
+      0%{
+        transform:scale(1) translate(0,0);
+        opacity:1;
+      }
+      100%{
+        transform:scale(.1) translate(0,-300px);
+        opacity:0;
+      }
+    }
+
+    /* 🌌 PORTAL FLASH */
+    .avatar-pulse{
+      animation:avatarPulse .5s;
+    }
+
+    @keyframes avatarPulse{
+      0%{box-shadow:0 0 20px #00ffcc}
+      50%{box-shadow:0 0 80px #00ffcc}
+      100%{box-shadow:0 0 20px #00ffcc}
     }
 
   </style>
@@ -116,20 +112,15 @@
 
 <body>
 
-  <!-- 🌫 BACKGROUND -->
   <div class="upload-bg"></div>
   <div class="smoke-layer"></div>
   <div class="particles" id="particles"></div>
 
   <!-- 🧿 AVATAR -->
-  <div class="upload-avatar" id="upload-avatar">
-    <img id="upload-avatar-img" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+  <div class="upload-avatar" id="avatar">
+    <img id="avatar-img" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
   </div>
 
-  <!-- 🔊 VOICE -->
-  <div class="upload-voice" id="upload-voice"></div>
-
-  <!-- 🎬 MAIN -->
   <div id="upload-root">
     <div class="upload-stage" id="upload-stage"></div>
   </div>
@@ -147,51 +138,15 @@
     const stage = document.getElementById("upload-stage");
     mountUploadUI(stage);
 
-    /* 🔥 LOAD REAL USER AVATAR */
+    /* 🔥 LOAD REAL AVATAR */
     (async () => {
       const avatar = await getAvatar();
       if (avatar) {
-        document.getElementById("upload-avatar-img").src = avatar;
+        document.getElementById("avatar-img").src = avatar;
       }
     })();
 
-    /* 🔊 VOICE SYSTEM */
-    const voice = document.getElementById("upload-voice");
-    const avatarEl = document.getElementById("upload-avatar");
-
-    function speak(text){
-      voice.innerText = text;
-      voice.classList.add("show");
-
-      const speech = new SpeechSynthesisUtterance(text);
-      speech.rate = 1;
-      speech.pitch = 1.1;
-      speechSynthesis.speak(speech);
-
-      setTimeout(()=>{
-        voice.classList.remove("show");
-      },2000);
-    }
-
-    /* 🔥 REACT TO FILE SELECT */
-    document.addEventListener("change",(e)=>{
-      if(e.target.id === "upload-input"){
-        avatarEl.classList.add("active");
-        speak("File loaded. Ready to upload.");
-
-        setTimeout(()=>avatarEl.classList.remove("active"),1000);
-      }
-    });
-
-    /* 🚀 REACT TO RUN IT UP */
-    document.addEventListener("click",(e)=>{
-      if(e.target.id === "run-upload"){
-        avatarEl.classList.add("active");
-        speak("Uploading now. Run it up.");
-
-        setTimeout(()=>avatarEl.classList.remove("active"),1200);
-      }
-    });
+    const avatarEl = document.getElementById("avatar");
 
     /* ✨ PARTICLES */
     const container = document.getElementById("particles");
@@ -201,6 +156,47 @@
       p.style.animationDuration = (8 + Math.random() * 6) + "s";
       container.appendChild(p);
     }
+
+    /* 🎯 TRACK PREVIEW ELEMENT */
+    let currentPreview = null;
+
+    document.addEventListener("change",(e)=>{
+      if(e.target.id === "upload-input"){
+        setTimeout(()=>{
+          const preview = document.querySelector("#upload-preview img, #upload-preview video");
+          if(preview){
+            currentPreview = preview;
+          }
+        },100);
+      }
+    });
+
+    /* 🚀 RUN IT UP → PHYSICAL ABSORB */
+    document.addEventListener("click",(e)=>{
+      if(e.target.id === "run-upload" && currentPreview){
+
+        const rect = currentPreview.getBoundingClientRect();
+
+        const clone = currentPreview.cloneNode(true);
+        clone.style.position = "fixed";
+        clone.style.left = rect.left + "px";
+        clone.style.top = rect.top + "px";
+        clone.style.width = rect.width + "px";
+        clone.style.height = rect.height + "px";
+
+        document.body.appendChild(clone);
+
+        requestAnimationFrame(()=>{
+          clone.classList.add("absorb");
+          avatarEl.classList.add("avatar-pulse");
+        });
+
+        setTimeout(()=>{
+          clone.remove();
+          avatarEl.classList.remove("avatar-pulse");
+        },800);
+      }
+    });
 
   </script>
 
