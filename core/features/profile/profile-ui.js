@@ -1,10 +1,8 @@
 // =========================
-// RICH BIZNESS PROFILE UI — FINAL
+// RICH BIZNESS PROFILE UI — FULL LOCKED
 // =========================
 
-import { updateProfile } from "./profile-client.js";
-
-export function renderProfile(containerId, profile) {
+export function renderProfile(containerId, profile, counts) {
   const el = document.getElementById(containerId);
   if (!el || !profile) return;
 
@@ -17,11 +15,12 @@ export function renderProfile(containerId, profile) {
       <p>${profile.bio || "No bio yet"}</p>
 
       <div class="profile-stats">
-        <span>Followers: ${profile.followers_count || 0}</span>
-        <span>Following: ${profile.following_count || 0}</span>
+        <span>Followers: ${counts?.followers || 0}</span>
+        <span>Following: ${counts?.following || 0}</span>
       </div>
 
       <div class="profile-actions">
+        <div id="follow-btn"></div>
         <button id="edit-profile-btn">Edit Profile</button>
       </div>
 
@@ -41,9 +40,12 @@ function bindProfileEdit(profile) {
     const newName = prompt("New username:", profile.username);
     if (!newName) return;
 
-    await updateProfile(profile.id, {
-      username: newName
-    });
+    const { supabase } = await import("/core/supabase.js");
+
+    await supabase
+      .from("profiles")
+      .update({ username: newName })
+      .eq("id", profile.id);
 
     location.reload();
   });
