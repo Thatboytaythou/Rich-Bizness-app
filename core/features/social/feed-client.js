@@ -1,20 +1,37 @@
 // =========================
-// RICH BIZNESS FEED CLIENT — FINAL
+// RICH BIZNESS FEED CLIENT — FILTERED (BOOK SYSTEM)
 // =========================
 
 import { supabase } from "/core/supabase.js";
 
-export async function loadFeed(targetId = "feed-root") {
+export async function loadFeed({
+  targetId = "feed-root",
+  type = null,
+  userId = null,
+  limit = 20
+} = {}) {
   const container = document.getElementById(targetId);
   if (!container) return;
 
-  container.innerHTML = "Loading feed...";
+  container.innerHTML = "Loading...";
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("posts")
     .select("*")
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(limit);
+
+  // 🔥 FILTER BY TYPE (music, gaming, etc)
+  if (type) {
+    query = query.eq("content_type", type);
+  }
+
+  // 🔥 FILTER BY USER (profile page)
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     container.innerHTML = "Error loading feed";
@@ -22,7 +39,7 @@ export async function loadFeed(targetId = "feed-root") {
   }
 
   if (!data.length) {
-    container.innerHTML = "No content yet";
+    container.innerHTML = "Nothing here yet";
     return;
   }
 
