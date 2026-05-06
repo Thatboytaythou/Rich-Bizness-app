@@ -11,13 +11,20 @@ html,body{
   font-family:system-ui;
 }
 
-/* BACKGROUND */
+/* 🔥 BACKGROUND (CINEMATIC BREATH) */
 .bg{
   position:fixed;inset:0;
   background:
     radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
+
+  animation:bgPulse 8s ease-in-out infinite;
+}
+
+@keyframes bgPulse{
+  0%,100%{transform:scale(1);}
+  50%{transform:scale(1.05);}
 }
 
 /* STAGE */
@@ -39,10 +46,12 @@ html,body{
   box-shadow:0 0 120px #00ffcc;
 }
 
+/* WHEEL */
 .wheel{
   position:absolute;inset:0;
 }
 
+/* ICONS */
 .seg{
   position:absolute;
   left:50%;top:50%;
@@ -53,10 +62,17 @@ html,body{
   cursor:pointer;
 }
 
+/* 🔥 ACTIVE GLOW PULSE */
 .seg.active{
   scale:1.8;
   opacity:1;
   filter:drop-shadow(0 0 20px #00ffcc);
+  animation:activePulse 1.5s infinite ease-in-out;
+}
+
+@keyframes activePulse{
+  0%,100%{filter:drop-shadow(0 0 20px #00ffcc);}
+  50%{filter:drop-shadow(0 0 40px #00ffff);}
 }
 
 /* CORE */
@@ -70,9 +86,15 @@ html,body{
   cursor:pointer;
 }
 
+/* 🔥 AVATAR FLOAT */
 .avatar{
   width:100%;height:100%;object-fit:cover;
-  transition:.6s ease;
+  animation:avatarFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes avatarFloat{
+  from{transform:translateY(0);}
+  to{transform:translateY(-8px);}
 }
 
 /* FLY */
@@ -84,7 +106,7 @@ html,body{
   transition:1s ease;
 }
 
-/* PORTAL */
+/* 🔥 PORTAL BOOST */
 .portal{
   position:fixed;
   width:20px;height:20px;
@@ -93,10 +115,11 @@ html,body{
   transform:scale(0);
   z-index:999;
   transition:.7s ease;
+  box-shadow:0 0 40px #00ffff;
 }
 
 .portal.expand{
-  transform:scale(80);
+  transform:scale(100);
   border-radius:0;
 }
 </style>
@@ -163,7 +186,7 @@ function build(){
 }
 build();
 
-/* UNIVERSAL OPEN */
+/* OPEN */
 function openWorld(w, el){
 
   const rect=el.getBoundingClientRect();
@@ -240,7 +263,7 @@ addEventListener("pointermove",e=>{
 
 addEventListener("pointerup",()=>drag=false);
 
-/* 🔥 CENTER CLICK NOW WORKS FOR ALL */
+/* CENTER CLICK */
 document.getElementById("core").onclick=()=>{
   let index=Math.round(-rot/step)%WORLDS.length;
   if(index<0)index+=WORLDS.length;
