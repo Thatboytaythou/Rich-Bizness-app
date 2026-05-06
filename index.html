@@ -59,11 +59,6 @@ html,body{
   filter:drop-shadow(0 0 20px #00ffcc);
 }
 
-.seg.meta.active{
-  scale:2.5;
-  filter:drop-shadow(0 0 50px #00ffff);
-}
-
 /* CORE */
 .core{
   position:absolute;inset:30%;
@@ -80,7 +75,7 @@ html,body{
   transition:.6s ease;
 }
 
-/* FLOAT AVATAR */
+/* FLY */
 .avatar.fly{
   position:fixed;
   z-index:1000;
@@ -143,8 +138,6 @@ const WORLDS=[
 const wheel=document.getElementById("wheel");
 const avatar=document.getElementById("avatar");
 
-let metaEl=null;
-
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
@@ -157,19 +150,12 @@ function build(){
     el.className="seg";
     el.innerText=w.e;
 
-    if(w.n==="META"){
-      el.classList.add("meta");
-      metaEl=el;
-    }
-
     const a=i*step-Math.PI/2;
     const x=Math.cos(a)*r;
     const y=Math.sin(a)*r;
 
-    el.dataset.base=`translate(${x}px,${y}px)`;
-    el.style.transform=el.dataset.base;
+    el.style.transform=`translate(${x}px,${y}px)`;
 
-    /* ✅ CLICK FIX (THIS WAS MISSING) */
     el.onclick=()=>openWorld(w, el);
 
     wheel.appendChild(el);
@@ -177,10 +163,22 @@ function build(){
 }
 build();
 
-/* UNIVERSAL NAV */
+/* UNIVERSAL OPEN */
 function openWorld(w, el){
 
   const rect=el.getBoundingClientRect();
+  const aRect=avatar.getBoundingClientRect();
+
+  avatar.classList.add("fly");
+
+  avatar.style.left=aRect.left+"px";
+  avatar.style.top=aRect.top+"px";
+
+  requestAnimationFrame(()=>{
+    avatar.style.left=rect.left+"px";
+    avatar.style.top=rect.top+"px";
+    avatar.style.transform="scale(.3)";
+  });
 
   const portal=document.createElement("div");
   portal.className="portal";
@@ -190,13 +188,11 @@ function openWorld(w, el){
 
   document.body.appendChild(portal);
 
-  requestAnimationFrame(()=>{
-    portal.classList.add("expand");
-  });
+  setTimeout(()=>portal.classList.add("expand"),300);
 
   setTimeout(()=>{
     location.href=w.u;
-  },700);
+  },900);
 }
 
 /* UPDATE */
@@ -244,16 +240,15 @@ addEventListener("pointermove",e=>{
 
 addEventListener("pointerup",()=>drag=false);
 
-/* KEEP YOUR META SPECIAL ANIMATION */
+/* 🔥 CENTER CLICK NOW WORKS FOR ALL */
 document.getElementById("core").onclick=()=>{
-
   let index=Math.round(-rot/step)%WORLDS.length;
   if(index<0)index+=WORLDS.length;
 
-  if(WORLDS[index].n==="META"){
-    openWorld(WORLDS[index], metaEl);
-  }
+  const selected=WORLDS[index];
+  const el=document.querySelectorAll(".seg")[index];
 
+  openWorld(selected, el);
 };
 
 </script>
