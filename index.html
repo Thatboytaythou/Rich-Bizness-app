@@ -2,155 +2,106 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness Omnitrix — Cinematic</title>
+<title>Rich Bizness — Avatar Entry</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 html,body{
-  margin:0;
-  height:100%;
-  background:#000;
-  overflow:hidden;
-  font-family:sans-serif;
+  margin:0;height:100%;background:#000;overflow:hidden;
+  font-family:system-ui;
 }
 
-/* 🌌 BACKGROUND */
+/* BACKGROUND */
 .bg{
-  position:fixed;
-  inset:0;
+  position:fixed;inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,0.3), transparent 60%),
-    #000;
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
+    url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
+    center/cover no-repeat;
 }
 
-/* 🎯 STAGE */
+/* STAGE */
 .stage{
-  position:fixed;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
   perspective:1400px;
 }
 
-/* 🧿 DEVICE */
 .omni{
-  width:92vw;
-  max-width:420px;
-  aspect-ratio:1;
-  border-radius:50%;
+  width:92vw;max-width:460px;aspect-ratio:1;
   position:relative;
-  transform-style:preserve-3d;
 }
 
-/* 🔩 OUTER */
+/* RING */
 .outer{
-  position:absolute;
-  inset:0;
-  border-radius:50%;
+  position:absolute;inset:0;border-radius:50%;
   background:#001;
-  box-shadow:
-    0 0 80px #00ffcc,
-    inset 0 0 40px #00ffcc;
-  pointer-events:none;
+  box-shadow:0 0 120px #00ffcc;
 }
 
-/* ⚙️ WHEEL */
 .wheel{
-  position:absolute;
-  inset:20%;
+  position:absolute;inset:0;
 }
 
-/* 🧿 ICONS */
 .seg{
   position:absolute;
-  left:50%;
-  top:50%;
-  transform-origin:0 0;
-  font-size:28px;
-  cursor:pointer;
+  left:50%;top:50%;
+  translate:-50% -50%;
+  font-size:30px;
+  opacity:.6;
   transition:.2s;
 }
 
 .seg.active{
-  transform:scale(1.8);
-  filter:drop-shadow(0 0 25px #00ffcc);
+  scale:1.8;
+  opacity:1;
+  filter:drop-shadow(0 0 20px #00ffcc);
 }
 
-/* 🧑 CORE */
+.seg.meta.active{
+  scale:2.5;
+  filter:drop-shadow(0 0 50px #00ffff);
+}
+
+/* CORE */
 .core{
-  position:absolute;
-  inset:32%;
+  position:absolute;inset:30%;
   border-radius:50%;
   background:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:
-    0 0 60px #00ffcc,
-    inset 0 0 40px #00ffcc;
+  box-shadow:0 0 60px #00ffcc;
+  display:flex;align-items:center;justify-content:center;
   overflow:hidden;
-  pointer-events:none;
-  transition:.2s;
+  cursor:pointer;
 }
 
 .avatar{
-  width:100%;
-  height:100%;
-  object-fit:cover;
+  width:100%;height:100%;object-fit:cover;
+  transition:.6s ease;
 }
 
-/* 🏷 LABEL */
-.label{
-  position:absolute;
-  bottom:-60px;
-  width:100%;
-  text-align:center;
-  color:#00ffcc;
-  font-size:20px;
+/* FLOAT AVATAR */
+.avatar.fly{
+  position:fixed;
+  z-index:1000;
+  width:80px;height:80px;
+  border-radius:50%;
+  transition:1s ease;
 }
 
-/* 🌌 PORTAL */
+/* PORTAL */
 .portal{
   position:fixed;
-  inset:0;
-  background:radial-gradient(circle,#00ffcc,#000);
-  transform:scale(0);
+  width:20px;height:20px;
   border-radius:50%;
+  background:radial-gradient(circle,#00ffff,#000);
+  transform:scale(0);
   z-index:999;
-  transition:0.6s;
+  transition:.7s ease;
 }
 
-.portal.open{
-  transform:scale(4);
+.portal.expand{
+  transform:scale(80);
   border-radius:0;
-}
-
-/* ⚡ FLASH */
-.flash{
-  position:fixed;
-  inset:0;
-  background:#00ffcc;
-  opacity:0;
-  z-index:998;
-}
-
-.flash.active{
-  animation:flashAnim .3s;
-}
-
-@keyframes flashAnim{
-  0%{opacity:0}
-  50%{opacity:0.5}
-  100%{opacity:0}
-}
-
-/* 🧿 CORE BURST */
-.core.burst{
-  transform:scale(1.4);
-  box-shadow:
-    0 0 120px #00ffcc,
-    inset 0 0 60px #00ffcc;
 }
 </style>
 </head>
@@ -158,7 +109,6 @@ html,body{
 <body>
 
 <div class="bg"></div>
-<div class="flash" id="flash"></div>
 
 <div class="stage">
   <div class="omni">
@@ -167,19 +117,14 @@ html,body{
     <div class="wheel" id="wheel"></div>
 
     <div class="core" id="core">
-      <img id="avatar-img" class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
-
-    <div class="label" id="label">LIVE</div>
 
   </div>
 </div>
 
-<script type="module">
+<script>
 
-import { getAvatar } from "/core/features/avatar/avatar-state.js";
-
-/* 🌍 ROUTES */
 const WORLDS=[
 {e:"📡",n:"LIVE",u:"/live.html"},
 {e:"🎵",n:"MUSIC",u:"/music.html"},
@@ -190,108 +135,131 @@ const WORLDS=[
 {e:"⬆️",n:"UPLOAD",u:"/upload.html"},
 {e:"👤",n:"PROFILE",u:"/profile.html"},
 {e:"💬",n:"MESSAGES",u:"/messages.html"},
-{e:"🔔",n:"NOTIFY",u:"/notifications.html"},
+{e:"🔔",n:"ALERTS",u:"/notifications.html"},
 {e:"🌐",n:"META",u:"/metaverse.html"}
 ];
 
 const wheel=document.getElementById("wheel");
-const label=document.getElementById("label");
-const core=document.getElementById("core");
-const flash=document.getElementById("flash");
+const avatar=document.getElementById("avatar");
 
+let metaEl=null;
+
+let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
 /* BUILD */
-WORLDS.forEach((w,i)=>{
-  const el=document.createElement("div");
-  el.className="seg";
-  el.innerText=w.e;
+function build(){
+  const r=Math.min(innerWidth,innerHeight)*0.33;
 
-  const a=i*step-Math.PI/2;
-  const r=120;
+  WORLDS.forEach((w,i)=>{
+    const el=document.createElement("div");
+    el.className="seg";
+    el.innerText=w.e;
 
-  el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
-
-  el.onclick=()=>triggerPortal(w);
-
-  wheel.appendChild(el);
-});
-
-/* REAL SPIN */
-let rot=0,vel=0,drag=false,lastX=0;
-
-function loop(){
-  if(!drag){
-    rot+=vel;
-    vel*=0.94;
-
-    if(Math.abs(vel)<0.002){
-      let snap=Math.round(rot/step)*step;
-      rot+=(snap-rot)*0.12;
+    if(w.n==="META"){
+      el.classList.add("meta");
+      metaEl=el;
     }
-  }
 
-  wheel.style.transform=`rotate(${rot}rad)`;
-  updateActive();
-  requestAnimationFrame(loop);
+    const a=i*step-Math.PI/2;
+    const x=Math.cos(a)*r;
+    const y=Math.sin(a)*r;
+
+    el.dataset.base=`translate(${x}px,${y}px)`;
+    el.style.transform=el.dataset.base;
+
+    wheel.appendChild(el);
+  });
 }
-loop();
+build();
 
-/* ACTIVE */
-function updateActive(){
-  let i=Math.round(rot/step)%WORLDS.length;
+/* UPDATE */
+function update(){
+  wheel.style.transform=`rotate(${rot}rad)`;
+
+  let i=Math.round(-rot/step)%WORLDS.length;
   if(i<0)i+=WORLDS.length;
 
   document.querySelectorAll(".seg").forEach((s,idx)=>{
     s.classList.toggle("active",idx===i);
   });
-
-  label.innerText=WORLDS[i].n;
-
-  core.style.transform=`scale(${1 + Math.sin(Date.now()/200)*0.04})`;
 }
 
+/* LOOP */
+function loop(){
+  if(!drag){
+    rot+=vel;
+    vel*=0.92;
+
+    if(Math.abs(vel)<0.001){
+      rot=Math.round(rot/step)*step;
+      vel=0;
+    }
+  }
+  update();
+  requestAnimationFrame(loop);
+}
+loop();
+
 /* DRAG */
-document.addEventListener("pointerdown",e=>{
+addEventListener("pointerdown",e=>{
   drag=true;
   lastX=e.clientX;
 });
 
-document.addEventListener("pointermove",e=>{
+addEventListener("pointermove",e=>{
   if(!drag)return;
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-  let f=dx/180;
-  rot+=f;
-  vel=f;
+  let d=dx/300;
+  rot+=d;
+  vel=d;
 });
 
-document.addEventListener("pointerup",()=>drag=false);
+addEventListener("pointerup",()=>drag=false);
 
-/* PORTAL */
-function triggerPortal(w){
+/* 🎬 AVATAR ENTRY */
+document.getElementById("core").onclick=()=>{
 
-  core.classList.add("burst");
-  flash.classList.add("active");
+  let index=Math.round(-rot/step)%WORLDS.length;
+  if(index<0)index+=WORLDS.length;
 
-  const portal=document.createElement("div");
-  portal.className="portal";
-  document.body.appendChild(portal);
+  if(WORLDS[index].n==="META"){
 
-  requestAnimationFrame(()=>portal.classList.add("open"));
+    const rect=metaEl.getBoundingClientRect();
+    const aRect=avatar.getBoundingClientRect();
 
-  setTimeout(()=>{
-    location.href=w.u;
-  },600);
-}
+    avatar.classList.add("fly");
 
-/* AVATAR */
-(async()=>{
-  const avatar=await getAvatar();
-  if(avatar){
-    document.getElementById("avatar-img").src=avatar;
+    avatar.style.left=aRect.left+"px";
+    avatar.style.top=aRect.top+"px";
+
+    requestAnimationFrame(()=>{
+      avatar.style.left=rect.left+"px";
+      avatar.style.top=rect.top+"px";
+      avatar.style.transform="scale(.3)";
+    });
+
+    const portal=document.createElement("div");
+    portal.className="portal";
+
+    portal.style.left=rect.left+"px";
+    portal.style.top=rect.top+"px";
+
+    document.body.appendChild(portal);
+
+    setTimeout(()=>{
+      portal.classList.add("expand");
+    },300);
+
+    setTimeout(()=>{
+      location.href="/metaverse.html";
+    },900);
+
   }
-})();
+
+};
+
 </script>
 
 </body>
