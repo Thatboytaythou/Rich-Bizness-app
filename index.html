@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Avatar Entry</title>
+<title>Rich Bizness — Console UI+</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,27 +11,19 @@ html,body{
   font-family:system-ui;
 }
 
-/* 🔥 BACKGROUND (CINEMATIC BREATH) */
+/* BACKGROUND */
 .bg{
   position:fixed;inset:0;
   background:
     radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
-
-  animation:bgPulse 8s ease-in-out infinite;
-}
-
-@keyframes bgPulse{
-  0%,100%{transform:scale(1);}
-  50%{transform:scale(1.05);}
 }
 
 /* STAGE */
 .stage{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
-  perspective:1400px;
 }
 
 .omni{
@@ -51,28 +43,27 @@ html,body{
   position:absolute;inset:0;
 }
 
-/* ICONS */
+/* ICON */
 .seg{
   position:absolute;
   left:50%;top:50%;
   translate:-50% -50%;
   font-size:30px;
-  opacity:.6;
-  transition:.2s;
-  cursor:pointer;
+  opacity:.5;
+  transition:.25s;
 }
 
-/* 🔥 ACTIVE GLOW PULSE */
+/* ACTIVE */
 .seg.active{
-  scale:1.8;
+  scale:2;
   opacity:1;
-  filter:drop-shadow(0 0 20px #00ffcc);
-  animation:activePulse 1.5s infinite ease-in-out;
+  filter:drop-shadow(0 0 25px #00ffff);
 }
 
-@keyframes activePulse{
-  0%,100%{filter:drop-shadow(0 0 20px #00ffcc);}
-  50%{filter:drop-shadow(0 0 40px #00ffff);}
+/* 🔥 HOVER ZOOM */
+.seg:hover{
+  scale:2.3;
+  filter:drop-shadow(0 0 40px #00ffff);
 }
 
 /* CORE */
@@ -86,27 +77,23 @@ html,body{
   cursor:pointer;
 }
 
-/* 🔥 AVATAR FLOAT */
+/* LABEL */
+.label{
+  position:absolute;
+  bottom:-70px;
+  width:100%;
+  text-align:center;
+  color:#00ffcc;
+  font-size:20px;
+  font-weight:700;
+}
+
+/* AVATAR */
 .avatar{
   width:100%;height:100%;object-fit:cover;
-  animation:avatarFloat 3s ease-in-out infinite alternate;
 }
 
-@keyframes avatarFloat{
-  from{transform:translateY(0);}
-  to{transform:translateY(-8px);}
-}
-
-/* FLY */
-.avatar.fly{
-  position:fixed;
-  z-index:1000;
-  width:80px;height:80px;
-  border-radius:50%;
-  transition:1s ease;
-}
-
-/* 🔥 PORTAL BOOST */
+/* PORTAL */
 .portal{
   position:fixed;
   width:20px;height:20px;
@@ -115,11 +102,10 @@ html,body{
   transform:scale(0);
   z-index:999;
   transition:.7s ease;
-  box-shadow:0 0 40px #00ffff;
 }
 
 .portal.expand{
-  transform:scale(100);
+  transform:scale(90);
   border-radius:0;
 }
 </style>
@@ -136,8 +122,10 @@ html,body{
     <div class="wheel" id="wheel"></div>
 
     <div class="core" id="core">
-      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+      <img class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
+
+    <div class="label" id="label">LIVE</div>
 
   </div>
 </div>
@@ -159,7 +147,10 @@ const WORLDS=[
 ];
 
 const wheel=document.getElementById("wheel");
-const avatar=document.getElementById("avatar");
+const label=document.getElementById("label");
+
+/* 🔊 SOUND */
+const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3");
 
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
@@ -186,22 +177,19 @@ function build(){
 }
 build();
 
-/* OPEN */
+/* 🔥 OPEN WITH FEEDBACK */
 function openWorld(w, el){
 
+  /* 🔊 SOUND */
+  clickSound.currentTime = 0;
+  clickSound.play();
+
+  /* 📳 VIBRATION */
+  if(navigator.vibrate){
+    navigator.vibrate(40);
+  }
+
   const rect=el.getBoundingClientRect();
-  const aRect=avatar.getBoundingClientRect();
-
-  avatar.classList.add("fly");
-
-  avatar.style.left=aRect.left+"px";
-  avatar.style.top=aRect.top+"px";
-
-  requestAnimationFrame(()=>{
-    avatar.style.left=rect.left+"px";
-    avatar.style.top=rect.top+"px";
-    avatar.style.transform="scale(.3)";
-  });
 
   const portal=document.createElement("div");
   portal.className="portal";
@@ -211,11 +199,11 @@ function openWorld(w, el){
 
   document.body.appendChild(portal);
 
-  setTimeout(()=>portal.classList.add("expand"),300);
+  requestAnimationFrame(()=>portal.classList.add("expand"));
 
   setTimeout(()=>{
     location.href=w.u;
-  },900);
+  },800);
 }
 
 /* UPDATE */
@@ -228,19 +216,23 @@ function update(){
   document.querySelectorAll(".seg").forEach((s,idx)=>{
     s.classList.toggle("active",idx===i);
   });
+
+  label.innerText=WORLDS[i].n;
 }
 
 /* LOOP */
 function loop(){
+
   if(!drag){
     rot+=vel;
-    vel*=0.92;
+    vel*=0.90;
 
-    if(Math.abs(vel)<0.001){
-      rot=Math.round(rot/step)*step;
-      vel=0;
+    if(Math.abs(vel)<0.002){
+      const snap=Math.round(rot/step)*step;
+      rot += (snap-rot)*0.15;
     }
   }
+
   update();
   requestAnimationFrame(loop);
 }
@@ -254,22 +246,26 @@ addEventListener("pointerdown",e=>{
 
 addEventListener("pointermove",e=>{
   if(!drag)return;
+
   let dx=e.clientX-lastX;
   lastX=e.clientX;
-  let d=dx/300;
-  rot+=d;
-  vel=d;
+
+  let force=dx/250;
+  rot+=force;
+  vel=force;
 });
 
-addEventListener("pointerup",()=>drag=false);
+addEventListener("pointerup",()=>{
+  drag=false;
+});
 
 /* CENTER CLICK */
 document.getElementById("core").onclick=()=>{
-  let index=Math.round(-rot/step)%WORLDS.length;
-  if(index<0)index+=WORLDS.length;
+  let i=Math.round(-rot/step)%WORLDS.length;
+  if(i<0)i+=WORLDS.length;
 
-  const selected=WORLDS[index];
-  const el=document.querySelectorAll(".seg")[index];
+  const selected=WORLDS[i];
+  const el=document.querySelectorAll(".seg")[i];
 
   openWorld(selected, el);
 };
