@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rich Bizness — Metaverse Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#000;font-family:system-ui}
+
+/* UI */
+#hud{
+  position:fixed;top:14px;left:50%;transform:translateX(-50%);
+  color:#00ffcc;font-weight:800;letter-spacing:.5px;z-index:10
+}
+#exit{
+  position:fixed;bottom:22px;right:22px;z-index:10;
+  padding:12px 16px;border-radius:12px;
+  background:rgba(0,255,200,.18);color:#00ffcc;font-weight:800;cursor:pointer
+}
+
+/* 🎮 JOYSTICK (mobile) */
+.joy-wrap{
+  position:fixed;left:18px;bottom:22px;z-index:10;
+  width:120px;height:120px;border-radius:50%;
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(10px)
+}
+.joy{
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:56px;height:56px;border-radius:50%;
+  background:rgba(0,255,200,.35)
+}
+</style>
+</head>
+
+<body>
+
+<div id="hud">🌐 METAVERSE HUB</div>
+<div id="exit" onclick="location.href='/index.html'">EXIT</div>
+
+<div class="joy-wrap" id="joyWrap">
+  <div class="joy" id="joy"></div>
+</div>
+
+<script type="module">
+
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
+
+/* ====== BASIC SCENE ====== */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+
+const camera = new THREE.PerspectiveCamera(70, innerWidth/innerHeight, 0.1, 1000);
+camera.position.set(0,3,6);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth, innerHeight);
+document.body.appendChild(renderer.domElement);
+
+/* LIGHT */
+const light = new THREE.PointLight(0x00ffcc, 2);
+light.position.set(0,6,4);
+scene.add(light);
+
+/* FLOOR */
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(60,60),
+  new THREE.MeshStandardMaterial({color:0x001a12})
+);
+floor.rotation.x = -Math.PI/2;
+scene.add(floor);
+
+/* ====== PLAYER (AVATAR) ====== */
+const player = new THREE.Mesh(
+  new THREE.CapsuleGeometry(0.4,1.2,4,8),
+  new THREE.MeshStandardMaterial({color:0x00ffcc})
+);
+player.position.set(0,1,5);
+scene.add(player);
+
+/* ====== PORTALS ====== */
+const worlds=[
+{n:"LIVE",url:"/live.html",x:-4},
+{n:"MUSIC",url:"/music.html",x:-2},
+{n:"GAMING",url:"/gaming.html",x:0},
+{n:"SPORTS",url:"/sports.html",x:2},
+{n:"STORE",url:"/store.html",x:4}
+];
+
+const portals=[];
+worlds.forEach(w=>{
+  const mesh=new THREE.Mesh(
+    new THREE.BoxGeometry(1.6,2.2,0.2),
+    new THREE.MeshStandardMaterial({color:0x00ffcc,emissive:0x00ffcc,emissiveIntensity:.25})
+  );
+  mesh.position.set(w.x,1.1,0);
+  mesh.userData=w;
+  scene.add(mesh);
+  portals.push(mesh);
+});
+
+/* ====== MOVEMENT STATE ====== */
+let move = {x:0, z:0}; // x = strafe, z = forward/back
+const speed = 0.08;
+
+/* KEYBOARD */
+const keys={};
+addEventListener("keydown",e=>keys[e.key.toLowerCase()]=true);
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+/* ====== JOYSTICK (MOBILE) ====== */
+const joyWrap=document.getElementById("joyWrap");
+const joy=document.getElementById("joy");
+
+let dragging=false, startX=0, startY=0;
+
+joyWrap.addEventListener("pointerdown",(e)=>{
+  dragging=true;
+  startX=e.clientX; startY=e.clientY;
+});
+
+addEventListener("pointermove",(e)=>{
+  if(!dragging) return;
+
+  let dx=e.clientX-startX;
+  let dy=e.clientY-startY;
+
+  const max=40;
+  dx=Math.max(-max,Math.min(max,dx));
+  dy=Math.max(-max,Math.min(max,dy));
+
+  joy.style.transform=`translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+  move.x = dx/max;
+  move.z = dy/max;
+});
+
+addEventListener("pointerup",()=>{
+  dragging=false;
+  joy.style.transform="translate(-50%,-50%)";
+  move.x=0; move.z=0;
+});
+
+/* ====== CLICK PORTALS ====== */
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+
+addEventListener("click",(e)=>{
+  mouse.x=(e.clientX/innerWidth)*2-1;
+  mouse.y=-(e.clientY/innerHeight)*2+1;
+
+  raycaster.setFromCamera(mouse,camera);
+  const hit=raycaster.intersectObjects(portals);
+
+  if(hit.length){
+    location.href=hit[0].object.userData.url;
+  }
+});
+
+/* ====== MULTIPLAYER READY (SAFE HOOK) ====== */
+/* Works if you later add a socket server. Safe if not running. */
+let socket=null;
+try{
+  socket = new WebSocket("ws://localhost:3000"); // change later
+}catch(e){}
+
+/* ====== LOOP ====== */
+function animate(){
+  requestAnimationFrame(animate);
+
+  /* keyboard movement */
+  let forward = (keys["w"]||keys["arrowup"]?1:0) - (keys["s"]||keys["arrowdown"]?1:0);
+  let strafe  = (keys["d"]||keys["arrowright"]?1:0) - (keys["a"]||keys["arrowleft"]?1:0);
+
+  /* combine with joystick */
+  const vx = (strafe + move.x) * speed;
+  const vz = (forward + move.z) * speed;
+
+  player.position.x += vx;
+  player.position.z += vz;
+
+  /* camera follow */
+  camera.position.x = player.position.x;
+  camera.position.z = player.position.z + 5;
+  camera.lookAt(player.position);
+
+  /* rotate portals */
+  portals.forEach(p=>p.rotation.y += 0.01);
+
+  /* send position (multiplayer ready) */
+  if(socket && socket.readyState===1){
+    socket.send(JSON.stringify({
+      x:player.position.x,
+      z:player.position.z
+    }));
+  }
+
+  renderer.render(scene,camera);
+}
+animate();
+
+/* RESIZE */
+addEventListener("resize",()=>{
+  camera.aspect=innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+</script>
+</body>
+</html>
