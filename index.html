@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Metaverse OS</title>
+<title>Rich Bizness — Console UI</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -11,80 +11,16 @@ html,body{
   font-family:system-ui;
 }
 
-/* 🌌 ENVIRONMENT */
+/* BACKGROUND */
 .bg{
   position:fixed;inset:0;
   background:
-    radial-gradient(circle at 50% 60%, rgba(0,255,200,.2), transparent 60%),
+    radial-gradient(circle at 50% 60%, rgba(0,255,200,.25), transparent 60%),
     url("/images/brand/19FB5229-30DD-40B0-9404-5136C27FEF6A.png")
     center/cover no-repeat;
-  transition:1s ease;
 }
 
-/* 🔥 OS LAYER */
-.os-ui{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:40;
-}
-
-/* TOP STRIP */
-.top-bar{
-  position:absolute;
-  top:20px;
-  left:50%;
-  transform:translateX(-50%);
-  display:flex;
-  gap:18px;
-}
-
-.tile{
-  width:64px;height:64px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:28px;
-  border-radius:16px;
-  background:rgba(255,255,255,.05);
-  transition:.3s;
-  pointer-events:auto;
-}
-
-.tile.active{
-  scale:1.4;
-  background:rgba(0,255,200,.2);
-  box-shadow:0 0 25px #00ffff;
-}
-
-/* PREVIEW */
-.preview{
-  position:absolute;
-  bottom:120px;
-  left:50%;
-  transform:translateX(-50%);
-  width:80vw;
-  max-width:500px;
-  height:180px;
-  border-radius:20px;
-  background:rgba(0,0,0,.5);
-  backdrop-filter:blur(20px);
-  border:1px solid rgba(0,255,200,.2);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:28px;
-  color:#00ffcc;
-}
-
-.title{
-  position:absolute;
-  bottom:60px;
-  width:100%;
-  text-align:center;
-  font-size:36px;
-  color:#00ffcc;
-}
-
-/* OMNI */
+/* STAGE */
 .stage{
   position:fixed;inset:0;
   display:flex;align-items:center;justify-content:center;
@@ -95,40 +31,64 @@ html,body{
   position:relative;
 }
 
+/* RING */
 .outer{
   position:absolute;inset:0;border-radius:50%;
   background:#001;
   box-shadow:0 0 120px #00ffcc;
 }
 
-.wheel{position:absolute;inset:0;}
+/* WHEEL */
+.wheel{
+  position:absolute;inset:0;
+}
 
+/* ICON */
 .seg{
   position:absolute;
   left:50%;top:50%;
   translate:-50% -50%;
   font-size:30px;
-  opacity:.4;
-  transition:.3s;
+  opacity:.5;
+  transition:.25s;
 }
 
+/* ACTIVE */
 .seg.active{
   scale:2;
   opacity:1;
-  filter:drop-shadow(0 0 30px #00ffff);
+  filter:drop-shadow(0 0 25px #00ffff);
 }
 
+/* CORE */
 .core{
   position:absolute;inset:30%;
   border-radius:50%;
   background:#000;
   box-shadow:0 0 60px #00ffcc;
   display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
   cursor:pointer;
 }
 
-.avatar{width:100%;height:100%;object-fit:cover;}
+/* LABEL (CONSOLE UI) */
+.label{
+  position:absolute;
+  bottom:-70px;
+  width:100%;
+  text-align:center;
+  color:#00ffcc;
+  font-size:20px;
+  font-weight:700;
+  letter-spacing:1px;
+}
 
+/* AVATAR */
+.avatar{
+  width:100%;height:100%;object-fit:cover;
+}
+
+/* PORTAL */
 .portal{
   position:fixed;
   width:20px;height:20px;
@@ -138,7 +98,11 @@ html,body{
   z-index:999;
   transition:.7s ease;
 }
-.portal.expand{transform:scale(90);}
+
+.portal.expand{
+  transform:scale(90);
+  border-radius:0;
+}
 </style>
 </head>
 
@@ -146,20 +110,18 @@ html,body{
 
 <div class="bg"></div>
 
-<div class="os-ui">
-  <div class="top-bar" id="topBar"></div>
-  <div class="preview" id="preview">LIVE WORLD</div>
-  <div class="title" id="title">LIVE</div>
-</div>
-
 <div class="stage">
   <div class="omni">
+
     <div class="outer"></div>
     <div class="wheel" id="wheel"></div>
 
-    <div class="core">
-      <img class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+    <div class="core" id="core">
+      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
+
+    <div class="label" id="label">LIVE</div>
+
   </div>
 </div>
 
@@ -176,19 +138,16 @@ const WORLDS=[
 {e:"👤",n:"PROFILE",u:"/profile.html"},
 {e:"💬",n:"MESSAGES",u:"/messages.html"},
 {e:"🔔",n:"ALERTS",u:"/notifications.html"},
-
-/* ✅ ONLY FIX */
-{e:"🌐",n:"META",u:"/metaverse-3d.html"}
+{e:"🌐",n:"META",u:"/metaverse.html"}
 ];
 
 const wheel=document.getElementById("wheel");
-const title=document.getElementById("title");
-const preview=document.getElementById("preview");
-const topBar=document.getElementById("topBar");
+const label=document.getElementById("label");
 
-let rot=0,vel=0;
+let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
+/* BUILD */
 function build(){
   const r=Math.min(innerWidth,innerHeight)*0.33;
 
@@ -198,34 +157,38 @@ function build(){
     el.innerText=w.e;
 
     const a=i*step-Math.PI/2;
-    el.style.transform=`translate(${Math.cos(a)*r}px,${Math.sin(a)*r}px)`;
+    const x=Math.cos(a)*r;
+    const y=Math.sin(a)*r;
 
-    el.onclick=()=>openWorld(w,el);
+    el.style.transform=`translate(${x}px,${y}px)`;
+
+    el.onclick=()=>openWorld(w, el);
+
     wheel.appendChild(el);
-
-    const tile=document.createElement("div");
-    tile.className="tile";
-    tile.innerText=w.e;
-    tile.onclick=()=>openWorld(w,tile);
-    topBar.appendChild(tile);
   });
 }
 build();
 
-function openWorld(w,el){
+/* OPEN */
+function openWorld(w, el){
   const rect=el.getBoundingClientRect();
 
   const portal=document.createElement("div");
   portal.className="portal";
+
   portal.style.left=rect.left+"px";
   portal.style.top=rect.top+"px";
 
   document.body.appendChild(portal);
+
   requestAnimationFrame(()=>portal.classList.add("expand"));
 
-  setTimeout(()=>location.href=w.u,800);
+  setTimeout(()=>{
+    location.href=w.u;
+  },800);
 }
 
+/* UPDATE */
 function update(){
   wheel.style.transform=`rotate(${rot}rad)`;
 
@@ -236,27 +199,59 @@ function update(){
     s.classList.toggle("active",idx===i);
   });
 
-  document.querySelectorAll(".tile").forEach((t,idx)=>{
-    t.classList.toggle("active",idx===i);
-  });
-
-  title.innerText=WORLDS[i].n;
-  preview.innerText=WORLDS[i].n + " WORLD";
+  label.innerText=WORLDS[i].n;
 }
 
+/* LOOP */
 function loop(){
-  rot+=vel;
-  vel*=0.9;
 
-  if(Math.abs(vel)<0.002){
-    const snap=Math.round(rot/step)*step;
-    rot+=(snap-rot)*0.1;
+  if(!drag){
+    rot+=vel;
+    vel*=0.90;
+
+    /* SNAP LOCK (CONSOLE FEEL) */
+    if(Math.abs(vel)<0.002){
+      const snap=Math.round(rot/step)*step;
+      rot += (snap-rot)*0.15;
+    }
   }
 
   update();
   requestAnimationFrame(loop);
 }
 loop();
+
+/* DRAG */
+addEventListener("pointerdown",e=>{
+  drag=true;
+  lastX=e.clientX;
+});
+
+addEventListener("pointermove",e=>{
+  if(!drag)return;
+
+  let dx=e.clientX-lastX;
+  lastX=e.clientX;
+
+  let force=dx/250;
+  rot+=force;
+  vel=force;
+});
+
+addEventListener("pointerup",()=>{
+  drag=false;
+});
+
+/* CENTER CLICK */
+document.getElementById("core").onclick=()=>{
+  let i=Math.round(-rot/step)%WORLDS.length;
+  if(i<0)i+=WORLDS.length;
+
+  const selected=WORLDS[i];
+  const el=document.querySelectorAll(".seg")[i];
+
+  openWorld(selected, el);
+};
 
 </script>
 
