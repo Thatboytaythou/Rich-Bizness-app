@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Rich Bizness — Console UI</title>
+<title>Rich Bizness — Console UI+</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -60,6 +60,12 @@ html,body{
   filter:drop-shadow(0 0 25px #00ffff);
 }
 
+/* 🔥 HOVER ZOOM */
+.seg:hover{
+  scale:2.3;
+  filter:drop-shadow(0 0 40px #00ffff);
+}
+
 /* CORE */
 .core{
   position:absolute;inset:30%;
@@ -71,7 +77,7 @@ html,body{
   cursor:pointer;
 }
 
-/* LABEL (CONSOLE UI) */
+/* LABEL */
 .label{
   position:absolute;
   bottom:-70px;
@@ -80,7 +86,6 @@ html,body{
   color:#00ffcc;
   font-size:20px;
   font-weight:700;
-  letter-spacing:1px;
 }
 
 /* AVATAR */
@@ -117,7 +122,7 @@ html,body{
     <div class="wheel" id="wheel"></div>
 
     <div class="core" id="core">
-      <img class="avatar" id="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
+      <img class="avatar" src="/images/brand/1E7155FE-1726-4D71-964F-B0337A2E80A1.png">
     </div>
 
     <div class="label" id="label">LIVE</div>
@@ -144,6 +149,9 @@ const WORLDS=[
 const wheel=document.getElementById("wheel");
 const label=document.getElementById("label");
 
+/* 🔊 SOUND */
+const clickSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3");
+
 let rot=0,vel=0,drag=false,lastX=0;
 const step=(Math.PI*2)/WORLDS.length;
 
@@ -169,8 +177,18 @@ function build(){
 }
 build();
 
-/* OPEN */
+/* 🔥 OPEN WITH FEEDBACK */
 function openWorld(w, el){
+
+  /* 🔊 SOUND */
+  clickSound.currentTime = 0;
+  clickSound.play();
+
+  /* 📳 VIBRATION */
+  if(navigator.vibrate){
+    navigator.vibrate(40);
+  }
+
   const rect=el.getBoundingClientRect();
 
   const portal=document.createElement("div");
@@ -209,7 +227,6 @@ function loop(){
     rot+=vel;
     vel*=0.90;
 
-    /* SNAP LOCK (CONSOLE FEEL) */
     if(Math.abs(vel)<0.002){
       const snap=Math.round(rot/step)*step;
       rot += (snap-rot)*0.15;
